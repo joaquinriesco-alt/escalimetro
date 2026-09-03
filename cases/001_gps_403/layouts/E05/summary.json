@@ -1,0 +1,53 @@
+{
+  "stats": {
+    "strategy_count": 9,
+    "candidate_count": 7,
+    "exact_attempts": 9,
+    "hard_valid_count": 0,
+    "architecturally_acceptable_count": 0,
+    "runtime_total_s": 232.2,
+    "runtime_per_strategy_s": 25.8,
+    "seed": 1,
+    "time_limit_s": 40.0
+  },
+  "gate_e1": "FAIL",
+  "winner": null,
+  "best_partial": {
+    "strategy_id": "B_CLIENT_FRONT",
+    "mode": "probe_max_seats",
+    "status": "FEASIBLE",
+    "runtime_s": 40.09,
+    "hard_valid": false,
+    "seats": 34,
+    "violations": [
+      "puestos open 34 ≠ 40"
+    ],
+    "geometric_score": 0.5705,
+    "architectural_score": 0.457,
+    "only_seats_missing": true
+  },
+  "ranking": [],
+  "e04_metrics": {
+    "program_completeness": {
+      "complete": false,
+      "open_seats": "33/40",
+      "rooms": {
+        "meeting_8": 1,
+        "dining": 1,
+        "lounge": 1,
+        "meeting_4": 3,
+        "private_office": 4,
+        "reception": 1,
+        "kitchenette": 1,
+        "phone_booth": 3,
+        "workstation_cluster": 1,
+        "workstation_row": 9
+      }
+    },
+    "hard_constraint_violations": 3,
+    "daylight_score": 0.114,
+    "circulation_area_m2": 115.4,
+    "unallocated_area_m2": 173.0,
+    "valid_candidate_count": 0
+  }
+}

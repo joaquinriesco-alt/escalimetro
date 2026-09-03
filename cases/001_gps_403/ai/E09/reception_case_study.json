@@ -1,0 +1,26 @@
+{
+  "A": {
+    "rule_based": 0.4,
+    "anthropic": null,
+    "openai_vision": null,
+    "classification": "UNCLEAR",
+    "reason": "sin proveedores de IA no hay contraste posible: el 0.40 del crítico por reglas sigue siendo una afirmación sin verificar",
+    "status": "BLOCKED"
+  },
+  "B": {
+    "rule_based": 0.4,
+    "anthropic": null,
+    "openai_vision": null,
+    "classification": "UNCLEAR",
+    "reason": "sin proveedores de IA no hay contraste posible: el 0.40 del crítico por reglas sigue siendo una afirmación sin verificar",
+    "status": "BLOCKED"
+  },
+  "C": {
+    "rule_based": 0.4,
+    "anthropic": null,
+    "openai_vision": null,
+    "classification": "UNCLEAR",
+    "reason": "sin proveedores de IA no hay contraste posible: el 0.40 del crítico por reglas sigue siendo una afirmación sin verificar",
+    "status": "BLOCKED"
+  }
+}

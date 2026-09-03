@@ -1,0 +1,92 @@
+{
+  "A": {
+    "alternative_id": "A",
+    "consensus_scores": {
+      "adjacency": 0.836,
+      "arrival_sequence": 0.525,
+      "boardroom_location": 0.987,
+      "circulation_logic": 1.0,
+      "client_route": 0.762,
+      "kitchenette_dining": 1.0,
+      "lounge": 1.0,
+      "meeting_accessibility": 0.762,
+      "open_work_neighborhoods": 0.599,
+      "privacy_gradient": 1.0,
+      "program_coherence": 0.92,
+      "reception": 0.4,
+      "strategy_alignment": 0.585
+    },
+    "agreements": [],
+    "disagreements": [],
+    "critical_disagreements": [],
+    "confidence": 0.33,
+    "external_review_readiness": "INTERNAL_REVIEW",
+    "reason": "faltan proveedores de IA (anthropic, openai_vision); el consenso se apoya en rule_based.",
+    "status": "PROVIDER_UNAVAILABLE",
+    "sources": {
+      "rule_based": "present",
+      "anthropic": "unavailable",
+      "openai_vision": "unavailable"
+    }
+  },
+  "B": {
+    "alternative_id": "B",
+    "consensus_scores": {
+      "adjacency": 0.488,
+      "arrival_sequence": 0.525,
+      "boardroom_location": 0.987,
+      "circulation_logic": 1.0,
+      "client_route": 0.833,
+      "kitchenette_dining": 1.0,
+      "lounge": 1.0,
+      "meeting_accessibility": 0.833,
+      "open_work_neighborhoods": 0.598,
+      "privacy_gradient": 0.725,
+      "program_coherence": 0.68,
+      "reception": 0.4,
+      "strategy_alignment": 0.764
+    },
+    "agreements": [],
+    "disagreements": [],
+    "critical_disagreements": [],
+    "confidence": 0.33,
+    "external_review_readiness": "INTERNAL_REVIEW",
+    "reason": "faltan proveedores de IA (anthropic, openai_vision); el consenso se apoya en rule_based.",
+    "status": "PROVIDER_UNAVAILABLE",
+    "sources": {
+      "rule_based": "present",
+      "anthropic": "unavailable",
+      "openai_vision": "unavailable"
+    }
+  },
+  "C": {
+    "alternative_id": "C",
+    "consensus_scores": {
+      "adjacency": 1.0,
+      "arrival_sequence": 0.525,
+      "boardroom_location": 0.967,
+      "circulation_logic": 1.0,
+      "client_route": 0.945,
+      "kitchenette_dining": 1.0,
+      "lounge": 1.0,
+      "meeting_accessibility": 0.945,
+      "open_work_neighborhoods": 0.549,
+      "privacy_gradient": 0.889,
+      "program_coherence": 0.68,
+      "reception": 0.4,
+      "strategy_alignment": 0.978
+    },
+    "agreements": [],
+    "disagreements": [],
+    "critical_disagreements": [],
+    "confidence": 0.33,
+    "external_review_readiness": "INTERNAL_REVIEW",
+    "reason": "faltan proveedores de IA (anthropic, openai_vision); el consenso se apoya en rule_based.",
+    "status": "PROVIDER_UNAVAILABLE",
+    "sources": {
+      "rule_based": "present",
+      "anthropic": "unavailable",
+      "openai_vision": "unavailable"
+    }
+  }
+}

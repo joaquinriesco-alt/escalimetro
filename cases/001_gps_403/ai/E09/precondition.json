@@ -1,0 +1,56 @@
+{
+  "keys": {
+    "OPENAI_API_KEY_status": "MISSING",
+    "ANTHROPIC_API_KEY_status": "MISSING"
+  },
+  "models": {
+    "spatial_review": "claude-sonnet-4-5",
+    "visual_review": "gpt-5",
+    "presentation": "gpt-5"
+  },
+  "provider_status": {
+    "spatial_review": {
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-5",
+      "purpose": "spatial_review",
+      "timeout": 60.0,
+      "max_retries": 2,
+      "enabled": true,
+      "api_key_env": "ANTHROPIC_API_KEY",
+      "has_key": false,
+      "available": false,
+      "status": "NO_API_KEY"
+    },
+    "visual_review": {
+      "provider": "openai",
+      "model": "gpt-5",
+      "purpose": "visual_review",
+      "timeout": 60.0,
+      "max_retries": 2,
+      "enabled": true,
+      "api_key_env": "OPENAI_API_KEY",
+      "has_key": false,
+      "available": false,
+      "status": "NO_API_KEY"
+    },
+    "presentation": {
+      "provider": "openai",
+      "model": "gpt-5",
+      "purpose": "presentation",
+      "timeout": 60.0,
+      "max_retries": 2,
+      "enabled": true,
+      "api_key_env": "OPENAI_API_KEY",
+      "has_key": false,
+      "available": false,
+      "status": "NO_API_KEY"
+    },
+    "deterministic": {
+      "provider": "deterministic",
+      "model": "rule_based_v1",
+      "purpose": "fallback",
+      "status": "AVAILABLE",
+      "has_key": true
+    }
+  }
+}

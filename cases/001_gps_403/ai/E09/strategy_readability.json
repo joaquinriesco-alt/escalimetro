@@ -1,0 +1,23 @@
+{
+  "A": {
+    "rule_based_heuristic": 0.585,
+    "anthropic_structured": null,
+    "openai_visual": null,
+    "status": "BLOCKED",
+    "question": "¿la estrategia declarada se expresa espacialmente, o sólo existe en el nombre de la alternativa?"
+  },
+  "B": {
+    "rule_based_heuristic": 0.764,
+    "anthropic_structured": null,
+    "openai_visual": null,
+    "status": "BLOCKED",
+    "question": "¿la estrategia declarada se expresa espacialmente, o sólo existe en el nombre de la alternativa?"
+  },
+  "C": {
+    "rule_based_heuristic": 0.978,
+    "anthropic_structured": null,
+    "openai_visual": null,
+    "status": "BLOCKED",
+    "question": "¿la estrategia declarada se expresa espacialmente, o sólo existe en el nombre de la alternativa?"
+  }
+}

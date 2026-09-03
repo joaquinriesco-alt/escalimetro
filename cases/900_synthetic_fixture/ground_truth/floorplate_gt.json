@@ -1,0 +1,321 @@
+{
+  "schema_version": "0.1.1",
+  "case_id": "900_synthetic_fixture",
+  "unit_label": "OF. 903 (sintética)",
+  "source_image": {
+    "path": "original.jpg",
+    "width_px": 1400,
+    "height_px": 1000,
+    "sha256": "",
+    "dpi": null
+  },
+  "coordinate_system": {
+    "units": "px",
+    "origin": "top_left",
+    "y_axis": "down",
+    "note": "Convertir a metros con scale.px_per_m; ver Floorplate.to_m()"
+  },
+  "scale": {
+    "px_per_m": 27.0,
+    "method": "manual",
+    "reference_area_m2": null,
+    "meta": {
+      "confidence": 1.0,
+      "provenance": "manual",
+      "status": "confirmed",
+      "notes": "sintético exacto"
+    }
+  },
+  "perimeter": {
+    "ring": [
+      [
+        123.0,
+        123.0
+      ],
+      [
+        757.0,
+        123.0
+      ],
+      [
+        757.0,
+        517.0
+      ],
+      [
+        557.0,
+        517.0
+      ],
+      [
+        557.0,
+        877.0
+      ],
+      [
+        123.0,
+        877.0
+      ]
+    ],
+    "raw_ring": [],
+    "meta": {
+      "confidence": 1.0,
+      "provenance": "manual",
+      "status": "confirmed",
+      "notes": "sintético exacto"
+    }
+  },
+  "holes": [],
+  "core": [
+    {
+      "ring": [
+        [
+          760.0,
+          380.0
+        ],
+        [
+          900.0,
+          380.0
+        ],
+        [
+          900.0,
+          620.0
+        ],
+        [
+          760.0,
+          620.0
+        ]
+      ],
+      "kind": "core",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "sintético exacto"
+      }
+    }
+  ],
+  "columns": [
+    {
+      "center": [
+        200.0,
+        200.0
+      ],
+      "size_px": 13.0,
+      "shape": "square",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "sintético exacto"
+      }
+    },
+    {
+      "center": [
+        480.0,
+        200.0
+      ],
+      "size_px": 13.0,
+      "shape": "square",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "sintético exacto"
+      }
+    },
+    {
+      "center": [
+        200.0,
+        480.0
+      ],
+      "size_px": 13.0,
+      "shape": "square",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "sintético exacto"
+      }
+    },
+    {
+      "center": [
+        480.0,
+        480.0
+      ],
+      "size_px": 13.0,
+      "shape": "square",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "sintético exacto"
+      }
+    },
+    {
+      "center": [
+        200.0,
+        800.0
+      ],
+      "size_px": 13.0,
+      "shape": "square",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "sintético exacto"
+      }
+    },
+    {
+      "center": [
+        480.0,
+        800.0
+      ],
+      "size_px": 13.0,
+      "shape": "square",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "sintético exacto"
+      }
+    }
+  ],
+  "entrances": [
+    {
+      "point": [
+        560.0,
+        700.0
+      ],
+      "width_px": 24.0,
+      "kind": "main",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "sintético exacto"
+      }
+    }
+  ],
+  "windows": [],
+  "facade_segments": [
+    {
+      "index": 0,
+      "start": [
+        123.0,
+        123.0
+      ],
+      "end": [
+        757.0,
+        123.0
+      ],
+      "kind": "facade",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "sintético exacto"
+      }
+    },
+    {
+      "index": 1,
+      "start": [
+        757.0,
+        123.0
+      ],
+      "end": [
+        757.0,
+        517.0
+      ],
+      "kind": "unknown",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "sintético exacto"
+      }
+    },
+    {
+      "index": 2,
+      "start": [
+        757.0,
+        517.0
+      ],
+      "end": [
+        557.0,
+        517.0
+      ],
+      "kind": "corridor",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "sintético exacto"
+      }
+    },
+    {
+      "index": 3,
+      "start": [
+        557.0,
+        517.0
+      ],
+      "end": [
+        557.0,
+        877.0
+      ],
+      "kind": "corridor",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "sintético exacto"
+      }
+    },
+    {
+      "index": 4,
+      "start": [
+        557.0,
+        877.0
+      ],
+      "end": [
+        123.0,
+        877.0
+      ],
+      "kind": "facade",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "sintético exacto"
+      }
+    },
+    {
+      "index": 5,
+      "start": [
+        123.0,
+        877.0
+      ],
+      "end": [
+        123.0,
+        123.0
+      ],
+      "kind": "facade",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "sintético exacto"
+      }
+    }
+  ],
+  "fixed_elements": [],
+  "area_m2": 556.9766803840878,
+  "area_px2": 406036.0,
+  "area_meta": {
+    "confidence": 1.0,
+    "provenance": "manual",
+    "status": "confirmed",
+    "notes": "sintético exacto"
+  },
+  "published_area_m2": null,
+  "published_area_kind": "unknown",
+  "target_localization": "unknown",
+  "unknowns": [],
+  "pipeline": {}
+}

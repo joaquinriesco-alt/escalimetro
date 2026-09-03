@@ -1,0 +1,60 @@
+{
+  "candidate_id": "B_CLIENT_FRONT_probe",
+  "hard_valid": false,
+  "scores": {
+    "arrival_sequence": 0.438,
+    "reception": 0.4,
+    "client_access_to_rooms": 0.711,
+    "privacy": 0.45,
+    "open_office_quality": 0.416,
+    "facade_use": 0.484,
+    "kitchenette_dining": 0.0,
+    "lounge_location": 1.0,
+    "circulation": 0.95,
+    "residual_spaces": 0.0,
+    "fragmentation": 0.4,
+    "architectural_plausibility": 0.239
+  },
+  "verdicts": {
+    "arrival_sequence": "recepción a 7.5 m de ruta del acceso",
+    "reception": "fuera de la región del acceso, a 7.5 m",
+    "client_access_to_rooms": "meeting_accessibility 0.71 (rutas acceso→salas junto a puestos)",
+    "privacy": "gradiente 0.60; 1 privados pegados a recepción",
+    "open_office_quality": "24% de puestos en benches; daylight 0.60",
+    "facade_use": "56% de la fachada con luz frente a recintos cerrados (tolerancia 30 %)",
+    "kitchenette_dining": "separados",
+    "lounge_location": "junto a puestos",
+    "circulation": "eficiencia 1.00; 4 conectores; pasillos 84.0 m²",
+    "residual_spaces": "75.8 m² en bolsillos; 152.6 m² sin asignar",
+    "fragmentation": "puestos en 5 bandas; 5 bloques de ≤ 3 puestos",
+    "architectural_plausibility": "candidato inválido: media de aspectos 0.24"
+  },
+  "architectural_score": 0.457,
+  "broker_showable": false,
+  "repair_suggestions": [
+    {
+      "type": "forbid_on_facade",
+      "args": {
+        "module": "private_office"
+      },
+      "reason": "privados consumen fachada"
+    },
+    {
+      "type": "require_adjacent",
+      "args": {
+        "a": "kitchenette_1",
+        "b": "dining_1"
+      },
+      "reason": "kitchenette y comedor separados"
+    },
+    {
+      "type": "weight",
+      "args": {
+        "objective": "compactness",
+        "value": 0.16
+      },
+      "reason": "muchos bloques chicos"
+    }
+  ],
+  "provider": "rule_based"
+}

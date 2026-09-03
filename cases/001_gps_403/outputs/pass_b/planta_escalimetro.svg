@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="768" viewBox="0 0 1200 768" font-family="Helvetica,Arial,sans-serif">
+<rect width="100%" height="100%" fill="#fff"/>
+<polygon points="40.0,146.0 40.0,587.3 103.3,587.3 103.3,668.0 489.3,668.0 492.4,649.0 718.6,649.0 718.6,666.4 1106.2,666.4 1106.2,573.1 1160.0,573.1 1160.0,310.5 827.8,310.5 827.8,445.0 375.4,445.0 375.4,142.8 141.2,142.8 128.6,176.0 87.5,146.0" fill="#fafafa" stroke="none"/>
+<line x1="40.0" y1="146.0" x2="40.0" y2="587.3" stroke="#1f77b4" stroke-width="4.4" opacity="0.9" stroke-dasharray="8,5"/>
+<line x1="40.0" y1="587.3" x2="103.3" y2="587.3" stroke="#1f77b4" stroke-width="4.4" opacity="0.9" stroke-dasharray="8,5"/>
+<line x1="103.3" y1="587.3" x2="103.3" y2="668.0" stroke="#1f77b4" stroke-width="4.4" opacity="0.9" stroke-dasharray="8,5"/>
+<line x1="103.3" y1="668.0" x2="489.3" y2="668.0" stroke="#1f77b4" stroke-width="4.4" opacity="0.9" stroke-dasharray="8,5"/>
+<line x1="489.3" y1="668.0" x2="492.4" y2="649.0" stroke="#1f77b4" stroke-width="4.4" opacity="0.9" stroke-dasharray="8,5"/>
+<line x1="492.4" y1="649.0" x2="718.6" y2="649.0" stroke="#1f77b4" stroke-width="4.4" opacity="0.9" stroke-dasharray="8,5"/>
+<line x1="718.6" y1="649.0" x2="718.6" y2="666.4" stroke="#8c564b" stroke-width="4.4" opacity="0.9" stroke-dasharray="8,5"/>
+<line x1="718.6" y1="666.4" x2="1106.2" y2="666.4" stroke="#1f77b4" stroke-width="4.4" opacity="0.9" stroke-dasharray="8,5"/>
+<line x1="1106.2" y1="666.4" x2="1106.2" y2="573.1" stroke="#1f77b4" stroke-width="4.4" opacity="0.9" stroke-dasharray="8,5"/>
+<line x1="1106.2" y1="573.1" x2="1160.0" y2="573.1" stroke="#1f77b4" stroke-width="4.4" opacity="0.9" stroke-dasharray="8,5"/>
+<line x1="1160.0" y1="573.1" x2="1160.0" y2="310.5" stroke="#1f77b4" stroke-width="4.4" opacity="0.9" stroke-dasharray="8,5"/>
+<line x1="1160.0" y1="310.5" x2="827.8" y2="310.5" stroke="#555" stroke-width="4.4" opacity="0.9" stroke-dasharray="8,5"/>
+<line x1="827.8" y1="310.5" x2="827.8" y2="445.0" stroke="#8c564b" stroke-width="4.4" opacity="0.9" stroke-dasharray="8,5"/>
+<line x1="827.8" y1="445.0" x2="375.4" y2="445.0" stroke="#8c564b" stroke-width="4.4" opacity="0.9" stroke-dasharray="8,5"/>
+<line x1="375.4" y1="445.0" x2="375.4" y2="142.8" stroke="#8c564b" stroke-width="4.4" opacity="0.9" stroke-dasharray="8,5"/>
+<line x1="375.4" y1="142.8" x2="141.2" y2="142.8" stroke="#555" stroke-width="4.4" opacity="0.9" stroke-dasharray="8,5"/>
+<line x1="141.2" y1="142.8" x2="128.6" y2="176.0" stroke="#555" stroke-width="4.4" opacity="0.9" stroke-dasharray="8,5"/>
+<line x1="128.6" y1="176.0" x2="87.5" y2="146.0" stroke="#555" stroke-width="4.4" opacity="0.9" stroke-dasharray="8,5"/>
+<line x1="87.5" y1="146.0" x2="40.0" y2="146.0" stroke="#555" stroke-width="4.4" opacity="0.9" stroke-dasharray="8,5"/>
+<polygon points="40.0,146.0 40.0,587.3 103.3,587.3 103.3,668.0 489.3,668.0 492.4,649.0 718.6,649.0 718.6,666.4 1106.2,666.4 1106.2,573.1 1160.0,573.1 1160.0,310.5 827.8,310.5 827.8,445.0 375.4,445.0 375.4,142.8 141.2,142.8 128.6,176.0 87.5,146.0" stroke="#111" stroke-width="2.0" fill="none"/>
+<polygon points="384.9,144.4 388.0,435.5 808.8,426.0 812.0,150.7 758.2,141.2 751.9,74.8 717.1,46.3 606.3,46.3 596.8,71.6 520.9,40.0 441.8,141.2" stroke="#111" stroke-width="2.0" fill="#ddd"/>
+<text x="617.0" y="156.2" font-size="12" text-anchor="middle" fill="#333">CORE</text>
+<rect x="97.5" y="137.3" width="40.6" height="40.6" stroke="#111" stroke-width="1.5" stroke-dasharray="6,4" fill="#fff"/>
+<rect x="318.1" y="141.3" width="32.6" height="32.6" stroke="#111" stroke-width="1.5" fill="#111"/>
+<rect x="321.7" y="296.3" width="26.9" height="26.9" stroke="#111" stroke-width="1.5" fill="#111"/>
+<rect x="852.1" y="295.9" width="32.6" height="32.6" stroke="#111" stroke-width="1.5" fill="#111"/>
+<rect x="1070.4" y="295.9" width="32.6" height="32.6" stroke="#111" stroke-width="1.5" fill="#111"/>
+<rect x="95.8" y="297.5" width="34.3" height="34.3" stroke="#111" stroke-width="1.5" stroke-dasharray="6,4" fill="#fff"/>
+<rect x="850.9" y="547.5" width="34.8" height="34.8" stroke="#111" stroke-width="1.5" stroke-dasharray="6,4" fill="#fff"/>
+<rect x="99.1" y="549.8" width="32.6" height="32.6" stroke="#111" stroke-width="1.5" fill="#111"/>
+<rect x="316.8" y="550.3" width="33.7" height="33.7" stroke="#111" stroke-width="1.5" stroke-dasharray="6,4" fill="#fff"/>
+<rect x="1082.5" y="547.8" width="28.5" height="28.5" stroke="#111" stroke-width="1.5" fill="#111"/>
+<circle cx="818.3" cy="343.7" r="7" fill="#fff" stroke="#d62728" stroke-width="2.5"/>
+<text x="828.3" y="335.7" font-size="11" fill="#d62728">ACCESO main</text>
+<circle cx="827.8" cy="342.1" r="7" fill="#fff" stroke="#d62728" stroke-width="2.5" stroke-dasharray="3,2"/>
+<text x="837.8" y="334.1" font-size="11" fill="#d62728">ACCESO secondary</text>
+<circle cx="375.4" cy="353.2" r="7" fill="#fff" stroke="#d62728" stroke-width="2.5" stroke-dasharray="3,2"/>
+<text x="385.4" y="345.2" font-size="11" fill="#d62728">ACCESO secondary</text>
+<circle cx="375.4" cy="274.1" r="7" fill="#fff" stroke="#d62728" stroke-width="2.5" stroke-dasharray="3,2"/>
+<text x="385.4" y="266.1" font-size="11" fill="#d62728">ACCESO secondary</text>
+<text x="40" y="736" font-size="14" fill="#111">Oficina 403 · 543.0 m² · escala: 8.36 px/m (published_area_inferred)</text>
+<text x="40" y="754" font-size="11" fill="#666">Planta Escalímetro · schema 0.2.0 · punteado = requiere confirmación · azul = fachada · gris = interior sin clasificar</text>
+<line x1="1027.8" y1="728" x2="1160.0" y2="728" stroke="#111" stroke-width="3"/>
+<text x="1027.8" y="722" font-size="11" fill="#111">5 m</text>
+</svg>

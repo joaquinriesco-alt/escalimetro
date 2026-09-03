@@ -1,0 +1,254 @@
+{
+  "strategy_id": "E_DAYLIGHT_MAX",
+  "family": "DAYLIGHT_MAX",
+  "description": "Maximizar puestos con fachada: benches largos en toda fachada, privados y salas interiores.",
+  "public_zone": {
+    "region": "E",
+    "anchor": "entrance"
+  },
+  "client_meeting_zone": {
+    "regions": [
+      "W",
+      "E"
+    ],
+    "modules": [
+      "boardroom_12",
+      "meeting_8",
+      "meeting_4"
+    ]
+  },
+  "work_neighborhoods": [
+    {
+      "name": "barrio_S1",
+      "regions": [
+        "S1"
+      ],
+      "facade_band": "work",
+      "target_seats": 7
+    },
+    {
+      "name": "barrio_S2",
+      "regions": [
+        "S2"
+      ],
+      "facade_band": "work",
+      "target_seats": 17
+    },
+    {
+      "name": "barrio_W",
+      "regions": [
+        "W"
+      ],
+      "facade_band": "work",
+      "target_seats": 10
+    },
+    {
+      "name": "barrio_E",
+      "regions": [
+        "E"
+      ],
+      "facade_band": "work",
+      "target_seats": 5
+    }
+  ],
+  "support_zone": {
+    "regions": [
+      "W",
+      "W"
+    ],
+    "modules": [
+      "kitchenette",
+      "dining",
+      "phone_booth"
+    ]
+  },
+  "premium_daylight_edges": [
+    "dl0",
+    "dl3",
+    "dl5",
+    "dl7",
+    "dl10"
+  ],
+  "circulation_spine": {
+    "primary_width_m": 1.5,
+    "secondary_width_m": 1.2,
+    "pattern_by_region": {
+      "S1": "work_first",
+      "S2": "work_first",
+      "W": "deep_work_first",
+      "E": "corr_first"
+    }
+  },
+  "room_clusters": [
+    [
+      "kitchenette",
+      "dining"
+    ],
+    [
+      "boardroom_12",
+      "meeting_8"
+    ]
+  ],
+  "forbidden_relationships": [
+    {
+      "a": "kitchenette",
+      "b": "reception",
+      "relation": "adjacent"
+    },
+    {
+      "a": "dining",
+      "b": "reception",
+      "relation": "adjacent"
+    },
+    {
+      "a": "private_office",
+      "b": "facade",
+      "relation": "on_facade"
+    }
+  ],
+  "preferred_relationships": [
+    {
+      "a": "kitchenette",
+      "b": "dining",
+      "relation": "adjacent",
+      "weight": 1.0
+    },
+    {
+      "a": "reception",
+      "b": "meeting_4",
+      "relation": "near",
+      "weight": 0.5
+    },
+    {
+      "a": "boardroom_12",
+      "b": "meeting_8",
+      "relation": "adjacent",
+      "weight": 0.5
+    },
+    {
+      "a": "lounge",
+      "b": "workstation",
+      "relation": "near",
+      "weight": 0.5
+    },
+    {
+      "a": "phone_booth",
+      "b": "workstation",
+      "relation": "near",
+      "weight": 0.3
+    }
+  ],
+  "facade_allocation_targets": {
+    "open_work_min": 0.6,
+    "closed_rooms_max": 0.4
+  },
+  "entrance_sequence": [
+    "entrance",
+    "reception",
+    "client_meeting_zone",
+    "work_neighborhoods",
+    "support_zone"
+  ],
+  "module_regions": {
+    "reception": [
+      "E"
+    ],
+    "boardroom_12": [
+      "W",
+      "E"
+    ],
+    "meeting_8": [
+      "W",
+      "E"
+    ],
+    "meeting_4": [
+      "W",
+      "E"
+    ],
+    "private_office": [
+      "S1",
+      "S2",
+      "W",
+      "E"
+    ],
+    "workstation": [
+      "S1",
+      "S2",
+      "W",
+      "E"
+    ],
+    "kitchenette": [
+      "W",
+      "W"
+    ],
+    "dining": [
+      "W",
+      "W"
+    ],
+    "phone_booth": [
+      "W",
+      "W",
+      "S1",
+      "S2",
+      "W",
+      "E"
+    ],
+    "lounge": [
+      "S1",
+      "S2",
+      "W",
+      "E",
+      "W",
+      "W"
+    ]
+  },
+  "bench_preference": [
+    6,
+    5,
+    4
+  ],
+  "objective_weights": {
+    "daylight_utilization": 0.32,
+    "facade_preservation": 0.14
+  },
+  "preflight": {
+    "report": {
+      "strategy_id": "E_DAYLIGHT_MAX",
+      "required_module_area_m2": 305.9,
+      "closed_room_area_m2": 203.5,
+      "open_work_area_m2": 102.4,
+      "estimated_circulation_m2": 108.6,
+      "spine_corridor_area_m2": 99.0,
+      "facade_demand_m": 35.2,
+      "facade_offer_m": 42.7,
+      "largest_required_rectangle": [
+        7.2,
+        5.0
+      ],
+      "boardroom_hosts": [
+        "W:2:rooms"
+      ],
+      "room_meters_demand": {
+        "5.0": 7.2,
+        "4.0": 10.0,
+        "3.5": 5.0,
+        "3.0": 35.0,
+        "1.2": 4.199999999999999
+      },
+      "room_meters_offer": {
+        "5.0": 11.4,
+        "4.0": 0.0,
+        "3.5": 0.0,
+        "3.0": 11.1,
+        "1.2": 50.0
+      },
+      "seat_capacity_estimate": 79,
+      "obvious_infeasibilities": [
+        "faltan 5.8 m de banda de profundidad ≥ 4.0 m para los recintos"
+      ],
+      "feasible": false
+    },
+    "spine_feasible": true,
+    "spine_notes": []
+  }
+}

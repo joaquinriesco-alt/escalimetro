@@ -1,0 +1,20 @@
+{
+  "_doc": "PASE B (assisted). Todo lo que un humano agregó tras ver comparison_403.png del pase A. Sin seed_points: la localización sigue siendo automática. Cada entrada cuenta en HUMAN CORRECTION BURDEN.",
+  "confirm": ["perimeter", "core"],
+  "entrances": [
+    {"point": [567, 301], "kind": "main", "notes": "E03: corregido. E02 marcaba (500,331) 'arco en el eje central' — lectura errónea: la línea inferior del núcleo es continua. Puerta real: hueco en muro este del núcleo"},
+    {"point": [429, 302], "kind": "secondary", "notes": "puerta simétrica en muro oeste del núcleo"}
+  ],
+  "columns": {
+    "replace": false,
+    "add": [
+      {"center": [415, 240], "size_px": 9, "shape": "rect", "notes": "rectángulo hueco visible, no detectado"},
+      {"center": [415, 291], "size_px": 9, "shape": "rect"},
+      {"center": [340, 372], "size_px": 9, "shape": "rect"},
+      {"center": [582, 287], "size_px": 9, "shape": "rect"},
+      {"center": [652, 287], "size_px": 9, "shape": "rect"},
+      {"center": [655, 370], "size_px": 9, "shape": "rect"}
+    ],
+    "remove_near": []
+  }
+}

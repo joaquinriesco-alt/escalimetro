@@ -1,0 +1,426 @@
+{
+  "bands": [
+    {
+      "id": "S1:0:mixed",
+      "region": "S1",
+      "kind": "mixed",
+      "rect": [
+        2.39,
+        0.0,
+        12.69,
+        5.2
+      ],
+      "axis": "h",
+      "depth": 5.2,
+      "facade": true,
+      "door_side": "N",
+      "slots_rooms": [
+        [
+          3.29,
+          10.69
+        ]
+      ],
+      "slots_desks": [
+        [
+          3.29,
+          10.69
+        ]
+      ],
+      "width_kind": ""
+    },
+    {
+      "id": "S1:2:mixed",
+      "region": "S1",
+      "kind": "mixed",
+      "rect": [
+        2.39,
+        6.4,
+        12.69,
+        8.44
+      ],
+      "axis": "h",
+      "depth": 2.04,
+      "facade": false,
+      "door_side": "S",
+      "slots_rooms": [
+        [
+          -0.01,
+          5.19
+        ],
+        [
+          6.39,
+          9.59
+        ],
+        [
+          10.79,
+          12.69
+        ]
+      ],
+      "slots_desks": [
+        [
+          -0.01,
+          5.19
+        ],
+        [
+          6.39,
+          9.59
+        ],
+        [
+          10.79,
+          12.69
+        ]
+      ],
+      "width_kind": ""
+    },
+    {
+      "id": "S2:0:mixed",
+      "region": "S2",
+      "kind": "mixed",
+      "rect": [
+        12.69,
+        0.72,
+        40.33,
+        4.8
+      ],
+      "axis": "h",
+      "depth": 4.08,
+      "facade": true,
+      "door_side": "N",
+      "slots_rooms": [
+        [
+          12.69,
+          30.89
+        ],
+        [
+          31.79,
+          39.48
+        ]
+      ],
+      "slots_desks": [
+        [
+          12.69,
+          30.89
+        ],
+        [
+          31.79,
+          39.48
+        ]
+      ],
+      "width_kind": ""
+    },
+    {
+      "id": "S2:2:mixed",
+      "region": "S2",
+      "kind": "mixed",
+      "rect": [
+        12.69,
+        6.0,
+        40.33,
+        8.44
+      ],
+      "axis": "h",
+      "depth": 2.44,
+      "facade": false,
+      "door_side": "S",
+      "slots_rooms": [
+        [
+          13.29,
+          29.98
+        ],
+        [
+          31.29,
+          42.29
+        ]
+      ],
+      "slots_desks": [
+        [
+          13.29,
+          29.98
+        ],
+        [
+          31.29,
+          42.29
+        ]
+      ],
+      "width_kind": ""
+    },
+    {
+      "id": "W:0:rooms",
+      "region": "W",
+      "kind": "rooms",
+      "rect": [
+        0.0,
+        8.44,
+        5.2,
+        18.61
+      ],
+      "axis": "v",
+      "depth": 5.2,
+      "facade": true,
+      "door_side": "E",
+      "slots_rooms": [
+        [
+          8.44,
+          12.94
+        ],
+        [
+          13.84,
+          18.54
+        ]
+      ],
+      "slots_desks": [
+        [
+          8.44,
+          12.94
+        ],
+        [
+          13.84,
+          18.54
+        ]
+      ],
+      "width_kind": ""
+    },
+    {
+      "id": "W:2:rooms",
+      "region": "W",
+      "kind": "rooms",
+      "rect": [
+        6.4,
+        8.44,
+        9.6,
+        18.61
+      ],
+      "axis": "v",
+      "depth": 3.2,
+      "facade": false,
+      "door_side": "W",
+      "slots_rooms": [
+        [
+          8.44,
+          19.84
+        ]
+      ],
+      "slots_desks": [
+        [
+          8.44,
+          19.84
+        ]
+      ],
+      "width_kind": ""
+    },
+    {
+      "id": "W:4:mixed",
+      "region": "W",
+      "kind": "mixed",
+      "rect": [
+        10.8,
+        8.44,
+        12.69,
+        18.61
+      ],
+      "axis": "v",
+      "depth": 1.89,
+      "facade": false,
+      "door_side": "W",
+      "slots_rooms": [
+        [
+          8.44,
+          19.84
+        ]
+      ],
+      "slots_desks": [
+        [
+          8.44,
+          13.14
+        ],
+        [
+          14.04,
+          18.84
+        ]
+      ],
+      "width_kind": ""
+    },
+    {
+      "id": "E:0:dead",
+      "region": "E",
+      "kind": "dead",
+      "rect": [
+        29.8,
+        12.8,
+        42.36,
+        13.52
+      ],
+      "axis": "h",
+      "depth": 0.72,
+      "facade": false,
+      "door_side": "S",
+      "slots_rooms": [
+        [
+          31.3,
+          42.3
+        ]
+      ],
+      "slots_desks": [
+        [
+          31.8,
+          39.2
+        ],
+        [
+          40.0,
+          42.3
+        ]
+      ],
+      "width_kind": ""
+    },
+    {
+      "id": "E:2:mixed",
+      "region": "E",
+      "kind": "mixed",
+      "rect": [
+        29.8,
+        8.44,
+        42.36,
+        11.6
+      ],
+      "axis": "h",
+      "depth": 3.16,
+      "facade": false,
+      "door_side": "N",
+      "slots_rooms": [
+        [
+          31.2,
+          42.3
+        ]
+      ],
+      "slots_desks": [
+        [
+          31.2,
+          42.3
+        ]
+      ],
+      "width_kind": ""
+    }
+  ],
+  "corridors": [
+    {
+      "id": "S1:1:corridor",
+      "region": "S1",
+      "kind": "corridor",
+      "rect": [
+        2.39,
+        5.2,
+        12.69,
+        6.4
+      ],
+      "axis": "h",
+      "depth": 1.2,
+      "facade": false,
+      "door_side": "",
+      "slots_rooms": [],
+      "slots_desks": [],
+      "width_kind": "secondary"
+    },
+    {
+      "id": "S2:1:corridor",
+      "region": "S2",
+      "kind": "corridor",
+      "rect": [
+        12.69,
+        4.8,
+        40.33,
+        6.0
+      ],
+      "axis": "h",
+      "depth": 1.2,
+      "facade": false,
+      "door_side": "",
+      "slots_rooms": [],
+      "slots_desks": [],
+      "width_kind": "secondary"
+    },
+    {
+      "id": "W:1:corridor",
+      "region": "W",
+      "kind": "corridor",
+      "rect": [
+        5.2,
+        8.44,
+        6.4,
+        18.61
+      ],
+      "axis": "v",
+      "depth": 1.2,
+      "facade": false,
+      "door_side": "",
+      "slots_rooms": [],
+      "slots_desks": [],
+      "width_kind": "secondary"
+    },
+    {
+      "id": "W:3:corridor",
+      "region": "W",
+      "kind": "corridor",
+      "rect": [
+        9.6,
+        8.44,
+        10.8,
+        18.61
+      ],
+      "axis": "v",
+      "depth": 1.2,
+      "facade": false,
+      "door_side": "",
+      "slots_rooms": [],
+      "slots_desks": [],
+      "width_kind": "secondary"
+    },
+    {
+      "id": "E:1:corridor",
+      "region": "E",
+      "kind": "corridor",
+      "rect": [
+        29.8,
+        11.6,
+        42.36,
+        12.8
+      ],
+      "axis": "h",
+      "depth": 1.2,
+      "facade": false,
+      "door_side": "",
+      "slots_rooms": [],
+      "slots_desks": [],
+      "width_kind": "primary"
+    }
+  ],
+  "connectors": [
+    [
+      5.2,
+      6.4,
+      6.4,
+      8.44
+    ],
+    [
+      9.6,
+      6.4,
+      10.8,
+      8.44
+    ],
+    [
+      12.0,
+      4.8,
+      13.2,
+      6.4
+    ],
+    [
+      30.0,
+      6.0,
+      31.2,
+      11.6
+    ]
+  ],
+  "entrance_stub": null,
+  "feasible": true,
+  "notes": [],
+  "corridor_area_m2": 97.1
+}

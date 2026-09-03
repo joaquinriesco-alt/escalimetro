@@ -1,0 +1,30 @@
+# --- entornos y credenciales -----------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+secrets.json
+.railway/
+
+# --- Python ----------------------------------------------------------------
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+
+# --- outputs regenerables --------------------------------------------------
+cases/900_synthetic_fixture/outputs/
+cases/*/outputs/*.png
+
+# --- sistema ---------------------------------------------------------------
+.DS_Store
+
+# informe generado por el runner en cada arranque
+ESCALIMETRO_E09_REAL_REPORT.html

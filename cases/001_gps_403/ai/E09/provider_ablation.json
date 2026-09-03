@@ -1,0 +1,61 @@
+[
+  {
+    "config": "CONFIG_0",
+    "label": "rule-based sólo",
+    "sources": [
+      "rule_based"
+    ],
+    "status": "EXECUTED",
+    "issues_detected": 4,
+    "unique_issues_by_source": {
+      "rule_based": 4
+    },
+    "agreements": 0,
+    "disagreements": 0,
+    "confidence": 0.55,
+    "max_latency_ms": 25.5,
+    "estimated_cost_usd": 0.0,
+    "actionable_signal": "sólo lo verificable por métricas"
+  },
+  {
+    "config": "CONFIG_1",
+    "label": "rule-based + Anthropic",
+    "sources": [
+      "rule_based",
+      "anthropic"
+    ],
+    "status": "BLOCKED",
+    "blocked_sources": [
+      "anthropic"
+    ],
+    "reason": "falta al menos una fuente; no se estima nada"
+  },
+  {
+    "config": "CONFIG_2",
+    "label": "rule-based + OpenAI Vision",
+    "sources": [
+      "rule_based",
+      "openai_vision"
+    ],
+    "status": "BLOCKED",
+    "blocked_sources": [
+      "openai_vision"
+    ],
+    "reason": "falta al menos una fuente; no se estima nada"
+  },
+  {
+    "config": "CONFIG_3",
+    "label": "rule-based + Anthropic + OpenAI Vision",
+    "sources": [
+      "rule_based",
+      "anthropic",
+      "openai_vision"
+    ],
+    "status": "BLOCKED",
+    "blocked_sources": [
+      "anthropic",
+      "openai_vision"
+    ],
+    "reason": "falta al menos una fuente; no se estima nada"
+  }
+]

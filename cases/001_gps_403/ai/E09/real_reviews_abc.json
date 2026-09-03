@@ -1,0 +1,135 @@
+{
+  "A": {
+    "rule_based": {
+      "provider": "deterministic",
+      "model": "rule_based_v1",
+      "alternative_id": "A",
+      "prompt_version": "deterministic_v1",
+      "scores": {
+        "arrival_sequence": 0.525,
+        "reception": 0.4,
+        "client_route": 0.762,
+        "privacy_gradient": 1.0,
+        "open_work_neighborhoods": 0.599,
+        "kitchenette_dining": 1.0,
+        "lounge": 1.0,
+        "circulation_logic": 1.0,
+        "program_coherence": 0.92,
+        "adjacency": 0.836,
+        "boardroom_location": 0.987,
+        "meeting_accessibility": 0.762,
+        "strategy_alignment": 0.585
+      },
+      "critical_issues": [],
+      "warnings": [
+        {
+          "aspect": "reception",
+          "severity": "warning",
+          "text": "fuera de la región del acceso, a 6.8 m"
+        }
+      ],
+      "strengths": [
+        "gradiente 1.00; 0 privados pegados a recepción",
+        "adyacentes",
+        "junto a puestos",
+        "eficiencia 1.00; 0 conectores; pasillos 89.9 m²"
+      ],
+      "strategy_alignment": 0.585,
+      "architectural_plausibility": 0.731,
+      "confidence": 0.55,
+      "summary": "A: revisión estructurada derivada del crítico por reglas (sin LLM). Plausibilidad 0.73."
+    },
+    "anthropic": null,
+    "openai_vision": null
+  },
+  "B": {
+    "rule_based": {
+      "provider": "deterministic",
+      "model": "rule_based_v1",
+      "alternative_id": "B",
+      "prompt_version": "deterministic_v1",
+      "scores": {
+        "arrival_sequence": 0.525,
+        "reception": 0.4,
+        "client_route": 0.833,
+        "privacy_gradient": 0.725,
+        "open_work_neighborhoods": 0.598,
+        "kitchenette_dining": 1.0,
+        "lounge": 1.0,
+        "circulation_logic": 1.0,
+        "program_coherence": 0.68,
+        "adjacency": 0.488,
+        "boardroom_location": 0.987,
+        "meeting_accessibility": 0.833,
+        "strategy_alignment": 0.764
+      },
+      "critical_issues": [],
+      "warnings": [
+        {
+          "aspect": "adjacency",
+          "severity": "warning",
+          "text": "56% de la fachada con luz frente a recintos cerrados (tolerancia 30 %)"
+        },
+        {
+          "aspect": "reception",
+          "severity": "warning",
+          "text": "fuera de la región del acceso, a 6.8 m"
+        }
+      ],
+      "strengths": [
+        "adyacentes",
+        "junto a puestos",
+        "eficiencia 1.00; 0 conectores; pasillos 92.2 m²"
+      ],
+      "strategy_alignment": 0.764,
+      "architectural_plausibility": 0.665,
+      "confidence": 0.55,
+      "summary": "B: revisión estructurada derivada del crítico por reglas (sin LLM). Plausibilidad 0.67."
+    },
+    "anthropic": null,
+    "openai_vision": null
+  },
+  "C": {
+    "rule_based": {
+      "provider": "deterministic",
+      "model": "rule_based_v1",
+      "alternative_id": "C",
+      "prompt_version": "deterministic_v1",
+      "scores": {
+        "arrival_sequence": 0.525,
+        "reception": 0.4,
+        "client_route": 0.945,
+        "privacy_gradient": 0.889,
+        "open_work_neighborhoods": 0.549,
+        "kitchenette_dining": 1.0,
+        "lounge": 1.0,
+        "circulation_logic": 1.0,
+        "program_coherence": 0.68,
+        "adjacency": 1.0,
+        "boardroom_location": 0.967,
+        "meeting_accessibility": 0.945,
+        "strategy_alignment": 0.978
+      },
+      "critical_issues": [],
+      "warnings": [
+        {
+          "aspect": "reception",
+          "severity": "warning",
+          "text": "fuera de la región del acceso, a 6.8 m"
+        }
+      ],
+      "strengths": [
+        "29% de la fachada con luz frente a recintos cerrados (tolerancia 30 %)",
+        "adyacentes",
+        "junto a puestos",
+        "eficiencia 1.00; 0 conectores; pasillos 78.1 m²"
+      ],
+      "strategy_alignment": 0.978,
+      "architectural_plausibility": 0.726,
+      "confidence": 0.55,
+      "summary": "C: revisión estructurada derivada del crítico por reglas (sin LLM). Plausibilidad 0.73."
+    },
+    "anthropic": null,
+    "openai_vision": null
+  }
+}

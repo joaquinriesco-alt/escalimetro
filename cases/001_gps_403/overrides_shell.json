@@ -1,0 +1,6 @@
+{
+  "_doc": "E03 — flujo mínimo de confirmación humana tras ver shell_comparison_403.png del pase automático. Cada entrada = 1 click. Sin seed_points, sin vértices, sin polígonos.",
+  "confirm": ["perimeter", "core", "entrance", "columns", "daylight", "scale_assumption"],
+  "daylight_confirm": {"3": "likely_glazing", "5": "likely_glazing"},
+  "columns": {"add": [{"center": [655, 370], "size_px": 9, "notes": "rectángulo hueco visible; rechazado por la verificación local (ring 0.38)"}]}
+}

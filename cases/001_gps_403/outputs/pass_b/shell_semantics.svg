@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="977" viewBox="0 0 1400 977" font-family="Helvetica,Arial,sans-serif">
+<rect width="100%" height="100%" fill="#fff"/>
+<polygon points="48.0,171.4 48.0,685.3 121.7,685.3 121.7,779.2 571.1,779.2 574.8,757.1 838.1,757.1 838.1,777.4 1289.4,777.4 1289.4,668.7 1352.0,668.7 1352.0,362.9 965.2,362.9 965.2,519.5 438.5,519.5 438.5,167.7 165.9,167.7 151.1,206.4 103.3,171.4" fill="#fafafa" stroke="none"/>
+<line x1="41.0" y1="171.4" x2="41.0" y2="685.3" stroke="#4c9fd8" stroke-width="6" opacity="0.86" stroke-linecap="round"/>
+<line x1="48.0" y1="689.3" x2="121.7" y2="689.3" stroke="#444" stroke-width="3" opacity="0.75" stroke-linecap="round"/>
+<line x1="114.7" y1="685.3" x2="114.7" y2="779.2" stroke="#9ecae1" stroke-width="5" opacity="0.70" stroke-linecap="round" stroke-dasharray="6,5"/>
+<line x1="121.7" y1="786.2" x2="571.1" y2="786.2" stroke="#9ecae1" stroke-width="5" opacity="0.70" stroke-linecap="round" stroke-dasharray="6,5"/>
+<line x1="578.0" y1="780.3" x2="581.7" y2="758.2" stroke="#9ecae1" stroke-width="5" opacity="0.70" stroke-linecap="round" stroke-dasharray="6,5"/>
+<line x1="574.8" y1="764.1" x2="838.1" y2="764.1" stroke="#9ecae1" stroke-width="5" opacity="0.70" stroke-linecap="round" stroke-dasharray="6,5"/>
+<line x1="834.1" y1="757.1" x2="834.1" y2="777.4" stroke="#444" stroke-width="3" opacity="0.80" stroke-linecap="round"/>
+<line x1="838.1" y1="784.4" x2="1289.4" y2="784.4" stroke="#4c9fd8" stroke-width="6" opacity="0.83" stroke-linecap="round"/>
+<line x1="1296.4" y1="777.4" x2="1296.4" y2="668.7" stroke="#9ecae1" stroke-width="5" opacity="0.70" stroke-linecap="round" stroke-dasharray="6,5"/>
+<line x1="1289.4" y1="675.7" x2="1352.0" y2="675.7" stroke="#9ecae1" stroke-width="5" opacity="0.70" stroke-linecap="round" stroke-dasharray="6,5"/>
+<line x1="1359.0" y1="668.7" x2="1359.0" y2="362.9" stroke="#4c9fd8" stroke-width="6" opacity="0.79" stroke-linecap="round"/>
+<line x1="1352.0" y1="358.9" x2="965.2" y2="358.9" stroke="#444" stroke-width="3" opacity="0.80" stroke-linecap="round"/>
+<line x1="961.2" y1="362.9" x2="961.2" y2="519.5" stroke="#444" stroke-width="3" opacity="0.80" stroke-linecap="round"/>
+<line x1="965.2" y1="515.5" x2="438.5" y2="515.5" stroke="#444" stroke-width="3" opacity="0.80" stroke-linecap="round"/>
+<line x1="442.5" y1="519.5" x2="442.5" y2="167.7" stroke="#444" stroke-width="3" opacity="0.80" stroke-linecap="round"/>
+<line x1="438.5" y1="163.7" x2="165.9" y2="163.7" stroke="#444" stroke-width="3" opacity="0.80" stroke-linecap="round"/>
+<line x1="162.1" y1="166.3" x2="147.4" y2="205.0" stroke="#444" stroke-width="3" opacity="0.80" stroke-linecap="round"/>
+<line x1="153.5" y1="203.2" x2="105.6" y2="168.2" stroke="#444" stroke-width="3" opacity="0.80" stroke-linecap="round"/>
+<line x1="103.3" y1="167.4" x2="48.0" y2="167.4" stroke="#444" stroke-width="3" opacity="0.80" stroke-linecap="round"/>
+<polygon points="48.0,171.4 48.0,685.3 121.7,685.3 121.7,779.2 571.1,779.2 574.8,757.1 838.1,757.1 838.1,777.4 1289.4,777.4 1289.4,668.7 1352.0,668.7 1352.0,362.9 965.2,362.9 965.2,519.5 438.5,519.5 438.5,167.7 165.9,167.7 151.1,206.4 103.3,171.4" fill="none" stroke="#111" stroke-width="2.2"/>
+<polygon points="449.5,169.6 453.2,508.5 943.1,497.4 946.8,176.9 884.2,165.9 876.8,88.5 836.3,55.4 707.4,55.4 696.3,84.8 607.9,48.0 515.8,165.9" fill="#dcdcdc" stroke="#333" stroke-width="1.8"/>
+<text x="719.8" y="183.3" font-size="13" text-anchor="middle" fill="#333">CORE</text>
+<rect x="115.0" y="161.3" width="47.3" height="47.3" fill="#fff" stroke="#111" stroke-width="1.5" stroke-dasharray="3,2"/>
+<text x="164.2" y="188.9" font-size="9" fill="#666">0.70</text>
+<rect x="371.8" y="166.0" width="37.9" height="37.9" fill="#111"/>
+<rect x="376.0" y="346.5" width="31.3" height="31.3" fill="#111"/>
+<rect x="993.5" y="346.0" width="37.9" height="37.9" fill="#111"/>
+<rect x="1247.6" y="346.0" width="37.9" height="37.9" fill="#111"/>
+<rect x="113.0" y="347.8" width="39.9" height="39.9" fill="#fff" stroke="#111" stroke-width="1.5" stroke-dasharray="3,2"/>
+<text x="154.9" y="371.7" font-size="9" fill="#666">0.70</text>
+<rect x="992.2" y="638.9" width="40.5" height="40.5" fill="#fff" stroke="#111" stroke-width="1.5" stroke-dasharray="3,2"/>
+<text x="1034.7" y="663.2" font-size="9" fill="#666">0.70</text>
+<rect x="116.8" y="641.5" width="37.9" height="37.9" fill="#111"/>
+<rect x="370.3" y="642.1" width="39.3" height="39.3" fill="#fff" stroke="#111" stroke-width="1.5" stroke-dasharray="3,2"/>
+<text x="411.6" y="665.8" font-size="9" fill="#666">0.70</text>
+<rect x="1261.8" y="639.2" width="33.2" height="33.2" fill="#111"/>
+<circle cx="965.2" cy="399.8" r="6" fill="#fff" stroke="#e8888b" stroke-width="2" stroke-dasharray="3,2"/>
+<text x="974.2" y="403.8" font-size="10" fill="#c66">cand. 0.95</text>
+<circle cx="438.5" cy="412.7" r="6" fill="#fff" stroke="#e8888b" stroke-width="2" stroke-dasharray="3,2"/>
+<text x="447.5" y="416.7" font-size="10" fill="#c66">cand. 0.85</text>
+<circle cx="438.5" cy="320.6" r="6" fill="#fff" stroke="#e8888b" stroke-width="2" stroke-dasharray="3,2"/>
+<text x="447.5" y="324.6" font-size="10" fill="#c66">cand. 0.85</text>
+<circle cx="438.5" cy="453.2" r="6" fill="#fff" stroke="#e8888b" stroke-width="2" stroke-dasharray="3,2"/>
+<text x="447.5" y="457.2" font-size="10" fill="#c66">cand. 0.55</text>
+<text x="48" y="845" font-size="14" fill="#111">Oficina 403 · shell semántico · escala 8.36 px/m (published_area_inferred) · ready_for_layout=false</text>
+<line x1="48" y1="867" x2="82" y2="867" stroke="#1f77b4" stroke-width="7"/>
+<text x="88" y="871" font-size="11" fill="#333">confirmed_glazing</text>
+<line x1="238" y1="867" x2="272" y2="867" stroke="#4c9fd8" stroke-width="6"/>
+<text x="278" y="871" font-size="11" fill="#333">likely_glazing</text>
+<line x1="428" y1="867" x2="462" y2="867" stroke="#9ecae1" stroke-width="5"/>
+<text x="468" y="871" font-size="11" fill="#333">exterior_unknown</text>
+<line x1="618" y1="867" x2="652" y2="867" stroke="#444" stroke-width="3"/>
+<text x="658" y="871" font-size="11" fill="#333">opaque (límite interior)</text>
+<rect x="48" y="883" width="10" height="10" fill="#111"/><text x="64" y="892" font-size="11" fill="#333">pilar confirmado</text>
+<rect x="198" y="883" width="10" height="10" fill="#fff" stroke="#111" stroke-dasharray="3,2"/><text x="214" y="892" font-size="11" fill="#333">pilar candidato (conf.)</text>
+<circle cx="388" cy="888" r="6" fill="#fff" stroke="#d62728" stroke-width="2.5"/><text x="400" y="892" font-size="11" fill="#333">acceso principal</text>
+<circle cx="538" cy="888" r="5" fill="#fff" stroke="#e8888b" stroke-width="2" stroke-dasharray="3,2"/><text x="550" y="892" font-size="11" fill="#333">candidato de acceso</text>
+<text x="48" y="913" font-size="11" fill="#666">Confianza: opacidad de la línea ∝ confidence; punteado = requiere confirmación. Sin orientación solar (norte no detectado). Sin mobiliario.</text>
+<text x="48" y="931" font-size="11" fill="#666">requires_confirmation: columns, daylight, scale_assumption · sin orientación: daylight_priority no considera sol</text>
+<line x1="1198.1" y1="867" x2="1352.0" y2="867" stroke="#111" stroke-width="3"/><text x="1198.1" y="861" font-size="11">5 m</text>
+</svg>

@@ -1,0 +1,256 @@
+{
+  "before": {
+    "hard_valid": true,
+    "violations": [],
+    "geometric_score": 0.6415,
+    "architectural_score": 0.728,
+    "broker_showable": true,
+    "critique": {
+      "candidate_id": "x1.0_exact",
+      "hard_valid": true,
+      "scores": {
+        "arrival_sequence": 1.0,
+        "reception": 1.0,
+        "client_access_to_rooms": 0.52,
+        "privacy": 1.0,
+        "open_office_quality": 0.6,
+        "facade_use": 0.63,
+        "kitchenette_dining": 0.5,
+        "lounge_location": 1.0,
+        "circulation": 1.0,
+        "residual_spaces": 0.0,
+        "fragmentation": 0.76,
+        "architectural_plausibility": 0.728
+      },
+      "verdicts": {
+        "arrival_sequence": "recepción a 0.8 m de ruta del acceso",
+        "reception": "en la región del acceso, a 0.8 m",
+        "client_access_to_rooms": "meeting_accessibility 0.52 (rutas acceso→salas junto a puestos)",
+        "privacy": "gradiente 1.00; 0 privados pegados a recepción",
+        "open_office_quality": "60% de puestos en benches; daylight 0.60",
+        "facade_use": "48% de la fachada con luz frente a recintos cerrados (tolerancia 30 %)",
+        "kitchenette_dining": "misma zona, separados 1.2 m (pasillo entre medio)",
+        "lounge_location": "junto a puestos",
+        "circulation": "eficiencia 1.00; 0 conectores; pasillos 86.9 m²",
+        "residual_spaces": "68.0 m² en bolsillos; 135.7 m² sin asignar",
+        "fragmentation": "puestos en 3 bandas; 3 bloques de ≤ 3 puestos",
+        "architectural_plausibility": "media de aspectos 0.73"
+      },
+      "architectural_score": 0.728,
+      "broker_showable": true,
+      "repair_suggestions": [
+        {
+          "type": "weight",
+          "args": {
+            "objective": "compactness",
+            "value": 0.16
+          },
+          "reason": "muchos bloques chicos"
+        }
+      ],
+      "provider": "rule_based"
+    }
+  },
+  "operations": [
+    {
+      "op": "LOCK",
+      "target": "reception_1",
+      "args": {},
+      "note": "recepción a 0.8 m del acceso, de frente al pasillo primario: se fija"
+    },
+    {
+      "op": "LOCK",
+      "target": "boardroom_12_1",
+      "args": {},
+      "note": "directorio 7.2×5.0 en fachada oeste entre pilares, puerta al pasillo: se fija"
+    },
+    {
+      "op": "ACCEPT",
+      "target": "meeting_8_1",
+      "args": {},
+      "note": "sala 8 pegada a recepción, cliente no cruza el open office"
+    },
+    {
+      "op": "ACCEPT",
+      "target": "dining_1",
+      "args": {},
+      "note": "comedor en fachada oeste, lejos de recepción"
+    },
+    {
+      "op": "ACCEPT",
+      "target": "kitchenette_1",
+      "args": {},
+      "note": "kitchenette al otro lado del pasillo del comedor (1.2 m): aceptable como pantry"
+    },
+    {
+      "op": "MOVE",
+      "target": "meeting_4_3",
+      "args": {
+        "dx": -0.2,
+        "dy": 0.0
+      },
+      "note": "alinear el tabique oeste de la sala 4 con el de la sala 4_2 (x = 6.4)"
+    },
+    {
+      "op": "ACCEPT",
+      "target": "private_office_2",
+      "args": {},
+      "note": "queda a 0.8 m de la fachada porque ahí el cerramiento tiene el escalón de 0.72 m (intento de moverlo a y=0 rechazado por el validador: fuera del shell)"
+    }
+  ],
+  "log": [
+    {
+      "k": 0,
+      "op": "LOCK",
+      "target": "reception_1",
+      "args": {},
+      "note": "recepción a 0.8 m del acceso, de frente al pasillo primario: se fija"
+    },
+    {
+      "k": 1,
+      "op": "LOCK",
+      "target": "boardroom_12_1",
+      "args": {},
+      "note": "directorio 7.2×5.0 en fachada oeste entre pilares, puerta al pasillo: se fija"
+    },
+    {
+      "k": 2,
+      "op": "ACCEPT",
+      "target": "meeting_8_1",
+      "args": {},
+      "note": "sala 8 pegada a recepción, cliente no cruza el open office"
+    },
+    {
+      "k": 3,
+      "op": "ACCEPT",
+      "target": "dining_1",
+      "args": {},
+      "note": "comedor en fachada oeste, lejos de recepción"
+    },
+    {
+      "k": 4,
+      "op": "ACCEPT",
+      "target": "kitchenette_1",
+      "args": {},
+      "note": "kitchenette al otro lado del pasillo del comedor (1.2 m): aceptable como pantry"
+    },
+    {
+      "k": 5,
+      "op": "MOVE",
+      "target": "meeting_4_3",
+      "args": {
+        "dx": -0.2,
+        "dy": 0.0
+      },
+      "note": "alinear el tabique oeste de la sala 4 con el de la sala 4_2 (x = 6.4)",
+      "from": [
+        6.600000000000001,
+        7.2
+      ],
+      "to": [
+        6.400000000000001,
+        7.2
+      ]
+    },
+    {
+      "k": 6,
+      "op": "ACCEPT",
+      "target": "private_office_2",
+      "args": {},
+      "note": "queda a 0.8 m de la fachada porque ahí el cerramiento tiene el escalón de 0.72 m (intento de moverlo a y=0 rechazado por el validador: fuera del shell)"
+    }
+  ],
+  "locked": [
+    "reception_1",
+    "boardroom_12_1"
+  ],
+  "burden": {
+    "operation_count": 7,
+    "move_count": 1,
+    "rotation_count": 0,
+    "swap_count": 0,
+    "resize_count": 0,
+    "add_count": 0,
+    "delete_count": 0,
+    "locked_elements": 2,
+    "accepted_elements": 4,
+    "automatic_geometry_preserved_pct": 95.8,
+    "estimated_minutes": 2.1,
+    "minutes_are_estimated": true,
+    "revalidation_result": {
+      "hard_valid": true,
+      "violations": [],
+      "geometric_score": 0.6414,
+      "architectural_score": 0.728,
+      "broker_showable": true
+    },
+    "assumptions": {
+      "op_minutes": {
+        "ACCEPT": 0.1,
+        "MOVE": 0.5,
+        "ROTATE": 0.3,
+        "SWAP": 0.5,
+        "RESIZE_TO_VALID_VARIANT": 0.5,
+        "DELETE": 0.2,
+        "ADD": 1.0,
+        "LOCK": 0.1
+      },
+      "review_minutes": 1.0
+    }
+  },
+  "after": {
+    "hard_valid": true,
+    "violations": [],
+    "geometric_score": 0.6414,
+    "architectural_score": 0.728,
+    "broker_showable": true,
+    "critique": {
+      "candidate_id": "x1.0_exact",
+      "hard_valid": true,
+      "scores": {
+        "arrival_sequence": 1.0,
+        "reception": 1.0,
+        "client_access_to_rooms": 0.52,
+        "privacy": 1.0,
+        "open_office_quality": 0.6,
+        "facade_use": 0.63,
+        "kitchenette_dining": 0.5,
+        "lounge_location": 1.0,
+        "circulation": 1.0,
+        "residual_spaces": 0.0,
+        "fragmentation": 0.76,
+        "architectural_plausibility": 0.728
+      },
+      "verdicts": {
+        "arrival_sequence": "recepción a 0.8 m de ruta del acceso",
+        "reception": "en la región del acceso, a 0.8 m",
+        "client_access_to_rooms": "meeting_accessibility 0.52 (rutas acceso→salas junto a puestos)",
+        "privacy": "gradiente 1.00; 0 privados pegados a recepción",
+        "open_office_quality": "60% de puestos en benches; daylight 0.60",
+        "facade_use": "48% de la fachada con luz frente a recintos cerrados (tolerancia 30 %)",
+        "kitchenette_dining": "misma zona, separados 1.2 m (pasillo entre medio)",
+        "lounge_location": "junto a puestos",
+        "circulation": "eficiencia 1.00; 0 conectores; pasillos 87.2 m²",
+        "residual_spaces": "68.0 m² en bolsillos; 135.4 m² sin asignar",
+        "fragmentation": "puestos en 3 bandas; 3 bloques de ≤ 3 puestos",
+        "architectural_plausibility": "media de aspectos 0.73"
+      },
+      "architectural_score": 0.728,
+      "broker_showable": true,
+      "repair_suggestions": [
+        {
+          "type": "weight",
+          "args": {
+            "objective": "compactness",
+            "value": 0.16
+          },
+          "reason": "muchos bloques chicos"
+        }
+      ],
+      "provider": "rule_based"
+    }
+  },
+  "qa_gate": "AUTONOMOUS_PASS",
+  "scale_factor": 1.0,
+  "minutes_are_estimated": true
+}

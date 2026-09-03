@@ -1,0 +1,53 @@
+{
+  "runtime_s": 2.3,
+  "api_execution_status": "NOT EXECUTED — API KEY MISSING",
+  "missing_keys": [
+    "ANTHROPIC_API_KEY",
+    "OPENAI_API_KEY"
+  ],
+  "provider_status": {
+    "spatial_review": "NO_API_KEY",
+    "visual_review": "NO_API_KEY",
+    "presentation": "NO_API_KEY",
+    "deterministic": "AVAILABLE"
+  },
+  "alternatives": {
+    "A": {
+      "status": "PROVIDER_UNAVAILABLE",
+      "readiness": "INTERNAL_REVIEW",
+      "geometry_intact": true,
+      "geometry_hash": "df6b86058ebb093f449e1054a0c65a902b7492f7986f4b8395489d63d46d7b99"
+    },
+    "B": {
+      "status": "PROVIDER_UNAVAILABLE",
+      "readiness": "INTERNAL_REVIEW",
+      "geometry_intact": true,
+      "geometry_hash": "5c5c276923dd7da69844ad3d409f4b879ac40c911144e4a11bf3cb4c6d8f066c"
+    },
+    "C": {
+      "status": "PROVIDER_UNAVAILABLE",
+      "readiness": "INTERNAL_REVIEW",
+      "geometry_intact": true,
+      "geometry_hash": "e12cc722485b9c58251621bd6f05e92fdc8633675156e8d26f2a110d6048e4c6"
+    }
+  },
+  "presentation_spec_provider": "deterministic",
+  "ai_calls": 7,
+  "ai_cost": {
+    "value_usd": 0.0,
+    "status": "reported",
+    "records_with_unknown_cost": 0,
+    "note": "reported = costo real (el proveedor determinista no cuesta nada); estimated = calculado con la tabla de precios; unknown = sin precio para ese modelo."
+  },
+  "geometry_hashes_before": {
+    "A": "df6b86058ebb093f449e1054a0c65a902b7492f7986f4b8395489d63d46d7b99",
+    "B": "5c5c276923dd7da69844ad3d409f4b879ac40c911144e4a11bf3cb4c6d8f066c",
+    "C": "e12cc722485b9c58251621bd6f05e92fdc8633675156e8d26f2a110d6048e4c6"
+  },
+  "geometry_hashes_after": {
+    "A": "df6b86058ebb093f449e1054a0c65a902b7492f7986f4b8395489d63d46d7b99",
+    "B": "5c5c276923dd7da69844ad3d409f4b879ac40c911144e4a11bf3cb4c6d8f066c",
+    "C": "e12cc722485b9c58251621bd6f05e92fdc8633675156e8d26f2a110d6048e4c6"
+  },
+  "geometry_locked": true
+}

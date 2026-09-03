@@ -1,0 +1,34 @@
+{
+  "program_completeness": {
+    "complete": false,
+    "open_seats": "39/40",
+    "rooms": {
+      "boardroom_12": 1,
+      "reception": 1,
+      "meeting_8": 1,
+      "dining": 1,
+      "private_office": 4,
+      "meeting_4": 3,
+      "lounge": 1,
+      "kitchenette": 1,
+      "phone_booth": 3,
+      "workstation_cluster": 3,
+      "workstation_row": 6
+    }
+  },
+  "hard_constraint_violations": 1,
+  "violations": [
+    "puestos open 39 ≠ 40"
+  ],
+  "collisions": 0,
+  "circulation_connectivity": true,
+  "daylight_score": 0.312,
+  "adjacency_score": 0.677,
+  "usable_area_m2": 481.1,
+  "net_programmed_area_m2": 303.4,
+  "circulation_area_m2": 81.4,
+  "unallocated_area_m2": 87.2,
+  "wasted_area_m2": 47.4,
+  "embedded_columns": 8,
+  "scale_note": "Dimensiones sujetas a confirmación de escala (published_area_inferred, confianza LOW)."
+}

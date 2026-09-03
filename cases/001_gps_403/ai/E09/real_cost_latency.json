@@ -1,0 +1,39 @@
+{
+  "by_source": {
+    "rule_based": {
+      "calls": 6,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "estimated_cost": 0.0,
+      "latency_ms": 50.62,
+      "success": 6
+    }
+  },
+  "totals": {
+    "value_usd": 0.0,
+    "status": "reported",
+    "records_with_unknown_cost": 0,
+    "note": "reported = costo real (el proveedor determinista no cuesta nada); estimated = calculado con la tabla de precios; unknown = sin precio para ese modelo."
+  },
+  "calls": 6,
+  "parallel_wall_ms": 163.1,
+  "sequential_equivalent_ms": 167.5,
+  "latency_saved_pct": 2.6,
+  "latencies_ms": {
+    "A": {
+      "rule_based": 25.5,
+      "anthropic": 20.0,
+      "openai_vision": 14.4
+    },
+    "B": {
+      "rule_based": 23.4,
+      "anthropic": 17.9,
+      "openai_vision": 8.3
+    },
+    "C": {
+      "rule_based": 24.2,
+      "anthropic": 18.7,
+      "openai_vision": 15.1
+    }
+  }
+}

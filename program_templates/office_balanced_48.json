@@ -1,0 +1,36 @@
+{
+  "template_id": "office_balanced_48",
+  "vertical": "OFFICE",
+  "target_headcount": 48,
+  "_headcount_note": "El brief dice 48 personas; los puestos fijos del programa son 40 open + 4 privados = 44 + 1 recepción = 45. Los 48 se usan para dimensionar comedor y salas; la diferencia (3) NO se rellena con puestos extra. Se reporta como observación del brief.",
+  "program": [
+    {"module": "workstation_cluster", "count": 7, "note": "7 clusters × 6 = 42 ≥ 40 puestos open space; el solver exige exactamente 40 puestos activos: el último cluster se recorta a 4 (2×2)."},
+    {"module": "private_office", "count": 4},
+    {"module": "meeting_4", "count": 3},
+    {"module": "meeting_8", "count": 1},
+    {"module": "boardroom_12", "count": 1},
+    {"module": "phone_booth", "count": 3},
+    {"module": "reception", "count": 1},
+    {"module": "kitchenette", "count": 1},
+    {"module": "dining", "count": 1},
+    {"module": "lounge", "count": 1}
+  ],
+  "open_workstations_exact": 40,
+  "zoning_rules": {
+    "PUBLIC": ["reception"],
+    "SEMI_PUBLIC": ["meeting_4", "meeting_8", "boardroom_12", "lounge"],
+    "WORK": ["workstation_cluster", "private_office"],
+    "SUPPORT": ["phone_booth", "kitchenette", "dining"]
+  },
+  "objectives_weights": {
+    "daylight_utilization": 0.20,
+    "circulation_efficiency": 0.12,
+    "entrance_logic": 0.12,
+    "adjacency_quality": 0.14,
+    "compactness": 0.08,
+    "privacy_gradient": 0.08,
+    "meeting_accessibility": 0.10,
+    "facade_preservation": 0.08,
+    "wasted_space": 0.08
+  }
+}

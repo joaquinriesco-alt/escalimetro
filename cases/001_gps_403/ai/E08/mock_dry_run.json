@@ -1,0 +1,525 @@
+{
+  "note": "FIXTURES MOCK — no son opiniones reales de ningún proveedor",
+  "source_file": "tests/fixtures/ai/mock_reviews.json",
+  "aggregated": {
+    "A": {
+      "alternative_id": "A",
+      "consensus_scores": {
+        "adjacency": 0.72,
+        "arrival_sequence": 0.713,
+        "boardroom_location": 0.72,
+        "circulation_logic": 0.72,
+        "client_route": 0.723,
+        "credible_test_fit": 0.7,
+        "furniture_believable": 0.7,
+        "kitchenette_dining": 0.72,
+        "lounge": 0.72,
+        "meeting_accessibility": 0.713,
+        "open_work_neighborhoods": 0.713,
+        "privacy_gradient": 0.72,
+        "program_coherence": 0.713,
+        "reception": 0.653,
+        "room_proportions": 0.7,
+        "strategy_alignment": 0.73,
+        "wasted_zones": 0.7
+      },
+      "agreements": [
+        {
+          "aspect": "adjacency",
+          "delta": 0.0,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72
+          },
+          "lowest": "rule_based",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "arrival_sequence",
+          "delta": 0.02,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72,
+            "openai_vision": 0.7
+          },
+          "lowest": "openai_vision",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "boardroom_location",
+          "delta": 0.0,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72
+          },
+          "lowest": "rule_based",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "circulation_logic",
+          "delta": 0.0,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72
+          },
+          "lowest": "rule_based",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "client_route",
+          "delta": 0.05,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.75,
+            "openai_vision": 0.7
+          },
+          "lowest": "openai_vision",
+          "highest": "anthropic"
+        },
+        {
+          "aspect": "kitchenette_dining",
+          "delta": 0.0,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72
+          },
+          "lowest": "rule_based",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "lounge",
+          "delta": 0.0,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72
+          },
+          "lowest": "rule_based",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "meeting_accessibility",
+          "delta": 0.02,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72,
+            "openai_vision": 0.7
+          },
+          "lowest": "openai_vision",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "open_work_neighborhoods",
+          "delta": 0.02,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72,
+            "openai_vision": 0.7
+          },
+          "lowest": "openai_vision",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "privacy_gradient",
+          "delta": 0.0,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72
+          },
+          "lowest": "rule_based",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "program_coherence",
+          "delta": 0.02,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72,
+            "openai_vision": 0.7
+          },
+          "lowest": "openai_vision",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "reception",
+          "delta": 0.06,
+          "scores": {
+            "rule_based": 0.62,
+            "anthropic": 0.66,
+            "openai_vision": 0.68
+          },
+          "lowest": "rule_based",
+          "highest": "openai_vision"
+        },
+        {
+          "aspect": "strategy_alignment",
+          "delta": 0.05,
+          "scores": {
+            "rule_based": 0.7,
+            "anthropic": 0.74,
+            "openai_vision": 0.75
+          },
+          "lowest": "rule_based",
+          "highest": "openai_vision"
+        }
+      ],
+      "disagreements": [],
+      "critical_disagreements": [],
+      "confidence": 0.683,
+      "external_review_readiness": "READY_FOR_EXTERNAL_REVIEW",
+      "reason": "las fuentes coinciden y el consenso es alto (0.71).",
+      "status": "CONSENSUS_GOOD",
+      "sources": {
+        "rule_based": "present",
+        "anthropic": "present",
+        "openai_vision": "present"
+      }
+    },
+    "B": {
+      "alternative_id": "B",
+      "consensus_scores": {
+        "adjacency": 0.655,
+        "arrival_sequence": 0.713,
+        "boardroom_location": 0.72,
+        "circulation_logic": 0.72,
+        "client_route": 0.713,
+        "credible_test_fit": 0.7,
+        "furniture_believable": 0.7,
+        "kitchenette_dining": 0.72,
+        "lounge": 0.72,
+        "meeting_accessibility": 0.713,
+        "open_work_neighborhoods": 0.67,
+        "privacy_gradient": 0.72,
+        "program_coherence": 0.713,
+        "reception": 0.55,
+        "room_proportions": 0.58,
+        "strategy_alignment": 0.713,
+        "wasted_zones": 0.7
+      },
+      "agreements": [
+        {
+          "aspect": "arrival_sequence",
+          "delta": 0.02,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72,
+            "openai_vision": 0.7
+          },
+          "lowest": "openai_vision",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "boardroom_location",
+          "delta": 0.0,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72
+          },
+          "lowest": "rule_based",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "circulation_logic",
+          "delta": 0.0,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72
+          },
+          "lowest": "rule_based",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "client_route",
+          "delta": 0.02,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72,
+            "openai_vision": 0.7
+          },
+          "lowest": "openai_vision",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "kitchenette_dining",
+          "delta": 0.0,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72
+          },
+          "lowest": "rule_based",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "lounge",
+          "delta": 0.0,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72
+          },
+          "lowest": "rule_based",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "meeting_accessibility",
+          "delta": 0.02,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72,
+            "openai_vision": 0.7
+          },
+          "lowest": "openai_vision",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "privacy_gradient",
+          "delta": 0.0,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72
+          },
+          "lowest": "rule_based",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "program_coherence",
+          "delta": 0.02,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72,
+            "openai_vision": 0.7
+          },
+          "lowest": "openai_vision",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "reception",
+          "delta": 0.06,
+          "scores": {
+            "rule_based": 0.55,
+            "anthropic": 0.58,
+            "openai_vision": 0.52
+          },
+          "lowest": "openai_vision",
+          "highest": "anthropic"
+        },
+        {
+          "aspect": "strategy_alignment",
+          "delta": 0.02,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72,
+            "openai_vision": 0.7
+          },
+          "lowest": "openai_vision",
+          "highest": "rule_based"
+        }
+      ],
+      "disagreements": [
+        {
+          "aspect": "adjacency",
+          "delta": 0.33,
+          "scores": {
+            "rule_based": 0.49,
+            "anthropic": 0.82
+          },
+          "lowest": "rule_based",
+          "highest": "anthropic"
+        },
+        {
+          "aspect": "open_work_neighborhoods",
+          "delta": 0.31,
+          "scores": {
+            "rule_based": 0.6,
+            "anthropic": 0.86,
+            "openai_vision": 0.55
+          },
+          "lowest": "openai_vision",
+          "highest": "anthropic"
+        }
+      ],
+      "critical_disagreements": [],
+      "confidence": 0.683,
+      "external_review_readiness": "INTERNAL_REVIEW",
+      "reason": "2 aspecto(s) con diferencia ≥ 0.30 entre fuentes: adjacency, open_work_neighborhoods.",
+      "status": "DISAGREEMENT",
+      "sources": {
+        "rule_based": "present",
+        "anthropic": "present",
+        "openai_vision": "present"
+      }
+    },
+    "C": {
+      "alternative_id": "C",
+      "consensus_scores": {
+        "adjacency": 0.72,
+        "arrival_sequence": 0.553,
+        "boardroom_location": 0.72,
+        "circulation_logic": 0.72,
+        "client_route": 0.713,
+        "credible_test_fit": 0.7,
+        "furniture_believable": 0.7,
+        "kitchenette_dining": 0.72,
+        "lounge": 0.72,
+        "meeting_accessibility": 0.713,
+        "open_work_neighborhoods": 0.713,
+        "privacy_gradient": 0.72,
+        "program_coherence": 0.713,
+        "reception": 0.527,
+        "room_proportions": 0.7,
+        "strategy_alignment": 0.713,
+        "wasted_zones": 0.7
+      },
+      "agreements": [
+        {
+          "aspect": "adjacency",
+          "delta": 0.0,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72
+          },
+          "lowest": "rule_based",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "boardroom_location",
+          "delta": 0.0,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72
+          },
+          "lowest": "rule_based",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "circulation_logic",
+          "delta": 0.0,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72
+          },
+          "lowest": "rule_based",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "client_route",
+          "delta": 0.02,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72,
+            "openai_vision": 0.7
+          },
+          "lowest": "openai_vision",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "kitchenette_dining",
+          "delta": 0.0,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72
+          },
+          "lowest": "rule_based",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "lounge",
+          "delta": 0.0,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72
+          },
+          "lowest": "rule_based",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "meeting_accessibility",
+          "delta": 0.02,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72,
+            "openai_vision": 0.7
+          },
+          "lowest": "openai_vision",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "open_work_neighborhoods",
+          "delta": 0.02,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72,
+            "openai_vision": 0.7
+          },
+          "lowest": "openai_vision",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "privacy_gradient",
+          "delta": 0.0,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72
+          },
+          "lowest": "rule_based",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "program_coherence",
+          "delta": 0.02,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72,
+            "openai_vision": 0.7
+          },
+          "lowest": "openai_vision",
+          "highest": "rule_based"
+        },
+        {
+          "aspect": "strategy_alignment",
+          "delta": 0.02,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.72,
+            "openai_vision": 0.7
+          },
+          "lowest": "openai_vision",
+          "highest": "rule_based"
+        }
+      ],
+      "disagreements": [
+        {
+          "aspect": "arrival_sequence",
+          "delta": 0.4,
+          "scores": {
+            "rule_based": 0.7,
+            "anthropic": 0.66,
+            "openai_vision": 0.3
+          },
+          "lowest": "openai_vision",
+          "highest": "rule_based"
+        }
+      ],
+      "critical_disagreements": [
+        {
+          "aspect": "reception",
+          "delta": 0.54,
+          "scores": {
+            "rule_based": 0.72,
+            "anthropic": 0.68,
+            "openai_vision": 0.18
+          },
+          "lowest": "openai_vision",
+          "highest": "rule_based"
+        }
+      ],
+      "confidence": 0.707,
+      "external_review_readiness": "INTERNAL_REVIEW",
+      "reason": "1 aspecto(s) donde una fuente ve un problema grave y otra no: reception. No se promedia.",
+      "status": "CRITICAL_DISAGREEMENT",
+      "sources": {
+        "rule_based": "present",
+        "anthropic": "present",
+        "openai_vision": "present"
+      }
+    }
+  }
+}

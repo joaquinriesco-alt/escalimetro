@@ -1,0 +1,940 @@
+{
+  "schema_version": "0.2.0",
+  "case_id": "001_gps_403",
+  "unit_label": "Oficina 403",
+  "source_image": {
+    "path": "original.png",
+    "width_px": 800,
+    "height_px": 424,
+    "sha256": "",
+    "dpi": null
+  },
+  "coordinate_system": {
+    "units": "px",
+    "origin": "top_left",
+    "y_axis": "down",
+    "note": "Convertir a metros con scale.px_per_m; ver Floorplate.to_m()"
+  },
+  "scale": {
+    "px_per_m": null,
+    "method": "unknown",
+    "reference_area_m2": null,
+    "meta": {
+      "confidence": 0,
+      "provenance": "unknown",
+      "status": "unknown",
+      "notes": "sin referencia independiente de escala en la imagen"
+    }
+  },
+  "perimeter": {
+    "ring": [
+      [
+        321.0,
+        238.0
+      ],
+      [
+        427.0,
+        238.0
+      ],
+      [
+        427.0,
+        331.0
+      ],
+      [
+        570.0,
+        331.0
+      ],
+      [
+        570.0,
+        289.0
+      ],
+      [
+        678.0,
+        289.0
+      ],
+      [
+        678.0,
+        376.0
+      ],
+      [
+        660.0,
+        376.0
+      ],
+      [
+        660.0,
+        402.0
+      ],
+      [
+        536.0,
+        402.0
+      ],
+      [
+        536.0,
+        399.0
+      ],
+      [
+        464.0,
+        399.0
+      ],
+      [
+        464.0,
+        404.0
+      ],
+      [
+        341.0,
+        404.0
+      ],
+      [
+        341.0,
+        379.0
+      ],
+      [
+        321.0,
+        379.0
+      ]
+    ],
+    "raw_ring": [],
+    "meta": {
+      "confidence": 1.0,
+      "provenance": "manual",
+      "status": "confirmed",
+      "notes": "GT manual, lectura ±2 px"
+    }
+  },
+  "holes": [],
+  "core": [
+    {
+      "ring": [
+        [
+          430.0,
+          207.0
+        ],
+        [
+          566.0,
+          207.0
+        ],
+        [
+          566.0,
+          331.0
+        ],
+        [
+          430.0,
+          331.0
+        ]
+      ],
+      "kind": "core",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    }
+  ],
+  "columns": [
+    {
+      "center": [
+        345.0,
+        242.0
+      ],
+      "size_px": 9.0,
+      "shape": "rect",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    },
+    {
+      "center": [
+        344.0,
+        292.0
+      ],
+      "size_px": 9.0,
+      "shape": "rect",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    },
+    {
+      "center": [
+        415.0,
+        240.0
+      ],
+      "size_px": 9.0,
+      "shape": "rect",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    },
+    {
+      "center": [
+        415.0,
+        291.0
+      ],
+      "size_px": 9.0,
+      "shape": "rect",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    },
+    {
+      "center": [
+        340.0,
+        372.0
+      ],
+      "size_px": 9.0,
+      "shape": "rect",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    },
+    {
+      "center": [
+        414.0,
+        372.0
+      ],
+      "size_px": 9.0,
+      "shape": "rect",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    },
+    {
+      "center": [
+        582.0,
+        287.0
+      ],
+      "size_px": 9.0,
+      "shape": "rect",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    },
+    {
+      "center": [
+        652.0,
+        287.0
+      ],
+      "size_px": 9.0,
+      "shape": "rect",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    },
+    {
+      "center": [
+        582.0,
+        370.0
+      ],
+      "size_px": 9.0,
+      "shape": "rect",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    },
+    {
+      "center": [
+        655.0,
+        370.0
+      ],
+      "size_px": 9.0,
+      "shape": "rect",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    }
+  ],
+  "entrances": [
+    {
+      "point": [
+        567.0,
+        301.0
+      ],
+      "width_px": null,
+      "kind": "main",
+      "meta": {
+        "confidence": 0.7,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "hueco en muro este del núcleo y=298–303 con hoja de puerta; simétrico con el oeste"
+      }
+    },
+    {
+      "point": [
+        429.0,
+        302.0
+      ],
+      "width_px": null,
+      "kind": "main",
+      "meta": {
+        "confidence": 0.7,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "hueco en muro oeste del núcleo y=298–307 con hoja de puerta; simétrico con el este"
+      }
+    }
+  ],
+  "windows": [],
+  "facade_segments": [
+    {
+      "index": 0,
+      "start": [
+        321.0,
+        238.0
+      ],
+      "end": [
+        427.0,
+        238.0
+      ],
+      "kind": "party_wall",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    },
+    {
+      "index": 1,
+      "start": [
+        427.0,
+        238.0
+      ],
+      "end": [
+        427.0,
+        331.0
+      ],
+      "kind": "core_wall",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    },
+    {
+      "index": 2,
+      "start": [
+        427.0,
+        331.0
+      ],
+      "end": [
+        570.0,
+        331.0
+      ],
+      "kind": "core_wall",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    },
+    {
+      "index": 3,
+      "start": [
+        570.0,
+        331.0
+      ],
+      "end": [
+        570.0,
+        289.0
+      ],
+      "kind": "core_wall",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    },
+    {
+      "index": 4,
+      "start": [
+        570.0,
+        289.0
+      ],
+      "end": [
+        678.0,
+        289.0
+      ],
+      "kind": "party_wall",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    },
+    {
+      "index": 5,
+      "start": [
+        678.0,
+        289.0
+      ],
+      "end": [
+        678.0,
+        376.0
+      ],
+      "kind": "facade",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    },
+    {
+      "index": 6,
+      "start": [
+        678.0,
+        376.0
+      ],
+      "end": [
+        660.0,
+        376.0
+      ],
+      "kind": "facade",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    },
+    {
+      "index": 7,
+      "start": [
+        660.0,
+        376.0
+      ],
+      "end": [
+        660.0,
+        402.0
+      ],
+      "kind": "facade",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    },
+    {
+      "index": 8,
+      "start": [
+        660.0,
+        402.0
+      ],
+      "end": [
+        536.0,
+        402.0
+      ],
+      "kind": "facade",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    },
+    {
+      "index": 9,
+      "start": [
+        536.0,
+        402.0
+      ],
+      "end": [
+        536.0,
+        399.0
+      ],
+      "kind": "facade",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    },
+    {
+      "index": 10,
+      "start": [
+        536.0,
+        399.0
+      ],
+      "end": [
+        464.0,
+        399.0
+      ],
+      "kind": "facade",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    },
+    {
+      "index": 11,
+      "start": [
+        464.0,
+        399.0
+      ],
+      "end": [
+        464.0,
+        404.0
+      ],
+      "kind": "facade",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    },
+    {
+      "index": 12,
+      "start": [
+        464.0,
+        404.0
+      ],
+      "end": [
+        341.0,
+        404.0
+      ],
+      "kind": "facade",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    },
+    {
+      "index": 13,
+      "start": [
+        341.0,
+        404.0
+      ],
+      "end": [
+        341.0,
+        379.0
+      ],
+      "kind": "facade",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    },
+    {
+      "index": 14,
+      "start": [
+        341.0,
+        379.0
+      ],
+      "end": [
+        321.0,
+        379.0
+      ],
+      "kind": "facade",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    },
+    {
+      "index": 15,
+      "start": [
+        321.0,
+        379.0
+      ],
+      "end": [
+        321.0,
+        238.0
+      ],
+      "kind": "facade",
+      "meta": {
+        "confidence": 1.0,
+        "provenance": "manual",
+        "status": "confirmed",
+        "notes": "GT manual, lectura ±2 px"
+      }
+    }
+  ],
+  "fixed_elements": [],
+  "area_m2": null,
+  "area_px2": 38843.0,
+  "area_meta": {
+    "confidence": 1.0,
+    "provenance": "manual",
+    "status": "confirmed",
+    "notes": "GT manual, lectura ±2 px"
+  },
+  "published_area_m2": 543.0,
+  "published_area_kind": "unknown",
+  "target_localization": "manual",
+  "unknowns": [],
+  "entrance_candidates": [],
+  "primary_entrance": null,
+  "exterior_facade_segments": [],
+  "daylight_segments": [
+    {
+      "index": 0,
+      "start": [
+        321.0,
+        238.0
+      ],
+      "end": [
+        427.0,
+        238.0
+      ],
+      "classification": "opaque",
+      "confidence": 1.0,
+      "daylight_priority": 0.0,
+      "evidence": [
+        "GT manual"
+      ],
+      "status": "confirmed",
+      "provenance": "manual"
+    },
+    {
+      "index": 1,
+      "start": [
+        427.0,
+        238.0
+      ],
+      "end": [
+        427.0,
+        331.0
+      ],
+      "classification": "opaque",
+      "confidence": 1.0,
+      "daylight_priority": 0.0,
+      "evidence": [
+        "GT manual"
+      ],
+      "status": "confirmed",
+      "provenance": "manual"
+    },
+    {
+      "index": 2,
+      "start": [
+        427.0,
+        331.0
+      ],
+      "end": [
+        570.0,
+        331.0
+      ],
+      "classification": "opaque",
+      "confidence": 1.0,
+      "daylight_priority": 0.0,
+      "evidence": [
+        "GT manual"
+      ],
+      "status": "confirmed",
+      "provenance": "manual"
+    },
+    {
+      "index": 3,
+      "start": [
+        570.0,
+        331.0
+      ],
+      "end": [
+        570.0,
+        289.0
+      ],
+      "classification": "opaque",
+      "confidence": 1.0,
+      "daylight_priority": 0.0,
+      "evidence": [
+        "GT manual"
+      ],
+      "status": "confirmed",
+      "provenance": "manual"
+    },
+    {
+      "index": 4,
+      "start": [
+        570.0,
+        289.0
+      ],
+      "end": [
+        678.0,
+        289.0
+      ],
+      "classification": "opaque",
+      "confidence": 1.0,
+      "daylight_priority": 0.0,
+      "evidence": [
+        "GT manual"
+      ],
+      "status": "confirmed",
+      "provenance": "manual"
+    },
+    {
+      "index": 5,
+      "start": [
+        678.0,
+        289.0
+      ],
+      "end": [
+        678.0,
+        376.0
+      ],
+      "classification": "likely_glazing",
+      "confidence": 0.8,
+      "daylight_priority": 0.75,
+      "evidence": [
+        "GT manual: montantes visibles"
+      ],
+      "status": "confirmed",
+      "provenance": "manual"
+    },
+    {
+      "index": 6,
+      "start": [
+        678.0,
+        376.0
+      ],
+      "end": [
+        660.0,
+        376.0
+      ],
+      "classification": "exterior_unknown",
+      "confidence": 0.5,
+      "daylight_priority": 0.4,
+      "evidence": [
+        "GT manual"
+      ],
+      "status": "confirmed",
+      "provenance": "manual"
+    },
+    {
+      "index": 7,
+      "start": [
+        660.0,
+        376.0
+      ],
+      "end": [
+        660.0,
+        402.0
+      ],
+      "classification": "exterior_unknown",
+      "confidence": 0.5,
+      "daylight_priority": 0.4,
+      "evidence": [
+        "GT manual"
+      ],
+      "status": "confirmed",
+      "provenance": "manual"
+    },
+    {
+      "index": 8,
+      "start": [
+        660.0,
+        402.0
+      ],
+      "end": [
+        536.0,
+        402.0
+      ],
+      "classification": "likely_glazing",
+      "confidence": 0.8,
+      "daylight_priority": 0.75,
+      "evidence": [
+        "GT manual: montantes visibles"
+      ],
+      "status": "confirmed",
+      "provenance": "manual"
+    },
+    {
+      "index": 9,
+      "start": [
+        536.0,
+        402.0
+      ],
+      "end": [
+        536.0,
+        399.0
+      ],
+      "classification": "exterior_unknown",
+      "confidence": 0.5,
+      "daylight_priority": 0.4,
+      "evidence": [
+        "GT manual"
+      ],
+      "status": "confirmed",
+      "provenance": "manual"
+    },
+    {
+      "index": 10,
+      "start": [
+        536.0,
+        399.0
+      ],
+      "end": [
+        464.0,
+        399.0
+      ],
+      "classification": "likely_glazing",
+      "confidence": 0.8,
+      "daylight_priority": 0.75,
+      "evidence": [
+        "GT manual: montantes visibles"
+      ],
+      "status": "confirmed",
+      "provenance": "manual"
+    },
+    {
+      "index": 11,
+      "start": [
+        464.0,
+        399.0
+      ],
+      "end": [
+        464.0,
+        404.0
+      ],
+      "classification": "exterior_unknown",
+      "confidence": 0.5,
+      "daylight_priority": 0.4,
+      "evidence": [
+        "GT manual"
+      ],
+      "status": "confirmed",
+      "provenance": "manual"
+    },
+    {
+      "index": 12,
+      "start": [
+        464.0,
+        404.0
+      ],
+      "end": [
+        341.0,
+        404.0
+      ],
+      "classification": "likely_glazing",
+      "confidence": 0.8,
+      "daylight_priority": 0.75,
+      "evidence": [
+        "GT manual: montantes visibles"
+      ],
+      "status": "confirmed",
+      "provenance": "manual"
+    },
+    {
+      "index": 13,
+      "start": [
+        341.0,
+        404.0
+      ],
+      "end": [
+        341.0,
+        379.0
+      ],
+      "classification": "exterior_unknown",
+      "confidence": 0.5,
+      "daylight_priority": 0.4,
+      "evidence": [
+        "GT manual"
+      ],
+      "status": "confirmed",
+      "provenance": "manual"
+    },
+    {
+      "index": 14,
+      "start": [
+        341.0,
+        379.0
+      ],
+      "end": [
+        321.0,
+        379.0
+      ],
+      "classification": "exterior_unknown",
+      "confidence": 0.5,
+      "daylight_priority": 0.4,
+      "evidence": [
+        "GT manual"
+      ],
+      "status": "confirmed",
+      "provenance": "manual"
+    },
+    {
+      "index": 15,
+      "start": [
+        321.0,
+        379.0
+      ],
+      "end": [
+        321.0,
+        238.0
+      ],
+      "classification": "likely_glazing",
+      "confidence": 0.8,
+      "daylight_priority": 0.75,
+      "evidence": [
+        "GT manual: montantes visibles"
+      ],
+      "status": "confirmed",
+      "provenance": "manual"
+    }
+  ],
+  "column_candidates": [],
+  "north_arrow": {
+    "detected": false,
+    "angle_deg": null,
+    "meta": {
+      "confidence": 0.0,
+      "provenance": "unknown",
+      "status": "unknown",
+      "notes": ""
+    }
+  },
+  "shell_readiness": {
+    "geometry_ready": false,
+    "entrance_ready": false,
+    "columns_ready": false,
+    "daylight_ready": false,
+    "requires_confirmation": [],
+    "ready_for_layout": false,
+    "notes": ""
+  },
+  "pipeline": {}
+}

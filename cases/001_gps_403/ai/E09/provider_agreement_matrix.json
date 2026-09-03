@@ -1,0 +1,470 @@
+[
+  {
+    "alternative_id": "A",
+    "aspect": "arrival_sequence",
+    "rule": 0.525,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "A",
+    "aspect": "reception",
+    "rule": 0.4,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "A",
+    "aspect": "client_route",
+    "rule": 0.762,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "A",
+    "aspect": "boardroom_location",
+    "rule": 0.987,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "A",
+    "aspect": "meeting_accessibility",
+    "rule": 0.762,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "A",
+    "aspect": "privacy_gradient",
+    "rule": 1.0,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "A",
+    "aspect": "open_work_neighborhoods",
+    "rule": 0.599,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "A",
+    "aspect": "adjacency",
+    "rule": 0.836,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "A",
+    "aspect": "kitchenette_dining",
+    "rule": 1.0,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "A",
+    "aspect": "lounge",
+    "rule": 1.0,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "A",
+    "aspect": "circulation_logic",
+    "rule": 1.0,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "A",
+    "aspect": "strategy_alignment",
+    "rule": 0.585,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "A",
+    "aspect": "overall_plausibility",
+    "rule": 0.731,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "B",
+    "aspect": "arrival_sequence",
+    "rule": 0.525,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "B",
+    "aspect": "reception",
+    "rule": 0.4,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "B",
+    "aspect": "client_route",
+    "rule": 0.833,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "B",
+    "aspect": "boardroom_location",
+    "rule": 0.987,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "B",
+    "aspect": "meeting_accessibility",
+    "rule": 0.833,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "B",
+    "aspect": "privacy_gradient",
+    "rule": 0.725,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "B",
+    "aspect": "open_work_neighborhoods",
+    "rule": 0.598,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "B",
+    "aspect": "adjacency",
+    "rule": 0.488,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "B",
+    "aspect": "kitchenette_dining",
+    "rule": 1.0,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "B",
+    "aspect": "lounge",
+    "rule": 1.0,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "B",
+    "aspect": "circulation_logic",
+    "rule": 1.0,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "B",
+    "aspect": "strategy_alignment",
+    "rule": 0.764,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "B",
+    "aspect": "overall_plausibility",
+    "rule": 0.665,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "C",
+    "aspect": "arrival_sequence",
+    "rule": 0.525,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "C",
+    "aspect": "reception",
+    "rule": 0.4,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "C",
+    "aspect": "client_route",
+    "rule": 0.945,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "C",
+    "aspect": "boardroom_location",
+    "rule": 0.967,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "C",
+    "aspect": "meeting_accessibility",
+    "rule": 0.945,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "C",
+    "aspect": "privacy_gradient",
+    "rule": 0.889,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "C",
+    "aspect": "open_work_neighborhoods",
+    "rule": 0.549,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "C",
+    "aspect": "adjacency",
+    "rule": 1.0,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "C",
+    "aspect": "kitchenette_dining",
+    "rule": 1.0,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "C",
+    "aspect": "lounge",
+    "rule": 1.0,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "C",
+    "aspect": "circulation_logic",
+    "rule": 1.0,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "C",
+    "aspect": "strategy_alignment",
+    "rule": 0.978,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  },
+  {
+    "alternative_id": "C",
+    "aspect": "overall_plausibility",
+    "rule": 0.726,
+    "anthropic": null,
+    "openai": null,
+    "delta_max": null,
+    "sources_present": [
+      "rule_based"
+    ],
+    "agreement_status": "BLOCKED"
+  }
+]

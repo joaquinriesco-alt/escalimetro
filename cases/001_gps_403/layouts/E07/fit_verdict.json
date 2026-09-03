@@ -1,0 +1,14 @@
+{
+  "unit": "Oficina 403 (GPS Property)",
+  "published_area_m2": 543.0,
+  "program": "OFFICE_BALANCED_48",
+  "headcount": 48,
+  "fit": "ROBUST_WITHIN_ASSUMED_SCALE_RANGE",
+  "fit_label": "ROBUST WITHIN ASSUMED SCALE RANGE",
+  "scale": "UNCONFIRMED",
+  "scale_confidence": "LOW",
+  "reason": "El programa completo cabe en todo el rango de escala asumido probado en E06 (0.95×–1.05× de la escala nominal); bajo ~0.925× deja de existir ubicación geométrica para el directorio.",
+  "recommendation": "Confirma una dimensión real antes de comprometer capacidad.",
+  "note": "Test-fit conceptual de space planning. No constituye proyecto de arquitectura.",
+  "source": "análisis de robustez de escala E06 (congelado); E07 no repite el barrido."
+}

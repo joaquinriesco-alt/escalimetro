@@ -1,0 +1,10 @@
+{
+  "case_id": "900_synthetic_fixture",
+  "image": "original.jpg",
+  "unit_label": "OF. 903 (sintética)",
+  "known_area_m2": 557,
+  "known_area_kind": "useful",
+  "overrides": "overrides.json",
+  "vision": "manual",
+  "segmentation": "opencv_flood"
+}

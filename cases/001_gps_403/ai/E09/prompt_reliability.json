@@ -1,0 +1,14 @@
+[
+  {
+    "source": "anthropic",
+    "purpose": "spatial_review",
+    "status": "BLOCKED",
+    "reason": "no hubo llamada real; nada que medir"
+  },
+  {
+    "source": "openai_vision",
+    "purpose": "visual_review",
+    "status": "BLOCKED",
+    "reason": "no hubo llamada real; nada que medir"
+  }
+]

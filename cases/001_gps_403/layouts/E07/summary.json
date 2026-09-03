@@ -1,0 +1,58 @@
+{
+  "total_runtime_s": 302.2,
+  "per_alternative_s": {
+    "A": 114.76,
+    "B": 83.76,
+    "C": 101.42
+  },
+  "kpi_target_s": 120.0,
+  "kpi_met": true,
+  "gates": {
+    "A": {
+      "E1-T": "PASS",
+      "E1-A": "PASS_PROVISIONAL",
+      "E1-C": "READY_FOR_BROKER_REVIEW"
+    },
+    "B": {
+      "E1-T": "PASS",
+      "E1-A": "PASS_PROVISIONAL",
+      "E1-C": "READY_FOR_BROKER_REVIEW"
+    },
+    "C": {
+      "E1-T": "PASS",
+      "E1-A": "PASS_PROVISIONAL",
+      "E1-C": "READY_FOR_BROKER_REVIEW"
+    }
+  },
+  "geometric_difference": {
+    "AvsB": {
+      "identical_placements": 13,
+      "n": 26,
+      "different_pct": 50.0
+    },
+    "AvsC": {
+      "identical_placements": 3,
+      "n": 26,
+      "different_pct": 88.5
+    },
+    "BvsC": {
+      "identical_placements": 6,
+      "n": 26,
+      "different_pct": 76.9
+    }
+  },
+  "fit_verdict": {
+    "unit": "Oficina 403 (GPS Property)",
+    "published_area_m2": 543.0,
+    "program": "OFFICE_BALANCED_48",
+    "headcount": 48,
+    "fit": "ROBUST_WITHIN_ASSUMED_SCALE_RANGE",
+    "fit_label": "ROBUST WITHIN ASSUMED SCALE RANGE",
+    "scale": "UNCONFIRMED",
+    "scale_confidence": "LOW",
+    "reason": "El programa completo cabe en todo el rango de escala asumido probado en E06 (0.95×–1.05× de la escala nominal); bajo ~0.925× deja de existir ubicación geométrica para el directorio.",
+    "recommendation": "Confirma una dimensión real antes de comprometer capacidad.",
+    "note": "Test-fit conceptual de space planning. No constituye proyecto de arquitectura.",
+    "source": "análisis de robustez de escala E06 (congelado); E07 no repite el barrido."
+  }
+}

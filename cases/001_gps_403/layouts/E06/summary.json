@@ -1,0 +1,179 @@
+{
+  "robustness": {
+    "factors_tested": [
+      0.875,
+      0.9,
+      0.925,
+      0.95,
+      0.975,
+      0.99,
+      1.0,
+      1.01,
+      1.025,
+      1.05
+    ],
+    "exact_fit_factors": [
+      0.95,
+      0.975,
+      0.99,
+      1.0,
+      1.01,
+      1.025,
+      1.05
+    ],
+    "min_scale_factor_exact_fit": 0.95,
+    "pct_scenarios_exact_fit": 70.0,
+    "max_seats_by_factor": {
+      "0.875": 0,
+      "0.900": 0,
+      "0.925": 0,
+      "0.950": 40,
+      "0.975": 40,
+      "0.990": 40,
+      "1.000": 40,
+      "1.010": 40,
+      "1.025": 40,
+      "1.050": 40
+    },
+    "sensitivity": "≈ 2.9 puestos máximos por cada 1 % de escala (regresión sobre 10 escenarios)",
+    "primary_constraint": "boardroom_12: sin candidato de colocación (rectángulo mayor no cabe junto a la red)",
+    "confidence": "LOW",
+    "classification": "ROBUST_FIT",
+    "thresholds": {
+      "robust_conservative_factor": 0.975,
+      "borderline_band": 0.025,
+      "optimistic_factor": 1.025
+    },
+    "notes": [
+      "Los umbrales de clasificación son hipótesis de producto (THRESHOLDS), no norma ni referencia externa.",
+      "Un 'exact fit' es un candidato con hard_valid=true del validador determinista E04 (programa 100 %, 40 puestos, 0 colisiones, circulación, recepción ≤ 8 m).",
+      "max_seats proviene de la sonda de capacidad (recintos completos, maximizar puestos, límite de tiempo): es cota inferior del óptimo si el status no es OPTIMAL."
+    ]
+  },
+  "evidence": {
+    "nominal_px_per_m": 8.357,
+    "evidences": [
+      {
+        "source": "door_gap_primary_entrance",
+        "measured_px": 10.0,
+        "typical_range_m": [
+          0.85,
+          1.1
+        ],
+        "px_per_m_range": [
+          9.09,
+          11.76
+        ],
+        "factor_range": [
+          0.71,
+          0.919
+        ],
+        "weight": 0.35,
+        "note": "hueco 10 px ± 2 px; puerta simple típica 0.85–1.10 m; en un plano comercial el hueco dibujado no es fiable"
+      },
+      {
+        "source": "door_gap_primary_entrance_err",
+        "measured_px": 12.0,
+        "typical_range_m": [
+          0.85,
+          1.1
+        ],
+        "px_per_m_range": [
+          10.91,
+          14.12
+        ],
+        "factor_range": [
+          0.592,
+          0.766
+        ],
+        "weight": 0.0,
+        "note": "cota de error +2 px (sólo informativa)"
+      },
+      {
+        "source": "facade_module_period",
+        "measured_px": 26.0,
+        "typical_range_m": [
+          2.7,
+          3.6
+        ],
+        "px_per_m_range": [
+          7.22,
+          9.63
+        ],
+        "factor_range": [
+          0.868,
+          1.157
+        ],
+        "weight": 0.3,
+        "note": "periodo 26 px (mediana de 3); módulo estructural/de fachada típico 2.7–3.6 m si el periodo es de paños, NO de montantes finos (1.2–1.5 m daría un factor absurdo ≈ 0.45)"
+      },
+      {
+        "source": "column_drawn_size",
+        "measured_px": 10.29,
+        "typical_range_m": [
+          0.5,
+          0.8
+        ],
+        "px_per_m_range": [
+          12.86,
+          20.58
+        ],
+        "factor_range": [
+          0.406,
+          0.65
+        ],
+        "weight": 0.1,
+        "note": "pilar dibujado 10.3 px (mediana de 10); pilar típico 0.5–0.8 m; en planos comerciales los pilares se dibujan exagerados: peso bajo"
+      },
+      {
+        "source": "published_area_consistency_across_units",
+        "measured_px": 54.77445828724567,
+        "typical_range_m": [
+          0.0,
+          0.0
+        ],
+        "px_per_m_range": [
+          6.46,
+          8.03
+        ],
+        "factor_range": [
+          1.041,
+          1.294
+        ],
+        "weight": 0.25,
+        "note": "px²/m² por unidad (relleno sin muros): 401: 42, 402: 58, 403: 64; dispersión 24 % ⇒ las áreas publicadas no son proporcionales al dibujo con una sola escala"
+      }
+    ],
+    "combined_factor_range": null,
+    "verdict": "UNKNOWN",
+    "note": "las evidencias no son consistentes entre sí (intersección vacía): no se combina"
+  },
+  "autonomous": {
+    "scale_factor": 1.0,
+    "hard_valid": true,
+    "architectural_score": 0.728,
+    "broker_showable": true,
+    "geometric_score": 0.6415,
+    "seats": 40
+  },
+  "gate_e1_autonomous": "PASS",
+  "gate_e1_assisted": "PASS",
+  "qa_gate": "AUTONOMOUS_PASS",
+  "verdict": {
+    "unit": "Oficina 403 (GPS Property)",
+    "program": "OFFICE_BALANCED_48",
+    "headcount": 48,
+    "fit": "ROBUST_FIT",
+    "reason": "40 puestos + programa completo de recintos caben con escala ≥ 0.950× la nominal (70 % de los escenarios probados: 0.950, 0.975, 0.990, 1.000, 1.010, 1.025, 1.050). Restricción dominante: boardroom_12: sin candidato de colocación (rectángulo mayor no cabe junto a la red).",
+    "primary_uncertainty": "la superficie publicada (543 m²) no fija una escala geométrica fiable (confianza LOW); la evidencia secundaria del plano es UNKNOWN",
+    "recommendation": "el programa cabe con margen; confirmar una dimensión antes de comprometer capacidad.",
+    "scale_confidence": "LOW",
+    "min_scale_factor_exact_fit": 0.95,
+    "pct_scenarios_exact_fit": 70.0,
+    "secondary_evidence_verdict": "UNKNOWN",
+    "gate_e1_autonomous": "PASS",
+    "gate_e1_assisted": "PASS",
+    "qa_gate": "AUTONOMOUS_PASS",
+    "disclaimer": "Dimensiones sujetas a confirmación de escala. Test-fit conceptual (space planning), no proyecto de arquitectura."
+  }
+}

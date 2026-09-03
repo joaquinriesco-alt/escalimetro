@@ -1,0 +1,484 @@
+[
+  {
+    "scale_factor": 0.875,
+    "px_per_m": 9.5503,
+    "implied_shell_area_m2": 415.7,
+    "implied_published_equiv_m2": 415.7,
+    "source": "published_area_inferred × 0.875",
+    "confidence": "LOW",
+    "layout_result": {
+      "strategy_id": "B_CLIENT_FRONT",
+      "spine_feasible": true,
+      "n_candidates": 1948,
+      "n_branches": 25,
+      "usable_m2": 415.7,
+      "probe": {
+        "status": "INFEASIBLE_MODEL",
+        "runtime_s": 0.0
+      },
+      "exact_feasibility_phase": {
+        "status": "INFEASIBLE_MODEL",
+        "runtime_s": 0.0
+      },
+      "exact": {
+        "status": "INFEASIBLE_MODEL",
+        "runtime_s": 0.0,
+        "reason": "boardroom_12: 0 candidatos para 1 instancias"
+      },
+      "exact_fit": false,
+      "max_seats": null,
+      "runtime_total_s": 10.3
+    }
+  },
+  {
+    "scale_factor": 0.9,
+    "px_per_m": 9.285,
+    "implied_shell_area_m2": 439.8,
+    "implied_published_equiv_m2": 439.8,
+    "source": "published_area_inferred × 0.9",
+    "confidence": "LOW",
+    "layout_result": {
+      "strategy_id": "B_CLIENT_FRONT",
+      "spine_feasible": true,
+      "n_candidates": 2083,
+      "n_branches": 24,
+      "usable_m2": 439.8,
+      "probe": {
+        "status": "INFEASIBLE_MODEL",
+        "runtime_s": 0.0
+      },
+      "exact_feasibility_phase": {
+        "status": "INFEASIBLE_MODEL",
+        "runtime_s": 0.0
+      },
+      "exact": {
+        "status": "INFEASIBLE_MODEL",
+        "runtime_s": 0.0,
+        "reason": "boardroom_12: 0 candidatos para 1 instancias"
+      },
+      "exact_fit": false,
+      "max_seats": null,
+      "runtime_total_s": 10.3
+    }
+  },
+  {
+    "scale_factor": 0.925,
+    "px_per_m": 9.0341,
+    "implied_shell_area_m2": 464.6,
+    "implied_published_equiv_m2": 464.6,
+    "source": "published_area_inferred × 0.925",
+    "confidence": "LOW",
+    "layout_result": {
+      "strategy_id": "B_CLIENT_FRONT",
+      "spine_feasible": true,
+      "n_candidates": 2900,
+      "n_branches": 30,
+      "usable_m2": 464.6,
+      "probe": {
+        "status": "INFEASIBLE_MODEL",
+        "runtime_s": 0.0
+      },
+      "exact_feasibility_phase": {
+        "status": "INFEASIBLE_MODEL",
+        "runtime_s": 0.0
+      },
+      "exact": {
+        "status": "INFEASIBLE_MODEL",
+        "runtime_s": 0.0,
+        "reason": "boardroom_12: 0 candidatos para 1 instancias"
+      },
+      "exact_fit": false,
+      "max_seats": null,
+      "runtime_total_s": 16.6
+    }
+  },
+  {
+    "scale_factor": 0.95,
+    "px_per_m": 8.7963,
+    "implied_shell_area_m2": 490.1,
+    "implied_published_equiv_m2": 490.1,
+    "source": "published_area_inferred × 0.95",
+    "confidence": "LOW",
+    "layout_result": {
+      "strategy_id": "B_CLIENT_FRONT",
+      "spine_feasible": true,
+      "n_candidates": 2904,
+      "n_branches": 33,
+      "usable_m2": 490.1,
+      "probe": {
+        "status": "FEASIBLE",
+        "runtime_s": 125.05,
+        "mode": "probe",
+        "hard_valid": false,
+        "violations": [
+          "puestos open 39 ≠ 40"
+        ],
+        "seats": 39,
+        "geometric_score": 0.6098,
+        "architectural_score": 0.601,
+        "broker_showable": false,
+        "active_branches": [
+          "br36"
+        ],
+        "layout_path": "cases/001_gps_403/layouts/E06/scenarios/x0.950/layout_probe.json",
+        "daylight": 0.312,
+        "circulation_m2": 81.4
+      },
+      "exact_feasibility_phase": {
+        "status": "OPTIMAL",
+        "runtime_s": 28.37
+      },
+      "exact": {
+        "status": "FEASIBLE",
+        "runtime_s": 154.18,
+        "reason": null,
+        "mode": "exact",
+        "hard_valid": true,
+        "violations": [],
+        "seats": 40,
+        "geometric_score": 0.6266,
+        "architectural_score": 0.621,
+        "broker_showable": false,
+        "active_branches": [
+          "br36"
+        ],
+        "layout_path": "cases/001_gps_403/layouts/E06/scenarios/x0.950/layout_exact.json",
+        "daylight": 0.312,
+        "circulation_m2": 85.3
+      },
+      "exact_fit": true,
+      "max_seats": 40,
+      "runtime_total_s": 297.3
+    }
+  },
+  {
+    "scale_factor": 0.975,
+    "px_per_m": 8.5708,
+    "implied_shell_area_m2": 516.2,
+    "implied_published_equiv_m2": 516.2,
+    "source": "published_area_inferred × 0.975",
+    "confidence": "LOW",
+    "layout_result": {
+      "strategy_id": "B_CLIENT_FRONT",
+      "spine_feasible": true,
+      "n_candidates": 3194,
+      "n_branches": 41,
+      "usable_m2": 516.2,
+      "probe": {
+        "status": "FEASIBLE",
+        "runtime_s": 126.29,
+        "mode": "probe",
+        "hard_valid": true,
+        "violations": [],
+        "seats": 40,
+        "geometric_score": 0.6,
+        "architectural_score": 0.58,
+        "broker_showable": false,
+        "active_branches": [
+          "br33"
+        ],
+        "layout_path": "cases/001_gps_403/layouts/E06/scenarios/x0.975/layout_probe.json",
+        "daylight": 0.514,
+        "circulation_m2": 89.6
+      },
+      "exact_feasibility_phase": {
+        "status": "OPTIMAL",
+        "runtime_s": 11.26
+      },
+      "exact": {
+        "status": "FEASIBLE",
+        "runtime_s": 137.14,
+        "reason": null,
+        "mode": "exact",
+        "hard_valid": true,
+        "violations": [],
+        "seats": 40,
+        "geometric_score": 0.6142,
+        "architectural_score": 0.639,
+        "broker_showable": false,
+        "active_branches": [],
+        "layout_path": "cases/001_gps_403/layouts/E06/scenarios/x0.975/layout_exact.json",
+        "daylight": 0.439,
+        "circulation_m2": 83.8
+      },
+      "exact_fit": true,
+      "max_seats": 40,
+      "runtime_total_s": 289.1
+    }
+  },
+  {
+    "scale_factor": 0.99,
+    "px_per_m": 8.4409,
+    "implied_shell_area_m2": 532.2,
+    "implied_published_equiv_m2": 532.2,
+    "source": "published_area_inferred × 0.99",
+    "confidence": "LOW",
+    "layout_result": {
+      "strategy_id": "B_CLIENT_FRONT",
+      "spine_feasible": true,
+      "n_candidates": 3530,
+      "n_branches": 36,
+      "usable_m2": 532.2,
+      "probe": {
+        "status": "FEASIBLE",
+        "runtime_s": 127.56,
+        "mode": "probe",
+        "hard_valid": true,
+        "violations": [],
+        "seats": 40,
+        "geometric_score": 0.6937,
+        "architectural_score": 0.703,
+        "broker_showable": false,
+        "active_branches": [],
+        "layout_path": "cases/001_gps_403/layouts/E06/scenarios/x0.990/layout_probe.json",
+        "daylight": 0.591,
+        "circulation_m2": 77.9
+      },
+      "exact_feasibility_phase": {
+        "status": "OPTIMAL",
+        "runtime_s": 13.14
+      },
+      "exact": {
+        "status": "OPTIMAL",
+        "runtime_s": 116.85,
+        "reason": null,
+        "mode": "exact",
+        "hard_valid": true,
+        "violations": [],
+        "seats": 40,
+        "geometric_score": 0.6825,
+        "architectural_score": 0.658,
+        "broker_showable": false,
+        "active_branches": [],
+        "layout_path": "cases/001_gps_403/layouts/E06/scenarios/x0.990/layout_exact.json",
+        "daylight": 0.591,
+        "circulation_m2": 77.9
+      },
+      "exact_fit": true,
+      "max_seats": 40,
+      "runtime_total_s": 267.9
+    }
+  },
+  {
+    "scale_factor": 1.0,
+    "px_per_m": 8.3565,
+    "implied_shell_area_m2": 543.0,
+    "implied_published_equiv_m2": 543.0,
+    "source": "published_area_inferred × 1.0",
+    "confidence": "LOW",
+    "layout_result": {
+      "strategy_id": "B_CLIENT_FRONT",
+      "spine_feasible": true,
+      "n_candidates": 3762,
+      "n_branches": 42,
+      "usable_m2": 543.0,
+      "probe": {
+        "status": "FEASIBLE",
+        "runtime_s": 128.43,
+        "mode": "probe",
+        "hard_valid": true,
+        "violations": [],
+        "seats": 40,
+        "geometric_score": 0.5861,
+        "architectural_score": 0.571,
+        "broker_showable": false,
+        "active_branches": [],
+        "layout_path": "cases/001_gps_403/layouts/E06/scenarios/x1.000/layout_probe.json",
+        "daylight": 0.578,
+        "circulation_m2": 85.8
+      },
+      "exact_feasibility_phase": {
+        "status": "OPTIMAL",
+        "runtime_s": 14.44
+      },
+      "exact": {
+        "status": "OPTIMAL",
+        "runtime_s": 134.51,
+        "reason": null,
+        "mode": "exact",
+        "hard_valid": true,
+        "violations": [],
+        "seats": 40,
+        "geometric_score": 0.6415,
+        "architectural_score": 0.674,
+        "broker_showable": false,
+        "active_branches": [
+          "br5"
+        ],
+        "layout_path": "cases/001_gps_403/layouts/E06/scenarios/x1.000/layout_exact.json",
+        "daylight": 0.6,
+        "circulation_m2": 86.9
+      },
+      "exact_fit": true,
+      "max_seats": 40,
+      "runtime_total_s": 291.0
+    }
+  },
+  {
+    "scale_factor": 1.01,
+    "px_per_m": 8.2738,
+    "implied_shell_area_m2": 553.9,
+    "implied_published_equiv_m2": 553.9,
+    "source": "published_area_inferred × 1.01",
+    "confidence": "LOW",
+    "layout_result": {
+      "strategy_id": "B_CLIENT_FRONT",
+      "spine_feasible": true,
+      "n_candidates": 3797,
+      "n_branches": 45,
+      "usable_m2": 553.9,
+      "probe": {
+        "status": "FEASIBLE",
+        "runtime_s": 129.5,
+        "mode": "probe",
+        "hard_valid": true,
+        "violations": [],
+        "seats": 40,
+        "geometric_score": 0.6457,
+        "architectural_score": 0.664,
+        "broker_showable": false,
+        "active_branches": [
+          "br27"
+        ],
+        "layout_path": "cases/001_gps_403/layouts/E06/scenarios/x1.010/layout_probe.json",
+        "daylight": 0.621,
+        "circulation_m2": 93.0
+      },
+      "exact_feasibility_phase": {
+        "status": "OPTIMAL",
+        "runtime_s": 14.83
+      },
+      "exact": {
+        "status": "FEASIBLE",
+        "runtime_s": 143.05,
+        "reason": null,
+        "mode": "exact",
+        "hard_valid": true,
+        "violations": [],
+        "seats": 40,
+        "geometric_score": 0.6457,
+        "architectural_score": 0.664,
+        "broker_showable": false,
+        "active_branches": [
+          "br27"
+        ],
+        "layout_path": "cases/001_gps_403/layouts/E06/scenarios/x1.010/layout_exact.json",
+        "daylight": 0.621,
+        "circulation_m2": 93.0
+      },
+      "exact_fit": true,
+      "max_seats": 40,
+      "runtime_total_s": 303.0
+    }
+  },
+  {
+    "scale_factor": 1.025,
+    "px_per_m": 8.1527,
+    "implied_shell_area_m2": 570.5,
+    "implied_published_equiv_m2": 570.5,
+    "source": "published_area_inferred × 1.025",
+    "confidence": "LOW",
+    "layout_result": {
+      "strategy_id": "B_CLIENT_FRONT",
+      "spine_feasible": true,
+      "n_candidates": 3668,
+      "n_branches": 43,
+      "usable_m2": 570.5,
+      "probe": {
+        "status": "OPTIMAL",
+        "runtime_s": 47.98,
+        "mode": "probe",
+        "hard_valid": true,
+        "violations": [],
+        "seats": 40,
+        "geometric_score": 0.6596,
+        "architectural_score": 0.748,
+        "broker_showable": false,
+        "active_branches": [],
+        "layout_path": "cases/001_gps_403/layouts/E06/scenarios/x1.025/layout_probe.json",
+        "daylight": 0.527,
+        "circulation_m2": 107.8
+      },
+      "exact_feasibility_phase": {
+        "status": "OPTIMAL",
+        "runtime_s": 11.27
+      },
+      "exact": {
+        "status": "OPTIMAL",
+        "runtime_s": 37.47,
+        "reason": null,
+        "mode": "exact",
+        "hard_valid": true,
+        "violations": [],
+        "seats": 40,
+        "geometric_score": 0.6596,
+        "architectural_score": 0.748,
+        "broker_showable": false,
+        "active_branches": [],
+        "layout_path": "cases/001_gps_403/layouts/E06/scenarios/x1.025/layout_exact.json",
+        "daylight": 0.527,
+        "circulation_m2": 107.8
+      },
+      "exact_fit": true,
+      "max_seats": 40,
+      "runtime_total_s": 111.4
+    }
+  },
+  {
+    "scale_factor": 1.05,
+    "px_per_m": 7.9586,
+    "implied_shell_area_m2": 598.7,
+    "implied_published_equiv_m2": 598.7,
+    "source": "published_area_inferred × 1.05",
+    "confidence": "LOW",
+    "layout_result": {
+      "strategy_id": "B_CLIENT_FRONT",
+      "spine_feasible": true,
+      "n_candidates": 4275,
+      "n_branches": 35,
+      "usable_m2": 598.7,
+      "probe": {
+        "status": "FEASIBLE",
+        "runtime_s": 130.33,
+        "mode": "probe",
+        "hard_valid": true,
+        "violations": [],
+        "seats": 40,
+        "geometric_score": 0.7114,
+        "architectural_score": 0.809,
+        "broker_showable": false,
+        "active_branches": [
+          "br9"
+        ],
+        "layout_path": "cases/001_gps_403/layouts/E06/scenarios/x1.050/layout_probe.json",
+        "daylight": 0.595,
+        "circulation_m2": 106.2
+      },
+      "exact_feasibility_phase": {
+        "status": "OPTIMAL",
+        "runtime_s": 18.99
+      },
+      "exact": {
+        "status": "FEASIBLE",
+        "runtime_s": 149.35,
+        "reason": null,
+        "mode": "exact",
+        "hard_valid": true,
+        "violations": [],
+        "seats": 40,
+        "geometric_score": 0.6938,
+        "architectural_score": 0.749,
+        "broker_showable": false,
+        "active_branches": [
+          "br9"
+        ],
+        "layout_path": "cases/001_gps_403/layouts/E06/scenarios/x1.050/layout_exact.json",
+        "daylight": 0.571,
+        "circulation_m2": 104.5
+      },
+      "exact_fit": true,
+      "max_seats": 40,
+      "runtime_total_s": 307.7
+    }
+  }
+]

@@ -1,0 +1,90 @@
+{
+  "alternative_order": [
+    "A",
+    "B",
+    "C"
+  ],
+  "headline": "Tres formas de ocupar la misma oficina",
+  "subtitle": "Mismo programa para 48 personas, mismo piso. Cambia la prioridad.",
+  "alternative_copy": {
+    "A": {
+      "label": "EFICIENTE",
+      "one_liner": "Máxima eficiencia espacial con circulación compacta y alto aprovechamiento del área útil.",
+      "priority": "Prioriza eficiencia",
+      "ideal_for": "Empresas que priorizan costo por puesto y operación simple."
+    },
+    "B": {
+      "label": "BALANCEADO",
+      "one_liner": "Equilibrio entre puestos, salas, experiencia de trabajo y relación con clientes.",
+      "priority": "Prioriza equilibrio",
+      "ideal_for": "Empresas que reciben clientes con frecuencia y quieren buen estándar de trabajo."
+    },
+    "C": {
+      "label": "COLABORATIVO",
+      "one_liner": "Mayor integración entre equipos y espacios compartidos, manteniendo el programa completo.",
+      "priority": "Prioriza colaboración",
+      "ideal_for": "Equipos que trabajan en proyectos y necesitan encontrarse durante el día."
+    }
+  },
+  "strengths": {
+    "A": [
+      "Menor superficie de circulación",
+      "Recintos agrupados en pocos bloques",
+      "Menor fragmentación del open office",
+      "Fachada liberada para puestos"
+    ],
+    "B": [
+      "Directorio y salas junto al acceso",
+      "Puestos en la mejor fachada",
+      "Cocina y comedor integrados",
+      "Recorrido de cliente sin cruzar el open office"
+    ],
+    "C": [
+      "Cuatro barrios de trabajo en vez de una franja monótona",
+      "Lounge integrado a la circulación",
+      "Salas y encuentro cerca del trabajo",
+      "Comedor y lounge como zona social"
+    ]
+  },
+  "metric_priority": [
+    "puestos",
+    "salas",
+    "luz en puestos",
+    "circulación"
+  ],
+  "callouts": [
+    {
+      "alternative_id": "A",
+      "text": "Menos circulación y menos fragmentación: 7 bloques de trabajo."
+    },
+    {
+      "alternative_id": "B",
+      "text": "La mejor luz en puestos de las tres y el directorio junto al acceso."
+    },
+    {
+      "alternative_id": "C",
+      "text": "Cuatro barrios de trabajo y 78 m² de circulación, la menor de las tres."
+    }
+  ],
+  "typography_direction": "una sola familia sans; jerarquía por tamaño y peso, no por color",
+  "visual_hierarchy": [
+    "veredicto",
+    "nombre de alternativa",
+    "planta",
+    "KPIs",
+    "detalle"
+  ],
+  "spacing_guidance": "aire generoso entre bloques; la planta manda, el texto acompaña",
+  "color_roles": {
+    "A": "acento frío",
+    "B": "acento cálido",
+    "C": "acento verde",
+    "texto": "tinta neutra",
+    "advertencia": "rojo tierra"
+  },
+  "disclaimer_copy": "Test-fit conceptual para evaluación de espacio. No constituye proyecto de arquitectura. Dimensiones sujetas a confirmación de escala.",
+  "fit_verdict_copy": "El programa completo cabe en el rango de escala asumido.",
+  "provider": "deterministic",
+  "model": "template_v1",
+  "prompt_version": "deterministic_v1"
+}

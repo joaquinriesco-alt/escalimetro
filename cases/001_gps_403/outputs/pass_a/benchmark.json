@@ -1,0 +1,116 @@
+{
+  "case_id": "001_gps_403",
+  "px_per_m_used": 8.35652390128259,
+  "px_per_m_source": "pred (published_area_inferred) — conversión a m NO independiente",
+  "vertices_gt": 16,
+  "vertices_pred": 19,
+  "core_iou": 0.871,
+  "perimeter_iou": 0.968,
+  "area_error_pct_vs_gt_px": -2.38,
+  "area_error_pct_vs_gt_m2": null,
+  "hausdorff_px": 10.0,
+  "hausdorff_m": 1.2,
+  "mean_boundary_dist_px": 1.1,
+  "mean_boundary_dist_m": 0.132,
+  "core_centroid_err_px": 3.8,
+  "core_centroid_err_m": 0.45,
+  "columns": {
+    "precision": 1.0,
+    "recall": 0.9,
+    "f1": 0.9473684210526316,
+    "tp": 9,
+    "fp": 0,
+    "fn": 1
+  },
+  "column_tol_px": 5.0,
+  "entrance_err_px": 3.0,
+  "entrance_err_m": 0.36,
+  "segment_semantic": {
+    "accuracy": 0.9375,
+    "n": 16
+  },
+  "pred_unknowns": [
+    "scale.area_kind",
+    "windows.exact"
+  ],
+  "human_correction_burden": {
+    "seed_clicks": 0,
+    "confirm_clicks": 0,
+    "entrance_clicks": 0,
+    "daylight_relabels": 0,
+    "north_declared": 0,
+    "column_added": 0,
+    "column_removed": 0,
+    "window_points": 0,
+    "facade_relabels": 0,
+    "perimeter_vertices_drawn": 0,
+    "core_vertices_drawn": 0,
+    "points_moved": 0,
+    "total_clicks": 0,
+    "estimated_seconds": 0,
+    "target_localization": "automatic"
+  },
+  "gate_checks": {
+    "iou": true,
+    "area": true,
+    "core": true,
+    "entrance": true,
+    "columns": true,
+    "segments": true
+  },
+  "gate_e0": "PASS",
+  "shell": {
+    "primary_entrance": {
+      "point": [
+        570.0,
+        300.5
+      ],
+      "status": "needs_confirmation",
+      "confidence": 0.95,
+      "error_px": 3.0,
+      "error_m": 0.36
+    },
+    "entrance_candidates": {
+      "n": 4,
+      "recall_of_gt": 1.0,
+      "precision": 0.5,
+      "tol_px": 12.5
+    },
+    "daylight": {
+      "gt_glazing_sides": 5,
+      "agree_likely_or_confirmed": 3,
+      "conservative_unknown": 2,
+      "false_claims_on_glazing": 0,
+      "false_glazing_on_opaque": 0,
+      "accuracy": 0.6
+    },
+    "exterior_facade_classified": true,
+    "readiness": {
+      "geometry_ready": false,
+      "entrance_ready": false,
+      "columns_ready": false,
+      "daylight_ready": false,
+      "requires_confirmation": [
+        "perimeter/core",
+        "primary_entrance",
+        "columns",
+        "daylight",
+        "scale_assumption"
+      ],
+      "ready_for_layout": false,
+      "notes": "sin orientación: daylight_priority no considera sol"
+    }
+  },
+  "gate_e05_checks": {
+    "iou": true,
+    "core": true,
+    "primary_entrance_confirmed_and_correct": false,
+    "columns_100pct": false,
+    "exterior_facade_classified": true,
+    "daylight_available": true,
+    "no_false_claims": true,
+    "burden_under_60s": true,
+    "ready_for_layout": false
+  },
+  "gate_e05": "FAIL"
+}

@@ -1,0 +1,13 @@
+{
+  "case_id": "001_gps_403",
+  "image": "original.png",
+  "image_note": "JPG publicado por GPS Property, recibido re-codificado como PNG por el canal de chat (800x424 px, 72 dpi). Es el input tal cual.",
+  "unit_label": "Oficina 403",
+  "known_area_m2": 543,
+  "known_area_kind": "unknown",
+  "overrides": "overrides.json",
+  "vision": "ocr",
+  "segmentation": "auto",
+  "simplify_eps_frac": 0.004,
+  "mask_open_px": 5
+}

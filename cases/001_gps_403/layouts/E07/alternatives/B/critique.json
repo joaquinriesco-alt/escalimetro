@@ -1,0 +1,52 @@
+{
+  "candidate_id": "OFFICE_403_B_BALANCEADO_optimized",
+  "hard_valid": true,
+  "scores": {
+    "arrival_sequence": 0.525,
+    "reception": 0.4,
+    "client_access_to_rooms": 0.833,
+    "privacy": 0.725,
+    "open_office_quality": 0.598,
+    "facade_use": 0.488,
+    "kitchenette_dining": 1.0,
+    "lounge_location": 1.0,
+    "circulation": 1.0,
+    "residual_spaces": 0.062,
+    "fragmentation": 0.68,
+    "architectural_plausibility": 0.665
+  },
+  "verdicts": {
+    "arrival_sequence": "recepción a 6.8 m de ruta del acceso",
+    "reception": "fuera de la región del acceso, a 6.8 m",
+    "client_access_to_rooms": "meeting_accessibility 0.83 (rutas acceso→salas junto a puestos)",
+    "privacy": "gradiente 0.88; 1 privados pegados a recepción",
+    "open_office_quality": "50% de puestos en benches; daylight 0.70",
+    "facade_use": "56% de la fachada con luz frente a recintos cerrados (tolerancia 30 %)",
+    "kitchenette_dining": "adyacentes",
+    "lounge_location": "junto a puestos",
+    "circulation": "eficiencia 1.00; 0 conectores; pasillos 92.2 m²",
+    "residual_spaces": "50.6 m² en bolsillos; 130.6 m² sin asignar",
+    "fragmentation": "puestos en 3 bandas; 4 bloques de ≤ 3 puestos",
+    "architectural_plausibility": "media de aspectos 0.66"
+  },
+  "architectural_score": 0.665,
+  "broker_showable": false,
+  "repair_suggestions": [
+    {
+      "type": "forbid_on_facade",
+      "args": {
+        "module": "private_office"
+      },
+      "reason": "privados consumen fachada"
+    },
+    {
+      "type": "weight",
+      "args": {
+        "objective": "compactness",
+        "value": 0.16
+      },
+      "reason": "muchos bloques chicos"
+    }
+  ],
+  "provider": "rule_based"
+}

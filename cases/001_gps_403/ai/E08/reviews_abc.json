@@ -1,0 +1,406 @@
+{
+  "A": {
+    "alternative_id": "A",
+    "reviews": {
+      "rule_based": {
+        "provider": "deterministic",
+        "model": "rule_based_v1",
+        "alternative_id": "A",
+        "prompt_version": "deterministic_v1",
+        "scores": {
+          "arrival_sequence": 0.525,
+          "reception": 0.4,
+          "client_route": 0.762,
+          "privacy_gradient": 1.0,
+          "open_work_neighborhoods": 0.599,
+          "kitchenette_dining": 1.0,
+          "lounge": 1.0,
+          "circulation_logic": 1.0,
+          "program_coherence": 0.92,
+          "adjacency": 0.836,
+          "boardroom_location": 0.987,
+          "meeting_accessibility": 0.762,
+          "strategy_alignment": 0.585
+        },
+        "critical_issues": [],
+        "warnings": [
+          {
+            "aspect": "reception",
+            "severity": "warning",
+            "text": "fuera de la región del acceso, a 6.8 m"
+          }
+        ],
+        "strengths": [
+          "gradiente 1.00; 0 privados pegados a recepción",
+          "adyacentes",
+          "junto a puestos",
+          "eficiencia 1.00; 0 conectores; pasillos 89.9 m²"
+        ],
+        "strategy_alignment": 0.585,
+        "architectural_plausibility": 0.731,
+        "confidence": 0.55,
+        "summary": "A: revisión estructurada derivada del crítico por reglas (sin LLM). Plausibilidad 0.73."
+      },
+      "anthropic": null,
+      "openai_vision": null,
+      "deterministic_visual": {
+        "provider": "deterministic",
+        "model": "geometry_heuristics_v1",
+        "alternative_id": "A",
+        "prompt_version": "deterministic_v1",
+        "scores": {
+          "arrival_reads_naturally": 0.525,
+          "reception_convincing": 0.4,
+          "client_circulation_sense": 0.762,
+          "room_proportions": 0.913,
+          "workspace_fragmentation": 0.92,
+          "furniture_believable": 0.8,
+          "wasted_zones": 0.467,
+          "meeting_clusters": 0.762,
+          "neighborhood_usability": 0.599,
+          "credible_test_fit": 0.796,
+          "strategy_expression": 0.585
+        },
+        "critical_issues": [],
+        "warnings": [
+          {
+            "aspect": "reception_convincing",
+            "severity": "warning",
+            "text": "aspecto reception_convincing en 0.40"
+          },
+          {
+            "aspect": "wasted_zones",
+            "severity": "warning",
+            "text": "aspecto wasted_zones en 0.47"
+          }
+        ],
+        "strengths": [
+          "circulación conectada y legible",
+          "programa completo sin colisiones"
+        ],
+        "visual_plausibility": 0.684,
+        "strategy_readability": 0.585,
+        "ready_for_external_review": true,
+        "confidence": 0.4,
+        "summary": "A: sustituto determinista de la crítica visual. NO vio la planta: deriva de métricas geométricas. Confianza deliberadamente baja."
+      }
+    },
+    "aggregated": {
+      "alternative_id": "A",
+      "consensus_scores": {
+        "adjacency": 0.836,
+        "arrival_sequence": 0.525,
+        "boardroom_location": 0.987,
+        "circulation_logic": 1.0,
+        "client_route": 0.762,
+        "credible_test_fit": 0.796,
+        "furniture_believable": 0.8,
+        "kitchenette_dining": 1.0,
+        "lounge": 1.0,
+        "meeting_accessibility": 0.762,
+        "open_work_neighborhoods": 0.599,
+        "privacy_gradient": 1.0,
+        "program_coherence": 0.92,
+        "reception": 0.4,
+        "room_proportions": 0.913,
+        "strategy_alignment": 0.585,
+        "wasted_zones": 0.467
+      },
+      "agreements": [],
+      "disagreements": [],
+      "critical_disagreements": [],
+      "confidence": 0.285,
+      "external_review_readiness": "INTERNAL_REVIEW",
+      "reason": "faltan proveedores de IA (anthropic, openai_vision); el consenso se apoya en deterministic_visual, rule_based.",
+      "status": "PROVIDER_UNAVAILABLE",
+      "sources": {
+        "rule_based": "present",
+        "anthropic": "unavailable",
+        "openai_vision": "unavailable",
+        "deterministic_visual": "present"
+      }
+    },
+    "geometry_hash_before": "df6b86058ebb093f449e1054a0c65a902b7492f7986f4b8395489d63d46d7b99",
+    "geometry_hash_after": "df6b86058ebb093f449e1054a0c65a902b7492f7986f4b8395489d63d46d7b99",
+    "geometry_intact": true,
+    "latencies_ms": {
+      "rule_based": 25.8,
+      "anthropic": 20.3,
+      "openai_vision": 15.1
+    },
+    "errors": {
+      "anthropic": "provider_unavailable",
+      "openai_vision": "provider_unavailable"
+    },
+    "requires_internal_review": true
+  },
+  "B": {
+    "alternative_id": "B",
+    "reviews": {
+      "rule_based": {
+        "provider": "deterministic",
+        "model": "rule_based_v1",
+        "alternative_id": "B",
+        "prompt_version": "deterministic_v1",
+        "scores": {
+          "arrival_sequence": 0.525,
+          "reception": 0.4,
+          "client_route": 0.833,
+          "privacy_gradient": 0.725,
+          "open_work_neighborhoods": 0.598,
+          "kitchenette_dining": 1.0,
+          "lounge": 1.0,
+          "circulation_logic": 1.0,
+          "program_coherence": 0.68,
+          "adjacency": 0.488,
+          "boardroom_location": 0.987,
+          "meeting_accessibility": 0.833,
+          "strategy_alignment": 0.764
+        },
+        "critical_issues": [],
+        "warnings": [
+          {
+            "aspect": "adjacency",
+            "severity": "warning",
+            "text": "56% de la fachada con luz frente a recintos cerrados (tolerancia 30 %)"
+          },
+          {
+            "aspect": "reception",
+            "severity": "warning",
+            "text": "fuera de la región del acceso, a 6.8 m"
+          }
+        ],
+        "strengths": [
+          "adyacentes",
+          "junto a puestos",
+          "eficiencia 1.00; 0 conectores; pasillos 92.2 m²"
+        ],
+        "strategy_alignment": 0.764,
+        "architectural_plausibility": 0.665,
+        "confidence": 0.55,
+        "summary": "B: revisión estructurada derivada del crítico por reglas (sin LLM). Plausibilidad 0.67."
+      },
+      "anthropic": null,
+      "openai_vision": null,
+      "deterministic_visual": {
+        "provider": "deterministic",
+        "model": "geometry_heuristics_v1",
+        "alternative_id": "B",
+        "prompt_version": "deterministic_v1",
+        "scores": {
+          "arrival_reads_naturally": 0.525,
+          "reception_convincing": 0.4,
+          "client_circulation_sense": 0.833,
+          "room_proportions": 0.846,
+          "workspace_fragmentation": 0.68,
+          "furniture_believable": 0.8,
+          "wasted_zones": 0.578,
+          "meeting_clusters": 0.833,
+          "neighborhood_usability": 0.598,
+          "credible_test_fit": 0.753,
+          "strategy_expression": 0.764
+        },
+        "critical_issues": [],
+        "warnings": [
+          {
+            "aspect": "reception_convincing",
+            "severity": "warning",
+            "text": "aspecto reception_convincing en 0.40"
+          }
+        ],
+        "strengths": [
+          "circulación conectada y legible",
+          "programa completo sin colisiones"
+        ],
+        "visual_plausibility": 0.692,
+        "strategy_readability": 0.764,
+        "ready_for_external_review": true,
+        "confidence": 0.4,
+        "summary": "B: sustituto determinista de la crítica visual. NO vio la planta: deriva de métricas geométricas. Confianza deliberadamente baja."
+      }
+    },
+    "aggregated": {
+      "alternative_id": "B",
+      "consensus_scores": {
+        "adjacency": 0.488,
+        "arrival_sequence": 0.525,
+        "boardroom_location": 0.987,
+        "circulation_logic": 1.0,
+        "client_route": 0.833,
+        "credible_test_fit": 0.753,
+        "furniture_believable": 0.8,
+        "kitchenette_dining": 1.0,
+        "lounge": 1.0,
+        "meeting_accessibility": 0.833,
+        "open_work_neighborhoods": 0.598,
+        "privacy_gradient": 0.725,
+        "program_coherence": 0.68,
+        "reception": 0.4,
+        "room_proportions": 0.846,
+        "strategy_alignment": 0.764,
+        "wasted_zones": 0.578
+      },
+      "agreements": [],
+      "disagreements": [],
+      "critical_disagreements": [],
+      "confidence": 0.285,
+      "external_review_readiness": "INTERNAL_REVIEW",
+      "reason": "faltan proveedores de IA (anthropic, openai_vision); el consenso se apoya en deterministic_visual, rule_based.",
+      "status": "PROVIDER_UNAVAILABLE",
+      "sources": {
+        "rule_based": "present",
+        "anthropic": "unavailable",
+        "openai_vision": "unavailable",
+        "deterministic_visual": "present"
+      }
+    },
+    "geometry_hash_before": "5c5c276923dd7da69844ad3d409f4b879ac40c911144e4a11bf3cb4c6d8f066c",
+    "geometry_hash_after": "5c5c276923dd7da69844ad3d409f4b879ac40c911144e4a11bf3cb4c6d8f066c",
+    "geometry_intact": true,
+    "latencies_ms": {
+      "rule_based": 23.3,
+      "anthropic": 17.9,
+      "openai_vision": 13.9
+    },
+    "errors": {
+      "anthropic": "provider_unavailable",
+      "openai_vision": "provider_unavailable"
+    },
+    "requires_internal_review": true
+  },
+  "C": {
+    "alternative_id": "C",
+    "reviews": {
+      "rule_based": {
+        "provider": "deterministic",
+        "model": "rule_based_v1",
+        "alternative_id": "C",
+        "prompt_version": "deterministic_v1",
+        "scores": {
+          "arrival_sequence": 0.525,
+          "reception": 0.4,
+          "client_route": 0.945,
+          "privacy_gradient": 0.889,
+          "open_work_neighborhoods": 0.549,
+          "kitchenette_dining": 1.0,
+          "lounge": 1.0,
+          "circulation_logic": 1.0,
+          "program_coherence": 0.68,
+          "adjacency": 1.0,
+          "boardroom_location": 0.967,
+          "meeting_accessibility": 0.945,
+          "strategy_alignment": 0.978
+        },
+        "critical_issues": [],
+        "warnings": [
+          {
+            "aspect": "reception",
+            "severity": "warning",
+            "text": "fuera de la región del acceso, a 6.8 m"
+          }
+        ],
+        "strengths": [
+          "29% de la fachada con luz frente a recintos cerrados (tolerancia 30 %)",
+          "adyacentes",
+          "junto a puestos",
+          "eficiencia 1.00; 0 conectores; pasillos 78.1 m²"
+        ],
+        "strategy_alignment": 0.978,
+        "architectural_plausibility": 0.726,
+        "confidence": 0.55,
+        "summary": "C: revisión estructurada derivada del crítico por reglas (sin LLM). Plausibilidad 0.73."
+      },
+      "anthropic": null,
+      "openai_vision": null,
+      "deterministic_visual": {
+        "provider": "deterministic",
+        "model": "geometry_heuristics_v1",
+        "alternative_id": "C",
+        "prompt_version": "deterministic_v1",
+        "scores": {
+          "arrival_reads_naturally": 0.525,
+          "reception_convincing": 0.4,
+          "client_circulation_sense": 0.945,
+          "room_proportions": 0.885,
+          "workspace_fragmentation": 0.68,
+          "furniture_believable": 0.8,
+          "wasted_zones": 0.358,
+          "meeting_clusters": 0.945,
+          "neighborhood_usability": 0.549,
+          "credible_test_fit": 0.679,
+          "strategy_expression": 0.978
+        },
+        "critical_issues": [],
+        "warnings": [
+          {
+            "aspect": "reception_convincing",
+            "severity": "warning",
+            "text": "aspecto reception_convincing en 0.40"
+          },
+          {
+            "aspect": "wasted_zones",
+            "severity": "warning",
+            "text": "aspecto wasted_zones en 0.36"
+          }
+        ],
+        "strengths": [
+          "circulación conectada y legible",
+          "programa completo sin colisiones"
+        ],
+        "visual_plausibility": 0.704,
+        "strategy_readability": 0.978,
+        "ready_for_external_review": true,
+        "confidence": 0.4,
+        "summary": "C: sustituto determinista de la crítica visual. NO vio la planta: deriva de métricas geométricas. Confianza deliberadamente baja."
+      }
+    },
+    "aggregated": {
+      "alternative_id": "C",
+      "consensus_scores": {
+        "adjacency": 1.0,
+        "arrival_sequence": 0.525,
+        "boardroom_location": 0.967,
+        "circulation_logic": 1.0,
+        "client_route": 0.945,
+        "credible_test_fit": 0.679,
+        "furniture_believable": 0.8,
+        "kitchenette_dining": 1.0,
+        "lounge": 1.0,
+        "meeting_accessibility": 0.945,
+        "open_work_neighborhoods": 0.549,
+        "privacy_gradient": 0.889,
+        "program_coherence": 0.68,
+        "reception": 0.4,
+        "room_proportions": 0.885,
+        "strategy_alignment": 0.978,
+        "wasted_zones": 0.358
+      },
+      "agreements": [],
+      "disagreements": [],
+      "critical_disagreements": [],
+      "confidence": 0.285,
+      "external_review_readiness": "INTERNAL_REVIEW",
+      "reason": "faltan proveedores de IA (anthropic, openai_vision); el consenso se apoya en deterministic_visual, rule_based.",
+      "status": "PROVIDER_UNAVAILABLE",
+      "sources": {
+        "rule_based": "present",
+        "anthropic": "unavailable",
+        "openai_vision": "unavailable",
+        "deterministic_visual": "present"
+      }
+    },
+    "geometry_hash_before": "e12cc722485b9c58251621bd6f05e92fdc8633675156e8d26f2a110d6048e4c6",
+    "geometry_hash_after": "e12cc722485b9c58251621bd6f05e92fdc8633675156e8d26f2a110d6048e4c6",
+    "geometry_intact": true,
+    "latencies_ms": {
+      "rule_based": 23.5,
+      "anthropic": 18.1,
+      "openai_vision": 13.0
+    },
+    "errors": {
+      "anthropic": "provider_unavailable",
+      "openai_vision": "provider_unavailable"
+    },
+    "requires_internal_review": true
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "candidate_id": "x1.0_exact",
+  "hard_valid": true,
+  "scores": {
+    "arrival_sequence": 1.0,
+    "reception": 0.4,
+    "client_access_to_rooms": 0.52,
+    "privacy": 1.0,
+    "open_office_quality": 0.6,
+    "facade_use": 0.63,
+    "kitchenette_dining": 0.5,
+    "lounge_location": 1.0,
+    "circulation": 1.0,
+    "residual_spaces": 0.0,
+    "fragmentation": 0.76,
+    "architectural_plausibility": 0.674
+  },
+  "verdicts": {
+    "arrival_sequence": "recepción a 0.8 m de ruta del acceso",
+    "reception": "fuera de la región del acceso, a 0.8 m",
+    "client_access_to_rooms": "meeting_accessibility 0.52 (rutas acceso→salas junto a puestos)",
+    "privacy": "gradiente 1.00; 0 privados pegados a recepción",
+    "open_office_quality": "60% de puestos en benches; daylight 0.60",
+    "facade_use": "48% de la fachada con luz frente a recintos cerrados (tolerancia 30 %)",
+    "kitchenette_dining": "misma banda, no adyacentes",
+    "lounge_location": "junto a puestos",
+    "circulation": "eficiencia 1.00; 0 conectores; pasillos 86.9 m²",
+    "residual_spaces": "68.0 m² en bolsillos; 135.7 m² sin asignar",
+    "fragmentation": "puestos en 1 bandas; 3 bloques de ≤ 3 puestos",
+    "architectural_plausibility": "media de aspectos 0.67"
+  },
+  "architectural_score": 0.674,
+  "broker_showable": false,
+  "repair_suggestions": [
+    {
+      "type": "weight",
+      "args": {
+        "objective": "compactness",
+        "value": 0.16
+      },
+      "reason": "muchos bloques chicos"
+    }
+  ],
+  "provider": "rule_based"
+}

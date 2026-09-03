@@ -1,0 +1,41 @@
+[
+ {
+  "op": "LOCK",
+  "target": "reception_1",
+  "note": "recepción a 0.8 m del acceso, de frente al pasillo primario: se fija"
+ },
+ {
+  "op": "LOCK",
+  "target": "boardroom_12_1",
+  "note": "directorio 7.2×5.0 en fachada oeste entre pilares, puerta al pasillo: se fija"
+ },
+ {
+  "op": "ACCEPT",
+  "target": "meeting_8_1",
+  "note": "sala 8 pegada a recepción, cliente no cruza el open office"
+ },
+ {
+  "op": "ACCEPT",
+  "target": "dining_1",
+  "note": "comedor en fachada oeste, lejos de recepción"
+ },
+ {
+  "op": "ACCEPT",
+  "target": "kitchenette_1",
+  "note": "kitchenette al otro lado del pasillo del comedor (1.2 m): aceptable como pantry"
+ },
+ {
+  "op": "MOVE",
+  "target": "meeting_4_3",
+  "args": {
+   "dx": -0.2,
+   "dy": 0.0
+  },
+  "note": "alinear el tabique oeste de la sala 4 con el de la sala 4_2 (x = 6.4)"
+ },
+ {
+  "op": "ACCEPT",
+  "target": "private_office_2",
+  "note": "queda a 0.8 m de la fachada porque ahí el cerramiento tiene el escalón de 0.72 m (intento de moverlo a y=0 rechazado por el validador: fuera del shell)"
+ }
+]

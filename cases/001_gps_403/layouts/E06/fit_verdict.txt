@@ -1,0 +1,8 @@
+OFICINA 403 (GPS PROPERTY)
+PROGRAM: OFFICE_BALANCED_48 (48 PEOPLE)
+FIT: ROBUST_FIT
+Reason: 40 puestos + programa completo de recintos caben con escala ≥ 0.950× la nominal (70 % de los escenarios probados: 0.950, 0.975, 0.990, 1.000, 1.010, 1.025, 1.050). Restricción dominante: boardroom_12: sin candidato de colocación (rectángulo mayor no cabe junto a la red).
+Primary uncertainty: la superficie publicada (543 m²) no fija una escala geométrica fiable (confianza LOW); la evidencia secundaria del plano es UNKNOWN
+Recommendation: el programa cabe con margen; confirmar una dimensión antes de comprometer capacidad.
+Gate E1 autonomous: PASS · assisted: PASS (AUTONOMOUS_PASS)
+Dimensiones sujetas a confirmación de escala. Test-fit conceptual (space planning), no proyecto de arquitectura.

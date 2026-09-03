@@ -1,0 +1,323 @@
+{
+  "_doc": "Biblioteca de módulos OFFICE — E04. Dimensiones en metros, ejes locales (w = ancho a lo largo del muro, d = profundidad). Referencias: Neufert (Arte de proyectar, 16ª ed.: puestos 1.6×0.8, pasillos 1.2–1.5 m), BCO Guide to Specification 2019 (8–10 m²/persona, salas 2–2.5 m²/asiento), Gensler/Herman Miller workplace standards (bench 1.4–1.6 m). SUPUESTOS de trabajo, NO normativa chilena (OGUC no incorporada). Dimensiones sujetas a confirmación de escala.",
+  "clearances": {
+    "primary_circulation_m": 1.5,
+    "secondary_circulation_m": 1.2,
+    "room_to_room_m": 0.0,
+    "room_to_column_m": 0.0,
+    "desk_aisle_m": 0.9,
+    "_note": "1.5 m principal / 1.2 m secundaria (pasillos de circulación, verificados por raster); 0.9 m entre benches contiguos (pasillo terciario entre puestos, Neufert 0.9 mín). La OGUC exige mínimos que no se han verificado aquí."
+  },
+  "modules": {
+    "workstation": {
+      "kind": "furniture",
+      "w": 1.6,
+      "d": 0.8,
+      "chair_zone_d": 0.8,
+      "occupancy": 1,
+      "notes": "Puesto individual 1.6×0.8 + zona de silla 0.8 → huella 1.6×1.6 = 2.56 m² por persona (Neufert; BCO 1.4–1.6 m bench).",
+      "daylight_preference": 1.0,
+      "entrance_preference": 0.2,
+      "wall_preference": 0.3,
+      "rotation_allowed": true
+    },
+    "workstation_cluster": {
+      "kind": "furniture",
+      "seats": 6,
+      "rows": 2,
+      "cols": 3,
+      "w": 4.8,
+      "d": 3.2,
+      "occupancy": 6,
+      "clearance": {
+        "aisle_m": 1.2
+      },
+      "notes": "Bench 2×3: 3 puestos de 1.6 m enfrentados (0.8+0.8 mesa) + zona de sillas 0.8 a cada lado = 4.8×3.2 m. Se coloca con pasillo de 1.2 m entre clusters. Variantes: 2×2 (4), 2×3 (6), 2×4 (8 puestos, 6.4 m).",
+      "preferred_adjacency": [
+        "workstation_cluster",
+        "lounge",
+        "phone_booth"
+      ],
+      "daylight_preference": 1.0,
+      "entrance_preference": 0.2,
+      "wall_preference": 0.4,
+      "rotation_allowed": true,
+      "hard": [
+        "inside_shell",
+        "no_core",
+        "no_column",
+        "no_overlap",
+        "reachable"
+      ],
+      "soft": [
+        "near_daylight",
+        "away_from_reception"
+      ]
+    },
+    "private_office": {
+      "kind": "room",
+      "w": 4.0,
+      "d": 3.0,
+      "occupancy": 1,
+      "notes": "12 m² (BCO 10–12 m² para privado con mesa de 2). Puerta hacia circulación.",
+      "preferred_adjacency": [
+        "private_office",
+        "meeting_4"
+      ],
+      "daylight_preference": 0.7,
+      "entrance_preference": 0.3,
+      "wall_preference": 1.0,
+      "rotation_allowed": true,
+      "hard": [
+        "inside_shell",
+        "no_core",
+        "no_column",
+        "no_overlap",
+        "door_to_circulation"
+      ],
+      "soft": [
+        "facade_but_penalize_premium",
+        "grouped"
+      ]
+    },
+    "meeting_4": {
+      "kind": "room",
+      "w": 3.5,
+      "d": 3.0,
+      "occupancy": 4,
+      "notes": "10.5 m² (2.5 m²/asiento, BCO). Mesa 1.6×0.8 + sillas.",
+      "preferred_adjacency": [
+        "reception",
+        "meeting_8",
+        "boardroom_12"
+      ],
+      "daylight_preference": 0.4,
+      "entrance_preference": 0.7,
+      "wall_preference": 0.8,
+      "rotation_allowed": true,
+      "hard": [
+        "inside_shell",
+        "no_core",
+        "no_column",
+        "no_overlap",
+        "door_to_circulation"
+      ],
+      "soft": [
+        "near_reception",
+        "not_through_open_office"
+      ]
+    },
+    "meeting_8": {
+      "kind": "room",
+      "w": 5.0,
+      "d": 4.0,
+      "occupancy": 8,
+      "notes": "20 m² (2.5 m²/asiento, BCO). Mesa 2.4×1.0.",
+      "preferred_adjacency": [
+        "reception",
+        "meeting_4",
+        "boardroom_12"
+      ],
+      "daylight_preference": 0.5,
+      "entrance_preference": 0.7,
+      "wall_preference": 0.8,
+      "rotation_allowed": true,
+      "hard": [
+        "inside_shell",
+        "no_core",
+        "no_column",
+        "no_overlap",
+        "door_to_circulation"
+      ],
+      "soft": [
+        "near_reception",
+        "not_through_open_office"
+      ]
+    },
+    "boardroom_12": {
+      "kind": "room",
+      "w": 7.2,
+      "d": 5.0,
+      "occupancy": 12,
+      "notes": "36 m² (3.0 m²/asiento, directorio con mesa 4.2×1.4 y paso perimetral 1.0–1.2).",
+      "preferred_adjacency": [
+        "reception",
+        "meeting_8"
+      ],
+      "daylight_preference": 0.6,
+      "entrance_preference": 0.8,
+      "wall_preference": 1.0,
+      "rotation_allowed": true,
+      "hard": [
+        "inside_shell",
+        "no_core",
+        "no_column",
+        "no_overlap",
+        "door_to_circulation"
+      ],
+      "soft": [
+        "near_reception",
+        "not_through_open_office",
+        "facade_but_penalize_premium"
+      ]
+    },
+    "phone_booth": {
+      "kind": "room",
+      "w": 1.4,
+      "d": 1.2,
+      "occupancy": 1,
+      "notes": "1.7 m², cabina prefabricada estándar (1.2–1.5 m²).",
+      "preferred_adjacency": [
+        "workstation_cluster"
+      ],
+      "daylight_preference": 0.0,
+      "entrance_preference": 0.1,
+      "wall_preference": 0.9,
+      "rotation_allowed": true,
+      "hard": [
+        "inside_shell",
+        "no_core",
+        "no_column",
+        "no_overlap",
+        "door_to_circulation"
+      ],
+      "soft": [
+        "interior_ok",
+        "near_workstations"
+      ]
+    },
+    "reception": {
+      "kind": "room",
+      "w": 4.5,
+      "d": 3.0,
+      "occupancy": 1,
+      "open_front": true,
+      "notes": "13.5 m²: mesón 2.4 m + espera 3 personas, 3.0 m de fondo (frente abierto hacia el acceso: la 'sala' es el mesón + espera, no un recinto cerrado).",
+      "preferred_adjacency": [
+        "meeting_4",
+        "meeting_8",
+        "boardroom_12"
+      ],
+      "daylight_preference": 0.3,
+      "entrance_preference": 1.0,
+      "wall_preference": 0.7,
+      "rotation_allowed": true,
+      "hard": [
+        "inside_shell",
+        "no_core",
+        "no_column",
+        "no_overlap",
+        "door_to_circulation",
+        "within_8m_of_entrance"
+      ],
+      "soft": [
+        "very_near_entrance"
+      ]
+    },
+    "kitchenette": {
+      "kind": "room",
+      "w": 4.0,
+      "d": 3.0,
+      "occupancy": 0,
+      "notes": "12 m²: mesón 4 m con lavaplatos, refrigerador, microondas contra muro (instalaciones); 3 m de fondo.",
+      "preferred_adjacency": [
+        "dining"
+      ],
+      "daylight_preference": 0.2,
+      "entrance_preference": 0.0,
+      "wall_preference": 1.0,
+      "rotation_allowed": true,
+      "hard": [
+        "inside_shell",
+        "no_core",
+        "no_column",
+        "no_overlap",
+        "door_to_circulation"
+      ],
+      "soft": [
+        "far_from_reception",
+        "not_premium_facade",
+        "adjacent_dining"
+      ]
+    },
+    "dining": {
+      "kind": "room",
+      "w": 5.0,
+      "d": 4.0,
+      "occupancy": 16,
+      "open_front": true,
+      "notes": "20 m²: 4 mesas de 4 (1.25 m²/asiento) para 48 personas en 3 turnos.",
+      "preferred_adjacency": [
+        "kitchenette",
+        "lounge"
+      ],
+      "daylight_preference": 0.5,
+      "entrance_preference": 0.0,
+      "wall_preference": 0.5,
+      "rotation_allowed": true,
+      "hard": [
+        "inside_shell",
+        "no_core",
+        "no_column",
+        "no_overlap",
+        "door_to_circulation"
+      ],
+      "soft": [
+        "far_from_reception",
+        "adjacent_kitchenette"
+      ]
+    },
+    "lounge": {
+      "kind": "room",
+      "w": 5.0,
+      "d": 3.5,
+      "occupancy": 8,
+      "open_front": true,
+      "notes": "17.5 m²: 2 sofás + mesa baja + 2 sillones; colaboración informal. Frente abierto.",
+      "preferred_adjacency": [
+        "workstation_cluster",
+        "dining"
+      ],
+      "daylight_preference": 0.8,
+      "entrance_preference": 0.3,
+      "wall_preference": 0.5,
+      "rotation_allowed": true,
+      "hard": [
+        "inside_shell",
+        "no_core",
+        "no_column",
+        "no_overlap",
+        "door_to_circulation"
+      ],
+      "soft": [
+        "near_daylight",
+        "near_workstations"
+      ]
+    },
+    "workstation_row": {
+      "kind": "furniture",
+      "seats": 3,
+      "rows": 1,
+      "cols": 3,
+      "w": 4.8,
+      "d": 1.6,
+      "occupancy": 3,
+      "notes": "Fila simple de 3 puestos (1.6×0.8 + silla 0.8) contra fachada o muro, con pasillo de 1.2 m al frente. Variante del cluster para franjas angostas.",
+      "daylight_preference": 1.0,
+      "entrance_preference": 0.2,
+      "wall_preference": 0.6,
+      "rotation_allowed": true,
+      "hard": [
+        "inside_shell",
+        "no_core",
+        "no_column",
+        "no_overlap",
+        "reachable"
+      ],
+      "soft": [
+        "near_daylight"
+      ]
+    }
+  },
+  "_revision": "v0.2 (E04): la biblioteca v0.1 (recepción 4×4, sala 8 5.5×4, directorio 8×5, lounge 5×4, kitchenette 3×4) no admitía solución en el shell 403 con pasillos de 1.2 m (análisis de capacidad por franjas); se ajustaron dentro de los rangos BCO/Neufert. Documentado en el informe E04."
+}

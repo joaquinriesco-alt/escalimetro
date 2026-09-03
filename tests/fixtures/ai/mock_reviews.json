@@ -1,0 +1,293 @@
+{
+ "A": {
+  "rule_based": {
+   "provider": "deterministic",
+   "model": "rule_based_v1",
+   "alternative_id": "A",
+   "prompt_version": "deterministic_v1",
+   "scores": {
+    "arrival_sequence": 0.72,
+    "reception": 0.62,
+    "client_route": 0.72,
+    "boardroom_location": 0.72,
+    "meeting_accessibility": 0.72,
+    "privacy_gradient": 0.72,
+    "open_work_neighborhoods": 0.72,
+    "adjacency": 0.72,
+    "kitchenette_dining": 0.72,
+    "lounge": 0.72,
+    "circulation_logic": 0.72,
+    "program_coherence": 0.72,
+    "strategy_alignment": 0.7
+   },
+   "critical_issues": [],
+   "warnings": [],
+   "strengths": [
+    "programa completo",
+    "circulación conectada"
+   ],
+   "strategy_alignment": 0.7,
+   "architectural_plausibility": 0.711,
+   "confidence": 0.7,
+   "summary": "MOCK — revisión de fixture para A."
+  },
+  "anthropic": {
+   "provider": "anthropic",
+   "model": "claude-sonnet-4-5",
+   "alternative_id": "A",
+   "prompt_version": "anthropic_spatial_review_v1",
+   "scores": {
+    "arrival_sequence": 0.72,
+    "reception": 0.66,
+    "client_route": 0.75,
+    "boardroom_location": 0.72,
+    "meeting_accessibility": 0.72,
+    "privacy_gradient": 0.72,
+    "open_work_neighborhoods": 0.72,
+    "adjacency": 0.72,
+    "kitchenette_dining": 0.72,
+    "lounge": 0.72,
+    "circulation_logic": 0.72,
+    "program_coherence": 0.72,
+    "strategy_alignment": 0.74
+   },
+   "critical_issues": [],
+   "warnings": [],
+   "strengths": [
+    "programa completo",
+    "circulación conectada"
+   ],
+   "strategy_alignment": 0.74,
+   "architectural_plausibility": 0.719,
+   "confidence": 0.7,
+   "summary": "MOCK — revisión de fixture para A."
+  },
+  "openai_vision": {
+   "provider": "openai",
+   "model": "gpt-5",
+   "alternative_id": "A",
+   "prompt_version": "openai_visual_critic_v1",
+   "scores": {
+    "arrival_reads_naturally": 0.7,
+    "reception_convincing": 0.68,
+    "client_circulation_sense": 0.7,
+    "room_proportions": 0.7,
+    "workspace_fragmentation": 0.7,
+    "furniture_believable": 0.7,
+    "wasted_zones": 0.7,
+    "meeting_clusters": 0.7,
+    "neighborhood_usability": 0.7,
+    "credible_test_fit": 0.7,
+    "strategy_expression": 0.75
+   },
+   "critical_issues": [],
+   "warnings": [],
+   "strengths": [
+    "la planta se lee como oficina"
+   ],
+   "visual_plausibility": 0.703,
+   "strategy_readability": 0.75,
+   "ready_for_external_review": true,
+   "confidence": 0.65,
+   "summary": "MOCK — crítica visual de fixture para A."
+  }
+ },
+ "B": {
+  "rule_based": {
+   "provider": "deterministic",
+   "model": "rule_based_v1",
+   "alternative_id": "B",
+   "prompt_version": "deterministic_v1",
+   "scores": {
+    "arrival_sequence": 0.72,
+    "reception": 0.55,
+    "client_route": 0.72,
+    "boardroom_location": 0.72,
+    "meeting_accessibility": 0.72,
+    "privacy_gradient": 0.72,
+    "open_work_neighborhoods": 0.6,
+    "adjacency": 0.49,
+    "kitchenette_dining": 0.72,
+    "lounge": 0.72,
+    "circulation_logic": 0.72,
+    "program_coherence": 0.72,
+    "strategy_alignment": 0.72
+   },
+   "critical_issues": [],
+   "warnings": [],
+   "strengths": [
+    "programa completo",
+    "circulación conectada"
+   ],
+   "strategy_alignment": 0.72,
+   "architectural_plausibility": 0.68,
+   "confidence": 0.7,
+   "summary": "MOCK — revisión de fixture para B."
+  },
+  "anthropic": {
+   "provider": "anthropic",
+   "model": "claude-sonnet-4-5",
+   "alternative_id": "B",
+   "prompt_version": "anthropic_spatial_review_v1",
+   "scores": {
+    "arrival_sequence": 0.72,
+    "reception": 0.58,
+    "client_route": 0.72,
+    "boardroom_location": 0.72,
+    "meeting_accessibility": 0.72,
+    "privacy_gradient": 0.72,
+    "open_work_neighborhoods": 0.86,
+    "adjacency": 0.82,
+    "kitchenette_dining": 0.72,
+    "lounge": 0.72,
+    "circulation_logic": 0.72,
+    "program_coherence": 0.72,
+    "strategy_alignment": 0.72
+   },
+   "critical_issues": [],
+   "warnings": [
+    {
+     "aspect": "adjacency",
+     "severity": "warning",
+     "text": "los privados consumen fachada premium"
+    }
+   ],
+   "strengths": [
+    "programa completo",
+    "circulación conectada"
+   ],
+   "strategy_alignment": 0.72,
+   "architectural_plausibility": 0.728,
+   "confidence": 0.7,
+   "summary": "MOCK — revisión de fixture para B."
+  },
+  "openai_vision": {
+   "provider": "openai",
+   "model": "gpt-5",
+   "alternative_id": "B",
+   "prompt_version": "openai_visual_critic_v1",
+   "scores": {
+    "arrival_reads_naturally": 0.7,
+    "reception_convincing": 0.52,
+    "client_circulation_sense": 0.7,
+    "room_proportions": 0.58,
+    "workspace_fragmentation": 0.7,
+    "furniture_believable": 0.7,
+    "wasted_zones": 0.7,
+    "meeting_clusters": 0.7,
+    "neighborhood_usability": 0.55,
+    "credible_test_fit": 0.7,
+    "strategy_expression": 0.7
+   },
+   "critical_issues": [],
+   "warnings": [],
+   "strengths": [
+    "la planta se lee como oficina"
+   ],
+   "visual_plausibility": 0.659,
+   "strategy_readability": 0.7,
+   "ready_for_external_review": true,
+   "confidence": 0.65,
+   "summary": "MOCK — crítica visual de fixture para B."
+  }
+ },
+ "C": {
+  "rule_based": {
+   "provider": "deterministic",
+   "model": "rule_based_v1",
+   "alternative_id": "C",
+   "prompt_version": "deterministic_v1",
+   "scores": {
+    "arrival_sequence": 0.7,
+    "reception": 0.72,
+    "client_route": 0.72,
+    "boardroom_location": 0.72,
+    "meeting_accessibility": 0.72,
+    "privacy_gradient": 0.72,
+    "open_work_neighborhoods": 0.72,
+    "adjacency": 0.72,
+    "kitchenette_dining": 0.72,
+    "lounge": 0.72,
+    "circulation_logic": 0.72,
+    "program_coherence": 0.72,
+    "strategy_alignment": 0.72
+   },
+   "critical_issues": [],
+   "warnings": [],
+   "strengths": [
+    "programa completo",
+    "circulación conectada"
+   ],
+   "strategy_alignment": 0.72,
+   "architectural_plausibility": 0.718,
+   "confidence": 0.7,
+   "summary": "MOCK — revisión de fixture para C."
+  },
+  "anthropic": {
+   "provider": "anthropic",
+   "model": "claude-sonnet-4-5",
+   "alternative_id": "C",
+   "prompt_version": "anthropic_spatial_review_v1",
+   "scores": {
+    "arrival_sequence": 0.66,
+    "reception": 0.68,
+    "client_route": 0.72,
+    "boardroom_location": 0.72,
+    "meeting_accessibility": 0.72,
+    "privacy_gradient": 0.72,
+    "open_work_neighborhoods": 0.72,
+    "adjacency": 0.72,
+    "kitchenette_dining": 0.72,
+    "lounge": 0.72,
+    "circulation_logic": 0.72,
+    "program_coherence": 0.72,
+    "strategy_alignment": 0.72
+   },
+   "critical_issues": [],
+   "warnings": [],
+   "strengths": [
+    "programa completo",
+    "circulación conectada"
+   ],
+   "strategy_alignment": 0.72,
+   "architectural_plausibility": 0.712,
+   "confidence": 0.7,
+   "summary": "MOCK — revisión de fixture para C."
+  },
+  "openai_vision": {
+   "provider": "openai",
+   "model": "gpt-5",
+   "alternative_id": "C",
+   "prompt_version": "openai_visual_critic_v1",
+   "scores": {
+    "arrival_reads_naturally": 0.3,
+    "reception_convincing": 0.18,
+    "client_circulation_sense": 0.7,
+    "room_proportions": 0.7,
+    "workspace_fragmentation": 0.7,
+    "furniture_believable": 0.7,
+    "wasted_zones": 0.7,
+    "meeting_clusters": 0.7,
+    "neighborhood_usability": 0.7,
+    "credible_test_fit": 0.7,
+    "strategy_expression": 0.7
+   },
+   "critical_issues": [
+    {
+     "aspect": "reception_convincing",
+     "severity": "critical",
+     "text": "la recepción queda escondida detrás del núcleo; el visitante no la ve al entrar"
+    }
+   ],
+   "warnings": [],
+   "strengths": [
+    "la planta se lee como oficina"
+   ],
+   "visual_plausibility": 0.616,
+   "strategy_readability": 0.7,
+   "ready_for_external_review": false,
+   "confidence": 0.72,
+   "summary": "MOCK — crítica visual de fixture para C."
+  }
+ }
+}

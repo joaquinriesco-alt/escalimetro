@@ -1,0 +1,93 @@
+[
+  {
+    "strategy_id": "A_PERIMETER_WORK",
+    "iteration": 0,
+    "mode": "exact",
+    "status": "INFEASIBLE",
+    "runtime_s": 30.72,
+    "repair": null,
+    "hard_valid": false,
+    "violations": [
+      "CP-SAT no encontró asignación que cumpla las restricciones duras"
+    ],
+    "total_score": null
+  },
+  {
+    "strategy_id": "B_CLIENT_FRONT",
+    "iteration": 0,
+    "mode": "exact",
+    "status": "INFEASIBLE",
+    "runtime_s": 13.94,
+    "repair": null,
+    "hard_valid": false,
+    "violations": [
+      "CP-SAT no encontró asignación que cumpla las restricciones duras"
+    ],
+    "total_score": null
+  },
+  {
+    "strategy_id": "C_DUAL_NEIGHBORHOOD",
+    "iteration": 0,
+    "mode": "exact",
+    "status": "INFEASIBLE",
+    "runtime_s": 1.54,
+    "repair": null,
+    "hard_valid": false,
+    "violations": [
+      "CP-SAT no encontró asignación que cumpla las restricciones duras"
+    ],
+    "total_score": null
+  },
+  {
+    "strategy_id": "D_CENTRAL_MEETING_HUB",
+    "iteration": 0,
+    "mode": "exact",
+    "status": "INFEASIBLE",
+    "runtime_s": 0.3,
+    "repair": null,
+    "hard_valid": false,
+    "violations": [
+      "CP-SAT no encontró asignación que cumpla las restricciones duras"
+    ],
+    "total_score": null
+  },
+  {
+    "strategy_id": "G_E_PUBLIC_S2_WORK",
+    "iteration": 0,
+    "mode": "exact",
+    "status": "INFEASIBLE",
+    "runtime_s": 1.99,
+    "repair": null,
+    "hard_valid": false,
+    "violations": [
+      "CP-SAT no encontró asignación que cumpla las restricciones duras"
+    ],
+    "total_score": null
+  },
+  {
+    "strategy_id": "H_WORK_FAR_CLIENT_ENTRANCE",
+    "iteration": 0,
+    "mode": "exact",
+    "status": "INFEASIBLE",
+    "runtime_s": 0.13,
+    "repair": null,
+    "hard_valid": false,
+    "violations": [
+      "CP-SAT no encontró asignación que cumpla las restricciones duras"
+    ],
+    "total_score": null
+  },
+  {
+    "strategy_id": "I_PERIMETER_CORRIDOR",
+    "iteration": 0,
+    "mode": "exact",
+    "status": "INFEASIBLE",
+    "runtime_s": 0.16,
+    "repair": null,
+    "hard_valid": false,
+    "violations": [
+      "CP-SAT no encontró asignación que cumpla las restricciones duras"
+    ],
+    "total_score": null
+  }
+]
