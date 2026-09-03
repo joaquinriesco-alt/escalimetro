@@ -25,19 +25,19 @@ import os
 import time
 from typing import Dict, List, Optional, Tuple
 
-import cv2
 
 from ..layout.e06.scale import scaled_shell
 from ..layout.e07.strategies import build_alternatives
 from ..layout.model import Layout, load_program
-from ..renderer.side_by_side import _svg_to_bgr
 from ..schemas.floorplate import Floorplate
 from .config import load_configs, missing_keys
 from .geometry_guard import geometry_hash
+from .manifest import BLOCKED, FAILED, OK, RunManifest, SKIPPED
 from .orchestrator import AIOrchestrator
 from .review_aggregator import BRIDGE, aggregate
 from .reviewers import build_payload
 from .run import presentation_context
+from .svg_rasterizer import PresentationRasterizationError, available_backends, rasterize_and_write
 from .telemetry import scrub
 
 ALTS = ["A", "B", "C"]
@@ -57,6 +57,31 @@ SPATIAL_OF = {v: k for k, v in BRIDGE.items()}
 def dump(obj, path):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     json.dump(scrub(obj), open(path, "w", encoding="utf-8"), indent=2, ensure_ascii=False, default=str)
+
+
+# ---------------------------------------------------------------------------------------------------
+# E12 — logs por etapa. Una línea por transición, sin prompts ni respuestas ni credenciales.
+# ---------------------------------------------------------------------------------------------------
+def stage(name: str, state: str, detail: str = "") -> None:
+    print(f"[e09] STAGE {name} {state}" + (f" · {detail}" if detail else ""), flush=True)
+
+
+def snapshot_run(out: str, runs_dir: str) -> Optional[str]:
+    """Copia la corrida terminada a `ai/runs/<run_id>/` para que la siguiente no la destruya.
+
+    Copia, no mueve: `ai/E09/` sigue siendo la corrida actual y todo el código y los tests que ya
+    dependen de esa ruta siguen funcionando."""
+    import shutil
+    try:
+        os.makedirs(runs_dir, exist_ok=True)
+        for f in sorted(os.listdir(out)):
+            src = os.path.join(out, f)
+            if os.path.isfile(src) and not f.startswith("."):
+                shutil.copy2(src, os.path.join(runs_dir, f))
+        return runs_dir
+    except Exception as e:                                    # el archivo histórico nunca tumba la corrida
+        print(f"[e09] snapshot FAILED · {type(e).__name__}", flush=True)
+        return None
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -260,8 +285,13 @@ def main(argv=None):
     args = ap.parse_args(argv)
     t_all = time.time()
     e07 = os.path.join(args.case, "layouts", "E07")
-    out = os.path.join(args.case, "ai", "E09")
+    out = os.path.join(args.case, "ai", "E09")          # corrida actual: ruta estable, compatible
     os.makedirs(out, exist_ok=True)
+    mf = RunManifest(path=os.path.join(out, "run_manifest.json"), case=args.case)
+    runs_dir = os.path.join(args.case, "ai", "runs", mf.run_id)
+    mf.save()
+    print(f"[e09] run_id={mf.run_id} · backends de rasterización: {', '.join(available_backends()) or 'ninguno'}",
+          flush=True)
 
     # ---- §3 precondición ---------------------------------------------------------------------------
     cfgs = load_configs()
@@ -273,6 +303,9 @@ def main(argv=None):
     models = {p: c.model for p, c in cfgs.items()}
     print(f"[e09] keys: " + " · ".join(f"{k}={v}" for k, v in keys.items()))
     print(f"[e09] modelos configurados: " + " · ".join(f"{k}={v}" for k, v in models.items()))
+    mf.api_keys_status = {k.replace("_status", ""): v for k, v in keys.items()}
+    mf.models = models
+    mf.save()
 
     # ---- §4 baseline congelado ---------------------------------------------------------------------
     fp = Floorplate.load(os.path.join(args.case, "outputs", "floorplate.json"))
@@ -303,29 +336,61 @@ def main(argv=None):
     latencies: Dict[str, Dict[str, float]] = {}
     errors: Dict[str, Dict[str, str]] = {}
     t_par = time.time()
+    mf.set_stage("providers")
     for alt in ALTS:
+        for src in SOURCES:
+            stage(f"{src} {alt}", "START")
         r = orch.review_alternative(alt, layouts[alt], payloads[alt],
                                     image_paths=[os.path.join(e07, "alternatives", alt,
                                                               "layout_commercial.png")])
         reviews[alt] = {s: r.reviews.get(s) for s in SOURCES}
         latencies[alt] = r.latencies_ms
         errors[alt] = r.errors
-        print(f'[e09] {alt}: ' + " · ".join(
-            f'{s}={"OK" if reviews[alt][s] else errors[alt].get(s, "BLOCKED")}' for s in SOURCES))
+        for src in SOURCES:
+            rv = reviews[alt][src]
+            if rv:
+                mf.set_provider(src, alt, OK)
+                stage(f"{src} {alt}", "OK", f'model={rv.get("model", "?")} · '
+                                            f'{latencies[alt].get(src, 0):.0f} ms')
+            else:
+                err = errors[alt].get(src, "unknown")
+                mf.set_provider(src, alt, BLOCKED if err == "provider_unavailable" else FAILED)
+                stage(f"{src} {alt}", "BLOCKED" if err == "provider_unavailable" else "FAILED", err)
+        # E12: la evidencia de proveedores se persiste APENAS existe, no al final. Si una etapa
+        # posterior explota, esto ya está en disco.
+        dump({a: {s: reviews[a][s] for s in SOURCES} for a in reviews},
+             os.path.join(out, "real_reviews_abc.json"))
     parallel_wall_ms = round((time.time() - t_par) * 1000, 1)
+    stage("providers", "DONE", f"wall={parallel_wall_ms:.0f} ms")
 
     # ---- §17 geometry guard ------------------------------------------------------------------------
+    mf.set_stage("geometry_guard")
     hash_after = {a: geometry_hash(layouts[a], shell) for a in ALTS}
     geometry_ok = hash_before == hash_after
+    dump({"geometry_hash_before": hash_before, "geometry_hash_after": hash_after,
+          "identical": geometry_ok}, os.path.join(out, "geometry_hash_check.json"))
+    for a in ALTS:
+        print(f'[e09] GeometryHash {a} {"PASS" if hash_before[a] == hash_after[a] else "FAIL"}', flush=True)
+    mf.set_status("geometry_guard", OK if geometry_ok else FAILED)
     if not geometry_ok:
+        mf.add_error("geometry_guard", {"reason": "geometry hash cambió"})
+        mf.finish(FAILED)
         raise SystemExit("E09 FAIL: geometry hash cambió")
 
     # ---- §8 §9 §10 §11 -----------------------------------------------------------------------------
+    mf.set_stage("aggregator")
+    stage("aggregator", "START")
     matrix = agreement_matrix(reviews)
     recep = reception_case(reviews)
     strat = strategy_readability(reviews)
     agg = {a: aggregate(a, reviews[a], {s: ("unavailable" if s in errors[a] else "present")
                                         for s in SOURCES}).to_dict() for a in ALTS}
+    dump(matrix, os.path.join(out, "provider_agreement_matrix.json"))
+    dump(recep, os.path.join(out, "reception_case_study.json"))
+    dump(strat, os.path.join(out, "strategy_readability.json"))
+    dump(agg, os.path.join(out, "aggregated_reviews.json"))
+    mf.set_status("aggregator", OK)
+    stage("aggregator", "OK")
 
     # ---- §14 §15 telemetría ------------------------------------------------------------------------
     usage = orch.ledger.summary()
@@ -343,9 +408,16 @@ def main(argv=None):
     seq_ms = round(sum(sum(v.values()) for v in latencies.values()), 1)
     saved = round(100.0 * (1 - parallel_wall_ms / seq_ms), 1) if seq_ms else 0.0
 
+    dump({"by_source": by_source, "totals": usage["total_cost"], "calls": usage["calls"],
+          "parallel_wall_ms": parallel_wall_ms, "sequential_equivalent_ms": seq_ms,
+          "latency_saved_pct": saved, "latencies_ms": latencies},
+         os.path.join(out, "real_cost_latency.json"))
+
     # ---- §12 §13 ablación y valor -------------------------------------------------------------------
     abl = ablation(reviews, latencies, by_source)
     value = value_per_provider(reviews, abl, by_source, latencies)
+    dump(abl, os.path.join(out, "provider_ablation.json"))
+    dump(value, os.path.join(out, "provider_value_summary.json"))
 
     # ---- §16 fiabilidad de prompts -----------------------------------------------------------------
     reliability = []
@@ -369,70 +441,126 @@ def main(argv=None):
         })
 
     # ---- §18 §19 dirección de lámina real ----------------------------------------------------------
+    mf.set_stage("presentation_director")
     ctx = presentation_context([specs[a] for a in ALTS], list(rows.values()), fit)
     ctx["aggregated_reviews"] = {a: {"status": agg[a]["status"],
                                      "consensus_scores": agg[a]["consensus_scores"]} for a in ALTS}
     spec, spec_status = None, "BLOCKED"
     if cfgs["presentation"].available:
+        stage("presentation_director", "START")
         try:
             spec = orch.presentation_spec(ctx)
             spec_status = "EXECUTED" if spec.get("provider") == "openai" else "BLOCKED"
         except Exception as e:                                       # pragma: no cover
             spec_status = f"BLOCKED ({type(e).__name__})"
+            mf.add_error("presentation_director", {"reason": type(e).__name__})
+    else:
+        stage("presentation_director", "BLOCKED", "sin credencial de OpenAI")
     if spec_status == "EXECUTED":
-        from .board02 import build_board02          # 03 reusa el renderer; sólo cambia la spec
-        board_alts = [{"alt": a, "layout": layouts[a], "row": rows[a],
-                       "metrics": json.load(open(os.path.join(e07, "alternatives", a, "metrics.json"),
-                                                 encoding="utf-8")), "critique": {}} for a in ALTS]
-        svg = build_board02(board_alts, shell, spec, fit).replace("STANDARD 02", "STANDARD 03")
-        open(os.path.join(out, "ESCALIMETRO_PRESENTATION_STANDARD_03.svg"), "w", encoding="utf-8").write(svg)
-        cv2.imwrite(os.path.join(out, "ESCALIMETRO_PRESENTATION_STANDARD_03.png"), _svg_to_bgr(svg, 3600))
         dump(spec, os.path.join(out, "presentation_spec_openai.json"))
-        assert {a: geometry_hash(layouts[a], shell) for a in ALTS} == hash_before
+        mf.set_status("presentation_director", OK)
+        stage("presentation_director", "OK", f'model={spec.get("model", "?")}')
+    else:
+        mf.set_status("presentation_director", BLOCKED)
+
+    # ---- §19 render de la lámina 03 — etapa PROPIA -------------------------------------------------
+    # E12: aquí murió la primera corrida de Railway. Ahora el render es su propia etapa, con su propio
+    # estado, y un fallo NO destruye ni oculta la evidencia de proveedores obtenida antes.
+    render_status, render_error = SKIPPED, None
+    if spec_status == "EXECUTED":
+        mf.set_stage("presentation_render")
+        stage("presentation_render", "START")
+        try:
+            from .board02 import build_board02      # 03 reusa el renderer; sólo cambia la spec
+            board_alts = [{"alt": a, "layout": layouts[a], "row": rows[a],
+                           "metrics": json.load(open(os.path.join(e07, "alternatives", a, "metrics.json"),
+                                                     encoding="utf-8")), "critique": {}} for a in ALTS]
+            svg = build_board02(board_alts, shell, spec, fit).replace("STANDARD 02", "STANDARD 03")
+            svg_path = os.path.join(out, "ESCALIMETRO_PRESENTATION_STANDARD_03.svg")
+            open(svg_path, "w", encoding="utf-8").write(svg)
+            mf.add_artifact("standard_03_svg", svg_path)
+            png = rasterize_and_write(svg, 3600,
+                                      os.path.join(out, "ESCALIMETRO_PRESENTATION_STANDARD_03.png"),
+                                      what="Presentation Standard 03")
+            mf.add_artifact("standard_03_png", png)
+            render_status = OK
+            mf.set_status("presentation_render", OK)
+            stage("presentation_render", "OK")
+            assert {a: geometry_hash(layouts[a], shell) for a in ALTS} == hash_before
+        except PresentationRasterizationError as e:
+            render_status, render_error = FAILED, e.to_dict()
+            mf.set_status("presentation_render", FAILED)
+            mf.add_error("presentation_render", e.to_dict())
+            stage("presentation_render", "FAILED", f"PresentationRasterizationError · {e.reason}")
+        except Exception as e:                                       # cualquier otro fallo del board
+            render_status = FAILED
+            render_error = {"error": type(e).__name__, "reason": str(e)[:200]}
+            mf.set_status("presentation_render", FAILED)
+            mf.add_error("presentation_render", render_error)
+            stage("presentation_render", "FAILED", type(e).__name__)
+    else:
+        mf.set_status("presentation_render", SKIPPED)
+        stage("presentation_render", "SKIPPED", "no hay PresentationSpec real que renderizar")
 
     # ---- salidas -----------------------------------------------------------------------------------
-    dump({"keys": keys, "models": models, "provider_status": orch.provider_status()},
-         os.path.join(out, "precondition.json"))
-    dump({a: {s: reviews[a][s] for s in SOURCES} for a in ALTS}, os.path.join(out, "real_reviews_abc.json"))
-    dump(matrix, os.path.join(out, "provider_agreement_matrix.json"))
-    dump(recep, os.path.join(out, "reception_case_study.json"))
-    dump(strat, os.path.join(out, "strategy_readability.json"))
-    dump(agg, os.path.join(out, "aggregated_reviews.json"))
-    dump(abl, os.path.join(out, "provider_ablation.json"))
-    dump(value, os.path.join(out, "provider_value_summary.json"))
+    # Los JSON de proveedores, agregador, telemetría y geometría YA se escribieron en su etapa. Aquí
+    # sólo quedan los que dependen de todo lo anterior.
+    dump({"keys": keys, "models": models, "provider_status": orch.provider_status(),
+          "rasterizer_backends": available_backends()}, os.path.join(out, "precondition.json"))
     dump(reliability, os.path.join(out, "prompt_reliability.json"))
-    dump({"geometry_hash_before": hash_before, "geometry_hash_after": hash_after,
-          "identical": geometry_ok}, os.path.join(out, "geometry_hash_check.json"))
-    dump({"by_source": by_source, "totals": usage["total_cost"], "calls": usage["calls"],
-          "parallel_wall_ms": parallel_wall_ms, "sequential_equivalent_ms": seq_ms,
-          "latency_saved_pct": saved, "latencies_ms": latencies},
-         os.path.join(out, "real_cost_latency.json"))
 
-    from .visuals09 import render_all
-    render_all(out, {"keys": keys, "models": models, "reviews": reviews, "matrix": matrix,
-                     "reception": recep, "strategy": strat, "aggregated": agg, "ablation": abl,
-                     "value": value, "reliability": reliability, "latencies": latencies,
-                     "by_source": by_source, "usage": usage, "parallel_wall_ms": parallel_wall_ms,
-                     "sequential_equivalent_ms": seq_ms, "latency_saved_pct": saved,
-                     "hash_before": hash_before, "hash_after": hash_after, "geometry_ok": geometry_ok,
-                     "spec_status": spec_status, "errors": errors, "case": args.case})
+    mf.set_stage("visuals")
+    try:
+        from .visuals09 import render_all
+        render_all(out, {"keys": keys, "models": models, "reviews": reviews, "matrix": matrix,
+                         "reception": recep, "strategy": strat, "aggregated": agg, "ablation": abl,
+                         "value": value, "reliability": reliability, "latencies": latencies,
+                         "by_source": by_source, "usage": usage, "parallel_wall_ms": parallel_wall_ms,
+                         "sequential_equivalent_ms": seq_ms, "latency_saved_pct": saved,
+                         "hash_before": hash_before, "hash_after": hash_after, "geometry_ok": geometry_ok,
+                         "spec_status": spec_status, "errors": errors, "case": args.case})
+        stage("visuals", "OK")
+    except Exception as e:                       # las visuales tampoco pueden tumbar la evidencia
+        mf.add_error("visuals", {"error": type(e).__name__, "reason": str(e)[:200]})
+        stage("visuals", "FAILED", type(e).__name__)
 
     executed = any(reviews[a].get(s) for a in ALTS for s in ("anthropic", "openai_vision"))
+    all_executed = all(reviews[a].get(s) for a in ALTS for s in ("anthropic", "openai_vision"))
     summary = {
+        "run_id": mf.run_id,
         "runtime_s": round(time.time() - t_all, 1),
-        "api_execution_status": "EXECUTED" if executed else "BLOCKED — API KEY MISSING",
+        # --- GATE DE EJECUCIÓN DE API: depende SÓLO de los proveedores y de la geometría -----------
+        "api_execution_status": ("EXECUTED" if all_executed else
+                                 "PARTIAL" if executed else "BLOCKED — API KEY MISSING"),
+        "gate_api": "PASS" if all_executed and geometry_ok else ("PARTIAL" if executed else "BLOCKED"),
+        # --- GATE DE ARTEFACTO DE PRESENTACIÓN: independiente del anterior --------------------------
+        "presentation_spec_status": spec_status,
+        "presentation_render_status": render_status,
+        "presentation_render_error": render_error,
+        "standard_03": ("PRODUCED" if render_status == OK else
+                        "SVG_AVAILABLE_PNG_FAILED" if render_status == FAILED else
+                        "NOT PRODUCED — sin PresentationSpec real de OpenAI"),
         "keys": keys, "models": models,
-        "gate_api": "PASS" if executed and geometry_ok else "BLOCKED",
         "gate_multi_model_value": ("INSUFFICIENT_EVIDENCE" if not executed else "PENDING_JUDGEMENT"),
         "geometry_locked": geometry_ok,
-        "presentation_spec_status": spec_status,
-        "standard_03": "PRODUCED" if spec_status == "EXECUTED" else "NOT PRODUCED — sin PresentationSpec real de OpenAI",
+        "rasterizer_backends": available_backends(),
         "errors": errors,
     }
     dump(summary, os.path.join(out, "summary.json"))
-    print(f'[e09] {summary["api_execution_status"]} · gate API {summary["gate_api"]} · '
-          f'valor multi-modelo {summary["gate_multi_model_value"]} · geometry_locked={geometry_ok} · '
-          f'{summary["runtime_s"]} s')
+
+    # --- archivo histórico: la corrida siguiente no destruye ésta -----------------------------------
+    snap = snapshot_run(out, runs_dir)
+    if snap:
+        mf.add_artifact("run_snapshot", snap)
+        print(f"[e09] snapshot · {snap}", flush=True)
+
+    final = OK if (geometry_ok and render_status in (OK, SKIPPED)) else FAILED
+    mf.set_status("report", OK)
+    mf.finish(final)
+    print(f'[e09] API {summary["api_execution_status"]} · gate API {summary["gate_api"]} · '
+          f'presentation_render={render_status} · valor multi-modelo '
+          f'{summary["gate_multi_model_value"]} · geometry_locked={geometry_ok} · '
+          f'{summary["runtime_s"]} s', flush=True)
     return 0
 
 

@@ -75,7 +75,7 @@ def load_outputs(case: str) -> Dict:
     for name in ("summary", "real_reviews_abc", "provider_agreement_matrix", "reception_case_study",
                  "strategy_readability", "aggregated_reviews", "provider_ablation",
                  "provider_value_summary", "prompt_reliability", "geometry_hash_check",
-                 "real_cost_latency", "precondition", "presentation_spec_openai"):
+                 "real_cost_latency", "precondition", "presentation_spec_openai", "run_manifest"):
         p = os.path.join(out, f"{name}.json")
         if os.path.exists(p):
             try:
@@ -105,6 +105,24 @@ def _img(path: str, caption: str) -> str:
                 f'<figcaption>{html.escape(caption)}</figcaption></figure>')
     return (f'<figure><img src="{uri}" alt="{html.escape(caption)}"/>'
             f'<figcaption>{html.escape(caption)}</figcaption></figure>')
+
+
+def _svg_fallback(path: str, caption: str) -> str:
+    """§15 — si el PNG falló pero el SVG existe, se embebe el SVG para poder inspeccionar el resultado.
+
+    Esto NO convierte el gate del PNG en PASS: el bloque lo dice explícitamente."""
+    if not os.path.exists(path):
+        return ""
+    try:
+        svg = open(path, encoding="utf-8").read()
+    except Exception:
+        return ""
+    uri = "data:image/svg+xml;base64," + base64.b64encode(svg.encode("utf-8")).decode("ascii")
+    return (f'<div class="verdict bad"><div class="k">SVG AVAILABLE · PNG RASTERIZATION FAILED</div>'
+            f'<p>La lámina existe como SVG y se muestra abajo para inspección visual. '
+            f'El artefacto PNG NO se produjo: el gate de render sigue en FAILED.</p></div>'
+            f'<figure><img src="{uri}" alt="{html.escape(caption)}"/>'
+            f'<figcaption>{html.escape(caption)} — fallback SVG</figcaption></figure>')
 
 
 def _table(headers: List[str], rows: List[List[str]]) -> str:
@@ -194,11 +212,40 @@ def build_html(case: str, env: Dict, run: Dict, data: Dict) -> str:
       f'<div class="k">API EXECUTION</div><div style="font-size:22px;font-weight:700">'
       f'{html.escape(str(summary.get("api_execution_status", "—")))}</div>'
       f'<p>GATE API {_badge(gate_api)} &nbsp; GATE MULTI-MODEL VALUE {_badge(gate_value)} &nbsp; '
-      f'GEOMETRY LOCKED {_badge(summary.get("geometry_locked"))}</p></div>')
+      f'GEOMETRY LOCKED {_badge(summary.get("geometry_locked"))}</p>'
+      f'<p class="sub">PRESENTATION RENDER {_badge(summary.get("presentation_render_status", "—"))} — '
+      f'estado independiente del anterior: un fallo de rasterización no invalida las llamadas a los '
+      f'proveedores que sí terminaron.</p></div>')
     if not run["ok"]:
         A(f'<div class="verdict bad"><div class="k">EL EXPERIMENTO NO TERMINÓ</div>'
           f'<p class="mono">{html.escape(str(run.get("error") or "return code " + str(run.get("return_code"))))}</p>'
           f'<p>El servidor se levantó igual para que este diagnóstico sea visible.</p></div>')
+
+    # 1b — etapas de la corrida, desde el manifiesto
+    man = data.get("run_manifest") or {}
+    if man:
+        A('<h2>1b · Etapas de la corrida</h2>')
+        A(f'<p class="sub">run_id <code>{html.escape(str(man.get("run_id", "—")))}</code> · '
+          f'inicio {html.escape(str(man.get("started_at", "—")))} · '
+          f'fin {html.escape(str(man.get("finished_at") or "—"))}</p>')
+        prov_rows = []
+        for src, label in (("rule_based", "rule-based"), ("anthropic", "Anthropic"),
+                           ("openai_visual", "OpenAI Vision")):
+            d_ = man.get(src) or {}
+            prov_rows.append([label] + [_badge(d_.get(a, "—")) for a in ("A", "B", "C")])
+        A(_table(["fuente", "A", "B", "C"], prov_rows))
+        A(_table(["etapa", "estado"],
+                 [["aggregator", _badge(man.get("aggregator_status", "—"))],
+                  ["presentation_director", _badge(man.get("presentation_director_status", "—"))],
+                  ["presentation_render", _badge(man.get("presentation_render_status", "—"))],
+                  ["geometry_guard", _badge(man.get("geometry_guard_status", "—"))],
+                  ["final", _badge(man.get("final_status", "—"))]]))
+        if man.get("errors"):
+            A('<h3>Errores registrados</h3>')
+            A(_table(["etapa", "detalle"],
+                     [[html.escape(str(e.get("stage", "—"))),
+                       f'<code>{html.escape(json.dumps({k: v for k, v in e.items() if k not in ("stage", "at")}, ensure_ascii=False))[:300]}</code>']
+                      for e in man["errors"]]))
 
     # 2 — estado de API y variables
     A('<h2>2 · API status y variables</h2>')
@@ -322,8 +369,18 @@ def build_html(case: str, env: Dict, run: Dict, data: Dict) -> str:
           '<p>OpenAI no produjo especificación en esta corrida, así que la lámina 03 no se renderizó. '
           'Dirigirla de otra forma invalidaría la comparación 02 vs 03.</p></div>')
     A('<h2>13 · Presentation Standard 03</h2>')
-    A(_img(os.path.join(out_dir, "ESCALIMETRO_PRESENTATION_STANDARD_03.png"),
-           "ESCALIMETRO_PRESENTATION_STANDARD_03 — geometría de E07, dirección de OpenAI"))
+    png03 = os.path.join(out_dir, "ESCALIMETRO_PRESENTATION_STANDARD_03.png")
+    svg03 = os.path.join(out_dir, "ESCALIMETRO_PRESENTATION_STANDARD_03.svg")
+    if os.path.exists(png03):
+        A(_img(png03, "ESCALIMETRO_PRESENTATION_STANDARD_03 — geometría de E07, dirección de OpenAI"))
+    elif os.path.exists(svg03):
+        err = summary.get("presentation_render_error") or {}
+        A(f'<p class="sub">Causa técnica: <code>{html.escape(json.dumps(err, ensure_ascii=False))[:400]}</code></p>'
+          if err else "")
+        A(_svg_fallback(svg03, "ESCALIMETRO_PRESENTATION_STANDARD_03"))
+    else:
+        A('<div class="verdict bad"><div class="k">PRESENTATION STANDARD 03 · NO PRODUCIDA</div>'
+          f'<p>{html.escape(str(summary.get("standard_03", "sin PresentationSpec real de OpenAI")))}</p></div>')
     A('<h2>14 · Standard 01 vs 02 vs 03</h2>')
     A(_img(os.path.join(out_dir, "presentation_01_02_03.png"), "presentation_01_02_03"))
     A(_img(os.path.join(e07, "ESCALIMETRO_PRESENTATION_STANDARD_01.png"), "STANDARD 01 (E07)"))
@@ -332,7 +389,8 @@ def build_html(case: str, env: Dict, run: Dict, data: Dict) -> str:
     # 15 — gates
     A('<h2>15 · Gates</h2>')
     A(_table(["gate", "estado"],
-             [["GATE API", _badge(gate_api)],
+             [["GATE API (ejecución de proveedores)", _badge(gate_api)],
+              ["PRESENTATION RENDER (artefacto PNG)", _badge(summary.get("presentation_render_status", "—"))],
               ["GATE MULTI-MODEL VALUE", _badge(gate_value)],
               ["E1-C comercial", _badge("READY_FOR_BROKER_REVIEW — el software nunca lo marca PASS")]]))
     A(f'<footer>Test-fit conceptual para evaluación de espacio. No constituye proyecto de arquitectura. '
@@ -392,9 +450,17 @@ def serve(port: int) -> None:
 def main(argv=None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     case = os.getenv("ESCALIMETRO_CASE", DEFAULT_CASE)
+    if "--case" in argv:                                     # E12: útil para ensayar sin tocar el caso real
+        case = argv[argv.index("--case") + 1]
     serve_after = "--no-serve" not in argv
+    unknown = [a for a in argv if a.startswith("--") and a not in ("--no-serve", "--case")]
+    if unknown:                                              # nunca ignorar en silencio un argumento
+        log("argumentos no reconocidos, se ignoran: " + " ".join(unknown))
+    log(f"case={case}")
 
     env = env_report()
+    from .svg_rasterizer import available_backends
+    log("svg rasterizer backends: " + (", ".join(available_backends()) or "NINGUNO — la lámina 03 fallará"))
     for k, v in env["keys"].items():
         log(f"{k}={v}")
     for k, v in env["models"].items():

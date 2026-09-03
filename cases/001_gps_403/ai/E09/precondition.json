@@ -52,5 +52,9 @@
       "status": "AVAILABLE",
       "has_key": true
     }
-  }
+  },
+  "rasterizer_backends": [
+    "resvg",
+    "cairosvg"
+  ]
 }

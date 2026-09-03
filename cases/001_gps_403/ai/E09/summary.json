@@ -1,6 +1,12 @@
 {
-  "runtime_s": 2.0,
+  "run_id": "20260903T194655Z-55fc97",
+  "runtime_s": 1.9,
   "api_execution_status": "BLOCKED — API KEY MISSING",
+  "gate_api": "BLOCKED",
+  "presentation_spec_status": "BLOCKED",
+  "presentation_render_status": "SKIPPED",
+  "presentation_render_error": null,
+  "standard_03": "NOT PRODUCED — sin PresentationSpec real de OpenAI",
   "keys": {
     "OPENAI_API_KEY_status": "MISSING",
     "ANTHROPIC_API_KEY_status": "MISSING"
@@ -10,11 +16,12 @@
     "visual_review": "gpt-5",
     "presentation": "gpt-5"
   },
-  "gate_api": "BLOCKED",
   "gate_multi_model_value": "INSUFFICIENT_EVIDENCE",
   "geometry_locked": true,
-  "presentation_spec_status": "BLOCKED",
-  "standard_03": "NOT PRODUCED — sin PresentationSpec real de OpenAI",
+  "rasterizer_backends": [
+    "resvg",
+    "cairosvg"
+  ],
   "errors": {
     "A": {
       "anthropic": "provider_unavailable",

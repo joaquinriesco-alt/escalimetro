@@ -122,3 +122,51 @@ C  e12cc722485b…
 
 Si alguno cambia, la corrida es FAIL por seguridad geométrica aunque las llamadas a los proveedores hayan
 funcionado. Ningún modelo puede mover una coordenada.
+
+### Observabilidad de la corrida (E12)
+
+Cada corrida escribe `run_manifest.json` en `cases/<caso>/ai/E09/` **de forma atómica y después de cada
+transición de etapa**, no al final. Si el proceso muere a mitad de camino, el manifiesto ya contiene todo
+lo que había terminado hasta ese punto. Además la corrida completa se archiva en
+`cases/<caso>/ai/runs/<run_id>/`, así una segunda corrida no puede borrar la evidencia de la primera.
+
+Etapas registradas: `rule_based`, `anthropic`, `openai_vision` (una por alternativa A/B/C), `aggregator`,
+`geometry_guard`, `presentation_director`, `presentation_render`, `visuals`, `telemetry`, `ablation`.
+Estados posibles: `NOT_STARTED`, `RUNNING`, `OK`, `FAILED`, `BLOCKED`, `SKIPPED`.
+
+Qué buscar en los logs de Railway, en este orden:
+
+```
+[e09] run_id=… · backends de rasterización: resvg, cairosvg   ← si dice NINGUNO, la lámina 03 fallará
+[e09] STAGE anthropic A OK · model=… · 900 ms                 ← proveedor respondió
+[e09] STAGE openai_vision B FAILED · …                        ← proveedor falló, y por qué
+[e09] GeometryHash A PASS                                     ← la geometría no se movió
+[e09] STAGE presentation_render OK|FAILED|SKIPPED             ← la lámina, aparte de todo lo anterior
+```
+
+### Rasterización SVG → PNG
+
+`escalimetro.ai.svg_rasterizer` es el único camino permitido de SVG a PNG en la capa de IA. Intenta los
+backends en orden:
+
+1. **`resvg`** (`resvg-py`) — wheel de Rust autocontenida, sin librerías nativas del sistema. Es el
+   primario justamente porque no depende del entorno.
+2. **`cairosvg`** — respaldo. Necesita `libcairo.so.2` instalada en el sistema; en la imagen de Railway
+   no está, y esa fue la causa raíz del fallo de la lámina 03 en la primera corrida desplegada.
+
+El módulo valida el array antes de escribir y comprueba el retorno y la excepción de `cv2.imwrite`. Un
+fallo se propaga como `PresentationRasterizationError` con contexto (backend, ancho, largo del SVG,
+intentos) — nunca como `Assertion failed !_img.empty()`.
+
+### GATE API ≠ PRESENTATION RENDER
+
+Son dos cosas distintas y el informe las muestra en filas separadas:
+
+| Estado | Qué significa |
+|---|---|
+| `GATE API` | si los proveedores se ejecutaron de verdad: `OK` / `PARTIAL` / `BLOCKED` / `FAILED` |
+| `PRESENTATION RENDER` | si el artefacto PNG de la lámina se produjo: `OK` / `FAILED` / `SKIPPED` |
+
+**Un fallo de presentación no invalida la evidencia de los proveedores.** Si la lámina 03 no se pudo
+rasterizar pero el SVG existe, el informe la incrusta como SVG con el bloque
+`SVG AVAILABLE · PNG RASTERIZATION FAILED`, en vez de mostrar un hueco.

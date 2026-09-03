@@ -28,3 +28,11 @@ cases/*/outputs/*.png
 
 # informe generado por el runner en cada arranque
 ESCALIMETRO_E09_REAL_REPORT.html
+
+# archivo por corrida (E12): evidencia de ejecución, no fuente. Se regenera en cada arranque y crece
+# ~6 MB por corrida; se conserva en el disco del servicio, no en el repo.
+cases/*/ai/runs/
+
+# manifiesto de la corrida en curso (E12): estado de ejecución, no fuente. Se reescribe en cada
+# arranque del servicio; versionarlo hace que cada corrida ensucie el diff.
+cases/*/ai/E09/run_manifest.json
