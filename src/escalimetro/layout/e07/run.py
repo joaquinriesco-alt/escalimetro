@@ -15,6 +15,7 @@ from typing import Dict, List
 import cv2
 import numpy as np
 
+from ...case_context import CaseContext, from_case_dir
 from ...renderer.side_by_side import _svg_to_bgr
 from ...schemas.floorplate import Floorplate
 from ..model import Layout, load_modules, load_program
@@ -30,21 +31,32 @@ from .pipeline import (AlternativeComparison, compare, gate_e1a, gate_e1c, gate_
 from .strategies import build_alternatives
 from .visuals import comparison_png, performance_png, qa_summary_png, spatial_graph_svg
 
-FIT = {
-    "unit": "Oficina 403 (GPS Property)",
-    "published_area_m2": 543.0,
+# E15 — el veredicto de fit es DATO DEL CASO, no conocimiento del motor. Vive en case.json y se
+# completa con la identidad del caso (unidad, fuente, superficie publicada). Un caso sin veredicto
+# declarado obtiene UNKNOWN: nunca el de otro caso.
+DEFAULT_FIT = {
     "program": "OFFICE_BALANCED_48",
     "headcount": 48,
-    "fit": "ROBUST_WITHIN_ASSUMED_SCALE_RANGE",
-    "fit_label": "ROBUST WITHIN ASSUMED SCALE RANGE",
+    "fit": "UNKNOWN",
+    "fit_label": "FIT NO EVALUADO",
     "scale": "UNCONFIRMED",
     "scale_confidence": "LOW",
-    "reason": "El programa completo cabe en todo el rango de escala asumido probado en E06 (0.95×–1.05× de la "
-              "escala nominal); bajo ~0.925× deja de existir ubicación geométrica para el directorio.",
+    "reason": "Este caso no declara un veredicto de robustez de escala en case.json.",
     "recommendation": "Confirma una dimensión real antes de comprometer capacidad.",
     "note": "Test-fit conceptual de space planning. No constituye proyecto de arquitectura.",
-    "source": "análisis de robustez de escala E06 (congelado); E07 no repite el barrido.",
+    "source": "sin análisis de robustez declarado para este caso.",
 }
+
+
+def fit_verdict_for(ctx) -> Dict:
+    """Veredicto de fit del caso, con la identidad resuelta desde el CaseContext."""
+    fit = dict(DEFAULT_FIT)
+    fit.update(ctx.fit_verdict or {})
+    unit = ctx.display_name or ctx.unit_label
+    fit["unit"] = f"{unit} ({ctx.source_name})" if ctx.source_name else unit
+    fit["published_area_m2"] = ctx.published_area_m2
+    return fit
+
 
 # QA interno (operaciones mínimas de reparación; el cliente final no ve esta capa)
 QA_OPS: Dict[str, List[Dict]] = {}
@@ -82,13 +94,16 @@ def main(argv=None):
     t_all = time.time()
     out = os.path.join(args.case, "layouts", "E07")
     os.makedirs(os.path.join(out, "alternatives"), exist_ok=True)
-    fp = Floorplate.load(os.path.join(args.case, "outputs", "floorplate.json"))
+    ctx = from_case_dir(args.case)                     # E15: la identidad del inmueble es dato del caso
+    FIT = fit_verdict_for(ctx)
+    fp = Floorplate.load(ctx.require_floorplate())
     shell = scaled_shell(fp, 1.0)                      # escala nominal: E07 NO repite el barrido de E06
     mods, clr = load_modules(args.modules)
     prog = load_program(args.program)
-    eng = Engine(shell, mods, prog, clr, seed=args.seed)
+    eng = Engine(shell, mods, prog, clr, seed=args.seed, layout_id_prefix=ctx.layout_id())
     specs = [s for s in build_alternatives(prog) if not args.only or s.alt in args.only.split(",")]
-    print(f"[e07] shell {shell.usable.area:.1f} m² · {len(specs)} alternativas · escala nominal (UNCONFIRMED)")
+    print(f"[e07] {ctx.title()} · {ctx.published_area_label()} publicados · shell {shell.usable.area:.1f} m² · "
+          f"{len(specs)} alternativas · escala nominal (UNCONFIRMED)")
 
     results, burdens, gates, handoffs = [], {}, {}, {}
     for spec in specs:
@@ -123,7 +138,7 @@ def main(argv=None):
         render_png(r.layout, shell, "geometry", os.path.join(d, "layout_geometry.png"), grid_cell=eng.grid.cell,
                    circulation_cells=r.layout.circulation_cells, title=f"{spec.alt} — {spec.name}")
         render_png(r.layout, shell, "commercial", os.path.join(d, "layout_commercial.png"),
-                   title=f"OFICINA 403 · {spec.alt} {spec.name}")
+                   title=f"{ctx.unit_title()} · {spec.alt} {spec.name}")
         r.profile.render_s = round(time.time() - t, 2)
         r.profile.total_s = round(r.profile.total_s + r.profile.render_s, 2)
         print(f"[e07]   {spec.alt}: candidatos {r.profile.candidate_count} (válidos {r.profile.valid_candidate_count}, "
@@ -140,13 +155,13 @@ def main(argv=None):
         row = next(x for x in comp.rows if x["alt"] == spec.alt)
         svg_t = render_layout_svg(r.layout, shell, "geometry", title=f"{spec.alt} — {spec.name}",
                                   grid_cell=eng.grid.cell, circulation_cells=r.layout.circulation_cells)
-        svg_c = render_layout_svg(r.layout, shell, "commercial", title=f"OFICINA 403 · {spec.alt} {spec.name}")
+        svg_c = render_layout_svg(r.layout, shell, "commercial", title=f"{ctx.unit_title()} · {spec.alt} {spec.name}")
         r.layout.zones["shell_perimeter"] = [[round(x, 3), round(y, 3)] for x, y in shell.perimeter.exterior.coords]
         r.layout.zones["shell_core"] = [[[round(x, 3), round(y, 3)] for x, y in c.exterior.coords] for c in shell.core]
         r.layout.zones["shell_columns"] = [[round(v, 3) for v in c.bounds] for c in shell.columns]
         r.layout.zones["shell_entrance"] = [round(v, 3) for v in shell.entrance]
         r.layout.zones["scale_px_per_m"] = round(shell.px_per_m, 4)
-        h = presentation_handoff(r, spec, FIT, svg_t, svg_c, gates[spec.alt], burdens[spec.alt], row)
+        h = presentation_handoff(r, spec, FIT, svg_t, svg_c, gates[spec.alt], burdens[spec.alt], row, ctx=ctx)
         handoffs[spec.alt] = h
         dump(h, os.path.join(out, "alternatives", spec.alt, "presentation_handoff.json"))
         open(os.path.join(out, "alternatives", spec.alt, "layout_technical.svg"), "w", encoding="utf-8").write(svg_t)
@@ -177,7 +192,7 @@ def main(argv=None):
     # lámina: sólo con layouts validados
     valid = [{"spec": s, "result": r} for s, r in zip(specs, results) if r.hard_valid]
     if len(valid) == len(results) and results:
-        svg = build_board(valid, shell, FIT)
+        svg = build_board(valid, shell, FIT, ctx=ctx)
         open(os.path.join(out, "ESCALIMETRO_PRESENTATION_STANDARD_01.svg"), "w", encoding="utf-8").write(svg)
         board = _svg_to_bgr(svg, 3600)
         cv2.imwrite(os.path.join(out, "ESCALIMETRO_PRESENTATION_STANDARD_01.png"), board)

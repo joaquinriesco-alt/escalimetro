@@ -183,7 +183,7 @@ def _path(r, pid: str) -> Optional[float]:
 
 
 def presentation_handoff(r, spec, fit_verdict: Dict, svg_technical: str, svg_commercial: str, gates: Dict,
-                         burden: InternalQABurden, comparison_row: Dict) -> Dict:
+                         burden: InternalQABurden, comparison_row: Dict, ctx=None) -> Dict:
     """Contrato para que OpenAI eleve la lámina SIN reinterpretar la planta."""
     return {
         "geometry_locked": True,
@@ -211,8 +211,12 @@ def presentation_handoff(r, spec, fit_verdict: Dict, svg_technical: str, svg_com
         "gates": gates,
         "internal_qa": burden.to_dict(),
         "fit_verdict": fit_verdict,
+        # E15 §23 — identidad del caso en el propio handoff: E07 y cualquier consumidor posterior
+        # dejan de necesitar conocimiento externo sobre qué inmueble es este.
+        "case": (ctx.to_dict() if ctx is not None else None),
         "scale_status": {"state": "UNCONFIRMED", "confidence": "LOW",
-                         "source": "published_area_inferred = 543 m²",
+                         "source": ("published_area_inferred = " +
+                                    (ctx.published_area_label() if ctx is not None else "sin superficie publicada declarada")),
                          "disclaimer": "Dimensiones sujetas a confirmación de escala."},
         "brand_guidelines": {"name": "ESCALÍMETRO", "tagline": "pre-design · feasibility · test-fit",
                              "palette": {"ink": "#1d2430", "muted": "#6b7480", "line": "#c8ccd4",

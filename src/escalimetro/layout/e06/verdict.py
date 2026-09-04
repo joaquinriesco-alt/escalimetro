@@ -40,7 +40,10 @@ class FitVerdict:
         ])
 
 
-def build(unit: str, program: str, headcount: int, rob: Dict, ev: Dict, gate_auto: str, gate_assisted: str, qa_gate: str) -> FitVerdict:
+def build(unit: str, program: str, headcount: int, rob: Dict, ev: Dict, gate_auto: str, gate_assisted: str,
+          qa_gate: str, published_area_m2=None) -> FitVerdict:
+    """E15 — `published_area_m2` es dato del caso. Sin declarar, el texto dice que no hay superficie
+    publicada; nunca la de otro inmueble."""
     cls = rob["classification"]
     mn = rob.get("min_scale_factor_exact_fit")
     pct = rob.get("pct_scenarios_exact_fit", 0.0)
@@ -50,7 +53,8 @@ def build(unit: str, program: str, headcount: int, rob: Dict, ev: Dict, gate_aut
                   f"({pct:.0f} % de los escenarios probados: {', '.join(f'{f:.3f}' for f in ex)}). Restricción dominante: {rob.get('primary_constraint')}.")
     else:
         reason = f"ningún escenario de escala probado admite el programa completo; restricción dominante: {rob.get('primary_constraint')}."
-    unc = ("la superficie publicada (543 m²) no fija una escala geométrica fiable (confianza LOW); "
+    area_txt = (f"({published_area_m2:.0f} m²)" if published_area_m2 is not None else "(no declarada)")
+    unc = (f"la superficie publicada {area_txt} no fija una escala geométrica fiable (confianza LOW); "
            f"la evidencia secundaria del plano es {ev.get('verdict', 'UNKNOWN')}" +
            (f" (rango combinado {ev['combined_factor_range']})" if ev.get("combined_factor_range") else ""))
     if cls in ("ROBUST_FIT",):

@@ -81,8 +81,12 @@ class Engine:
     """Mantiene el shell, la rejilla y una caché de geometría de candidatos por espina, para que dos
     alternativas que comparten estrategia de circulación no repitan la generación."""
 
-    def __init__(self, shell: ShellM, modules: Dict[str, Module], program: Dict, clearances: Dict, seed: int = 1):
+    def __init__(self, shell: ShellM, modules: Dict[str, Module], program: Dict, clearances: Dict, seed: int = 1,
+                 layout_id_prefix: str = "OFFICE"):
+        """`layout_id_prefix` (E15): prefijo derivado del caso, del tipo OFFICE_<slug de la unidad>. El motor no sabe
+        de qué oficina se trata; recibe el prefijo ya construido por el CaseContext."""
         self.shell, self.modules, self.program, self.seed = shell, modules, program, seed
+        self.layout_id_prefix = layout_id_prefix
         self.validator = Solver(shell, modules, program, clearances)     # validador + scoring + raster de E04
         self.grid: Grid = self.validator.grid
         self.feats: ShellFeatures = extract_features(shell, self.grid)
@@ -162,7 +166,7 @@ class Engine:
             if "layout" not in rr:
                 continue
             lay_c: Layout = rr["layout"]
-            lay_c.layout_id = f"OFFICE_403_{spec.alt}_{spec.name}_{tag}"
+            lay_c.layout_id = f"{self.layout_id_prefix}_{spec.alt}_{spec.name}_{tag}"
             lay_c.template_id = self.program.get("template_id", "")
             ok_c, viol_c, circ_c = self.validator.validate(lay_c)
             lay_c.hard_violations = viol_c
@@ -185,7 +189,7 @@ class Engine:
         chosen = cands_out[0]
         prof.chosen_candidate = chosen["tag"]
         lay, ok, viol, crit = chosen["layout"], chosen["ok"], chosen["viol"], chosen["crit"]
-        lay.layout_id = f"OFFICE_403_{spec.alt}_{spec.name}"
+        lay.layout_id = f"{self.layout_id_prefix}_{spec.alt}_{spec.name}"
         prof.critic_s = 0.0
         lay.zones = dict(lay.zones or {}); lay.zones["alternative"] = {"alt": spec.alt, "name": spec.name,
                                                                       "graph_id": spec.graph.graph_id,

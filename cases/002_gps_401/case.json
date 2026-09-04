@@ -9,5 +9,6 @@
   "vision": "ocr",
   "segmentation": "auto",
   "simplify_eps_frac": 0.004,
-  "mask_open_px": 5
+  "mask_open_px": 5,
+  "source_name": "GPS Property"
 }

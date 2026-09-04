@@ -1,0 +1,41 @@
+{
+  "001_gps_403": {
+    "cabecera": "OFICINA 403 · GPS PROPERTY",
+    "subtítulo": "Test-fit comparativo · 543 m² publicados · programa para 48 personas",
+    "pie de planta": "OFICINA 403 · A EFICIENTE",
+    "superficie publicada": "543 m²",
+    "escala asumida": "8,36 px/m",
+    "veredicto de fit": "ROBUST WITHIN ASSUMED SCALE RANGE",
+    "escala declarada": "UNCONFIRMED · confianza LOW",
+    "unidad del veredicto": "Oficina 403 (GPS Property)",
+    "layout_id": "OFFICE_403_A_EFICIENTE",
+    "artefacto de robustez": "fit_robustness.png",
+    "artefacto semántico": "shell_semantics.png, shell_semantics_403.png"
+  },
+  "002_gps_401": {
+    "cabecera": "OFICINA 401 · GPS PROPERTY",
+    "subtítulo": "Test-fit comparativo · 252 m² publicados · programa para 48 personas",
+    "pie de planta": "OFICINA 401 · A EFICIENTE",
+    "superficie publicada": "252 m²",
+    "escala asumida": "8,43 px/m",
+    "veredicto de fit": "FIT NO EVALUADO",
+    "escala declarada": "UNCONFIRMED · confianza LOW",
+    "unidad del veredicto": "Oficina 401 (GPS Property)",
+    "layout_id": "OFFICE_401_A_EFICIENTE",
+    "artefacto de robustez": "fit_robustness.png",
+    "artefacto semántico": "shell_semantics.png, shell_semantics_401.png"
+  },
+  "TEST_GENERIC_CASE": {
+    "cabecera": "801 · EXAMPLE BROKER",
+    "subtítulo": "Test-fit comparativo · 610 m² publicados · programa para 48 personas",
+    "pie de planta": "801 · A EFICIENTE",
+    "superficie publicada": "610 m²",
+    "escala asumida": "escala desconocida",
+    "veredicto de fit": "FIT NO EVALUADO",
+    "escala declarada": "UNCONFIRMED · confianza LOW",
+    "unidad del veredicto": "801 (Example Broker)",
+    "layout_id": "OFFICE_801_A_EFICIENTE",
+    "artefacto de robustez": "fit_robustness.png",
+    "artefacto semántico": "shell_semantics.png, shell_semantics_801.png"
+  }
+}

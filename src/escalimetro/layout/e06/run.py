@@ -23,6 +23,7 @@ from ..solver import Solver
 from ..e05.critic import RuleBasedCritic
 from ..e05.features import extract_features
 from ..e05.strategy import generate_strategies
+from ...case_context import from_case_dir
 from .scale import DEFAULT_FACTORS, make_scenario, scaled_shell
 from .sweep import robustness, run_scenario
 
@@ -153,6 +154,7 @@ def _evaluate(lay, shell, S04, prog, strat):
 
 def cmd_qa(args):
     """Aplica operaciones de QA (JSON) sobre el layout automático del escenario indicado y re-valida."""
+    ctx = from_case_dir(args.case)                      # E15: identidad y rutas del caso
     from ..render import render_png, triptych
     from .qa import HumanCorrectionOperation, apply_operations, burden, qa_gate
     import cv2
@@ -187,7 +189,8 @@ def cmd_qa(args):
     if ok1:
         render_png(after, shell, "geometry", os.path.join(out, "best_assisted_layout.png"), grid_cell=S04.grid.cell,
                    circulation_cells=after.circulation_cells, title="best_assisted_layout")
-        render_png(after, shell, "commercial", os.path.join(out, "best_assisted_layout_commercial.png"), title="OFFICE 403 · assisted")
+        render_png(after, shell, "commercial", os.path.join(out, "best_assisted_layout_commercial.png"),
+                   title=f"OFFICE {ctx.slug} · assisted")
     print(f"[qa] antes válido={ok0} arq={crit0.architectural_score} · después válido={ok1} arq={crit1.architectural_score} viol={viol1[:3]} · "
           f"{b.operation_count} ops · {b.estimated_minutes} min est. · {b.automatic_geometry_preserved_pct} % preservado · gate {gate}")
     return 0
@@ -195,6 +198,7 @@ def cmd_qa(args):
 
 def cmd_report(args):
     """Visuales y veredicto a partir de scale_scenarios.json (+ qa_result.json si existe)."""
+    ctx = from_case_dir(args.case)                      # E15: identidad y rutas del caso
     from ..render import render_png, triptych
     from .evidence import collect
     from .verdict import build
@@ -207,10 +211,18 @@ def cmd_report(args):
     scen = json.load(open(os.path.join(out, "scale_scenarios.json")))
     rob = json.load(open(os.path.join(out, "fit_robustness_report.json")))
     fp = Floorplate.load(os.path.join(args.case, "outputs", "floorplate.json"))
-    ev = collect(fp, os.path.join(args.case, "original.png"), {"401": 252, "402": 186, "403": 543},
-                 {"401": (470, 200), "402": (330, 175), "403": (400, 340)})
+    # E15 (OF02) — las unidades hermanas de la lámina son DATO DEL CASO (case.json → sibling_units),
+    # no conocimiento del motor. Un caso que no las declare no obtiene esta evidencia secundaria;
+    # no hereda la de otro caso.
+    sib = ctx.sibling_units or {}
+    published = {k: float(v) for k, v in (sib.get("published_m2") or {}).items()} or None
+    samples = {k: tuple(v) for k, v in (sib.get("sample_px") or {}).items()} or None
+    if published is None:
+        print(f"[e06] sin sibling_units declaradas en {args.case}/case.json: "
+              f"la evidencia secundaria por unidades hermanas no se calcula")
+    ev = collect(fp, ctx.artifacts.source_image, published, samples)
     dump(ev.to_dict(), os.path.join(out, "secondary_scale_evidence.json"))
-    # ---- fit_robustness_403.png ----
+    # ---- fit_robustness.png (E15: nombre neutral, antes fit_robustness_403.png) ----
     fs = [s["scale_factor"] for s in scen]
     raw = [s["layout_result"].get("max_seats") for s in scen]
     seats = [v if v is not None else 0 for v in raw]
@@ -224,11 +236,12 @@ def cmd_report(args):
         ax.annotate(lab, (f, sc_), textcoords="offset points", xytext=(0, 9), ha="center", fontsize=8 if v is None else 9)
     ax.axhline(40, color="#555", ls="--", lw=1); ax.text(fs[0], 40.4, "brief: 40 puestos", fontsize=9, color="#555")
     ax.axvline(1.0, color="#999", ls=":", lw=1); ax.text(1.001, min(seats) - 1.5, "escala nominal (LOW)", fontsize=8, color="#777")
-    ax.set_xlabel("factor de escala respecto de 8.36 px/m (published_area_inferred)")
+    ax.set_xlabel(f"factor de escala respecto de {ctx.scale_px_per_m:.2f} px/m (published_area_inferred)")
     ax.set_ylabel("puestos open máximos con recintos completos")
-    ax.set_title(f"Oficina 403 · fit robustness · verde = exact fit validado · rojo = FAIL · clasificación {rob['classification']}", fontsize=10)
+    ax.set_title(f"{ctx.display_name or ctx.unit_label} · fit robustness · verde = exact fit validado · "
+                 f"rojo = FAIL · clasificación {rob['classification']}", fontsize=10)
     ax.set_ylim(min(seats) - 3, 43); ax.grid(alpha=0.3)
-    fig.tight_layout(); fig.savefig(os.path.join(out, "fit_robustness_403.png")); plt.close(fig)
+    fig.tight_layout(); fig.savefig(ctx.artifacts.robustness_png); plt.close(fig)
     # ---- scale_sensitivity_layouts.png: conservador, nominal, primer exact fit, optimista ----
     picks = []
     exact = rob.get("exact_fit_factors", [])
@@ -278,7 +291,8 @@ def cmd_report(args):
         lay.save(os.path.join(d, "layout.json")); dump(lay.metrics, os.path.join(d, "metrics.json")); dump(crit.to_dict(), os.path.join(d, "critique.json"))
         render_png(lay, shell, "geometry", os.path.join(out, "best_autonomous_layout.png"), grid_cell=S04.grid.cell,
                    circulation_cells=lay.circulation_cells, title=lay.layout_id)
-        render_png(lay, shell, "commercial", os.path.join(out, "best_autonomous_layout_commercial.png"), title="OFFICE 403 · autonomous")
+        render_png(lay, shell, "commercial", os.path.join(out, "best_autonomous_layout_commercial.png"),
+                   title=f"OFFICE {ctx.slug} · autonomous")
         auto_gate = "PASS" if (ok and crit.broker_showable) else "FAIL"
         auto_info = {"scale_factor": f, "hard_valid": ok, "architectural_score": crit.architectural_score, "broker_showable": crit.broker_showable,
                      "geometric_score": (lay.scores or {}).get("total"), "seats": sum(p.seats for p in lay.placements), "critique": crit.to_dict(),
@@ -289,7 +303,9 @@ def cmd_report(args):
     qa = json.load(open(qa_path)) if os.path.exists(qa_path) else None
     assisted_gate = "PASS" if (qa and qa["after"]["hard_valid"] and qa["after"]["broker_showable"]) else "FAIL"
     qa_g = qa["qa_gate"] if qa else ("AUTONOMOUS_PASS" if auto_gate == "PASS" else "FAIL")
-    v = build("Oficina 403 (GPS Property)", "OFFICE_BALANCED_48", 48, rob, ev.to_dict(), auto_gate, assisted_gate, qa_g)
+    unit_full = f"{ctx.unit_label} ({ctx.source_name})" if ctx.source_name else ctx.unit_label
+    v = build(unit_full, "OFFICE_BALANCED_48", 48, rob, ev.to_dict(), auto_gate, assisted_gate, qa_g,
+              published_area_m2=ctx.published_area_m2)
     dump(v.to_dict(), os.path.join(out, "fit_verdict.json"))
     open(os.path.join(out, "fit_verdict.txt"), "w", encoding="utf-8").write(v.text())
     dump({"robustness": rob, "evidence": ev.to_dict(), "autonomous": auto_info and {k: v_ for k, v_ in auto_info.items() if k not in ("critique", "metrics")},

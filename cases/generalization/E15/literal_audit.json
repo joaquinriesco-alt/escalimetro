@@ -1,0 +1,1898 @@
+[
+ {
+  "file": "README.md",
+  "line": 20,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "python -m escalimetro run   --case cases/001_gps_403 --out cases/001_gps_403/outputs/pass_a   # PASE A automát"
+ },
+ {
+  "file": "README.md",
+  "line": 21,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "python -m escalimetro bench --case cases/001_gps_403 --pred cases/001_gps_403/outputs/pass_a"
+ },
+ {
+  "file": "README.md",
+  "line": 22,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "python -m escalimetro run   --case cases/001_gps_403 --out cases/001_gps_403/outputs/pass_b --overrides overri"
+ },
+ {
+  "file": "README.md",
+  "line": 23,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "python -m escalimetro bench --case cases/001_gps_403 --pred cases/001_gps_403/outputs/pass_b   # PASE B asisti"
+ },
+ {
+  "file": "README.md",
+  "line": 24,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "python -m escalimetro run   --case cases/001_gps_403 --out cases/001_gps_403/outputs/pass_c --overrides overri"
+ },
+ {
+  "file": "README.md",
+  "line": 25,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "python -m escalimetro bench --case cases/001_gps_403 --pred cases/001_gps_403/outputs/pass_c   # E03: shell co"
+ },
+ {
+  "file": "README.md",
+  "line": 26,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "python cases/001_gps_403/ground_truth/make_gt.py            # regenera el GT manual"
+ },
+ {
+  "file": "README.md",
+  "line": 29,
+  "literals": [
+   "403",
+   "shell_semantics_403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "Shell semántico (E03): `outputs/shell_semantics_403.png`, `outputs/shell_comparison_403.png`, `docs/SHELL.md`."
+ },
+ {
+  "file": "README.md",
+  "line": 31,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "Revisión humana: `outputs/comparison_403.png` (ORIGINAL | OVERLAY | PLANTA) y `outputs/geometry_only.png`."
+ },
+ {
+  "file": "src/escalimetro/cli.py",
+  "line": 1,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "\"\"\"CLI: python -m escalimetro run --case cases/001_gps_403 [--vision manual] [--segmentation opencv_flood]"
+ },
+ {
+  "file": "src/escalimetro/cli.py",
+  "line": 5,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "\"case_id\": \"001_gps_403\", \"image\": \"original.jpg\", \"unit_label\": \"Oficina 403\","
+ },
+ {
+  "file": "src/escalimetro/cli.py",
+  "line": 6,
+  "literals": [
+   "543"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "\"known_area_m2\": 543, \"known_area_kind\": \"unknown\", \"overrides\": \"overrides.json\""
+ },
+ {
+  "file": "src/escalimetro/case_context.py",
+  "line": 3,
+  "literals": [
+   "403",
+   "543"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "El motor de layouts no debe saber que la oficina es la 403, que mide 543 m² ni que el aviso lo"
+ },
+ {
+  "file": "src/escalimetro/case_context.py",
+  "line": 4,
+  "literals": [
+   "GPS Property"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "publicó GPS Property. Eso son **datos del caso**. Este módulo es el único lugar donde esos datos se"
+ },
+ {
+  "file": "src/escalimetro/case_context.py",
+  "line": 51,
+  "literals": [
+   "403"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "\"\"\"Identificador corto y estable derivado del rótulo: 'Oficina 403' → '403'."
+ },
+ {
+  "file": "src/escalimetro/case_context.py",
+  "line": 144,
+  "literals": [
+   "403",
+   "OFFICE_403"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "\"\"\"'OFFICE_403_A_EFICIENTE'. Determinista, estable y legible; derivado del rótulo, no del"
+ },
+ {
+  "file": "src/escalimetro/case_context.py",
+  "line": 150,
+  "literals": [
+   "403"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "\"\"\"'OFICINA 403' — sólo el rótulo, en mayúsculas. Es lo que va en el pie de cada planta.\"\"\""
+ },
+ {
+  "file": "src/escalimetro/case_context.py",
+  "line": 154,
+  "literals": [
+   "403"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "\"\"\"'OFICINA 403 · GPS PROPERTY'. Sin fuente declarada: sólo el rótulo, sin inventar una.\"\"\""
+ },
+ {
+  "file": "src/escalimetro/case_context.py",
+  "line": 162,
+  "literals": [
+   "543"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "\"\"\"'543 m²' o el texto de desconocido. NUNCA el área de otro caso.\"\"\""
+ },
+ {
+  "file": "src/escalimetro/ai/e09.py",
+  "line": 3,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "PYTHONPATH=src python -m escalimetro.ai.e09 --case cases/001_gps_403"
+ },
+ {
+  "file": "src/escalimetro/ai/railway_e09_runner.py",
+  "line": 32,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "EXPERIMENT_SPECIFIC",
+  "text": "DEFAULT_CASE = \"cases/001_gps_403\""
+ },
+ {
+  "file": "src/escalimetro/ai/run.py",
+  "line": 3,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "PYTHONPATH=src python -m escalimetro.ai.run --case cases/001_gps_403"
+ },
+ {
+  "file": "src/escalimetro/ai/board02.py",
+  "line": 113,
+  "literals": [
+   "543"
+  ],
+  "kind": "code",
+  "class": "EXPERIMENT_SPECIFIC",
+  "text": "o.append(_t(W - M - 24, by_ + 25, \"543 m² publicados\", 13, PALETTE[\"muted\"], 600, anchor=\"end\"))"
+ },
+ {
+  "file": "src/escalimetro/ai/orchestrator.py",
+  "line": 65,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "EXPERIMENT_SPECIFIC",
+  "text": "def __init__(self, project: str = \"001_gps_403\", env: Optional[Dict[str, str]] = None,"
+ },
+ {
+  "file": "src/escalimetro/schemas/__init__.py",
+  "line": 1,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "from .floorplate import *  # noqa: F401,F403"
+ },
+ {
+  "file": "src/escalimetro/schemas/floorplate.py",
+  "line": 207,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "HISTORICAL_FIXTURE",
+  "text": "unit_label: str                   # ej. \"Oficina 403\""
+ },
+ {
+  "file": "src/escalimetro/overrides/__init__.py",
+  "line": 9,
+  "literals": [
+   "543"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "\"known_area\": {\"m2\": 543, \"kind\": \"useful|total|unknown\"},"
+ },
+ {
+  "file": "src/escalimetro/geometry/scale.py",
+  "line": 6,
+  "literals": [
+   "543"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "(otra fuente: cota, barra de escala, plano DWG), NO contra los 543 m². Ver docs/BENCHMARK.md."
+ },
+ {
+  "file": "src/escalimetro/layout/run.py",
+  "line": 1,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "\"\"\"CLI: python -m escalimetro.layout.run --case cases/001_gps_403 --program program_templates/office_balanced_"
+ },
+ {
+  "file": "src/escalimetro/layout/e05/run.py",
+  "line": 4,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "PYTHONPATH=src python3 -m escalimetro.layout.e05.run --case cases/001_gps_403 --time-limit 40 --seed 1"
+ },
+ {
+  "file": "src/escalimetro/layout/e06/scale.py",
+  "line": 52,
+  "literals": [
+   "543"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "\"\"\"E15 — `published_m2` ya NO tiene 543.0 por defecto."
+ },
+ {
+  "file": "src/escalimetro/layout/e06/scale.py",
+  "line": 54,
+  "literals": [
+   "403"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "Ese default hacía que cualquier oficina heredara en silencio la superficie publicada de la 403:"
+ },
+ {
+  "file": "src/escalimetro/layout/e06/scale.py",
+  "line": 55,
+  "literals": [
+   "543"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "en E14 el barrido de la Oficina 401 reportó `implied_published_equiv_m2` calculado sobre 543 m²"
+ },
+ {
+  "file": "src/escalimetro/layout/e06/run.py",
+  "line": 3,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "python3 -m escalimetro.layout.e06.run sweep   --case cases/001_gps_403 [--factors 0.95,...] [--strategy B_CLIE"
+ },
+ {
+  "file": "src/escalimetro/layout/e06/run.py",
+  "line": 4,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "python3 -m escalimetro.layout.e06.run qa      --case cases/001_gps_403 --ops cases/001_gps_403/layouts/E06/qa_"
+ },
+ {
+  "file": "src/escalimetro/layout/e06/run.py",
+  "line": 5,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "python3 -m escalimetro.layout.e06.run report  --case cases/001_gps_403"
+ },
+ {
+  "file": "src/escalimetro/layout/e06/run.py",
+  "line": 225,
+  "literals": [
+   "403",
+   "fit_robustness_403"
+  ],
+  "kind": "comment",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "# ---- fit_robustness.png (E15: nombre neutral, antes fit_robustness_403.png) ----"
+ },
+ {
+  "file": "src/escalimetro/layout/e07/run.py",
+  "line": 3,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "PYTHONPATH=src python3 -m escalimetro.layout.e07.run --case cases/001_gps_403"
+ },
+ {
+  "file": "src/escalimetro/layout/e07/pipeline.py",
+  "line": 85,
+  "literals": [
+   "403"
+  ],
+  "kind": "comment",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "# `residual_spaces` está DOMINADO POR EL SHELL: toda solución válida producida hasta ahora sobre la 403"
+ },
+ {
+  "file": "src/escalimetro/validation/boards.py",
+  "line": 59,
+  "literals": [
+   "403"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "El pie contiene el título con el nombre de la estrategia ('OFICINA 403 · A EFICIENTE'), que es"
+ },
+ {
+  "file": "src/escalimetro/validation/boards.py",
+  "line": 174,
+  "literals": [
+   "403",
+   "543"
+  ],
+  "kind": "code",
+  "class": "EXPERIMENT_SPECIFIC",
+  "text": "o.append(_t(W - SIDE_X, 92, \"Oficina 403  ·  543 m² publicados  ·  48 personas\", 26,"
+ },
+ {
+  "file": "src/escalimetro/vision/base.py",
+  "line": 25,
+  "literals": [
+   "403",
+   "543"
+  ],
+  "kind": "code",
+  "class": "HISTORICAL_FIXTURE",
+  "text": "text: str = \"\"            # texto leído (ej. \"543 m²\", \"OF. 403\")"
+ },
+ {
+  "file": "src/escalimetro/vision/ocr_localizer.py",
+  "line": 5,
+  "literals": [
+   "403"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "2. Tokens cuyos dígitos coinciden con el número de la unidad (\"403\" para \"Oficina 403\")."
+ },
+ {
+  "file": "src/escalimetro/vision/ocr_localizer.py",
+  "line": 52,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "HISTORICAL_FIXTURE",
+  "text": "X0, X1 = max(0, x0 - 12 * th), max(0, x0 - 2)   # la leyenda puede decir 'Oficinas 403': la muestra queda lejo"
+ },
+ {
+  "file": "src/escalimetro/generalization/visuals.py",
+  "line": 101,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "EXPERIMENT_SPECIFIC",
+  "text": "(\"programa neto\\n(medido en la 403)\", need, \"#c47f7f\")]"
+ },
+ {
+  "file": "src/escalimetro/generalization/visuals.py",
+  "line": 139,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "EXPERIMENT_SPECIFIC",
+  "text": "_title(ax, \"Oficina 403 (entrenamiento)  vs  Oficina 401 (segundo shell)\","
+ },
+ {
+  "file": "src/escalimetro/generalization/visuals.py",
+  "line": 143,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "EXPERIMENT_SPECIFIC",
+  "text": "hdr = [\"métrica\", \"403\", \"401\", \"estado\"]"
+ },
+ {
+  "file": "src/escalimetro/generalization/visuals.py",
+  "line": 176,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "EXPERIMENT_SPECIFIC",
+  "text": "ax.text(0.42, 0.036, \"nivel: INTRA-DRAWING — misma lámina fuente que 403\","
+ },
+ {
+  "file": "src/escalimetro/generalization/metadata_preview.py",
+  "line": 9,
+  "literals": [
+   "403",
+   "543"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "presentación diría 403 y 543 m²? La respuesta debe verse, no afirmarse.\"\"\""
+ },
+ {
+  "file": "src/escalimetro/generalization/scorecard.py",
+  "line": 31,
+  "literals": [
+   "GPS Property"
+  ],
+  "kind": "code",
+  "class": "EXPERIMENT_SPECIFIC",
+  "text": "\"Oficina 401 en la misma lámina de GPS Property, con superficie publicada\"),"
+ },
+ {
+  "file": "cases/002_gps_401/case.json",
+  "line": 13,
+  "literals": [
+   "GPS Property"
+  ],
+  "kind": "code",
+  "class": "CASE_METADATA",
+  "text": "\"source_name\": \"GPS Property\""
+ },
+ {
+  "file": "cases/001_gps_403/notes.md",
+  "line": 1,
+  "literals": [
+   "403",
+   "543",
+   "GPS Property"
+  ],
+  "kind": "comment",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "# Caso 001 — GPS Property, Oficina 403, 543 m² publicados"
+ },
+ {
+  "file": "cases/001_gps_403/notes.md",
+  "line": 11,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "- [x] Pase A automático (OCR \"403\" → color pálido → máscara): `outputs/pass_a/`"
+ },
+ {
+  "file": "cases/001_gps_403/notes.md",
+  "line": 18,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "- La leyenda de colores NO coincide con el plano: la muestra de \"Oficinas 403\" es azul medio,"
+ },
+ {
+  "file": "cases/001_gps_403/notes.md",
+  "line": 19,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "pero la 403 en el plano es el azul más pálido (BGR 241,234,209; sat 34). El texto dentro del plano es"
+ },
+ {
+  "file": "cases/001_gps_403/notes.md",
+  "line": 21,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "- No hay muro dibujado entre 402/403 ni 401/403: el límite de arriendo es sólo un cambio de color."
+ },
+ {
+  "file": "cases/001_gps_403/notes.md",
+  "line": 29,
+  "literals": [
+   "543"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "- Sin cota, barra de escala, grilla ni texto dimensional: la única escala es 543 m² (tipo desconocido)."
+ },
+ {
+  "file": "cases/001_gps_403/notes.md",
+  "line": 43,
+  "literals": [
+   "543"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "- ¿543 m² útiles, arrendables o totales? Cambia la escala hasta ±10–20 %."
+ },
+ {
+  "file": "cases/001_gps_403/case.json",
+  "line": 2,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "CASE_METADATA",
+  "text": "\"case_id\": \"001_gps_403\","
+ },
+ {
+  "file": "cases/001_gps_403/case.json",
+  "line": 4,
+  "literals": [
+   "GPS Property"
+  ],
+  "kind": "code",
+  "class": "CASE_METADATA",
+  "text": "\"image_note\": \"JPG publicado por GPS Property, recibido re-codificado como PNG por el canal de chat (800x424 p"
+ },
+ {
+  "file": "cases/001_gps_403/case.json",
+  "line": 5,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "CASE_METADATA",
+  "text": "\"unit_label\": \"Oficina 403\","
+ },
+ {
+  "file": "cases/001_gps_403/case.json",
+  "line": 6,
+  "literals": [
+   "543"
+  ],
+  "kind": "code",
+  "class": "CASE_METADATA",
+  "text": "\"known_area_m2\": 543,"
+ },
+ {
+  "file": "cases/001_gps_403/case.json",
+  "line": 13,
+  "literals": [
+   "GPS Property"
+  ],
+  "kind": "code",
+  "class": "CASE_METADATA",
+  "text": "\"source_name\": \"GPS Property\","
+ },
+ {
+  "file": "cases/001_gps_403/case.json",
+  "line": 19,
+  "literals": [
+   "403",
+   "543"
+  ],
+  "kind": "code",
+  "class": "CASE_METADATA",
+  "text": "\"403\": 543"
+ },
+ {
+  "file": "cases/001_gps_403/case.json",
+  "line": 30,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "CASE_METADATA",
+  "text": "\"403\": ["
+ },
+ {
+  "file": "scripts/build_broker_validation_pack.py",
+  "line": 19,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "EXPERIMENT_SPECIFIC",
+  "text": "CASE = os.environ.get(\"ESCALIMETRO_CASE\", \"cases/001_gps_403\")"
+ },
+ {
+  "file": "program_templates/office_balanced_48_diag36.json",
+  "line": 81,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "HISTORICAL_FIXTURE",
+  "text": "\"_diagnostic_note\": \"VARIANTE DIAGNÓSTICA E04 (NO es el brief): mismo programa de recintos, 36 puestos open en"
+ },
+ {
+  "file": "program_templates/modules_office.json",
+  "line": 322,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "HISTORICAL_FIXTURE",
+  "text": "\"_revision\": \"v0.2 (E04): la biblioteca v0.1 (recepción 4×4, sala 8 5.5×4, directorio 8×5, lounge 5×4, kitchen"
+ },
+ {
+  "file": "tests/test_e13_broker_validation.py",
+  "line": 20,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "CASE = os.path.join(ROOT, \"cases\", \"001_gps_403\")"
+ },
+ {
+  "file": "tests/test_e13_broker_validation.py",
+  "line": 131,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "assert \"A EFICIENTE\" not in body and \"OFICINA 403\" not in body"
+ },
+ {
+  "file": "tests/test_e11_runner.py",
+  "line": 19,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "CASE = os.path.join(ROOT, \"cases\", \"001_gps_403\")"
+ },
+ {
+  "file": "tests/test_e14_generalization.py",
+  "line": 19,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "EXPECTED_403 = {\"A\": \"df6b86058ebb\", \"B\": \"5c5c276923dd\", \"C\": \"e12cc722485b\"}"
+ },
+ {
+  "file": "tests/test_e14_generalization.py",
+  "line": 110,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "a = _j(ROOT, \"cases\", \"001_gps_403\", \"outputs\", \"floorplate.json\")"
+ },
+ {
+  "file": "tests/test_e14_generalization.py",
+  "line": 117,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "a = _j(ROOT, \"cases\", \"001_gps_403\", \"outputs\", \"floorplate.json\")[\"source_image\"]"
+ },
+ {
+  "file": "tests/test_e14_generalization.py",
+  "line": 126,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "a = _j(ROOT, \"cases\", \"001_gps_403\", \"case.json\")"
+ },
+ {
+  "file": "tests/test_e14_generalization.py",
+  "line": 136,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "def test_no_se_transfirio_geometria_de_403():"
+ },
+ {
+  "file": "tests/test_e14_generalization.py",
+  "line": 138,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "a = _j(ROOT, \"cases\", \"001_gps_403\", \"outputs\", \"floorplate.json\")"
+ },
+ {
+  "file": "tests/test_e14_generalization.py",
+  "line": 148,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "def test_el_segundo_shell_no_reutiliza_los_overrides_de_403():"
+ },
+ {
+  "file": "tests/test_e14_generalization.py",
+  "line": 150,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "o403 = _j(ROOT, \"cases\", \"001_gps_403\", \"overrides_assisted.json\")"
+ },
+ {
+  "file": "tests/test_e14_generalization.py",
+  "line": 152,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "pts403 = {tuple(c[\"center\"]) for c in o403.get(\"columns\", {}).get(\"add\", [])}"
+ },
+ {
+  "file": "tests/test_e14_generalization.py",
+  "line": 153,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "assert not (pts & pts403)"
+ },
+ {
+  "file": "tests/test_e14_generalization.py",
+  "line": 249,
+  "literals": [
+   "403"
+  ],
+  "kind": "comment",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "# regresión del caso 403"
+ },
+ {
+  "file": "tests/test_e14_generalization.py",
+  "line": 251,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "def test_la_geometria_de_403_no_cambio():"
+ },
+ {
+  "file": "tests/test_e14_generalization.py",
+  "line": 252,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "g = _j(ROOT, \"cases\", \"001_gps_403\", \"ai\", \"E09\", \"geometry_hash_check.json\")"
+ },
+ {
+  "file": "tests/test_e14_generalization.py",
+  "line": 254,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "for a, pref in EXPECTED_403.items():"
+ },
+ {
+  "file": "tests/test_e14_generalization.py",
+  "line": 278,
+  "literals": [
+   "403",
+   "shell_semantics_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "assert \"shell_semantics_403.png\" not in src"
+ },
+ {
+  "file": "tests/test_case_001_real.py",
+  "line": 1,
+  "literals": [
+   "403"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "\"\"\"Regresión sobre el plano REAL (Caso 001, GPS 403). Requiere tesseract instalado (pase automático)."
+ },
+ {
+  "file": "tests/test_case_001_real.py",
+  "line": 15,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "CASE = os.path.join(ROOT, \"cases\", \"001_gps_403\")"
+ },
+ {
+  "file": "tests/test_case_001_real.py",
+  "line": 37,
+  "literals": [
+   "543"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "assert fp.published_area_m2 == 543"
+ },
+ {
+  "file": "tests/test_case_001_real.py",
+  "line": 61,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "assert r.mask[300, 350] == 255        # brazo oeste de la 403 incluido"
+ },
+ {
+  "file": "tests/test_shell_semantics.py",
+  "line": 18,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "CASE = os.path.join(ROOT, \"cases\", \"001_gps_403\")"
+ },
+ {
+  "file": "tests/test_shell_semantics.py",
+  "line": 77,
+  "literals": [
+   "403",
+   "shell_semantics_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "for name in (\"shell_semantics_403.png\", \"shell_comparison_403.png\", \"shell_semantics.svg\"):"
+ },
+ {
+  "file": "tests/test_e09.py",
+  "line": 19,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "CASE = os.path.join(ROOT, \"cases\", \"001_gps_403\")"
+ },
+ {
+  "file": "tests/test_e05.py",
+  "line": 21,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "CASE = os.path.join(ROOT, \"cases\", \"001_gps_403\")"
+ },
+ {
+  "file": "tests/test_e07.py",
+  "line": 4,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "Los tests de artefactos leen las salidas de `cases/001_gps_403/layouts/E07/` (la corrida real). No vuelven a"
+ },
+ {
+  "file": "tests/test_e07.py",
+  "line": 24,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "CASE = os.path.join(ROOT, \"cases\", \"001_gps_403\")"
+ },
+ {
+  "file": "tests/test_e08_ai.py",
+  "line": 30,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "CASE = os.path.join(ROOT, \"cases\", \"001_gps_403\")"
+ },
+ {
+  "file": "tests/test_layout.py",
+  "line": 15,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "CASE = os.path.join(ROOT, \"cases\", \"001_gps_403\")"
+ },
+ {
+  "file": "tests/test_layout.py",
+  "line": 63,
+  "literals": [
+   "543"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "assert abs(shell.usable.area - 543.0) < 1.0"
+ },
+ {
+  "file": "tests/test_e04_baseline.py",
+  "line": 9,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "CASE = os.path.join(ROOT, \"cases\", \"001_gps_403\")"
+ },
+ {
+  "file": "tests/test_e12_hardening.py",
+  "line": 24,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "CASE = os.path.join(ROOT, \"cases\", \"001_gps_403\")"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 18,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "C403 = os.path.join(ROOT, \"cases\", \"001_gps_403\")"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 22,
+  "literals": [
+   "403",
+   "543",
+   "001_gps_403",
+   "GPS Property",
+   "shell_semantics_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "ENGINE_403 = (\"403\", \"543\", \"GPS Property\", \"001_gps_403\", \"shell_semantics_403\","
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 23,
+  "literals": [
+   "403",
+   "fit_robustness_403",
+   "OFFICE_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "\"fit_robustness_403\", \"OFFICE_403\")"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 37,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "def test_403_metadata_carga_desde_el_caso():"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 38,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "c = from_case_dir(C403)"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 39,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "assert c.case_id == \"001_gps_403\" and c.unit_label == \"Oficina 403\""
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 40,
+  "literals": [
+   "543",
+   "GPS Property"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "assert c.source_name == \"GPS Property\" and c.published_area_m2 == 543.0"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 41,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "assert c.title() == \"OFICINA 403 · GPS PROPERTY\""
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 42,
+  "literals": [
+   "543"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "assert c.published_area_label() == \"543 m²\""
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 48,
+  "literals": [
+   "GPS Property"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "assert c.source_name == \"GPS Property\" and c.published_area_m2 == 252.0"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 60,
+  "literals": [
+   "543"
+  ],
+  "kind": "comment",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "# 4 · nunca 543 por defecto"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 62,
+  "literals": [
+   "543"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "def test_un_caso_sin_area_publicada_no_se_convierte_en_543():"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 66,
+  "literals": [
+   "543"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "assert \"543\" not in c.published_area_label()"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 69,
+  "literals": [
+   "543"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "assert MISSING_PUBLISHED_AREA in str(e.value) and \"543\" not in str(e.value)"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 72,
+  "literals": [
+   "543"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "def test_make_scenario_ya_no_tiene_543_por_defecto():"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 80,
+  "literals": [
+   "543"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "\"\"\"El defecto que E14 no vio: el barrido de la 401 reportaba equivalentes calculados sobre 543.\"\"\""
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 84,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "f403 = Floorplate.load(os.path.join(C403, \"outputs\", \"floorplate.json\"))"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 86,
+  "literals": [
+   "403",
+   "543"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "assert make_scenario(f403, 0.95).implied_published_equiv_m2 == round(543 * 0.95 ** 2, 1)"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 100,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "def test_el_titulo_de_401_nunca_dice_403():"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 103,
+  "literals": [
+   "403",
+   "543"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "assert \"403\" not in blob and \"543\" not in blob"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 106,
+  "literals": [
+   "543"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "def test_la_superficie_de_401_nunca_dice_543():"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 112,
+  "literals": [
+   "403",
+   "543"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "for term in (\"GPS\", \"403\", \"543\", \"Oficina\"):"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 127,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "@pytest.mark.parametrize(\"label,slug\", [(\"Oficina 403\", \"403\"), (\"Oficina 401\", \"401\"),"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 136,
+  "literals": [
+   "403",
+   "OFFICE_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "assert from_case_dir(C403).layout_id(\"A\", \"EFICIENTE\") == \"OFFICE_403_A_EFICIENTE\""
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 145,
+  "literals": [
+   "403",
+   "OFFICE_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "assert \"OFFICE_403\" not in src"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 149,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "a403, a401 = from_case_dir(C403).artifacts, from_case_dir(C401).artifacts"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 150,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "assert a403.robustness_png.endswith(\"fit_robustness.png\")"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 151,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "assert \"403\" not in os.path.basename(a403.robustness_png)"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 152,
+  "literals": [
+   "403",
+   "shell_semantics_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "assert any(p.endswith(\"shell_semantics_403.png\") for p in a403.semantics_png_candidates)"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 154,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "assert a403.resolve_semantics_png() is not None       # el artefacto histórico sigue encontrándose"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 173,
+  "literals": [
+   "403",
+   "shell_semantics_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "assert \"shell_semantics_403.png\" not in src"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 204,
+  "literals": [
+   "403"
+  ],
+  "kind": "comment",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "# 13 · regresión de la 403"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 206,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "def test_los_hashes_de_geometria_de_403_no_cambiaron():"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 207,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "g = json.load(open(os.path.join(C403, \"ai\", \"E09\", \"geometry_hash_check.json\"), encoding=\"utf-8\"))"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 217,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "lay = Layout.load(os.path.join(C403, \"layouts\", \"E07\", \"alternatives\", \"A\", \"layout.json\"))"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 223,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "def test_la_lamina_de_403_sigue_siendo_byte_identica():"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 232,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "e07 = os.path.join(C403, \"layouts\", \"E07\")"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 233,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "ctx = from_case_dir(C403)"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 234,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "shell = scaled_shell(Floorplate.load(os.path.join(C403, \"outputs\", \"floorplate.json\")), 1.0)"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 267,
+  "literals": [
+   "403"
+  ],
+  "kind": "docstring",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "\"\"\"Lineas de CODIGO: sin docstrings ni comentarios. Ahi la historia si puede nombrar a la 403;"
+ },
+ {
+  "file": "tests/test_e15_case_contract.py",
+  "line": 291,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "bad = [(i, ln.strip(), t) for i, ln in _code_lines(path) for t in ENGINE_403 if t in ln]"
+ },
+ {
+  "file": "tests/test_adapters.py",
+  "line": 18,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "VIS[name]().interpret(IMG, \"Oficina 403\")"
+ },
+ {
+  "file": "tests/test_e05_baseline.py",
+  "line": 8,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "E05 = os.path.join(ROOT, \"cases\", \"001_gps_403\", \"layouts\", \"E05\")"
+ },
+ {
+  "file": "tests/test_e06.py",
+  "line": 25,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "CASE = os.path.join(ROOT, \"cases\", \"001_gps_403\")"
+ },
+ {
+  "file": "tests/test_e06.py",
+  "line": 83,
+  "literals": [
+   "543"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "scen = [ScaleScenario(f, 8.36 / f, 543 * f * f, 543 * f * f, \"t\", \"LOW\","
+ },
+ {
+  "file": "tests/test_e06.py",
+  "line": 234,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "v = build(\"Oficina 403\", \"OFFICE_BALANCED_48\", 48, rob, ev, \"PASS\", \"FAIL\", \"AUTONOMOUS_PASS\")"
+ },
+ {
+  "file": "tests/fixtures/generalization/TEST_GENERIC_CASE.json",
+  "line": 2,
+  "literals": [
+   "403",
+   "GPS Property"
+  ],
+  "kind": "code",
+  "class": "TEST_EXPECTATION",
+  "text": "\"_doc\": \"SYNTHETIC_TEST_ONLY — fixture de metadatos para el TEST DE CONTRATO de E15. No es un inmueble real, n"
+ },
+ {
+  "file": "docs/E07_THREE_OPTIONS.md",
+  "line": 54,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "`SHELL_DOMINATED_ASPECTS = {\"residual_spaces\"}`: toda solución válida sobre la 403 deja bolsillos"
+ },
+ {
+  "file": "docs/E07_THREE_OPTIONS.md",
+  "line": 70,
+  "literals": [
+   "543"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "E07 **no** repite el barrido de E06. Escala nominal (543 m² publicados, confianza LOW), contrato"
+ },
+ {
+  "file": "docs/E07_THREE_OPTIONS.md",
+  "line": 88,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "PYTHONPATH=src python -m escalimetro.layout.e07.run --case cases/001_gps_403"
+ },
+ {
+  "file": "docs/E07_THREE_OPTIONS.md",
+  "line": 90,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "Salidas en `cases/001_gps_403/layouts/E07/`."
+ },
+ {
+  "file": "docs/BENCHMARK.md",
+  "line": 21,
+  "literals": [
+   "543"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "Advertencia sobre el área: como la escala se deriva de los 543 m², el error de área en m² contra"
+ },
+ {
+  "file": "docs/BENCHMARK.md",
+  "line": 28,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "comment",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "## Resultado Caso 001 real (GPS 403) — ver cases/001_gps_403/notes.md"
+ },
+ {
+  "file": "docs/OVERRIDES.md",
+  "line": 5,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "1. `python -m escalimetro run --case cases/001_gps_403` con al menos `seed_points`."
+ },
+ {
+  "file": "docs/OVERRIDES.md",
+  "line": 17,
+  "literals": [
+   "543"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "\"known_area\": {\"m2\": 543, \"kind\": \"useful\"},"
+ },
+ {
+  "file": "docs/E14_GENERALIZATION_PROTOCOL.md",
+  "line": 5,
+  "literals": [
+   "403",
+   "543",
+   "GPS Property"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "Escalímetro se desarrolló entero sobre un caso: la Oficina 403 de GPS Property, 543 m². Eso crea un"
+ },
+ {
+  "file": "docs/LAYOUT.md",
+  "line": 47,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "PYTHONPATH=src python3 -m escalimetro.layout.run --case cases/001_gps_403 --candidates 8 --seed 1"
+ },
+ {
+  "file": "docs/E08_AI_ORCHESTRATION.md",
+  "line": 95,
+  "literals": [
+   "403",
+   "001_gps_403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "PYTHONPATH=src python -m escalimetro.ai.run --case cases/001_gps_403 \\"
+ },
+ {
+  "file": "docs/ARCHITECTURE.md",
+  "line": 26,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "Los VLM no dibujan geometría. Sólo localizan (dónde está la 403, dónde el núcleo, dónde la puerta)."
+ },
+ {
+  "file": "docs/ARCHITECTURE.md",
+  "line": 46,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "huecos grandes conservados. Es lo que separa 403 (pálido) de 402 (medio) cuando NO hay muro entre"
+ },
+ {
+  "file": "docs/ARCHITECTURE.md",
+  "line": 57,
+  "literals": [
+   "543"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "construcción, así que el error de área contra los 543 m² es 0 por definición. El benchmark de"
+ },
+ {
+  "file": "docs/E15_BACKLOG.md",
+  "line": 17,
+  "literals": [
+   "403"
+  ],
+  "kind": "comment",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "### P0-1 · El veredicto de fit y la lámina de E07 están escritos a mano para la Oficina 403"
+ },
+ {
+  "file": "docs/E15_BACKLOG.md",
+  "line": 19,
+  "literals": [
+   "403",
+   "GPS Property"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "**Evidencia.** `src/escalimetro/layout/e07/run.py:34-35` fija `\"unit\": \"Oficina 403 (GPS Property)\"` y"
+ },
+ {
+  "file": "docs/E15_BACKLOG.md",
+  "line": 20,
+  "literals": [
+   "543"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "`\"published_area_m2\": 543.0` como constantes del módulo. `src/escalimetro/layout/e07/board.py:82,83,115`"
+ },
+ {
+  "file": "docs/E15_BACKLOG.md",
+  "line": 21,
+  "literals": [
+   "403",
+   "543"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "rotula la lámina con `\"OFICINA 403 · GPS PROPERTY\"`, `\"543 m² publicados\"` y `(\"Publicada\", \"543 m²\")`."
+ },
+ {
+  "file": "docs/E15_BACKLOG.md",
+  "line": 31,
+  "literals": [
+   "403",
+   "543"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "ejecutó. Si hubiera dado FIT, la lámina habría dicho \"Oficina 403 · 543 m² publicados\" sobre la"
+ },
+ {
+  "file": "docs/E15_BACKLOG.md",
+  "line": 44,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "**Evidencia.** Con la Oficina 403 el OCR lee `403` dos veces —en el plano y en la leyenda— y emite el"
+ },
+ {
+  "file": "docs/E15_BACKLOG.md",
+  "line": 47,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "Contraste medido del rótulo dentro del plano (p95 − p5 del gris): 403 = 206, 402 = 162, **401 = 140**."
+ },
+ {
+  "file": "docs/E15_BACKLOG.md",
+  "line": 66,
+  "literals": [
+   "403",
+   "543"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "`{\"401\": 252, \"402\": 186, \"403\": 543}` y `{\"401\": (470,200), \"402\": (330,175), \"403\": (400,340)}`."
+ },
+ {
+  "file": "docs/E15_BACKLOG.md",
+  "line": 76,
+  "literals": [
+   "403"
+  ],
+  "kind": "comment",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "### P1-3 · `make_scenario` tiene el área de 403 como valor por defecto"
+ },
+ {
+  "file": "docs/E15_BACKLOG.md",
+  "line": 79,
+  "literals": [
+   "543"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "`def make_scenario(fp, factor, published_m2: float = 543.0)`."
+ },
+ {
+  "file": "docs/E15_BACKLOG.md",
+  "line": 95,
+  "literals": [
+   "403",
+   "shell_semantics_403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "**Evidencia.** `src/escalimetro/layout/run.py:94` lee `outputs/shell_semantics_403.png`. En el caso"
+ },
+ {
+  "file": "docs/E15_BACKLOG.md",
+  "line": 104,
+  "literals": [
+   "403"
+  ],
+  "kind": "comment",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "### P2-2 · Identificadores de layout con \"403\" incrustado"
+ },
+ {
+  "file": "docs/E15_BACKLOG.md",
+  "line": 107,
+  "literals": [
+   "403",
+   "OFFICE_403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "`lay.layout_id = f\"OFFICE_403_{spec.alt}_{spec.name}\"`."
+ },
+ {
+  "file": "docs/E15_BACKLOG.md",
+  "line": 111,
+  "literals": [
+   "403"
+  ],
+  "kind": "comment",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "### P2-3 · Títulos y nombre de reporte de E06 con \"403\""
+ },
+ {
+  "file": "docs/E15_BACKLOG.md",
+  "line": 113,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "**Evidencia.** `src/escalimetro/layout/e06/run.py:190,229,231,281` — `\"OFFICE 403 · assisted\"`,"
+ },
+ {
+  "file": "docs/E15_BACKLOG.md",
+  "line": 114,
+  "literals": [
+   "403",
+   "fit_robustness_403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "`fit_robustness_403.png`, `set_title(\"Oficina 403 · ...\")`."
+ },
+ {
+  "file": "docs/E15_BACKLOG.md",
+  "line": 120,
+  "literals": [
+   "403"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "\"Oficinas 403\" queda lejos del número."
+ },
+ {
+  "file": "docs/E15_BACKLOG.md",
+  "line": 132,
+  "literals": [
+   "403",
+   "543"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "**Evidencia.** 166 s en 252 m² (Oficina 401) contra 84–115 s por alternativa en 543 m² (Oficina 403)."
+ },
+ {
+  "file": "docs/BROKER_VALIDATION_INTERVIEWER.md",
+  "line": 31,
+  "literals": [
+   "543"
+  ],
+  "kind": "code",
+  "class": "DOCUMENTATION_HISTORY",
+  "text": "> \"Es una oficina de 543 m² publicados, para 48 personas. El programa está a la izquierda de la lámina.\""
+ }
+]

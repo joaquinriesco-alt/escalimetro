@@ -9,6 +9,7 @@ from __future__ import annotations
 import re
 from typing import Dict, List, Tuple
 
+from ...case_context import CaseContext
 from ..model import Layout, ShellM
 from ..render import render_layout_svg
 
@@ -68,8 +69,16 @@ def _plan_svg(layout: Layout, shell: ShellM, width_px: int = 1300) -> Tuple[str,
     return body, wv, hv
 
 
-def build_board(alts: List[Dict], shell: ShellM, fit: Dict, subtitle: str = "") -> str:
-    """alts: [{spec, result}] en orden A, B, C."""
+def build_board(alts: List[Dict], shell: ShellM, fit: Dict, subtitle: str = "",
+                ctx: CaseContext = None) -> str:
+    """alts: [{spec, result}] en orden A, B, C.
+
+    E15 — la identidad del inmueble llega en `ctx` (CaseContext). El board NO conoce ninguna oficina
+    en particular: si no recibe contexto, muestra los campos como desconocidos en vez de inventar
+    unos. `fit` sigue trayendo el veredicto, que es resultado del caso, no del board."""
+    if ctx is None:
+        raise ValueError("build_board necesita un CaseContext: la identidad del inmueble es dato del "
+                         "caso, no un valor por defecto del board")
     o = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" '
          f'font-family="Helvetica Neue,Helvetica,Arial,sans-serif">',
          f'<rect width="{W}" height="{H}" fill="{PALETTE["paper"]}"/>']
@@ -79,19 +88,21 @@ def build_board(alts: List[Dict], shell: ShellM, fit: Dict, subtitle: str = "") 
     o.append(_text(40, 52, "ESCALÍMETRO", 30, PALETTE["ink"], 700, ls=2.4))
     o.append(_text(40, 78, "pre-design · feasibility · test-fit", 12, PALETTE["muted"], 400, ls=1.6))
     o.append(f'<rect x="300" y="26" width="1.5" height="62" fill="{PALETTE["line"]}"/>')
-    o.append(_text(336, 52, "OFICINA 403 · GPS PROPERTY", 24, PALETTE["ink"], 600, ls=0.6))
-    o.append(_text(336, 80, subtitle or "Test-fit comparativo · 543 m² publicados · programa para 48 personas",
+    o.append(_text(336, 52, ctx.title(), 24, PALETTE["ink"], 600, ls=0.6))
+    o.append(_text(336, 80, subtitle or (f"Test-fit comparativo · {ctx.published_area_label()} publicados · "
+                                        f"programa para {fit.get('headcount', '?')} personas"),
                    14, PALETTE["muted"]))
     # veredicto (derecha)
     vx = W - 40 - 700
     o.append(f'<rect x="{vx}" y="18" width="700" height="78" rx="6" fill="#ffffff" stroke="{PALETTE["line"]}"/>')
     o.append(_text(vx + 22, 42, "FIT", 10.5, PALETTE["muted"], 700, ls=1.8))
-    o.append(_text(vx + 22, 64, "ROBUST WITHIN", 18, PALETTE["good"], 700))
-    o.append(_text(vx + 22, 84, "ASSUMED SCALE RANGE", 18, PALETTE["good"], 700))
+    fit_lines = _wrap(fit.get("fit_label", "FIT NO EVALUADO"), 20)[:2]
+    for i, ln in enumerate(fit_lines):
+        o.append(_text(vx + 22, 64 + i * 20, ln, 18, PALETTE["good"], 700))
     o.append(f'<rect x="{vx + 400}" y="30" width="1.2" height="54" fill="{PALETTE["line"]}"/>')
     o.append(_text(vx + 430, 42, "SCALE", 10.5, PALETTE["muted"], 700, ls=1.8))
-    o.append(_text(vx + 430, 64, "UNCONFIRMED", 18, PALETTE["accent"], 700))
-    o.append(_text(vx + 430, 84, "confianza LOW", 12, PALETTE["muted"]))
+    o.append(_text(vx + 430, 64, fit.get("scale", "UNCONFIRMED"), 18, PALETTE["accent"], 700))
+    o.append(_text(vx + 430, 84, f"confianza {fit.get('scale_confidence', 'UNKNOWN')}", 12, PALETTE["muted"]))
     # ---------- barra lateral ----------------------------------------------------------------------
     sy = 152
     o.append(f'<rect x="{SIDEBAR_X}" y="{sy}" width="{SIDEBAR_W}" height="{H - sy - 96}" rx="6" fill="{PALETTE["panel"]}"/>')
@@ -112,8 +123,9 @@ def build_board(alts: List[Dict], shell: ShellM, fit: Dict, subtitle: str = "") 
         o.append(_text(SIDEBAR_X + 22, y, ln, 12.5, PALETTE["muted"])); y += 18
     y += 22
     o.append(_text(SIDEBAR_X + 22, y, "SUPERFICIE", 11, PALETTE["muted"], 600, ls=1.4)); y += 24
-    for label, val in (("Publicada", "543 m²"), ("Útil del modelo", f'{alts[0]["result"].metrics["usable_area_m2"]:.0f} m²'),
-                       ("Escala asumida", "8,36 px/m")):
+    for label, val in (("Publicada", ctx.published_area_label()),
+                       ("Útil del modelo", f'{alts[0]["result"].metrics["usable_area_m2"]:.0f} m²'),
+                       ("Escala asumida", ctx.scale_label())):
         o.append(_text(SIDEBAR_X + 22, y, label, 13, PALETTE["ink"]))
         o.append(_text(SIDEBAR_X + SIDEBAR_W - 22, y, val, 13, PALETTE["ink"], 600, anchor="end")); y += 24
     y += 18

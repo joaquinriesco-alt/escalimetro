@@ -1,0 +1,8 @@
+{
+  "_doc": "SYNTHETIC_TEST_ONLY — fixture de metadatos para el TEST DE CONTRATO de E15. No es un inmueble real, no tiene imagen, no tiene floorplate y NO se usa para probar el solver. Existe sólo para comprobar que los componentes genéricos no saben nada de GPS Property ni de la Oficina 403. NO constituye un tercer shell ni evidencia de generalización cross-drawing.",
+  "case_id": "TEST_GENERIC_CASE",
+  "unit_label": "801",
+  "source_name": "Example Broker",
+  "known_area_m2": 610,
+  "known_area_kind": "unknown"
+}

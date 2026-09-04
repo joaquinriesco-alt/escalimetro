@@ -13,6 +13,8 @@ from escalimetro.generalization.scorecard import RESULTS, build
 
 ROOT = os.path.dirname(os.path.dirname(__file__))
 E14 = os.path.join(ROOT, "cases", "generalization", "E14")
+BEFORE = "FROZEN_ENGINE_MANIFEST_BEFORE.json"
+AFTER = "FROZEN_ENGINE_MANIFEST_AFTER.json"
 SHELL2 = os.path.join(ROOT, "cases", "002_gps_401")
 EXPECTED_403 = {"A": "df6b86058ebb", "B": "5c5c276923dd", "C": "e12cc722485b"}
 
@@ -33,7 +35,7 @@ def test_el_manifiesto_cubre_el_motor_y_excluye_las_herramientas_de_e14():
 
 
 def test_el_manifiesto_no_contiene_secretos():
-    m = _j(E14, "FROZEN_ENGINE_MANIFEST.json")
+    m = _j(E14, BEFORE)
     blob = json.dumps(m).lower()
     for bad in ("api_key", "sk-", "token", "password", "secret"):
         assert bad not in blob
@@ -59,7 +61,8 @@ def test_compare_detecta_cualquier_cambio():
 # zero tuning — el chequeo que decide si E14 es válido
 # ---------------------------------------------------------------------------------------------------
 def test_el_motor_no_cambio_durante_e14():
-    before, after = _j(E14, "FROZEN_ENGINE_MANIFEST.json"), _j(E14, "FROZEN_ENGINE_MANIFEST_AFTER.json")
+    """Hecho HISTÓRICO: durante E14, sobre el commit 85c8cb1, el motor entró y salió idéntico."""
+    before, after = _j(E14, BEFORE), _j(E14, AFTER)
     c = compare(before, after)
     assert c["identical"] is True, f"E14 INVALID: {c['changed']}"
     assert c["engine_hash_before"] == c["engine_hash_after"]
@@ -69,12 +72,35 @@ def test_el_chequeo_guardado_dice_identical():
     assert _j(E14, "engine_freeze_check.json")["identical"] is True
 
 
-def test_el_motor_congelado_sigue_igual_hoy():
-    """Si alguien toca el motor después de E14, este test cae y el experimento deja de ser válido."""
-    before = _j(E14, "FROZEN_ENGINE_MANIFEST.json")
+def test_el_freeze_de_e14_no_congela_el_desarrollo_futuro():
+    """E15 — corrección de semántica del freeze.
+
+    El test anterior comparaba EL MOTOR DE HOY contra el hash congelado en E14. Eso convertía un
+    experimento histórico en una cárcel permanente: cualquier cambio legítimo posterior rompía la
+    suite y obligaba a elegir entre evolucionar el producto o mantener E14 "válido".
+
+    Lo que E14 debía probar es un hecho del pasado —motor antes == motor después, DURANTE el
+    experimento— y eso lo prueba `test_el_motor_no_cambio_durante_e14`, que sigue verde y seguirá
+    verde para siempre porque compara dos manifiestos guardados, no el código de hoy.
+
+    Este test afirma explícitamente lo contrario del anterior: que el motor de hoy PUEDE diferir del
+    de E14 sin que eso invalide nada. Si algún día vuelven a coincidir tampoco pasa nada; lo que no
+    puede volver a existir es una aserción que exija la igualdad."""
+    hist = _j(E14, BEFORE)
     now = manifest(ROOT, "", "")
-    c = compare(before, now)
-    assert c["identical"] is True, f"el motor cambió tras E14: {c['changed']}"
+    c = compare(hist, now)
+    assert isinstance(c["identical"], bool)          # la herramienta funciona
+    assert _j(E14, "engine_freeze_check.json")["identical"] is True   # el hecho histórico sigue en pie
+
+
+def test_la_herramienta_freeze_detecta_una_mutacion_simulada():
+    """§5 — lo que el test histórico sí debe seguir demostrando: que el instrumento sirve."""
+    a = manifest(ROOT, "", "")
+    b = json.loads(json.dumps(a))
+    k = sorted(b["file_hashes"])[0]
+    b["file_hashes"][k] = "f" * 64
+    c = compare(a, b)
+    assert c["identical"] is False and k in c["changed"]
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -93,11 +119,18 @@ def test_el_segundo_shell_es_la_misma_imagen_fuente():
     assert a["sha256"] == b["sha256"], "la lámina debe ser idéntica: es generalización INTRA-DRAWING"
 
 
-def test_el_case_json_solo_cambia_tres_campos():
+def test_el_case_json_solo_cambia_la_identidad_del_inmueble():
+    """E14 cambió tres campos de identidad más la nota de imagen. E15 agregó metadatos de caso
+    (source_name, sibling_units, fit_verdict), que son datos del inmueble y no parámetros del motor:
+    se listan aparte para que la aserción siga diciendo lo que decía."""
     a = _j(ROOT, "cases", "001_gps_403", "case.json")
     b = _j(SHELL2, "case.json")
-    diff = {k for k in set(a) | set(b) if a.get(k) != b.get(k)}
+    E15_METADATA = {"source_name", "sibling_units", "fit_verdict", "display_name"}
+    diff = {k for k in set(a) | set(b) if a.get(k) != b.get(k)} - E15_METADATA
     assert diff == {"case_id", "unit_label", "known_area_m2", "image_note"}, diff
+    # los parámetros del pipeline siguen idénticos entre los dos casos: una sola variable
+    for k in ("vision", "segmentation", "simplify_eps_frac", "mask_open_px"):
+        assert a[k] == b[k], k
 
 
 def test_no_se_transfirio_geometria_de_403():
@@ -234,7 +267,15 @@ def test_la_auditoria_de_overfitting_clasifica_todo():
     assert a["summary"]["CONFIRMED_CASE_COUPLING"] >= 1
 
 
-def test_el_acoplamiento_confirmado_sigue_presente_sin_corregir():
-    """E14 reporta, no arregla. Si alguien lo arregló, el motor cambió y el experimento es inválido."""
+def test_el_acoplamiento_confirmado_de_e14_fue_corregido_en_e15():
+    """Este test decía lo contrario hasta E15, y con razón: durante E14 el acoplamiento TENÍA que
+    seguir presente, porque corregirlo habría cambiado el motor en mitad del experimento.
+
+    E15 es un ciclo posterior cuyo encargo explícito es eliminarlo. La aserción se invierte, no se
+    borra: sigue vigilando la misma línea, ahora en la dirección correcta. El hallazgo de E14 queda
+    registrado en `overfitting_audit.json`, que no se toca."""
     src = open(os.path.join(ROOT, "src", "escalimetro", "layout", "run.py"), encoding="utf-8").read()
-    assert "shell_semantics_403.png" in src
+    assert "shell_semantics_403.png" not in src
+    audit = _j(E14, "overfitting_audit.json")
+    of01 = next(f for f in audit["findings"] if f["id"] == "OF01")
+    assert of01["classification"] == "CONFIRMED_CASE_COUPLING"   # el hallazgo histórico intacto

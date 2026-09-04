@@ -9,5 +9,40 @@
   "vision": "ocr",
   "segmentation": "auto",
   "simplify_eps_frac": 0.004,
-  "mask_open_px": 5
+  "mask_open_px": 5,
+  "source_name": "GPS Property",
+  "sibling_units": {
+    "_doc": "Otras unidades de la MISMA lámina, con su superficie publicada y un punto de muestreo de color. Es evidencia secundaria de escala de este caso; no es conocimiento del motor.",
+    "published_m2": {
+      "401": 252,
+      "402": 186,
+      "403": 543
+    },
+    "sample_px": {
+      "401": [
+        470,
+        200
+      ],
+      "402": [
+        330,
+        175
+      ],
+      "403": [
+        400,
+        340
+      ]
+    }
+  },
+  "fit_verdict": {
+    "program": "OFFICE_BALANCED_48",
+    "headcount": 48,
+    "fit": "ROBUST_WITHIN_ASSUMED_SCALE_RANGE",
+    "fit_label": "ROBUST WITHIN ASSUMED SCALE RANGE",
+    "scale": "UNCONFIRMED",
+    "scale_confidence": "LOW",
+    "reason": "El programa completo cabe en todo el rango de escala asumido probado en E06 (0.95×–1.05× de la escala nominal); bajo ~0.925× deja de existir ubicación geométrica para el directorio.",
+    "recommendation": "Confirma una dimensión real antes de comprometer capacidad.",
+    "note": "Test-fit conceptual de space planning. No constituye proyecto de arquitectura.",
+    "source": "análisis de robustez de escala E06 (congelado); E07 no repite el barrido."
+  }
 }

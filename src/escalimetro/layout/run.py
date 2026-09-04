@@ -13,6 +13,7 @@ import time
 import cv2
 import numpy as np
 
+from ..case_context import SEMANTICS_ARTIFACT_MISSING, from_case_dir
 from ..schemas.floorplate import Floorplate
 from .model import Layout, load_modules, load_program
 from .render import render_png, triptych
@@ -62,7 +63,8 @@ def main(argv=None):
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--improve-rounds", type=int, default=1)
     args = ap.parse_args(argv)
-    fp = Floorplate.load(os.path.join(args.case, "outputs", "floorplate.json"))
+    ctx = from_case_dir(args.case)                     # E15: identidad y rutas vienen del caso
+    fp = Floorplate.load(ctx.require_floorplate())
     shell = shell_from_floorplate(fp)
     mods, clr = load_modules(args.modules)
     prog = load_program(args.program)
@@ -90,10 +92,20 @@ def main(argv=None):
                      circulation_cells=lay.circulation_cells, title=args.layout_id)
     com = render_png(lay, shell, "commercial", os.path.join(out, "layout_001_commercial.png"), title=args.layout_id.replace("_", " "))
     cv2.imwrite(os.path.join(out, "geometry_vs_commercial.png"), triptych([(geo, "LAYOUT GEOMETRY"), (com, "LAYOUT COMMERCIAL")]))
-    orig = cv2.imread(os.path.join(args.case, "original.png"))
-    shell_png = cv2.imread(os.path.join(args.case, "outputs", "shell_semantics_403.png"))
+    orig = cv2.imread(ctx.artifacts.source_image)
+    sem_path = ctx.artifacts.resolve_semantics_png()
+    shell_png = cv2.imread(sem_path) if sem_path else None
+    if shell_png is None:
+        # E15 §14 — antes esto se omitía en silencio. Un artefacto ausente se reporta; no cambia el fit.
+        print(f"[layout] {SEMANTICS_ARTIFACT_MISSING}: ninguno de "
+              f"{[os.path.basename(p) for p in ctx.artifacts.semantics_png_candidates]} existe en "
+              f"{ctx.artifacts.outputs_dir}; el tríptico no se genera (el resultado de fit no cambia)")
+    if orig is None:
+        print(f"[layout] SOURCE_IMAGE_MISSING: {ctx.artifacts.source_image}")
     if orig is not None and shell_png is not None:
-        cv2.imwrite(os.path.join(out, "original_shell_layout.png"), triptych([(orig, "ORIGINAL GPS"), (shell_png, "SHELL ESCALIMETRO"), (com, "LAYOUT 001")]))
+        cv2.imwrite(os.path.join(out, "original_shell_layout.png"),
+                    triptych([(orig, f"ORIGINAL {ctx.source_label().upper()}"),
+                              (shell_png, "SHELL ESCALIMETRO"), (com, f"LAYOUT {args.layout_id}")]))
     print(f"[layout] {res.get('status')} valid {res['valid_candidate_count']}/{res['candidate_count']} runtime {res['runtime_s']}s score {res['best_score']}")
     print(f"[layout] violaciones: {viol[:6]}")
     print(json.dumps(lay.metrics["program_completeness"], ensure_ascii=False))

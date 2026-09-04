@@ -1,0 +1,14 @@
+{
+  "_doc": "E15 — corrección de un dato del informe E14.",
+  "finding": "La auditoría de E14 clasificó OF03 (published_m2=543.0 por defecto en make_scenario) como 'no mordió en E14'. Era incorrecto: make_scenario se llama SIN el argumento desde e06/run.py y e06/sweep.py, así que el barrido de la Oficina 401 calculó implied_published_equiv_m2 sobre 543 m² en vez de 252.",
+  "evidence": {
+    "file": "cases/002_gps_401/layouts/E06/scale_scenarios.json",
+    "factor": 0.95,
+    "reported": 490.1,
+    "correct": 227.4,
+    "check": "543 × 0.95² = 490.1 · 252 × 0.95² = 227.4"
+  },
+  "impact": "NINGUNO sobre el resultado de E14. implied_published_equiv_m2 es un campo informativo del reporte; no entra al solver ni al veredicto. implied_shell_area_m2 (227.4) siempre fue correcto porque se mide sobre el shell escalado, no sobre el área publicada. Los siete INFEASIBLE y el ROBUST_NO_FIT siguen en pie.",
+  "action": "Corregido en E15 quitando el default. El artefacto histórico de E14 NO se reescribe: es el registro de lo que aquel experimento produjo, defecto incluido.",
+  "test": "tests/test_e15_case_contract.py::test_el_escenario_de_escala_usa_el_area_del_propio_caso"
+}
