@@ -16,6 +16,7 @@ import cv2
 import numpy as np
 
 from ...case_context import CaseContext, from_case_dir
+from ...fit_evidence import load as load_fit_evidence, presentation_fit
 from ...renderer.side_by_side import _svg_to_bgr
 from ...schemas.floorplate import Floorplate
 from ..model import Layout, load_modules, load_program
@@ -31,31 +32,15 @@ from .pipeline import (AlternativeComparison, compare, gate_e1a, gate_e1c, gate_
 from .strategies import build_alternatives
 from .visuals import comparison_png, performance_png, qa_summary_png, spatial_graph_svg
 
-# E15 — el veredicto de fit es DATO DEL CASO, no conocimiento del motor. Vive en case.json y se
-# completa con la identidad del caso (unidad, fuente, superficie publicada). Un caso sin veredicto
-# declarado obtiene UNKNOWN: nunca el de otro caso.
-DEFAULT_FIT = {
-    "program": "OFFICE_BALANCED_48",
-    "headcount": 48,
-    "fit": "UNKNOWN",
-    "fit_label": "FIT NO EVALUADO",
-    "scale": "UNCONFIRMED",
-    "scale_confidence": "LOW",
-    "reason": "Este caso no declara un veredicto de robustez de escala en case.json.",
-    "recommendation": "Confirma una dimensión real antes de comprometer capacidad.",
-    "note": "Test-fit conceptual de space planning. No constituye proyecto de arquitectura.",
-    "source": "sin análisis de robustez declarado para este caso.",
-}
+# E15.1 — el veredicto de fit NO es dato del caso: es evidencia computada. Se lee de los artefactos
+# que E06 y E07 dejaron (fit_evidence.load) y se convierte en copy de lámina en un solo lugar
+# (fit_evidence.presentation_fit). Si no hay evidencia, o está vieja, la lámina lo dice; no muestra
+# el veredicto anterior.
 
 
-def fit_verdict_for(ctx) -> Dict:
-    """Veredicto de fit del caso, con la identidad resuelta desde el CaseContext."""
-    fit = dict(DEFAULT_FIT)
-    fit.update(ctx.fit_verdict or {})
-    unit = ctx.display_name or ctx.unit_label
-    fit["unit"] = f"{unit} ({ctx.source_name})" if ctx.source_name else unit
-    fit["published_area_m2"] = ctx.published_area_m2
-    return fit
+def fit_for_presentation(ctx, case_dir: str, program_path: str) -> Dict:
+    """CASE FACTS + COMPUTED EVIDENCE -> lo que la lámina muestra. Nada declarado a mano."""
+    return presentation_fit(ctx, load_fit_evidence(case_dir, program_path))
 
 
 # QA interno (operaciones mínimas de reparación; el cliente final no ve esta capa)
@@ -95,7 +80,10 @@ def main(argv=None):
     out = os.path.join(args.case, "layouts", "E07")
     os.makedirs(os.path.join(out, "alternatives"), exist_ok=True)
     ctx = from_case_dir(args.case)                     # E15: la identidad del inmueble es dato del caso
-    FIT = fit_verdict_for(ctx)
+    EVIDENCE = load_fit_evidence(args.case, args.program)   # E15.1: el resultado, de los artefactos
+    FIT = presentation_fit(ctx, EVIDENCE)
+    print(f"[e07] evidencia de fit · técnica={EVIDENCE.technical} · robustez={EVIDENCE.robustness} · "
+          f"frescura={EVIDENCE.freshness} · fuentes={len(EVIDENCE.source_artifacts)}")
     fp = Floorplate.load(ctx.require_floorplate())
     shell = scaled_shell(fp, 1.0)                      # escala nominal: E07 NO repite el barrido de E06
     mods, clr = load_modules(args.modules)
@@ -192,7 +180,7 @@ def main(argv=None):
     # lámina: sólo con layouts validados
     valid = [{"spec": s, "result": r} for s, r in zip(specs, results) if r.hard_valid]
     if len(valid) == len(results) and results:
-        svg = build_board(valid, shell, FIT, ctx=ctx)
+        svg = build_board(valid, shell, fit=FIT, ctx=ctx)
         open(os.path.join(out, "ESCALIMETRO_PRESENTATION_STANDARD_01.svg"), "w", encoding="utf-8").write(svg)
         board = _svg_to_bgr(svg, 3600)
         cv2.imwrite(os.path.join(out, "ESCALIMETRO_PRESENTATION_STANDARD_01.png"), board)

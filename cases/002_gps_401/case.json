@@ -10,5 +10,6 @@
   "segmentation": "auto",
   "simplify_eps_frac": 0.004,
   "mask_open_px": 5,
-  "source_name": "GPS Property"
+  "source_name": "GPS Property",
+  "_contract": "E15.1 — case.json contiene SÓLO HECHOS DE ENTRADA. Ningún resultado de ejecución."
 }

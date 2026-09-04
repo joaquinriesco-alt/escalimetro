@@ -17,14 +17,20 @@ import matplotlib.pyplot as plt                                        # noqa: E
 
 from ..case_context import CaseContext                                 # noqa: E402
 from ..layout.e07.board import _wrap                                   # noqa: E402
-from ..layout.e07.run import fit_verdict_for                           # noqa: E402
+from ..fit_evidence import FitEvidence, load as load_fit_evidence      # noqa: E402
+from ..fit_evidence import presentation_fit                            # noqa: E402
 
 INK, MUT, LINE, WARN, OK = "#1d2430", "#6b7480", "#d9dce2", "#8a1f1f", "#2f6d4f"
 
 
-def presentation_strings(ctx: CaseContext) -> Dict[str, str]:
-    """Los textos que la lámina emitiría para este caso. Un solo origen: el CaseContext."""
-    fit = fit_verdict_for(ctx)
+def presentation_strings(ctx: CaseContext, evidence: FitEvidence = None) -> Dict[str, str]:
+    """Los textos que la lámina emitiría para este caso.
+
+    E15.1 — dos orígenes explícitos y separados: los HECHOS vienen del CaseContext y el VEREDICTO de
+    la evidencia computada. Sin evidencia, dice que no fue evaluado; nunca inventa un resultado."""
+    if evidence is None:
+        evidence = load_fit_evidence(ctx.case_dir) if ctx.case_dir else FitEvidence()
+    fit = presentation_fit(ctx, evidence)
     return {
         "cabecera": ctx.title(),
         "subtítulo": (f"Test-fit comparativo · {ctx.published_area_label()} publicados · "
@@ -33,6 +39,9 @@ def presentation_strings(ctx: CaseContext) -> Dict[str, str]:
         "superficie publicada": ctx.published_area_label(),
         "escala asumida": ctx.scale_label(),
         "veredicto de fit": " ".join(_wrap(fit.get("fit_label", ""), 20)[:2]),
+        "fit técnico": str(fit.get("technical_fit")),
+        "robustez de escala": str(fit.get("robustness")),
+        "frescura de la evidencia": str(fit.get("freshness")),
         "escala declarada": f"{fit.get('scale')} · confianza {fit.get('scale_confidence')}",
         "unidad del veredicto": str(fit.get("unit")),
         "layout_id": ctx.layout_id("A", "EFICIENTE"),

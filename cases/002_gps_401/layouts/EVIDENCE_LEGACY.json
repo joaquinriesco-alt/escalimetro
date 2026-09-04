@@ -1,0 +1,20 @@
+{
+  "_doc": "E15.1 §13 — registro LEGADO, explícito y limitado. Estos artefactos se computaron antes de que existiera el mecanismo de procedencia, así que no la declaran. En vez de aceptarlos con un comodín, aquí se PINCHA su sha256 y la huella del floorplate y del programa vigentes al momento de declararlos. Si cualquiera de esas cosas cambia, la evidencia pasa a STALE por sí sola. No acepta artefactos que no estén listados.",
+  "declared_by": "E15.1",
+  "case_dir": "cases/002_gps_401",
+  "pinned_fingerprint": {
+    "floorplate_sha256": "687b0fdb8dacd5aaff00b9d17a8387ae4146fee9db8c690a421ce02b05ae0856",
+    "program_sha256": "6f21f50330110b7c4d43b5c0cfe7d6587f7ee0827482d76e00df26a382f56107"
+  },
+  "engine_hash_note": "El hash del motor NO se pincha: E15.1 lo cambia por diseño y eso no invalida un resultado geométrico anterior. Lo que sí invalida es que cambie el floorplate o el programa.",
+  "artifacts": [
+    {
+      "path": "layouts/OFFICE_BALANCED_001/metrics.json",
+      "sha256": "f6519cf5a3485514ffff7549f57719cfe77760af5d188a68fe2495e4b1e4bccd"
+    },
+    {
+      "path": "layouts/E06/fit_robustness_report.json",
+      "sha256": "3670aaa19239ddcd5f27271559794d19b77a6be49c7c5510cc047387b06276da"
+    }
+  ]
+}

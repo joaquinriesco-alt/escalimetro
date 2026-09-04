@@ -161,6 +161,9 @@ def test_el_board_exige_contexto_y_no_inventa_uno():
     assert "ctx" in inspect.signature(build_board).parameters
     with pytest.raises(ValueError):
         build_board([], None, {}, ctx=None)
+    from escalimetro.case_context import CaseContext as CC
+    with pytest.raises(ValueError):   # E15.1: sin evidencia formateada tampoco
+        build_board([], None, {"fit_label": "inventado"}, ctx=CC(case_id="X", unit_label="Y"))
 
 
 # ---------------------------------------------------------------------------------------------------
@@ -227,8 +230,8 @@ def test_la_lamina_de_403_sigue_siendo_byte_identica():
     from escalimetro.layout.model import Layout, load_program
     from escalimetro.layout.e06.scale import scaled_shell
     from escalimetro.layout.e07.board import build_board
-    from escalimetro.layout.e07.run import fit_verdict_for
     from escalimetro.layout.e07.strategies import build_alternatives
+    from escalimetro.fit_evidence import load as load_fit_evidence, presentation_fit
     e07 = os.path.join(C403, "layouts", "E07")
     ctx = from_case_dir(C403)
     shell = scaled_shell(Floorplate.load(os.path.join(C403, "outputs", "floorplate.json")), 1.0)
@@ -241,7 +244,8 @@ def test_la_lamina_de_403_sigue_siendo_byte_identica():
             layout=Layout.load(os.path.join(d, "layout.json")),
             metrics=json.load(open(os.path.join(d, "metrics.json"), encoding="utf-8")),
             critique=json.load(open(os.path.join(d, "critique.json"), encoding="utf-8")))})
-    new = build_board(alts, shell, fit_verdict_for(ctx), ctx=ctx)
+    fit = presentation_fit(ctx, load_fit_evidence(C403))
+    new = build_board(alts, shell, fit=fit, ctx=ctx)
     old = open(os.path.join(e07, "ESCALIMETRO_PRESENTATION_STANDARD_01.svg"), encoding="utf-8").read()
     assert new == old
 

@@ -121,11 +121,13 @@ def test_el_segundo_shell_es_la_misma_imagen_fuente():
 
 def test_el_case_json_solo_cambia_la_identidad_del_inmueble():
     """E14 cambió tres campos de identidad más la nota de imagen. E15 agregó metadatos de caso
-    (source_name, sibling_units, fit_verdict), que son datos del inmueble y no parámetros del motor:
-    se listan aparte para que la aserción siga diciendo lo que decía."""
+    (source_name, sibling_units) y E15.1 la nota de contrato; son datos del inmueble, no parámetros
+    del motor, y se listan aparte para que la aserción siga diciendo lo que decía.
+    `fit_verdict` estuvo en esta lista durante E15 y E15.1 lo eliminó de los case.json: un veredicto
+    es evidencia computada."""
     a = _j(ROOT, "cases", "001_gps_403", "case.json")
     b = _j(SHELL2, "case.json")
-    E15_METADATA = {"source_name", "sibling_units", "fit_verdict", "display_name"}
+    E15_METADATA = {"source_name", "sibling_units", "display_name", "_contract"}
     diff = {k for k in set(a) | set(b) if a.get(k) != b.get(k)} - E15_METADATA
     assert diff == {"case_id", "unit_label", "known_area_m2", "image_note"}, diff
     # los parámetros del pipeline siguen idénticos entre los dos casos: una sola variable

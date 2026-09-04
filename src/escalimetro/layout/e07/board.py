@@ -69,16 +69,22 @@ def _plan_svg(layout: Layout, shell: ShellM, width_px: int = 1300) -> Tuple[str,
     return body, wv, hv
 
 
-def build_board(alts: List[Dict], shell: ShellM, fit: Dict, subtitle: str = "",
+def build_board(alts: List[Dict], shell: ShellM, fit: Dict = None, subtitle: str = "",
                 ctx: CaseContext = None) -> str:
     """alts: [{spec, result}] en orden A, B, C.
 
-    E15 — la identidad del inmueble llega en `ctx` (CaseContext). El board NO conoce ninguna oficina
-    en particular: si no recibe contexto, muestra los campos como desconocidos en vez de inventar
-    unos. `fit` sigue trayendo el veredicto, que es resultado del caso, no del board."""
+    E15 — la identidad del inmueble llega en `ctx` (CaseContext).
+    E15.1 — el veredicto llega en `fit`, y **por separado**: son dos capas distintas y el board recibe
+    las dos explícitamente. `fit` sólo puede venir de `fit_evidence.presentation_fit(ctx, evidence)`,
+    que es la única función autorizada a convertir un resultado computado en copy de lámina. El board
+    no puede fabricar un veredicto ni leerlo del contexto."""
     if ctx is None:
         raise ValueError("build_board necesita un CaseContext: la identidad del inmueble es dato del "
                          "caso, no un valor por defecto del board")
+    if not isinstance(fit, dict) or "technical_fit" not in fit:
+        raise ValueError("build_board necesita la evidencia de fit ya formateada por "
+                         "fit_evidence.presentation_fit(ctx, evidence): un veredicto es un RESULTADO "
+                         "COMPUTADO, no un dato del caso ni un blob escrito a mano")
     o = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" '
          f'font-family="Helvetica Neue,Helvetica,Arial,sans-serif">',
          f'<rect width="{W}" height="{H}" fill="{PALETTE["paper"]}"/>']

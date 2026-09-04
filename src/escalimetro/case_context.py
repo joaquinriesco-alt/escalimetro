@@ -1,7 +1,13 @@
 """E15 — contrato genérico de caso.
 
 El motor de layouts no debe saber que la oficina es la 403, que mide 543 m² ni que el aviso lo
-publicó GPS Property. Eso son **datos del caso**. Este módulo es el único lugar donde esos datos se
+publicó GPS Property. Eso son **datos del caso**.
+
+E15.1 — este módulo representa **CASE INPUT**, y nada más. Un veredicto de fit es evidencia
+computada y vive en `fit_evidence.py`: `CaseContext` no lo transporta ni tiene métodos que devuelvan
+factibilidad o robustez como si fueran atributos del inmueble. La escala sí sigue aquí, pero con su
+naturaleza declarada: `published_area_m2` es SOURCE FACT, `scale_px_per_m` es DERIVED GEOMETRY y
+`scale_confidence` es DERIVED EVIDENCE. Ver docs/E15_1_DATA_LINEAGE.md. Este módulo es el único lugar donde esos datos se
 leen, y el único que los reparte al resto del pipeline.
 
 Dirección de datos, en un solo sentido:
@@ -17,7 +23,7 @@ Campos requeridos y opcionales (§30, auditado):
 
     REQUERIDOS   case_id, unit_label
     OPCIONALES   source_name, display_name, published_area_m2, published_area_kind,
-                 scale_px_per_m, scale_status, scale_confidence, fit_verdict, sibling_units
+                 scale_px_per_m, scale_status, scale_confidence, sibling_units
 
 El floorplate NO es requerido para construir un contexto: se puede tener metadatos de un caso antes
 de normalizarlo, y los tests de contrato lo necesitan sin geometría. Las etapas que sí lo necesiten
@@ -121,7 +127,6 @@ class CaseContext:
     scale_px_per_m: Optional[float] = None
     scale_status: Optional[str] = None
     scale_confidence: Optional[str] = None
-    fit_verdict: Optional[Dict] = None
     sibling_units: Dict = field(default_factory=dict)
 
     # ----------------------------------------------------------------------------------------------
@@ -229,7 +234,6 @@ def from_case_dir(case_dir: str) -> CaseContext:
         scale_px_per_m=scale.get("px_per_m"),
         scale_status=meta.get("status"),
         scale_confidence=({0.4: "LOW"}.get(conf) if isinstance(conf, float) else None) or case.get("scale_confidence"),
-        fit_verdict=case.get("fit_verdict"),
         sibling_units=case.get("sibling_units") or {},
     )
 

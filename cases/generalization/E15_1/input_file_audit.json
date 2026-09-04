@@ -1,0 +1,44 @@
+{
+  "_doc": "E15.1 §31 — auditoría de archivos de ENTRADA (case.json, program templates, overrides) buscando cualquier valor que semánticamente sea un resultado de ejecución. La búsqueda no se limita a la palabra 'fit': cubre score, status, recommendation, violation, ready, broker, confidence, verdict, result, gate, complete, robust, pass, fail, classification, evaluated, critic y quality.",
+  "files_scanned": [
+    "cases/*/case.json",
+    "program_templates/*.json",
+    "cases/*/overrides*.json"
+  ],
+  "findings": [
+    {
+      "file": "program_templates/office_balanced_48.json",
+      "key": "objectives_weights.adjacency_quality",
+      "value": "0.14",
+      "matched_words": [
+        "quality"
+      ],
+      "classification": "VALID_INPUT",
+      "why": "Es un PESO de la función objetivo, es decir un parámetro de entrada del solver, no una medición de un resultado. El nombre contiene 'quality' pero el valor es una constante de configuración (0.14)."
+    },
+    {
+      "file": "program_templates/office_balanced_48_diag36.json",
+      "key": "objectives_weights.adjacency_quality",
+      "value": "0.14",
+      "matched_words": [
+        "quality"
+      ],
+      "classification": "VALID_INPUT",
+      "why": "Es un PESO de la función objetivo, es decir un parámetro de entrada del solver, no una medición de un resultado. El nombre contiene 'quality' pero el valor es una constante de configuración (0.14)."
+    }
+  ],
+  "summary": {
+    "VALID_INPUT": 2,
+    "QUESTIONABLE": 0,
+    "COMPUTED_OUTPUT": 0
+  },
+  "removed_in_e15_1": [
+    {
+      "file": "cases/001_gps_403/case.json",
+      "key": "fit_verdict",
+      "classification": "COMPUTED_OUTPUT",
+      "why": "Bloque con fit, fit_label, scale, scale_confidence, reason, recommendation y source. Todos resultados de E06. Eliminado; ahora se leen de los artefactos computados."
+    }
+  ],
+  "note": "Cero COMPUTED_OUTPUT restantes en archivos de entrada."
+}
