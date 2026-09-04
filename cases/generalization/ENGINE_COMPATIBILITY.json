@@ -1,12 +1,13 @@
 {
   "_doc": "E15.2 §7-§9 — compatibilidad de evidencia entre versiones del motor. Una evidencia producida bajo el baseline X sigue vigente bajo Y SÓLO si existe una cadena explícita de transiciones declaradas NON_SEMANTIC entre X e Y. No hay comodín: un baseline que no esté en compatible_with_current vuelve STALE toda evidencia producida bajo él.",
-  "current_baseline": "E15.3",
+  "current_baseline": "E16.1",
   "baselines": {
     "E14": "5ce5f6a1f4e3dd17f5f4518fb8365bc24ed90d337dfc5aacb1c1b144b7877259",
     "E15": "d213b4294290247913011d50a15df03fd5ba51b380e905b4a74a7d44ba1201ff",
     "E15.1": "1bf28635dab42bfbbcd9dfca62d8ee5ad28db503957552e3fe65536d87ca069e",
     "E15.2": "74c60443aebae7f21b71be355975d3348ac106eae60cf309822f3e5770458ca4",
-    "E15.3": "49f36d0a63a14a0bbf1610d3fc086ea4052a0b14e5c9b2b61b9fd8f1616e5e68"
+    "E15.3": "49f36d0a63a14a0bbf1610d3fc086ea4052a0b14e5c9b2b61b9fd8f1616e5e68",
+    "E16.1": "a6ee3213b6994897aaa16c0852e2079a5eab0b1750f55db4b1d670a39d3c07fa"
   },
   "semantic_surface": {
     "_doc": "Archivos cuyo contenido determina QUÉ COMPUTA el motor. Si una transición toca uno de éstos, no puede declararse NON_SEMANTIC sin mostrar el diff línea a línea, y ese diff queda escrito en semantic_surface_touched.",
@@ -146,6 +147,41 @@
         "Lámina Standard 01 de la 403 BYTE-IDÉNTICA (92.927 caracteres / 92.983 bytes UTF-8), sha256 175c43d4…",
         "Hashes de geometría A/B/C de la 403 sin cambios"
       ]
+    },
+    {
+      "from": "E15.3",
+      "to": "E16.1",
+      "kind": "NON_SEMANTIC",
+      "summary": "Retiro de acoplamientos de caso en rutas genéricas: Standard 02/03, lámina de validación de brokers, runner de Railway, orquestador de IA y side-by-side. No hay baseline E16: ese ciclo quedó BLOCKED y sin commit.",
+      "changed_files": [
+        "src/escalimetro/ai/board02.py",
+        "src/escalimetro/ai/e09.py",
+        "src/escalimetro/ai/orchestrator.py",
+        "src/escalimetro/ai/railway_e09_runner.py",
+        "src/escalimetro/ai/run.py",
+        "src/escalimetro/cli.py",
+        "src/escalimetro/pipeline.py",
+        "src/escalimetro/renderer/side_by_side.py",
+        "src/escalimetro/validation/boards.py"
+      ],
+      "added_files": [],
+      "removed_files": [],
+      "semantic_surface_touched": {},
+      "breaking_api_changes": [
+        "ai/board02.build_board02(alts, shell, spec, fit: Dict) -> (alts, shell, spec, ctx: CaseContext, evidence: FitEvidence). Un dict ya no se acepta.",
+        "ai/orchestrator.AIOrchestrator(project=...) pasa de tener default '001_gps_403' a ser OBLIGATORIO.",
+        "ai/railway_e09_runner: se elimina DEFAULT_CASE; sin --case ni ESCALIMETRO_CASE el runner devuelve 2. Se elimina la constante EXPECTED_HASH_PREFIX en favor de expected_hash_prefix(case).",
+        "validation/boards.build_board(...) exige ctx: CaseContext y program: Dict."
+      ],
+      "evidence": [
+        "Diff calculado desde los baselines guardados E15.3 y E16.1, no escrito a mano",
+        "Archivos modificados: 9; nuevos: 0; eliminados: 0",
+        "Ninguno de los archivos tocados pertenece a la superficie semántica (36 archivos): el solver computa exactamente lo mismo",
+        "Standard 01 de la 403 BYTE-IDÉNTICA, sha256 175c43d4…",
+        "Standard 02 de la 403 BYTE-IDÉNTICA, sha256 17622ac9…",
+        "Láminas ciega y revelada de validación BYTE-IDÉNTICAS",
+        "Hashes de geometría A/B/C de la 403 sin cambios"
+      ]
     }
   ],
   "compatible_with_current": [
@@ -153,7 +189,8 @@
     "E15",
     "E15.1",
     "E15.2",
-    "E15.3"
+    "E15.3",
+    "E16.1"
   ],
   "limitation": "El baseline más antiguo registrado es E14. Los artefactos de E06/E07 de la Oficina 403 y los de E14 de la 401 se produjeron ANTES de que existiera un baseline, así que su productor exacto no está registrado y se declara como E14, el estado más antiguo que sí lo está. Es una limitación declarada, no una prueba: lo que sí está verificado es que E15 regeneró los artefactos de E06 de la 403 con un motor posterior y salieron idénticos."
 }

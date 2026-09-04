@@ -26,6 +26,8 @@ import time
 from typing import Dict, List, Optional, Tuple
 
 
+from ..case_context import from_case_dir
+from ..fit_evidence import load as load_fit_evidence
 from ..layout.e06.scale import scaled_shell
 from ..layout.e07.strategies import build_alternatives
 from ..layout.model import Layout, load_program
@@ -315,6 +317,10 @@ def main(argv=None):
     comp = json.load(open(os.path.join(e07, "alternative_comparison.json"), encoding="utf-8"))
     rows = {r["alt"]: r for r in comp["rows"]}
     fit = json.load(open(os.path.join(e07, "fit_verdict.json"), encoding="utf-8"))
+    # E16.1 — la Standard 03 reusa el renderer de la 02 y por tanto el mismo contrato: hechos del
+    # caso + evidencia computada, nunca el dict.
+    case_ctx = from_case_dir(args.case)
+    evidence = load_fit_evidence(args.case, args.program)
 
     layouts, payloads, hash_before = {}, {}, {}
     for alt in ALTS:
@@ -475,7 +481,8 @@ def main(argv=None):
             board_alts = [{"alt": a, "layout": layouts[a], "row": rows[a],
                            "metrics": json.load(open(os.path.join(e07, "alternatives", a, "metrics.json"),
                                                      encoding="utf-8")), "critique": {}} for a in ALTS]
-            svg = build_board02(board_alts, shell, spec, fit).replace("STANDARD 02", "STANDARD 03")
+            svg = build_board02(board_alts, shell, spec, case_ctx, evidence)\
+                     .replace("STANDARD 02", "STANDARD 03")
             svg_path = os.path.join(out, "ESCALIMETRO_PRESENTATION_STANDARD_03.svg")
             open(svg_path, "w", encoding="utf-8").write(svg)
             mf.add_artifact("standard_03_svg", svg_path)

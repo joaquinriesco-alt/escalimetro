@@ -19,6 +19,8 @@ from __future__ import annotations
 import re
 from typing import Dict, List, Tuple
 
+from ..case_context import CaseContext
+from ..fit_evidence import FitEvidence, PresentationFit, presentation_fit
 from ..layout.model import Layout, ShellM
 from ..layout.render import render_layout_svg
 
@@ -74,8 +76,33 @@ def _num(t: str) -> float:
     return float(m.group(1)) if m else 0.0
 
 
-def build_board02(alts: List[Dict], shell: ShellM, spec: Dict, fit: Dict) -> str:
-    """alts: [{alt, layout, metrics, critique, row}] en el orden que manda `spec["alternative_order"]`."""
+def build_board02(alts: List[Dict], shell: ShellM, spec: Dict, ctx: CaseContext = None,
+                  evidence: FitEvidence = None) -> str:
+    """alts: [{alt, layout, metrics, critique, row}] en el orden que manda `spec["alternative_order"]`.
+
+    E16.1 — antes esta función recibía `fit: Dict` y además imprimía `"543 m² publicados"` y
+    `"539 m² útiles del modelo"` como literales. Las Standard 02 y 03 habrían dicho 543 m² para
+    cualquier inmueble. Ahora:
+
+        superficie publicada  ← ctx.published_area_label()                     SOURCE_FACT
+        útil del modelo       ← alts[0]["metrics"]["usable_area_m2"]           COMPUTED_RESULT
+        escala y confianza    ← PresentationFit.from_evidence(ctx, evidence)   COMPUTED_RESULT
+
+    Mismo contrato que la Standard 01 (E15.2/E15.3): un diccionario con las claves correctas no es
+    evidencia. La copy se deriva aquí dentro, desde la evidencia."""
+    if ctx is None:
+        raise ValueError("build_board02 necesita un CaseContext: la identidad del inmueble es dato "
+                         "del caso, no un literal del renderer")
+    if isinstance(evidence, PresentationFit):
+        raise TypeError("build_board02 recibe la EVIDENCIA (FitEvidence), no la copy ya formateada: "
+                        "un PresentationFit construido a mano tiene el tipo correcto y ninguna "
+                        "procedencia")
+    if not isinstance(evidence, FitEvidence):
+        raise TypeError("build_board02 necesita una FitEvidence cargada desde los artefactos "
+                        "computados (fit_evidence.load(case_dir)). Un diccionario con las claves "
+                        "correctas NO es evidencia: un veredicto es un RESULTADO COMPUTADO con "
+                        "procedencia, no un blob escrito a mano.")
+    fit = presentation_fit(ctx, evidence)      # la copy se deriva DENTRO del boundary controlado
     order = spec["alternative_order"]
     by = {a["alt"]: a for a in alts}
     copy = spec["alternative_copy"]
@@ -96,7 +123,7 @@ def build_board02(alts: List[Dict], shell: ShellM, spec: Dict, fit: Dict) -> str
     o.append(_t(vx + 28, 64, "VEREDICTO", 10.5, PALETTE["faint"], 700, ls=2.0))
     for i, ln in enumerate(_wrap(spec["fit_verdict_copy"], 44)[:2]):
         o.append(_t(vx + 28, 90 + i * 24, ln, 19, PALETTE["ink"], 600))
-    o.append(_t(vx + 28, 136, f'ESCALA: {fit["scale"]} · confianza {fit["scale_confidence"]}',
+    o.append(_t(vx + 28, 136, f'ESCALA: {fit.scale} · confianza {fit.scale_confidence}',
                 12.5, PALETTE["accent"], 700, ls=0.6))
 
     # ---------- banda de programa (idéntico en las tres) ------------------------------------------
@@ -110,8 +137,12 @@ def build_board02(alts: List[Dict], shell: ShellM, spec: Dict, fit: Dict) -> str
         o.append(_t(x, by_ + 48, val, 18, PALETTE["ink"], 700))
         o.append(_t(x + 8 + 11 * len(val), by_ + 48, lab, 14, PALETTE["muted"]))
         x += 34 + 11 * len(val) + 8 * len(lab)
-    o.append(_t(W - M - 24, by_ + 25, "543 m² publicados", 13, PALETTE["muted"], 600, anchor="end"))
-    o.append(_t(W - M - 24, by_ + 48, "539 m² útiles del modelo", 13, PALETTE["ink"], 600, anchor="end"))
+    # SOURCE_FACT: la superficie publicada es dato del caso. COMPUTED_RESULT: la útil del modelo sale
+    # de las métricas de E04, igual que en la Standard 01 (layout/e07/board.py).
+    o.append(_t(W - M - 24, by_ + 25, f"{ctx.published_area_label()} publicados", 13,
+                PALETTE["muted"], 600, anchor="end"))
+    o.append(_t(W - M - 24, by_ + 48, f'{by[order[0]]["metrics"]["usable_area_m2"]:.0f} m² útiles del modelo',
+                13, PALETTE["ink"], 600, anchor="end"))
 
     # ---------- columnas ---------------------------------------------------------------------------
     sy = 288

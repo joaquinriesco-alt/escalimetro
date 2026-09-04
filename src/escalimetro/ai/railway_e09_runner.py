@@ -29,11 +29,30 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Dict, List, Optional, Tuple
 
 REPORT_NAME = "ESCALIMETRO_E09_REAL_REPORT.html"
-DEFAULT_CASE = "cases/001_gps_403"
+#: E16.1 §14, §17 — NO hay caso por defecto. Antes esto era `"cases/001_gps_403"`: un runner
+#: genérico que, si nadie decía nada, procesaba la Oficina 403. El caso se declara por
+#: `--case` o por la variable de entorno `ESCALIMETRO_CASE`; si falta, el runner se detiene.
+CASE_ENV_VAR = "ESCALIMETRO_CASE"
+MISSING_CASE = ("no se declaró el caso a procesar: pasa --case <ruta> o define la variable de "
+                "entorno ESCALIMETRO_CASE. Este runner no tiene un caso por defecto.")
+EXPECTED_HASHES_FILE = os.path.join("ai", "E09", "EXPECTED_GEOMETRY_HASHES.json")
 KEY_VARS = ["OPENAI_API_KEY", "ANTHROPIC_API_KEY"]
 MODEL_VARS = ["OPENAI_MODEL_VISION", "OPENAI_MODEL_PRESENTATION", "ANTHROPIC_MODEL_REVIEWER"]
 TUNING_VARS = ["AI_PROVIDER_TIMEOUT", "AI_PROVIDER_MAX_RETRIES"]
-EXPECTED_HASH_PREFIX = {"A": "df6b86058ebb", "B": "5c5c276923dd", "C": "e12cc722485b"}
+
+
+def expected_hash_prefix(case: str) -> Dict[str, str]:
+    """E16.1 §16 — la expectativa de regresión de geometría es un DATO DEL CASO.
+
+    Antes era una constante del runner con los hashes de la 403, o sea una expectativa universal:
+    cualquier inmueble procesado aquí se comparaba contra la geometría de la Oficina 403. Ahora se
+    lee de `cases/<caso>/ai/E09/EXPECTED_GEOMETRY_HASHES.json`. Un caso que no la declare no tiene
+    expectativa —devuelve {}— y eso se reporta como tal; no se hereda la de otro caso."""
+    try:
+        with open(os.path.join(case, EXPECTED_HASHES_FILE), encoding="utf-8") as fh:
+            return dict((json.load(fh).get("geometry_hash_prefix") or {}))
+    except (OSError, ValueError):
+        return {}
 
 
 def log(msg: str) -> None:
@@ -348,11 +367,13 @@ def build_html(case: str, env: Dict, run: Dict, data: Dict) -> str:
     A('<h2>11 · Geometry guard</h2>')
     A(_img(os.path.join(out_dir, "geometry_hash_check.png"), "geometry_hash_check"))
     hb, ha = geo.get("geometry_hash_before", {}), geo.get("geometry_hash_after", {})
-    A(_table(["alt", "esperado (E08/E10)", "antes", "después", "idéntico"],
-             [[a, f'<code>{EXPECTED_HASH_PREFIX[a]}…</code>',
+    exp = expected_hash_prefix(case)                       # E16.1: expectativa declarada por el caso
+    A(_table(["alt", "esperado (declarado por el caso)", "antes", "después", "idéntico"],
+             [[a, f'<code>{exp[a]}…</code>' if a in exp else "sin expectativa declarada",
                f'<code>{html.escape(str(hb.get(a, "—"))[:16])}…</code>',
                f'<code>{html.escape(str(ha.get(a, "—"))[:16])}…</code>',
-               _badge(hb.get(a) == ha.get(a) and str(hb.get(a, "")).startswith(EXPECTED_HASH_PREFIX[a]))]
+               _badge(hb.get(a) == ha.get(a)
+                      and (a not in exp or str(hb.get(a, "")).startswith(exp[a])))]
               for a in ("A", "B", "C")]))
 
     # 12 — presentación
@@ -449,9 +470,12 @@ def serve(port: int) -> None:
 # ---------------------------------------------------------------------------------------------------
 def main(argv=None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
-    case = os.getenv("ESCALIMETRO_CASE", DEFAULT_CASE)
+    case = os.getenv(CASE_ENV_VAR, "")
     if "--case" in argv:                                     # E12: útil para ensayar sin tocar el caso real
         case = argv[argv.index("--case") + 1]
+    if not case:                                             # E16.1: sin caso no se procesa nada
+        log(MISSING_CASE)
+        return 2
     serve_after = "--no-serve" not in argv
     unknown = [a for a in argv if a.startswith("--") and a not in ("--no-serve", "--case")]
     if unknown:                                              # nunca ignorar en silencio un argumento
@@ -476,10 +500,15 @@ def main(argv=None) -> int:
         "report_ready": False,
     }
     geo = data.get("geometry_hash_check") or {}
+    exp = expected_hash_prefix(case)                         # E16.1: la declara el caso, no el runner
     for a in ("A", "B", "C"):
         hb = str((geo.get("geometry_hash_before") or {}).get(a, ""))
-        ok = hb == str((geo.get("geometry_hash_after") or {}).get(a, "")) and \
-            hb.startswith(EXPECTED_HASH_PREFIX[a])
+        estable = hb == str((geo.get("geometry_hash_after") or {}).get(a, ""))
+        if a not in exp:
+            log(f"GeometryHash {a} {'STABLE' if estable else 'CHANGED'} · el caso no declara "
+                f"expectativa de regresión")
+            continue
+        ok = estable and hb.startswith(exp[a])
         log(f"GeometryHash {a} {'PASS' if ok else 'FAIL'}")
 
     try:

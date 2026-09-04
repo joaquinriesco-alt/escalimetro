@@ -138,11 +138,16 @@ def test_la_raiz_sirve_el_informe(server):
 # 5 — el GeometryGuard sigue en pie
 # ---------------------------------------------------------------------------------------------------
 def test_el_wrapper_conserva_los_hashes_esperados():
-    assert R.EXPECTED_HASH_PREFIX == {"A": "df6b86058ebb", "B": "5c5c276923dd", "C": "e12cc722485b"}
+    # E16.1 §16 — la expectativa de regresión dejó de ser una constante universal del runner y pasó
+    # a ser un dato del caso: cases/<caso>/ai/E09/EXPECTED_GEOMETRY_HASHES.json. Se preserva la
+    # regresión; cambia de dónde sale.
+    exp = R.expected_hash_prefix(CASE)
+    assert exp == {"A": "df6b86058ebb", "B": "5c5c276923dd", "C": "e12cc722485b"}
+    assert not hasattr(R, "EXPECTED_HASH_PREFIX"), "no debe quedar la constante universal"
     g = R.load_outputs(CASE).get("geometry_hash_check")
     if not g:
         pytest.skip("requiere una corrida E09")
-    for a, pre in R.EXPECTED_HASH_PREFIX.items():
+    for a, pre in exp.items():
         assert g["geometry_hash_before"][a].startswith(pre)
         assert g["geometry_hash_before"][a] == g["geometry_hash_after"][a]
 

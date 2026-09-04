@@ -246,7 +246,7 @@ def test_guard_pasa_si_no_hay_mutacion(art):
 
 
 def test_la_capa_de_ia_no_muta_geometria(art):
-    o = AIOrchestrator(env={})
+    o = AIOrchestrator("test_project", env={})
     lay = art["A"]
     before = geometry_hash(lay)
     r = o.review_alternative("A", lay, _payload("A"))
@@ -427,7 +427,7 @@ def test_ledger_agrupa_por_proveedor_alternativa_y_proposito():
 
 
 def test_latencias_se_registran_por_revisor(art):
-    o = AIOrchestrator(env={})
+    o = AIOrchestrator("test_project", env={})
     r = o.review_alternative("A", art["A"], _payload("A"))
     assert set(r.latencies_ms) == {"rule_based", "anthropic", "openai_vision"}
     assert all(v >= 0 for v in r.latencies_ms.values())
@@ -441,7 +441,7 @@ def test_ejecucion_paralela_no_es_secuencial():
             return super().complete_json(*a, **k)
     cfgS = AIProviderConfig("deterministic", "m", "spatial_review")
     cfgV = AIProviderConfig("deterministic", "m", "visual_review")
-    o = AIOrchestrator(env={}, providers={"spatial_review": Slow(cfgS), "visual_review": Slow(cfgV),
+    o = AIOrchestrator("test_project", env={}, providers={"spatial_review": Slow(cfgS), "visual_review": Slow(cfgV),
                                           "presentation": Slow(AIProviderConfig("deterministic", "m", "presentation")),
                                           "deterministic_spatial": Slow(cfgS),
                                           "deterministic_visual": Slow(cfgV)})
@@ -526,7 +526,12 @@ def test_el_renderer_de_lamina_no_toca_la_geometria(art):
     if not os.path.exists(os.path.join(E08, "presentation_spec.json")):
         pytest.skip("requiere la corrida E08")
     spec = json.load(open(os.path.join(E08, "presentation_spec.json"), encoding="utf-8"))
-    fit = json.load(open(os.path.join(E07, "fit_verdict.json"), encoding="utf-8"))
+    # E16.1: la lámina 02 ya no recibe el dict de fit_verdict.json — recibe hechos del caso y
+    # evidencia computada, igual que la Standard 01.
+    from escalimetro.case_context import from_case_dir
+    from escalimetro.fit_evidence import load as load_fit_evidence
+    ctx = from_case_dir(CASE)
+    evidence = load_fit_evidence(CASE)
     comp = json.load(open(os.path.join(E07, "alternative_comparison.json"), encoding="utf-8"))
     rows = {r["alt"]: r for r in comp["rows"]}
     shell = scaled_shell(Floorplate.load(os.path.join(CASE, "outputs", "floorplate.json")), 1.0)
@@ -534,7 +539,7 @@ def test_el_renderer_de_lamina_no_toca_la_geometria(art):
              "metrics": json.load(open(os.path.join(E07, "alternatives", a, "metrics.json"), encoding="utf-8")),
              "critique": {}} for a in ALTS]
     before = {a: geometry_hash(art[a]) for a in ALTS}
-    svg = build_board02(alts, shell, spec, fit)
+    svg = build_board02(alts, shell, spec, ctx, evidence)
     assert svg.startswith("<svg") and "STANDARD 02" in svg
     assert {a: geometry_hash(art[a]) for a in ALTS} == before
 
@@ -586,7 +591,7 @@ def test_decision_log_registra_que_vio_cada_proveedor():
 @pytest.mark.integration
 @pytest.mark.skipif(not os.environ.get("ANTHROPIC_API_KEY"), reason="sin ANTHROPIC_API_KEY")
 def test_integration_anthropic_review_real():
-    o = AIOrchestrator()
+    o = AIOrchestrator("test_project")
     lay = Layout.load(os.path.join(E07, "alternatives", "A", "layout.json"))
     r = o.review_alternative("A", lay, _payload("A"))
     assert r.reviews["anthropic"], r.errors
@@ -597,7 +602,7 @@ def test_integration_anthropic_review_real():
 @pytest.mark.integration
 @pytest.mark.skipif(not os.environ.get("OPENAI_API_KEY"), reason="sin OPENAI_API_KEY")
 def test_integration_openai_visual_review_real():
-    o = AIOrchestrator()
+    o = AIOrchestrator("test_project")
     lay = Layout.load(os.path.join(E07, "alternatives", "A", "layout.json"))
     img = os.path.join(E07, "alternatives", "A", "layout_commercial.png")
     r = o.review_alternative("A", lay, _payload("A"), image_paths=[img])

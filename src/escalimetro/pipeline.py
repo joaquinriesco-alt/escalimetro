@@ -49,6 +49,7 @@ class PipelineConfig:
     mask_open_px: int = 3
     column_detector: str = "both"             # hollow | dark | both
     semantics: bool = True                    # E03: construir shell semántico
+    source_name: str = ""                     # E16.1: la fuente/broker es dato del caso, no del renderer
 
 
 def _manual_meta(note=""):
@@ -263,6 +264,6 @@ def run(cfg: PipelineConfig) -> Floorplate:
     cv2.imwrite(out("perimeter_overlay.png"), overlay_on_original(img, fp, only_perimeter=True))
     cv2.imwrite(out("original_grid.png"), grid_image(img))
     num = "".join(ch for ch in cfg.unit_label if ch.isdigit()) or "unit"
-    cv2.imwrite(out(f"comparison_{num}.png"), comparison_three(img, fp))
+    cv2.imwrite(out(f"comparison_{num}.png"), comparison_three(img, fp, source_name=cfg.source_name))
     cv2.imwrite(out("geometry_only.png"), geometry_only(fp))
     return fp

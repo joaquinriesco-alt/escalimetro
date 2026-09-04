@@ -38,6 +38,7 @@ def main(argv=None):
     if args.cmd == "run":
         cfg = PipelineConfig(
             case_id=c["case_id"], image_path=os.path.join(case_dir, c["image"]), unit_label=c["unit_label"],
+            source_name=c.get("source_name", ""),          # E16.1: la fuente sale del caso
             known_area_m2=c.get("known_area_m2"), known_area_kind=c.get("known_area_kind", "unknown"),
             vision=args.vision or c.get("vision", "manual"), segmentation=args.segmentation or c.get("segmentation", "opencv_flood"),
             overrides_path=os.path.join(case_dir, args.overrides or c.get("overrides")) if (args.overrides or c.get("overrides")) else None,

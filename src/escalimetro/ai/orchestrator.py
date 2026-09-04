@@ -62,8 +62,16 @@ class AlternativeAIResult:
 
 
 class AIOrchestrator:
-    def __init__(self, project: str = "001_gps_403", env: Optional[Dict[str, str]] = None,
+    def __init__(self, project: str, env: Optional[Dict[str, str]] = None,
                  providers: Optional[Dict[str, object]] = None, max_workers: int = 3, shell=None):
+        """E16.1 §18 — `project` es OBLIGATORIO. Antes tenía `"001_gps_403"` por defecto: cualquier
+        orquestación que no lo declarara quedaba etiquetada como la Oficina 403 en los payloads que
+        van a los críticos. Los dos llamadores reales (ai/run.py y ai/e09.py) ya lo pasaban
+        explícitamente; el único que dependía del default eran tests que no usan el valor. No se
+        sustituye por otro default: un identificador de proyecto que nadie declaró no existe."""
+        if not project:
+            raise ValueError("AIOrchestrator necesita el proyecto/caso explícitamente: no hay un "
+                             "proyecto por defecto")
         self.project = project
         self.shell = shell        # el shell entra al hash: es geometría, aunque sea común a las tres
         self.configs = load_configs(env)

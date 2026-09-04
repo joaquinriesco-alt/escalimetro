@@ -14,7 +14,12 @@ import os
 import re
 from typing import Dict, List, Tuple
 
+from ..case_context import CaseContext, from_case_dir
 from .blind import BLIND, REAL_NAMES, mapping_for
+
+#: programa congelado por defecto. No es identidad de caso: es el programa del experimento, y el
+#: caller puede pasar otro. Ver E16.1 §13.
+DEFAULT_PROGRAM = "program_templates/office_balanced_48.json"
 
 # ---------------------------------------------------------------------------------------------------
 # paleta — neutra a propósito: ningún color "gana" (§43, sesgo por color)
@@ -161,9 +166,20 @@ def _column(i: int, label: str, plan_body: str, pw: int, ph: int) -> List[str]:
 
 
 def build_board(handoffs: Dict[str, Dict], labels: Dict[str, str], order: List[str],
-                title: str, subtitle: str) -> str:
+                title: str, subtitle: str, ctx: CaseContext = None, program: Dict = None) -> str:
     """Compone la lámina. `order` son las alternativas reales en el orden en que se muestran;
-    `labels` dice con qué texto se rotula cada una (X/Y/Z en ciega, A/B/C en revelada)."""
+    `labels` dice con qué texto se rotula cada una (X/Y/Z en ciega, A/B/C en revelada).
+
+    E16.1 — el encabezado decía `"Oficina 403 · 543 m² publicados · 48 personas"` como literal, así
+    que la lámina ciega de CUALQUIER caso habría llevado la identidad de la 403 delante de un broker
+    real. Ahora: la unidad y la superficie salen del `CaseContext` (SOURCE_FACT) y el headcount del
+    programa congelado (PROGRAM FACT)."""
+    if ctx is None:
+        raise ValueError("build_board necesita un CaseContext: la identidad del inmueble es dato del "
+                         "caso, no un literal de la lámina de validación")
+    if not program or "target_headcount" not in program:
+        raise ValueError("build_board necesita el programa congelado: el headcount es un dato del "
+                         "programa, no un literal de la lámina")
     shell = handoffs[order[0]]["shell_geometry"]
     o = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" '
          f'font-family="Helvetica,Arial,sans-serif">',
@@ -171,8 +187,10 @@ def build_board(handoffs: Dict[str, Dict], labels: Dict[str, str], order: List[s
 
     o.append(_t(SIDE_X, 92, title, 46, PAL["ink"], 700))
     o.append(_t(SIDE_X, 138, subtitle, 22, PAL["muted"]))
-    o.append(_t(W - SIDE_X, 92, "Oficina 403  ·  543 m² publicados  ·  48 personas", 26,
-                PAL["ink"], 700, anchor="end"))
+    unidad = ctx.display_name or ctx.unit_label
+    o.append(_t(W - SIDE_X, 92,
+                f'{unidad}  ·  {ctx.published_area_label()} publicados  ·  '
+                f'{program["target_headcount"]} personas', 26, PAL["ink"], 700, anchor="end"))
     o.append(_t(W - SIDE_X, 132, "Test-fit conceptual. Dimensiones sujetas a confirmación de escala.",
                 19, PAL["warn"], anchor="end"))
     o.append(f'<line x1="{SIDE_X}" y1="{PLAN_Y - 80}" x2="{W - SIDE_X}" y2="{PLAN_Y - 80}" '
@@ -190,25 +208,32 @@ def build_board(handoffs: Dict[str, Dict], labels: Dict[str, str], order: List[s
 
 
 # ---------------------------------------------------------------------------------------------------
+def load_program_facts(program_path: str = DEFAULT_PROGRAM) -> Dict:
+    """El programa congelado. Es un HECHO DE ENTRADA del experimento, no del renderer."""
+    return json.load(open(program_path, encoding="utf-8"))
+
+
 def load_handoffs(case: str) -> Dict[str, Dict]:
     base = os.path.join(case, "layouts", "E07", "alternatives")
     return {a: json.load(open(os.path.join(base, a, "presentation_handoff.json"), encoding="utf-8"))
             for a in ("A", "B", "C")}
 
 
-def blind_board(case: str, respondent_index: int = 0) -> str:
+def blind_board(case: str, respondent_index: int = 0, program_path: str = DEFAULT_PROGRAM) -> str:
     h = load_handoffs(case)
     mp = mapping_for(respondent_index)
     order = [mp[b] for b in BLIND]
     labels = {mp[b]: f"OPTION {b}" for b in BLIND}
     return build_board(h, labels, order,
                        "TEST-FIT · TRES ALTERNATIVAS",
-                       "Mismo local, mismo programa. Tres distribuciones posibles.")
+                       "Mismo local, mismo programa. Tres distribuciones posibles.",
+                       ctx=from_case_dir(case), program=load_program_facts(program_path))
 
 
-def reveal_board(case: str) -> str:
+def reveal_board(case: str, program_path: str = DEFAULT_PROGRAM) -> str:
     h = load_handoffs(case)
     order = ["A", "B", "C"]
     return build_board(h, REAL_NAMES, order,
                        "TEST-FIT · TRES ALTERNATIVAS",
-                       "Las mismas tres distribuciones, ahora con su intención de diseño.")
+                       "Las mismas tres distribuciones, ahora con su intención de diseño.",
+                       ctx=from_case_dir(case), program=load_program_facts(program_path))

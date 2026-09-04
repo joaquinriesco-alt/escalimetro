@@ -14,6 +14,8 @@ from typing import Dict, List
 
 import cv2
 
+from ..case_context import from_case_dir
+from ..fit_evidence import load as load_fit_evidence
 from ..layout.e06.scale import scaled_shell
 from ..layout.e07.strategies import build_alternatives
 from ..layout.model import Layout, load_program
@@ -80,6 +82,10 @@ def main(argv=None):
     comp = json.load(open(os.path.join(e07, "alternative_comparison.json"), encoding="utf-8"))
     rows = {r["alt"]: r for r in comp["rows"]}
     fit = json.load(open(os.path.join(e07, "fit_verdict.json"), encoding="utf-8"))
+    # E16.1 — la lámina ya no consume ese dict: recibe los HECHOS del caso y la EVIDENCIA computada.
+    # `fit` se conserva sólo como payload para los críticos, que reciben el veredicto como contexto.
+    case_ctx = from_case_dir(args.case)
+    evidence = load_fit_evidence(args.case, args.program)
 
     cfgs = load_configs()
     miss = missing_keys(cfgs)
@@ -141,7 +147,7 @@ def main(argv=None):
                            "metrics": json.load(open(os.path.join(d, "metrics.json"), encoding="utf-8")),
                            "critique": json.load(open(os.path.join(d, "critique.json"), encoding="utf-8")),
                            "row": rows[alt]})
-    svg = build_board02(board_alts, shell, spec, fit)
+    svg = build_board02(board_alts, shell, spec, case_ctx, evidence)
     open(os.path.join(out, "ESCALIMETRO_PRESENTATION_STANDARD_02.svg"), "w", encoding="utf-8").write(svg)
     cv2.imwrite(os.path.join(out, "ESCALIMETRO_PRESENTATION_STANDARD_02.png"), _svg_to_bgr(svg, 3600))
     hashes_after = {a["alt"]: geometry_hash(a["layout"], shell) for a in board_alts}

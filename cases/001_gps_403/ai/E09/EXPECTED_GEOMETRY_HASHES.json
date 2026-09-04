@@ -1,0 +1,16 @@
+{
+  "_doc": "E16.1 §16 — expectativa de regresión de geometría de ESTE caso. Antes vivía como EXPECTED_HASH_PREFIX dentro de src/escalimetro/ai/railway_e09_runner.py, donde era una expectativa UNIVERSAL: cualquier caso procesado por el runner se comparaba contra los hashes de la 403. Aquí es lo que siempre fue: un dato de este caso. Un caso que no declare este archivo no tiene expectativa, y el runner lo reporta como tal en vez de asumir la de otro inmueble.",
+  "case_id": "001_gps_403",
+  "declared_by": "E16.1",
+  "geometry_hash_prefix": {
+    "A": "df6b86058ebb",
+    "B": "5c5c276923dd",
+    "C": "e12cc722485b"
+  },
+  "full_hashes": {
+    "A": "df6b86058ebb093f449e1054a0c65a902b7492f7986f4b8395489d63d46d7b99",
+    "B": "5c5c276923dd7da69844ad3d409f4b879ac40c911144e4a11bf3cb4c6d8f066c",
+    "C": "e12cc722485b9c58251621bd6f05e92fdc8633675156e8d26f2a110d6048e4c6"
+  },
+  "origin": "E08/E10 — geometría de las tres alternativas de E07 de la Oficina 403"
+}

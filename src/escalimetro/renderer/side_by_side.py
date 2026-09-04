@@ -123,8 +123,14 @@ def geometry_only(fp: Floorplate, width: int = 1600) -> np.ndarray:
     return img if img is not None else _raster_fallback(fp, width)
 
 
-def comparison_three(image_bgr: np.ndarray, fp: Floorplate, panel_width: int = 900) -> np.ndarray:
-    """ORIGINAL | OVERLAY | PLANTA ESCALÍMETRO — la imagen principal de revisión humana."""
+def comparison_three(image_bgr: np.ndarray, fp: Floorplate, panel_width: int = 900,
+                     source_name: str = "") -> np.ndarray:
+    """ORIGINAL | OVERLAY | PLANTA ESCALÍMETRO — la imagen principal de revisión humana.
+
+    E16.1 §19 — el panel izquierdo se rotulaba `"ORIGINAL GPS"`, así que la revisión de cualquier
+    inmueble decía GPS. Ahora el rótulo es `ORIGINAL` y, si el caller declara la fuente real,
+    `ORIGINAL · <fuente>`. No se mapea `GPS Property → GPS` para conservar el literal antiguo: eso
+    sería otro hardcode."""
     h0, w0 = image_bgr.shape[:2]
     left = cv2.resize(image_bgr, (panel_width, int(h0 * panel_width / w0)), interpolation=cv2.INTER_CUBIC)
     ov = overlay_on_original(image_bgr, fp)
@@ -136,7 +142,8 @@ def comparison_three(image_bgr: np.ndarray, fp: Floorplate, panel_width: int = 9
     H = max(left.shape[0], mid.shape[0], right.shape[0]) + 44
     gap = 24
     canvas = np.full((H, panel_width * 3 + gap * 2, 3), 255, np.uint8)
-    for i, (panel, title) in enumerate([(left, "ORIGINAL GPS"), (mid, "OVERLAY (geometria sobre el original)"),
+    original = f"ORIGINAL · {source_name}" if source_name else "ORIGINAL"
+    for i, (panel, title) in enumerate([(left, original), (mid, "OVERLAY (geometria sobre el original)"),
                                         (right, "PLANTA ESCALIMETRO")]):
         x = i * (panel_width + gap)
         canvas[44:44 + panel.shape[0], x:x + panel_width] = panel
