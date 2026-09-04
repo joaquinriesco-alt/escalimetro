@@ -244,8 +244,8 @@ def test_la_lamina_de_403_sigue_siendo_byte_identica():
             layout=Layout.load(os.path.join(d, "layout.json")),
             metrics=json.load(open(os.path.join(d, "metrics.json"), encoding="utf-8")),
             critique=json.load(open(os.path.join(d, "critique.json"), encoding="utf-8")))})
-    fit = presentation_fit(ctx, load_fit_evidence(C403))   # PresentationFit tipado
-    new = build_board(alts, shell, fit=fit, ctx=ctx)
+    # E15.3: el board recibe la EVIDENCIA, no la copy ya formateada.
+    new = build_board(alts, shell, load_fit_evidence(C403), ctx=ctx)
     old = open(os.path.join(e07, "ESCALIMETRO_PRESENTATION_STANDARD_01.svg"), encoding="utf-8").read()
     assert new == old
 

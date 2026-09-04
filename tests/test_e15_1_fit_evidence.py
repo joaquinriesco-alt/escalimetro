@@ -54,7 +54,8 @@ def test_case_json_solo_tiene_campos_del_contrato():
     """Lista blanca explícita: si aparece un campo nuevo hay que decidir de qué lado de la frontera está."""
     allowed = {"case_id", "image", "image_note", "unit_label", "known_area_m2", "known_area_kind",
                "overrides", "vision", "segmentation", "simplify_eps_frac", "mask_open_px",
-               "source_name", "display_name", "sibling_units", "scale_confidence"}
+               "source_name", "display_name", "sibling_units"}   # E15.2/E15.3: scale_confidence
+    #: es DERIVED_EVIDENCE y no puede declararse como entrada; esta lista blanca lo admitía todavía
     for p in _case_files():
         extra = {k for k in _j(p) if not k.startswith("_")} - allowed
         assert not extra, f"{p}: campos fuera del contrato {extra}"
@@ -132,9 +133,11 @@ def test_401_tiene_robustez_robust_no_fit():
 
 def test_las_dos_capas_son_independientes():
     """Un NO_FIT técnico con robustez no evaluada es un estado legítimo y distinguible."""
+    # E15.3: una AFIRMACIÓN técnica exige procedencia, así que el caso de prueba la declara. Lo que
+    # se está probando aquí es la independencia de las dos capas, no la ausencia de evidencia.
     ev = FE.FitEvidence(technical=FE.NO_FIT, robustness=FE.ROBUSTNESS_NOT_EVALUATED,
-                        freshness=FE.FRESH)
-    assert ev.evaluated is True and ev.presentable is True
+                        freshness=FE.FRESH, source_artifacts=["layouts/E04/metrics.json"])
+    assert ev.evaluated is True and ev.has_provenance is True and ev.presentable is True
     ctx = CaseContext(case_id="X", unit_label="Oficina 999")
     p = FE.presentation_fit(ctx, ev)   # E15.2: PresentationFit tipado, acceso por atributo
     assert p.technical_fit == FE.NO_FIT and p.robustness == FE.ROBUSTNESS_NOT_EVALUATED
@@ -240,9 +243,9 @@ def test_la_lamina_exige_evidencia_explicita():
     from escalimetro.layout.e07.board import build_board
     ctx = from_case_dir(C403)
     with pytest.raises((TypeError, ValueError)):
-        build_board([], None, fit=None, ctx=ctx)
+        build_board([], None, None, ctx=ctx)
     with pytest.raises(TypeError):
-        build_board([], None, fit={"fit_label": "ROBUST WITHIN"}, ctx=ctx)   # blob a mano
+        build_board([], None, {"fit_label": "ROBUST WITHIN"}, ctx=ctx)      # blob a mano
 
 
 def test_el_caso_generico_no_inventa_resultados():
@@ -287,7 +290,7 @@ def test_la_lamina_de_403_sigue_byte_identica_con_evidencia_computada():
     from escalimetro.layout.e07.strategies import build_alternatives
     e07 = os.path.join(C403, "layouts", "E07")
     ctx = from_case_dir(C403)
-    fit = FE.presentation_fit(ctx, FE.load(C403, PROG))
+    evidence = FE.load(C403, PROG)      # E15.3: el board recibe la EVIDENCIA
     shell = scaled_shell(Floorplate.load(os.path.join(C403, "outputs", "floorplate.json")), 1.0)
     specs = {s.alt: s for s in build_alternatives(load_program(PROG))}
     alts = []
@@ -297,7 +300,7 @@ def test_la_lamina_de_403_sigue_byte_identica_con_evidencia_computada():
             layout=Layout.load(os.path.join(d, "layout.json")),
             metrics=_j(os.path.join(d, "metrics.json")),
             critique=_j(os.path.join(d, "critique.json")))})
-    new = build_board(alts, shell, fit=fit, ctx=ctx)
+    new = build_board(alts, shell, evidence, ctx=ctx)
     assert new == open(os.path.join(e07, "ESCALIMETRO_PRESENTATION_STANDARD_01.svg"),
                        encoding="utf-8").read()
 

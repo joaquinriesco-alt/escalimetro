@@ -85,10 +85,15 @@ def test_la_confianza_de_escala_sale_del_floorplate():
 # B · procedencia y compatibilidad de motor
 # ===================================================================================================
 def test_la_declaracion_de_compatibilidad_existe_y_es_explicita():
+    # E15.3 — el baseline vigente avanza cada ciclo, así que el test comprueba la FORMA de la
+    # declaración y no un valor concreto que habría que editar cada vez.
     d = _j(COMPAT)
-    assert d["current_baseline"] == "E15.2"
-    assert set(d["baselines"]) == {"E14", "E15", "E15.1", "E15.2"}
-    assert d["compatible_with_current"] == ["E14", "E15", "E15.1", "E15.2"]
+    assert {"E14", "E15", "E15.1", "E15.2"} <= set(d["baselines"])
+    assert d["current_baseline"] in d["baselines"]
+    assert d["current_baseline"] in d["compatible_with_current"]
+    assert d["compatible_with_current"][0] == "E14"
+    assert set(d["compatible_with_current"]) <= set(d["baselines"])
+    assert d["transitions"][-1]["to"] == d["current_baseline"]
     for t in d["transitions"]:
         assert t["kind"] in ("NON_SEMANTIC", "SEMANTIC")
         assert t["evidence"], t
@@ -107,10 +112,15 @@ def test_toda_transicion_que_toca_la_superficie_semantica_muestra_el_diff():
 
 
 def test_el_registro_legado_declara_su_baseline_productor():
+    """E15.3 — CAMBIO DE CONTRATO INTENCIONAL. E15.2 escribía `producer_engine_baseline: "E14"` y
+    explicaba en una nota que en realidad no sabía quién produjo estos artefactos: un campo de
+    procedencia afirmando algo no probado. Ahora el productor es null/UNKNOWN y lo verificable —el
+    baseline desde el que se puede comprobar compatibilidad— vive en su propio campo."""
     for case in (C403, C401):
         reg = _j(os.path.join(case, "layouts", FE.LEGACY_REGISTRY))
-        assert reg["producer_engine_baseline"] == "E14"
-        assert "no está registrado" in reg["producer_engine_baseline_note"]
+        assert reg["producer_engine_baseline"] is None
+        assert reg["producer_engine_baseline_status"] == "UNKNOWN"
+        assert reg["verified_compatible_from_baseline"] == "E14"
 
 
 def test_la_evidencia_historica_sigue_vigente_bajo_el_baseline_actual():
@@ -189,11 +199,14 @@ FABRICATED = {"technical_fit": "FIT", "fit_label": "ROBUST WITHIN ASSUMED SCALE 
 
 
 def test_la_lamina_rechaza_un_veredicto_fabricado_a_mano():
-    """§16 — el test explícito: el dict tiene las claves correctas y aun así se rechaza."""
+    """§16 — el test explícito: el dict tiene las claves correctas y aun así se rechaza.
+
+    E15.3 — el mensaje ya no habla de `PresentationFit`: exigir ese tipo era el agujero (se podía
+    construir a mano). El board ahora pide la EVIDENCIA."""
     ctx = from_case_dir(C403)
     with pytest.raises(TypeError) as e:
-        build_board([], None, fit=FABRICATED, ctx=ctx)
-    assert "PresentationFit" in str(e.value)
+        build_board([], None, FABRICATED, ctx=ctx)
+    assert "FitEvidence" in str(e.value)
 
 
 @pytest.mark.parametrize("fake", [FABRICATED, {}, None, "ROBUST WITHIN", 42,
@@ -202,7 +215,7 @@ def test_la_lamina_rechaza_un_veredicto_fabricado_a_mano():
 def test_ninguna_forma_de_dict_pasa_como_evidencia(fake):
     ctx = from_case_dir(C403)
     with pytest.raises((TypeError, ValueError)):
-        build_board([], None, fit=fake, ctx=ctx)
+        build_board([], None, fake, ctx=ctx)
 
 
 def test_presentationfit_solo_se_construye_desde_fitevidence():
@@ -245,7 +258,7 @@ def test_403_lamina_byte_identica():
     from escalimetro.layout.e07.strategies import build_alternatives
     e07 = os.path.join(C403, "layouts", "E07")
     ctx = from_case_dir(C403)
-    fit = PresentationFit.from_evidence(ctx, FE.load(C403, PROG))
+    evidence = FE.load(C403, PROG)          # E15.3: el board recibe la EVIDENCIA
     shell = scaled_shell(Floorplate.load(os.path.join(C403, "outputs", "floorplate.json")), 1.0)
     specs = {s.alt: s for s in build_alternatives(load_program(PROG))}
     alts = []
@@ -255,7 +268,7 @@ def test_403_lamina_byte_identica():
             layout=Layout.load(os.path.join(d, "layout.json")),
             metrics=_j(os.path.join(d, "metrics.json")),
             critique=_j(os.path.join(d, "critique.json")))})
-    assert build_board(alts, shell, fit=fit, ctx=ctx) == open(
+    assert build_board(alts, shell, evidence, ctx=ctx) == open(
         os.path.join(e07, "ESCALIMETRO_PRESENTATION_STANDARD_01.svg"), encoding="utf-8").read()
 
 

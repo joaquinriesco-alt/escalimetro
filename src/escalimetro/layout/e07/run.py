@@ -180,7 +180,7 @@ def main(argv=None):
     # lámina: sólo con layouts validados
     valid = [{"spec": s, "result": r} for s, r in zip(specs, results) if r.hard_valid]
     if len(valid) == len(results) and results:
-        svg = build_board(valid, shell, fit=FIT, ctx=ctx)
+        svg = build_board(valid, shell, evidence=EVIDENCE, ctx=ctx)
         open(os.path.join(out, "ESCALIMETRO_PRESENTATION_STANDARD_01.svg"), "w", encoding="utf-8").write(svg)
         board = _svg_to_bgr(svg, 3600)
         cv2.imwrite(os.path.join(out, "ESCALIMETRO_PRESENTATION_STANDARD_01.png"), board)

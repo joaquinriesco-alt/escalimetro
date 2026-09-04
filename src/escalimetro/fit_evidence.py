@@ -43,6 +43,10 @@ STALE = "STALE"
 LEGACY_VERIFIED = "LEGACY_VERIFIED"
 FRESHNESS_NOT_EVALUATED = "NOT_EVALUATED"
 
+class EvidenceWithoutProvenance(ValueError):
+    """E15.3 — se intentó presentar como vigente un resultado técnico sin artefactos que lo produjeran."""
+
+
 LEGACY_REGISTRY = "EVIDENCE_LEGACY.json"
 COMPATIBILITY_FILE = os.path.join("cases", "generalization", "ENGINE_COMPATIBILITY.json")
 
@@ -93,10 +97,24 @@ class FitEvidence:
         return self.technical != TECHNICAL_NOT_EVALUATED or self.robustness != ROBUSTNESS_NOT_EVALUATED
 
     @property
+    def has_provenance(self) -> bool:
+        """E15.3 §6 — una AFIRMACIÓN técnica necesita de dónde salió; una AUSENCIA de resultado, no.
+
+        `FIT` y `NO_FIT` son afirmaciones sobre el mundo y exigen artefactos que las respalden.
+        `NOT_EVALUATED` es la ausencia de un resultado: no hay nada que respaldar, y exigirle
+        artefactos inexistentes sería exigir procedencia de la nada."""
+        if not self.evaluated:
+            return True
+        return bool(self.source_artifacts)
+
+    @property
     def presentable(self) -> bool:
         """Evidencia vieja NO se presenta como actual. Si está STALE, la lámina dice que hay que
-        recalcular; no muestra el veredicto de antes."""
-        return self.evaluated and self.freshness in (FRESH, LEGACY_VERIFIED)
+        recalcular; no muestra el veredicto de antes.
+
+        E15.3 — y evidencia SIN PROCEDENCIA tampoco se presenta como actual, aunque diga FRESH: un
+        objeto construido a mano con los valores correctos no es un resultado computado."""
+        return self.evaluated and self.has_provenance and self.freshness in (FRESH, LEGACY_VERIFIED)
 
     def to_dict(self) -> Dict:
         d = {k: v for k, v in self.__dict__.items()}
@@ -143,6 +161,27 @@ def current_fingerprint(case_dir: str, program_path: str = "") -> Dict[str, Opti
             "engine_hash": baseline.get("engine_hash")}
 
 
+def _legacy_engine_ok(reg: Dict, compat_path: str = COMPATIBILITY_FILE) -> (bool, str):
+    """E15.3 §8–§10 — contrato del registro legado, separado del de un artefacto con procedencia real.
+
+    Un artefacto que declara su propia procedencia dice QUIÉN LO PRODUJO. El registro legado no puede
+    decir eso: sus artefactos son anteriores a cualquier baseline registrado. Lo que sí puede decir,
+    y es verificable, es DESDE QUÉ BASELINE REGISTRADO se puede comprobar compatibilidad hacia el
+    vigente. Los dos contratos no se colapsan en un solo campo."""
+    status = (reg.get("producer_engine_baseline_status") or "").upper()
+    producer = reg.get("producer_engine_baseline")
+    if producer and status != "UNKNOWN":
+        return engine_is_compatible(producer, compat_path)      # productor real declarado
+    anchor = reg.get("verified_compatible_from_baseline")
+    if not anchor:
+        return False, ("el registro legado no declara productor conocido ni ancla de compatibilidad "
+                       "verificada: no hay nada desde donde verificar vigencia")
+    ok, why = engine_is_compatible(anchor, compat_path)
+    if not ok:
+        return False, f"el ancla de compatibilidad verificada '{anchor}' ya no vale: {why}"
+    return True, ""
+
+
 def _freshness(case_dir: str, artifacts: List[str], recorded: Optional[Dict],
                program_path: str, compat_path: str = COMPATIBILITY_FILE) -> (str, List[str]):
     """Tres caminos, en orden:
@@ -165,8 +204,12 @@ def _freshness(case_dir: str, artifacts: List[str], recorded: Optional[Dict],
         return STALE, ["el artefacto no declara procedencia y el caso no tiene registro legado"]
     bad = []
     # E15.2 — la evidencia histórica ya no basta con que floorplate y programa sigan iguales: el
-    # baseline que la produjo tiene que estar declarado compatible con el vigente.
-    ok, why = engine_is_compatible(reg.get("producer_engine_baseline"), compat_path)
+    # motor tiene que estar declarado compatible con el vigente.
+    # E15.3 — pero el registro legado NO conoce a su productor: estos artefactos son anteriores a que
+    # existiera ningún baseline. Fingir que sí lo conoce era el agujero. Aquí se usa el ANCLA DE
+    # COMPATIBILIDAD VERIFICADA, que es una afirmación distinta y sí demostrable:
+    #     productor desconocido  !=  ancla de compatibilidad verificada
+    ok, why = _legacy_engine_ok(reg, compat_path)
     if not ok:
         bad.append(why)
     pinned = reg.get("pinned_fingerprint", {})
@@ -344,6 +387,12 @@ class PresentationFit:
         if not isinstance(ev, FitEvidence):
             raise TypeError("PresentationFit sólo se construye desde una FitEvidence: un veredicto es "
                             "un RESULTADO COMPUTADO, no un diccionario escrito a mano")
+        if not ev.has_provenance:
+            raise EvidenceWithoutProvenance(
+                f"la evidencia afirma technical={ev.technical!r} y robustness={ev.robustness!r} sin "
+                f"un solo artefacto de origen. FIT y NO_FIT son AFIRMACIONES y necesitan evidencia; "
+                f"NOT_EVALUATED es la ausencia de un resultado y no la necesita. Carga la evidencia "
+                f"con fit_evidence.load(case_dir).")
         unit = ctx.display_name or ctx.unit_label
         base = dict(
             unit=f"{unit} ({ctx.source_name})" if ctx.source_name else unit,

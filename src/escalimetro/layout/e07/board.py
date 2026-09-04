@@ -10,7 +10,7 @@ import re
 from typing import Dict, List, Tuple
 
 from ...case_context import CaseContext
-from ...fit_evidence import PresentationFit
+from ...fit_evidence import FitEvidence, PresentationFit, presentation_fit
 from ..model import Layout, ShellM
 from ..render import render_layout_svg
 
@@ -70,23 +70,35 @@ def _plan_svg(layout: Layout, shell: ShellM, width_px: int = 1300) -> Tuple[str,
     return body, wv, hv
 
 
-def build_board(alts: List[Dict], shell: ShellM, fit: PresentationFit = None, subtitle: str = "",
+def build_board(alts: List[Dict], shell: ShellM, evidence: FitEvidence = None, subtitle: str = "",
                 ctx: CaseContext = None) -> str:
     """alts: [{spec, result}] en orden A, B, C.
 
     E15 — la identidad del inmueble llega en `ctx` (CaseContext).
-    E15.1 — el veredicto llega en `fit`, y **por separado**: son dos capas distintas y el board recibe
-    las dos explícitamente. `fit` sólo puede venir de `fit_evidence.presentation_fit(ctx, evidence)`,
-    que es la única función autorizada a convertir un resultado computado en copy de lámina. El board
-    no puede fabricar un veredicto ni leerlo del contexto."""
+    E15.1 — el veredicto llega por separado: son dos capas distintas.
+    E15.2 — el veredicto tenía que ser un `PresentationFit`, no un dict.
+    E15.3 — el board recibe la **EVIDENCIA**, no la copy. Exigir un `PresentationFit` sólo comprobaba
+    la forma del contenedor: `PresentationFit(...)` es un dataclass y su `__init__` es público, así
+    que cualquiera podía construir uno con `technical_fit="FIT"` y llegar hasta aquí. Ahora la copy se
+    deriva **dentro** de esta capa a partir de una `FitEvidence`, y `PresentationFit.from_evidence`
+    rechaza una evidencia que afirme un resultado sin artefactos que lo produzcan.
+
+    Esto no es seguridad criptográfica —quien edite el código puede mentir— sino arquitectónica: el
+    camino normal de presentación ya no permite que valores escritos a mano se conviertan en un
+    veredicto técnico vigente."""
     if ctx is None:
         raise ValueError("build_board necesita un CaseContext: la identidad del inmueble es dato del "
                          "caso, no un valor por defecto del board")
-    if not isinstance(fit, PresentationFit):
-        raise TypeError("build_board necesita un PresentationFit construido desde una FitEvidence "
-                        "(fit_evidence.presentation_fit(ctx, evidence)). Un diccionario con las claves "
-                        "correctas NO es evidencia: un veredicto es un RESULTADO COMPUTADO con "
+    if isinstance(evidence, PresentationFit):
+        raise TypeError("build_board recibe la EVIDENCIA (FitEvidence), no la copy ya formateada. Un "
+                        "PresentationFit construido a mano tiene el tipo correcto y ninguna "
+                        "procedencia: la copy se deriva aquí dentro, desde la evidencia.")
+    if not isinstance(evidence, FitEvidence):
+        raise TypeError("build_board necesita una FitEvidence cargada desde los artefactos computados "
+                        "(fit_evidence.load(case_dir)). Un diccionario, u otro objeto con las claves "
+                        "correctas, NO es evidencia: un veredicto es un RESULTADO COMPUTADO con "
                         "procedencia, no un blob escrito a mano.")
+    fit = presentation_fit(ctx, evidence)      # la copy se deriva DENTRO del boundary controlado
     o = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" '
          f'font-family="Helvetica Neue,Helvetica,Arial,sans-serif">',
          f'<rect width="{W}" height="{H}" fill="{PALETTE["paper"]}"/>']

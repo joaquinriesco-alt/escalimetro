@@ -250,16 +250,27 @@ def validate_case_input(case: Dict, where: str = "case.json") -> Dict:
     return case
 
 
-def _confidence_label(value) -> Optional[str]:
-    """Etiqueta de confianza de escala a partir del valor numérico del floorplate. Es DERIVED_EVIDENCE:
-    describe cuánto se puede confiar en una medición, y por eso no puede declararse como entrada."""
-    if value is None:
+def _confidence_label(scale: Dict) -> Optional[str]:
+    """Etiqueta de confianza de escala. Es DERIVED_EVIDENCE: describe cuánto se puede confiar en una
+    medición, y por eso no puede declararse como entrada.
+
+    E15.3 — la clasificación NO es de este módulo. Es la del pipeline, que ya existía antes de E15.2
+    en `layout/shell_adapter.py` (método y estado de la escala, no un umbral numérico) y cuyo
+    vocabulario está fijado por el esquema de `layout/e06/scale.py` (`enum: LOW | MEDIUM | HIGH`).
+    Aquí sólo se reusa.
+
+    E15.2 había introducido umbrales numéricos `< 0.5 → LOW`, `< 0.8 → MEDIUM`, `HIGH` en otro caso.
+    Eran inventados: no existían en ninguna parte del motor. Un ciclo que no debía cambiar la lógica
+    de escala no puede definir cuándo una medición pasa a ser MEDIUM o HIGH. Se eliminaron."""
+    if not isinstance(scale, dict) or not scale:
+        return None                       # un número suelto ya no clasifica nada: hace falta el método
+    method = scale.get("method")
+    status = (scale.get("meta") or {}).get("status")
+    if method is None and status is None:
         return None
-    try:
-        v = float(value)
-    except (TypeError, ValueError):
-        return str(value)
-    return "LOW" if v < 0.5 else ("MEDIUM" if v < 0.8 else "HIGH")
+    if method == "published_area_inferred":                # misma regla que shell_adapter.py:34
+        return "LOW"
+    return "HIGH" if status == "confirmed" else "MEDIUM"
 
 
 def _read_json(path: str) -> Optional[Dict]:
@@ -281,7 +292,6 @@ def from_case_dir(case_dir: str) -> CaseContext:
     fp = _read_json(os.path.join(case_dir, "outputs", "floorplate.json")) or {}
     scale = fp.get("scale") or {}
     meta = scale.get("meta") or {}
-    conf = meta.get("confidence")
     return CaseContext(
         case_id=case.get("case_id") or "",
         unit_label=fp.get("unit_label") or case.get("unit_label") or "",
@@ -293,7 +303,7 @@ def from_case_dir(case_dir: str) -> CaseContext:
         published_area_kind=(fp.get("published_area_kind") or case.get("known_area_kind") or "unknown"),
         scale_px_per_m=scale.get("px_per_m"),
         scale_status=meta.get("status"),
-        scale_confidence=_confidence_label(conf),          # DERIVED_EVIDENCE: sólo del floorplate
+        scale_confidence=_confidence_label(scale),         # DERIVED_EVIDENCE: regla del pipeline
         sibling_units=case.get("sibling_units") or {},
     )
 

@@ -1,11 +1,12 @@
 {
   "_doc": "E15.2 §7-§9 — compatibilidad de evidencia entre versiones del motor. Una evidencia producida bajo el baseline X sigue vigente bajo Y SÓLO si existe una cadena explícita de transiciones declaradas NON_SEMANTIC entre X e Y. No hay comodín: un baseline que no esté en compatible_with_current vuelve STALE toda evidencia producida bajo él.",
-  "current_baseline": "E15.2",
+  "current_baseline": "E15.3",
   "baselines": {
     "E14": "5ce5f6a1f4e3dd17f5f4518fb8365bc24ed90d337dfc5aacb1c1b144b7877259",
     "E15": "d213b4294290247913011d50a15df03fd5ba51b380e905b4a74a7d44ba1201ff",
     "E15.1": "1bf28635dab42bfbbcd9dfca62d8ee5ad28db503957552e3fe65536d87ca069e",
-    "E15.2": "74c60443aebae7f21b71be355975d3348ac106eae60cf309822f3e5770458ca4"
+    "E15.2": "74c60443aebae7f21b71be355975d3348ac106eae60cf309822f3e5770458ca4",
+    "E15.3": "49f36d0a63a14a0bbf1610d3fc086ea4052a0b14e5c9b2b61b9fd8f1616e5e68"
   },
   "semantic_surface": {
     "_doc": "Archivos cuyo contenido determina QUÉ COMPUTA el motor. Si una transición toca uno de éstos, no puede declararse NON_SEMANTIC sin mostrar el diff línea a línea, y ese diff queda escrito en semantic_surface_touched.",
@@ -123,13 +124,36 @@
         "Hashes de geometría A/B/C de la 403 sin cambios"
       ],
       "correction_note": "Una versión anterior de este archivo registraba un solo archivo modificado y el engine_hash 20ed7f44f9d60b147717018ef3ab8e9c672f242c61f14c383dc419bc21399240. Ambos se calcularon a mitad del ciclo, antes de editar fit_evidence.py y layout/e07/board.py. Corregido recalculando contra el baseline E15.1 guardado. Se deja constancia en vez de reescribir en silencio."
+    },
+    {
+      "from": "E15.2",
+      "to": "E15.3",
+      "kind": "NON_SEMANTIC",
+      "summary": "Procedencia honesta y no forjable: el board recibe la evidencia; el registro legado deja de fingir que conoce a su productor; salen los umbrales de confianza inventados en E15.2.",
+      "changed_files": [
+        "src/escalimetro/case_context.py",
+        "src/escalimetro/fit_evidence.py",
+        "src/escalimetro/layout/e07/board.py",
+        "src/escalimetro/layout/e07/run.py"
+      ],
+      "added_files": [],
+      "removed_files": [],
+      "semantic_surface_touched": {},
+      "evidence": [
+        "Diff calculado desde los baselines guardados E15.2 y E15.3, no escrito a mano",
+        "Archivos modificados: 4; nuevos: 0; eliminados: 0",
+        "Ninguno de los archivos tocados pertenece a la superficie semántica (36 archivos)",
+        "Lámina Standard 01 de la 403 BYTE-IDÉNTICA (92.927 caracteres / 92.983 bytes UTF-8), sha256 175c43d4…",
+        "Hashes de geometría A/B/C de la 403 sin cambios"
+      ]
     }
   ],
   "compatible_with_current": [
     "E14",
     "E15",
     "E15.1",
-    "E15.2"
+    "E15.2",
+    "E15.3"
   ],
   "limitation": "El baseline más antiguo registrado es E14. Los artefactos de E06/E07 de la Oficina 403 y los de E14 de la 401 se produjeron ANTES de que existiera un baseline, así que su productor exacto no está registrado y se declara como E14, el estado más antiguo que sí lo está. Es una limitación declarada, no una prueba: lo que sí está verificado es que E15 regeneró los artefactos de E06 de la 403 con un motor posterior y salieron idénticos."
 }
