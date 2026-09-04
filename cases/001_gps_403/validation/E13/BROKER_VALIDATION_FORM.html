@@ -1,0 +1,235 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ESCALÍMETRO · Formulario de validación con brokers</title><style>
+:root{--ink:#1d2430;--mut:#6b7480;--line:#d9dce2;--panel:#f6f6f4;--warn:#8a1f1f;--ok:#2f6d4f;--bad:#a4342a}
+*{box-sizing:border-box}
+body{margin:0;font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+     color:var(--ink);background:#fff}
+.wrap{max-width:1100px;margin:0 auto;padding:28px 22px 80px}
+h1{font-size:26px;margin:0 0 4px}h2{font-size:19px;margin:34px 0 10px;padding-top:14px;
+   border-top:1px solid var(--line)}h3{font-size:16px;margin:18px 0 8px}
+.sub{color:var(--mut);margin:0 0 18px}
+.warn{color:var(--warn);font-weight:600}
+.card{border:1px solid var(--line);border-radius:8px;padding:16px 18px;margin:14px 0;background:#fff}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:820px){.grid3{grid-template-columns:1fr}}
+label{display:block;margin:6px 0 3px;font-size:13px;color:var(--mut)}
+select,input,textarea{width:100%;padding:7px 8px;border:1px solid var(--line);border-radius:6px;
+                      font:inherit;background:#fff}
+textarea{min-height:56px}
+.opt{display:inline-block;margin:2px 6px 2px 0;font-size:13px;color:var(--ink)}
+.opt input{width:auto;margin-right:5px}
+.chip{display:inline-block;background:var(--panel);border:1px solid var(--line);border-radius:20px;
+      padding:3px 11px;font-size:12px;color:var(--mut);margin-right:6px}
+button{font:inherit;padding:9px 16px;border:1px solid var(--ink);background:var(--ink);color:#fff;
+       border-radius:6px;cursor:pointer}
+button.ghost{background:#fff;color:var(--ink)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left}
+th{background:var(--panel);font-weight:600}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.PASS{color:var(--ok);font-weight:700}.FAIL{color:var(--bad);font-weight:700}
+.INSUFFICIENT_DATA,.NO_DATA{color:var(--mut);font-weight:700}
+.BROKER_READY{color:var(--ok);font-weight:700}.REJECTED{color:var(--bad);font-weight:700}
+.BORDERLINE{color:#8a6d1f;font-weight:700}
+pre{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;
+    overflow:auto;font-size:12px;white-space:pre-wrap;word-break:break-all}
+.note{background:var(--panel);border-left:3px solid var(--line);padding:10px 14px;font-size:14px;
+      color:var(--mut);margin:12px 0}
+img.board{width:100%;border:1px solid var(--line);border-radius:6px}
+</style></head><body>
+<div class="wrap">
+<h1>Formulario de validación</h1>
+<p class="sub">Una sesión por evaluador. Lo llena el <b>entrevistador</b>, no el evaluador.
+<span class="warn">No muestres esta pantalla al evaluador: contiene el orden de presentación.</span></p>
+
+<div class="note">El mapping entre OPTION X/Y/Z y las alternativas reales se calcula solo a partir del
+número de evaluador y sólo aparece en el CSV exportado. Nunca se muestra aquí.</div>
+
+<h2>0 · Sesión</h2>
+<div class="card">
+  <div class="grid3">
+    <div><label>respondent_id (R01, R02, …)</label><input name="respondent_id" placeholder="R01"></div>
+    <div><label>índice de evaluador (0, 1, 2, …) — define el orden de presentación</label>
+         <input name="respondent_index" type="number" min="0" value="0"></div>
+    <div><label>fecha</label><input name="session_date" type="date"></div>
+  </div>
+  <div class="grid3">
+    <div><label>rol</label><select name="role"><option value="">—</option><option value="BROKER">BROKER</option><option value="LEASING">LEASING</option><option value="COMMERCIAL_AGENT">COMMERCIAL_AGENT</option><option value="REAL_ESTATE_PRO">REAL_ESTATE_PRO</option><option value="ARCHITECT">ARCHITECT</option><option value="OTHER">OTHER</option></select></div>
+    <div><label>años de experiencia</label><input name="years_experience" type="number" min="0"></div>
+    <div><label>§39 · segundos hasta la primera decisión (Q1 de la primera opción)</label>
+         <input name="time_to_first_decision_s" type="number" min="0"></div>
+  </div>
+  <p class="chip" id="orderChip">orden: —</p>
+</div>
+
+<h2>1 · Por alternativa <span class="chip">cegado — el evaluador sólo ve X / Y / Z</span></h2>
+
+    <div class="card">
+      <h3>OPTION X</h3>
+      <label>Q1 · ¿Mandarías este test-fit al cliente SIN pedir antes que un arquitecto lo redibuje?</label>
+      <span class="opt"><input type="radio" name="X_send_to_client" value="YES">YES</span><span class="opt"><input type="radio" name="X_send_to_client" value="NO">NO</span>
+      <label>Q3 · ¿Cuánta confianza te daría enviarla? (1 no la enviaría — 5 la enviaría tranquilo)</label>
+      <span class="opt"><input type="radio" name="X_confidence" value="1">1</span><span class="opt"><input type="radio" name="X_confidence" value="2">2</span><span class="opt"><input type="radio" name="X_confidence" value="3">3</span><span class="opt"><input type="radio" name="X_confidence" value="4">4</span><span class="opt"><input type="radio" name="X_confidence" value="5">5</span>
+      <label>Q4 · ¿Ves algún error que te impediría enviarla?</label>
+      <span class="opt"><input type="radio" name="X_blocking_error" value="YES">YES</span><span class="opt"><input type="radio" name="X_blocking_error" value="NO">NO</span>
+      <label>Si sí — categorías (máximo 3)</label>
+      <span class="opt"><input type="checkbox" name="X_defect_categories" value="ARRIVAL">ARRIVAL</span><span class="opt"><input type="checkbox" name="X_defect_categories" value="RECEPTION">RECEPTION</span><span class="opt"><input type="checkbox" name="X_defect_categories" value="CLIENT_ROUTE">CLIENT_ROUTE</span><span class="opt"><input type="checkbox" name="X_defect_categories" value="BOARDROOM">BOARDROOM</span><span class="opt"><input type="checkbox" name="X_defect_categories" value="MEETING_ROOMS">MEETING_ROOMS</span><span class="opt"><input type="checkbox" name="X_defect_categories" value="PRIVACY">PRIVACY</span><span class="opt"><input type="checkbox" name="X_defect_categories" value="WORKSTATIONS">WORKSTATIONS</span><span class="opt"><input type="checkbox" name="X_defect_categories" value="DAYLIGHT">DAYLIGHT</span><span class="opt"><input type="checkbox" name="X_defect_categories" value="KITCHEN_DINING">KITCHEN_DINING</span><span class="opt"><input type="checkbox" name="X_defect_categories" value="LOUNGE">LOUNGE</span><span class="opt"><input type="checkbox" name="X_defect_categories" value="CIRCULATION">CIRCULATION</span><span class="opt"><input type="checkbox" name="X_defect_categories" value="ADJACENCY">ADJACENCY</span><span class="opt"><input type="checkbox" name="X_defect_categories" value="DENSITY">DENSITY</span><span class="opt"><input type="checkbox" name="X_defect_categories" value="READABILITY">READABILITY</span><span class="opt"><input type="checkbox" name="X_defect_categories" value="PROGRAM_MISSING">PROGRAM_MISSING</span><span class="opt"><input type="checkbox" name="X_defect_categories" value="PROGRAM_EXCESS">PROGRAM_EXCESS</span><span class="opt"><input type="checkbox" name="X_defect_categories" value="OTHER">OTHER</span>
+      <label>§40 · ¿Qué cambiarías antes de enviarlo?</label>
+      <span class="opt"><input type="radio" name="X_change_magnitude" value="NO_CHANGE">NO_CHANGE</span><span class="opt"><input type="radio" name="X_change_magnitude" value="MINOR">MINOR</span><span class="opt"><input type="radio" name="X_change_magnitude" value="MATERIAL">MATERIAL</span><span class="opt"><input type="radio" name="X_change_magnitude" value="REDESIGN">REDESIGN</span>
+      <label>§15 · ¿Cómo describirías esta alternativa? (máximo 2)</label>
+      <span class="opt"><input type="checkbox" name="X_strategy_tags" value="EFFICIENCY">EFFICIENCY</span><span class="opt"><input type="checkbox" name="X_strategy_tags" value="BALANCE">BALANCE</span><span class="opt"><input type="checkbox" name="X_strategy_tags" value="COLLABORATION">COLLABORATION</span><span class="opt"><input type="checkbox" name="X_strategy_tags" value="FORMAL">FORMAL</span><span class="opt"><input type="checkbox" name="X_strategy_tags" value="CLIENT_FACING">CLIENT_FACING</span><span class="opt"><input type="checkbox" name="X_strategy_tags" value="DENSE">DENSE</span><span class="opt"><input type="checkbox" name="X_strategy_tags" value="OPEN">OPEN</span><span class="opt"><input type="checkbox" name="X_strategy_tags" value="PRIVATE">PRIVATE</span><span class="opt"><input type="checkbox" name="X_strategy_tags" value="OTHER">OTHER</span>
+      <label>§14 · ¿Te parece correctamente resuelta la llegada y recepción?</label>
+      <span class="opt"><input type="radio" name="X_reception_ok" value="YES">YES</span><span class="opt"><input type="radio" name="X_reception_ok" value="NO">NO</span>
+      <label>§14 · ¿Cambiarías su ubicación?</label>
+      <span class="opt"><input type="radio" name="X_move_reception" value="YES">YES</span><span class="opt"><input type="radio" name="X_move_reception" value="NO">NO</span>
+    </div>
+    <div class="card">
+      <h3>OPTION Y</h3>
+      <label>Q1 · ¿Mandarías este test-fit al cliente SIN pedir antes que un arquitecto lo redibuje?</label>
+      <span class="opt"><input type="radio" name="Y_send_to_client" value="YES">YES</span><span class="opt"><input type="radio" name="Y_send_to_client" value="NO">NO</span>
+      <label>Q3 · ¿Cuánta confianza te daría enviarla? (1 no la enviaría — 5 la enviaría tranquilo)</label>
+      <span class="opt"><input type="radio" name="Y_confidence" value="1">1</span><span class="opt"><input type="radio" name="Y_confidence" value="2">2</span><span class="opt"><input type="radio" name="Y_confidence" value="3">3</span><span class="opt"><input type="radio" name="Y_confidence" value="4">4</span><span class="opt"><input type="radio" name="Y_confidence" value="5">5</span>
+      <label>Q4 · ¿Ves algún error que te impediría enviarla?</label>
+      <span class="opt"><input type="radio" name="Y_blocking_error" value="YES">YES</span><span class="opt"><input type="radio" name="Y_blocking_error" value="NO">NO</span>
+      <label>Si sí — categorías (máximo 3)</label>
+      <span class="opt"><input type="checkbox" name="Y_defect_categories" value="ARRIVAL">ARRIVAL</span><span class="opt"><input type="checkbox" name="Y_defect_categories" value="RECEPTION">RECEPTION</span><span class="opt"><input type="checkbox" name="Y_defect_categories" value="CLIENT_ROUTE">CLIENT_ROUTE</span><span class="opt"><input type="checkbox" name="Y_defect_categories" value="BOARDROOM">BOARDROOM</span><span class="opt"><input type="checkbox" name="Y_defect_categories" value="MEETING_ROOMS">MEETING_ROOMS</span><span class="opt"><input type="checkbox" name="Y_defect_categories" value="PRIVACY">PRIVACY</span><span class="opt"><input type="checkbox" name="Y_defect_categories" value="WORKSTATIONS">WORKSTATIONS</span><span class="opt"><input type="checkbox" name="Y_defect_categories" value="DAYLIGHT">DAYLIGHT</span><span class="opt"><input type="checkbox" name="Y_defect_categories" value="KITCHEN_DINING">KITCHEN_DINING</span><span class="opt"><input type="checkbox" name="Y_defect_categories" value="LOUNGE">LOUNGE</span><span class="opt"><input type="checkbox" name="Y_defect_categories" value="CIRCULATION">CIRCULATION</span><span class="opt"><input type="checkbox" name="Y_defect_categories" value="ADJACENCY">ADJACENCY</span><span class="opt"><input type="checkbox" name="Y_defect_categories" value="DENSITY">DENSITY</span><span class="opt"><input type="checkbox" name="Y_defect_categories" value="READABILITY">READABILITY</span><span class="opt"><input type="checkbox" name="Y_defect_categories" value="PROGRAM_MISSING">PROGRAM_MISSING</span><span class="opt"><input type="checkbox" name="Y_defect_categories" value="PROGRAM_EXCESS">PROGRAM_EXCESS</span><span class="opt"><input type="checkbox" name="Y_defect_categories" value="OTHER">OTHER</span>
+      <label>§40 · ¿Qué cambiarías antes de enviarlo?</label>
+      <span class="opt"><input type="radio" name="Y_change_magnitude" value="NO_CHANGE">NO_CHANGE</span><span class="opt"><input type="radio" name="Y_change_magnitude" value="MINOR">MINOR</span><span class="opt"><input type="radio" name="Y_change_magnitude" value="MATERIAL">MATERIAL</span><span class="opt"><input type="radio" name="Y_change_magnitude" value="REDESIGN">REDESIGN</span>
+      <label>§15 · ¿Cómo describirías esta alternativa? (máximo 2)</label>
+      <span class="opt"><input type="checkbox" name="Y_strategy_tags" value="EFFICIENCY">EFFICIENCY</span><span class="opt"><input type="checkbox" name="Y_strategy_tags" value="BALANCE">BALANCE</span><span class="opt"><input type="checkbox" name="Y_strategy_tags" value="COLLABORATION">COLLABORATION</span><span class="opt"><input type="checkbox" name="Y_strategy_tags" value="FORMAL">FORMAL</span><span class="opt"><input type="checkbox" name="Y_strategy_tags" value="CLIENT_FACING">CLIENT_FACING</span><span class="opt"><input type="checkbox" name="Y_strategy_tags" value="DENSE">DENSE</span><span class="opt"><input type="checkbox" name="Y_strategy_tags" value="OPEN">OPEN</span><span class="opt"><input type="checkbox" name="Y_strategy_tags" value="PRIVATE">PRIVATE</span><span class="opt"><input type="checkbox" name="Y_strategy_tags" value="OTHER">OTHER</span>
+      <label>§14 · ¿Te parece correctamente resuelta la llegada y recepción?</label>
+      <span class="opt"><input type="radio" name="Y_reception_ok" value="YES">YES</span><span class="opt"><input type="radio" name="Y_reception_ok" value="NO">NO</span>
+      <label>§14 · ¿Cambiarías su ubicación?</label>
+      <span class="opt"><input type="radio" name="Y_move_reception" value="YES">YES</span><span class="opt"><input type="radio" name="Y_move_reception" value="NO">NO</span>
+    </div>
+    <div class="card">
+      <h3>OPTION Z</h3>
+      <label>Q1 · ¿Mandarías este test-fit al cliente SIN pedir antes que un arquitecto lo redibuje?</label>
+      <span class="opt"><input type="radio" name="Z_send_to_client" value="YES">YES</span><span class="opt"><input type="radio" name="Z_send_to_client" value="NO">NO</span>
+      <label>Q3 · ¿Cuánta confianza te daría enviarla? (1 no la enviaría — 5 la enviaría tranquilo)</label>
+      <span class="opt"><input type="radio" name="Z_confidence" value="1">1</span><span class="opt"><input type="radio" name="Z_confidence" value="2">2</span><span class="opt"><input type="radio" name="Z_confidence" value="3">3</span><span class="opt"><input type="radio" name="Z_confidence" value="4">4</span><span class="opt"><input type="radio" name="Z_confidence" value="5">5</span>
+      <label>Q4 · ¿Ves algún error que te impediría enviarla?</label>
+      <span class="opt"><input type="radio" name="Z_blocking_error" value="YES">YES</span><span class="opt"><input type="radio" name="Z_blocking_error" value="NO">NO</span>
+      <label>Si sí — categorías (máximo 3)</label>
+      <span class="opt"><input type="checkbox" name="Z_defect_categories" value="ARRIVAL">ARRIVAL</span><span class="opt"><input type="checkbox" name="Z_defect_categories" value="RECEPTION">RECEPTION</span><span class="opt"><input type="checkbox" name="Z_defect_categories" value="CLIENT_ROUTE">CLIENT_ROUTE</span><span class="opt"><input type="checkbox" name="Z_defect_categories" value="BOARDROOM">BOARDROOM</span><span class="opt"><input type="checkbox" name="Z_defect_categories" value="MEETING_ROOMS">MEETING_ROOMS</span><span class="opt"><input type="checkbox" name="Z_defect_categories" value="PRIVACY">PRIVACY</span><span class="opt"><input type="checkbox" name="Z_defect_categories" value="WORKSTATIONS">WORKSTATIONS</span><span class="opt"><input type="checkbox" name="Z_defect_categories" value="DAYLIGHT">DAYLIGHT</span><span class="opt"><input type="checkbox" name="Z_defect_categories" value="KITCHEN_DINING">KITCHEN_DINING</span><span class="opt"><input type="checkbox" name="Z_defect_categories" value="LOUNGE">LOUNGE</span><span class="opt"><input type="checkbox" name="Z_defect_categories" value="CIRCULATION">CIRCULATION</span><span class="opt"><input type="checkbox" name="Z_defect_categories" value="ADJACENCY">ADJACENCY</span><span class="opt"><input type="checkbox" name="Z_defect_categories" value="DENSITY">DENSITY</span><span class="opt"><input type="checkbox" name="Z_defect_categories" value="READABILITY">READABILITY</span><span class="opt"><input type="checkbox" name="Z_defect_categories" value="PROGRAM_MISSING">PROGRAM_MISSING</span><span class="opt"><input type="checkbox" name="Z_defect_categories" value="PROGRAM_EXCESS">PROGRAM_EXCESS</span><span class="opt"><input type="checkbox" name="Z_defect_categories" value="OTHER">OTHER</span>
+      <label>§40 · ¿Qué cambiarías antes de enviarlo?</label>
+      <span class="opt"><input type="radio" name="Z_change_magnitude" value="NO_CHANGE">NO_CHANGE</span><span class="opt"><input type="radio" name="Z_change_magnitude" value="MINOR">MINOR</span><span class="opt"><input type="radio" name="Z_change_magnitude" value="MATERIAL">MATERIAL</span><span class="opt"><input type="radio" name="Z_change_magnitude" value="REDESIGN">REDESIGN</span>
+      <label>§15 · ¿Cómo describirías esta alternativa? (máximo 2)</label>
+      <span class="opt"><input type="checkbox" name="Z_strategy_tags" value="EFFICIENCY">EFFICIENCY</span><span class="opt"><input type="checkbox" name="Z_strategy_tags" value="BALANCE">BALANCE</span><span class="opt"><input type="checkbox" name="Z_strategy_tags" value="COLLABORATION">COLLABORATION</span><span class="opt"><input type="checkbox" name="Z_strategy_tags" value="FORMAL">FORMAL</span><span class="opt"><input type="checkbox" name="Z_strategy_tags" value="CLIENT_FACING">CLIENT_FACING</span><span class="opt"><input type="checkbox" name="Z_strategy_tags" value="DENSE">DENSE</span><span class="opt"><input type="checkbox" name="Z_strategy_tags" value="OPEN">OPEN</span><span class="opt"><input type="checkbox" name="Z_strategy_tags" value="PRIVATE">PRIVATE</span><span class="opt"><input type="checkbox" name="Z_strategy_tags" value="OTHER">OTHER</span>
+      <label>§14 · ¿Te parece correctamente resuelta la llegada y recepción?</label>
+      <span class="opt"><input type="radio" name="Z_reception_ok" value="YES">YES</span><span class="opt"><input type="radio" name="Z_reception_ok" value="NO">NO</span>
+      <label>§14 · ¿Cambiarías su ubicación?</label>
+      <span class="opt"><input type="radio" name="Z_move_reception" value="YES">YES</span><span class="opt"><input type="radio" name="Z_move_reception" value="NO">NO</span>
+    </div>
+
+<h2>2 · Comparación</h2>
+<div class="card">
+  <label>Q2 · Si tuvieras que mandar UNA sola alternativa, ¿cuál mandarías?</label>
+  <span class="opt"><input type="radio" name="preferred_option" value="X">X</span><span class="opt"><input type="radio" name="preferred_option" value="Y">Y</span><span class="opt"><input type="radio" name="preferred_option" value="Z">Z</span><span class="opt"><input type="radio" name="preferred_option" value="NONE">NONE</span>
+  <label>§16 · ¿Las tres opciones te parecen suficientemente distintas entre sí?</label>
+  <span class="opt"><input type="radio" name="options_distinct" value="YES">YES</span><span class="opt"><input type="radio" name="options_distinct" value="NO">NO</span>
+  <label>Si no — ¿qué dos se parecen demasiado?</label>
+  <select name="similar_pair"><option value="">—</option><option value="X-Y">X-Y</option><option value="X-Z">X-Z</option><option value="Y-Z">Y-Z</option><option value="ALL_THREE">ALL_THREE</option></select>
+</div>
+
+<h2>3 · Trabajo actual <span class="chip">§18 — valida el problema, no la solución</span></h2>
+<div class="card">
+  <label>Hoy, cuando necesitas saber si un programa cabe en una oficina, ¿qué haces?</label>
+  <select name="current_testfit_method"><option value="">—</option><option value="I_DO_IT">I_DO_IT</option><option value="ASK_ARCHITECT">ASK_ARCHITECT</option><option value="ASK_LANDLORD">ASK_LANDLORD</option><option value="ASK_CLIENT">ASK_CLIENT</option><option value="NO_TESTFIT">NO_TESTFIT</option><option value="OTHER">OTHER</option></select>
+  <label>¿Cuánto suele tardar?</label><select name="current_turnaround"><option value="">—</option><option value="<1H"><1H</option><option value="SAME_DAY">SAME_DAY</option><option value="1-2D">1-2D</option><option value="3-5D">3-5D</option><option value=">5D">>5D</option><option value="UNKNOWN">UNKNOWN</option></select>
+  <label>¿Con qué frecuencia necesitas esto?</label><select name="frequency"><option value="">—</option><option value="WEEKLY_MULTIPLE">WEEKLY_MULTIPLE</option><option value="WEEKLY">WEEKLY</option><option value="MONTHLY">MONTHLY</option><option value="FEW_PER_YEAR">FEW_PER_YEAR</option><option value="ALMOST_NEVER">ALMOST_NEVER</option></select>
+</div>
+
+<h2>4 · Después de la revelación</h2>
+<div class="card">
+  <label>§17 · ¿Esto sería útil en tu trabajo?</label><span class="opt"><input type="radio" name="useful_generated" value="YES">YES</span><span class="opt"><input type="radio" name="useful_generated" value="NO">NO</span>
+  <label>§17 · ¿En qué momento de tu proceso usarías algo así?</label><select name="use_case"><option value="">—</option><option value="BEFORE_SHOWING">BEFORE_SHOWING</option><option value="DURING_SEARCH">DURING_SEARCH</option><option value="IN_PROPOSAL">IN_PROPOSAL</option><option value="COMPARE_BUILDINGS">COMPARE_BUILDINGS</option><option value="WIN_LISTING">WIN_LISTING</option><option value="WOULD_NOT_USE">WOULD_NOT_USE</option><option value="OTHER">OTHER</option></select>
+  <label>§19 · Si pudieras generar algo de esta calidad en menos de 2 minutos, ¿lo usarías en un caso real?</label>
+  <span class="opt"><input type="radio" name="would_use_under_2min" value="YES">YES</span><span class="opt"><input type="radio" name="would_use_under_2min" value="NO">NO</span>
+  <label>§19 · ¿Para qué porcentaje aproximado de tus búsquedas podría servir?</label>
+  <select name="share_of_searches"><option value="">—</option><option value="0">0</option><option value="1-25">1-25</option><option value="26-50">26-50</option><option value="51-75">51-75</option><option value="76-100">76-100</option></select>
+  <label>§20 · ¿Necesitarías que un arquitecto revise el test-fit antes de enviarlo?</label>
+  <select name="human_qa_need"><option value="">—</option><option value="ALWAYS">ALWAYS</option><option value="SOMETIMES">SOMETIMES</option><option value="IMPORTANT_CLIENTS_ONLY">IMPORTANT_CLIENTS_ONLY</option><option value="NO">NO</option></select>
+  <label>§41 · sólo arquitectos — ¿cuánto tiempo necesitarías para dejarla enviable?</label>
+  <select name="qa_time_minutes"><option value="">—</option><option value="0">0</option><option value="<5"><5</option><option value="5-15">5-15</option><option value="15-30">15-30</option><option value="30-60">30-60</option><option value=">60">>60</option></select>
+  <label>§38 · opcional — ¿cómo lo compararías con un test-fit inicial hecho por un arquitecto?</label>
+  <select name="comparison_vs_architect"><option value="">—</option><option value="MUCH_WORSE">MUCH_WORSE</option><option value="WORSE">WORSE</option><option value="SIMILAR">SIMILAR</option><option value="BETTER">BETTER</option><option value="MUCH_BETTER">MUCH_BETTER</option></select>
+  <label>§21 · opcional — mostrado el nombre y la frase: ¿entiende qué hace?</label>
+  <span class="opt"><input type="radio" name="brand_understood" value="YES">YES</span><span class="opt"><input type="radio" name="brand_understood" value="NO">NO</span>
+  <label>§45 · nivel 2 — ¿redactó el correo con que la mandaría?</label>
+  <span class="opt"><input type="radio" name="level2_done" value="YES">YES</span><span class="opt"><input type="radio" name="level2_done" value="NO">NO</span>
+</div>
+
+<h2>5 · Observación del entrevistador <span class="chip">§24 — conducta, no declaración</span></h2>
+<div class="card">
+  <label>marcar lo que ocurrió</label><span class="opt"><input type="checkbox" name="observations" value="FIRST_OPTION_LOOKED_AT">FIRST_OPTION_LOOKED_AT</span><span class="opt"><input type="checkbox" name="observations" value="ZOOM_NEEDED">ZOOM_NEEDED</span><span class="opt"><input type="checkbox" name="observations" value="ASKED_SCALE">ASKED_SCALE</span><span class="opt"><input type="checkbox" name="observations" value="ASKED_WINDOWS">ASKED_WINDOWS</span><span class="opt"><input type="checkbox" name="observations" value="ASKED_ACCESS">ASKED_ACCESS</span><span class="opt"><input type="checkbox" name="observations" value="ASKED_COLUMNS">ASKED_COLUMNS</span><span class="opt"><input type="checkbox" name="observations" value="ASKED_CAPACITY">ASKED_CAPACITY</span><span class="opt"><input type="checkbox" name="observations" value="ASKED_AI">ASKED_AI</span><span class="opt"><input type="checkbox" name="observations" value="ASKED_EDITING">ASKED_EDITING</span>
+  <label>primera opción que miró</label><span class="opt"><input type="radio" name="first_looked" value="X">X</span><span class="opt"><input type="radio" name="first_looked" value="Y">Y</span><span class="opt"><input type="radio" name="first_looked" value="Z">Z</span>
+  <label>notas (sin nombre, empresa, email ni teléfono)</label><textarea name="notes"></textarea>
+</div>
+
+<h2>6 · Exportar</h2>
+<div class="card">
+  <p>Genera tres filas — una por opción — con el esquema de <code>broker_validation_responses.csv</code>.
+  Pega el resultado al final de ese archivo.</p>
+  <button onclick="gen()">Generar filas CSV</button>
+  <button class="ghost" onclick="copyOut()">Copiar</button>
+  <button class="ghost" onclick="dl()">Descargar .csv</button>
+  <pre id="out">—</pre>
+</div>
+</div>
+
+<script>
+const CFG = {"columns": ["respondent_id", "role", "years_experience", "session_date", "option_blind", "option_real", "display_order", "send_to_client", "confidence", "blocking_error", "defect_categories", "change_magnitude", "strategy_tags", "reception_ok", "move_reception", "preferred_option", "options_distinct", "similar_pair", "current_testfit_method", "current_turnaround", "frequency", "useful_generated", "would_use_under_2min", "use_case", "share_of_searches", "human_qa_need", "qa_time_minutes", "time_to_first_decision_s", "observations", "level2_done", "comparison_vs_architect", "brand_understood", "notes"], "orders": [["A", "B", "C"], ["A", "C", "B"], ["B", "A", "C"], ["B", "C", "A"], ["C", "A", "B"], ["C", "B", "A"]], "perRespondent": ["role", "years_experience", "session_date", "display_order", "preferred_option", "options_distinct", "similar_pair", "current_testfit_method", "current_turnaround", "frequency", "useful_generated", "would_use_under_2min", "use_case", "share_of_searches", "human_qa_need", "comparison_vs_architect", "brand_understood"]};
+const $ = s => document.querySelector(s);
+function val(n){const e=document.querySelector(`[name="${n}"]`);
+  if(!e) return "";
+  if(e.type==="radio"){const c=document.querySelector(`[name="${n}"]:checked`);return c?c.value:"";}
+  return e.value.trim();}
+function radio(n){const c=document.querySelector(`[name="${n}"]:checked`);return c?c.value:"";}
+function multi(n){return [...document.querySelectorAll(`[name="${n}"]:checked`)]
+  .map(e=>e.value).join("|");}
+function mapping(idx){const o=CFG.orders[idx % CFG.orders.length];
+  return {X:o[0],Y:o[1],Z:o[2],label:`SET ${idx % CFG.orders.length + 1} · ${o.join("-")}`};}
+function refresh(){const i=parseInt(val("respondent_index")||"0",10)||0;
+  $("#orderChip").textContent="orden de presentación: "+mapping(i).label.split(" · ")[0]
+    +" (el mapping queda sólo en el CSV)";}
+document.querySelector('[name="respondent_index"]').addEventListener("input",refresh);refresh();
+
+function esc(v){v=(v==null?"":String(v));
+  return /[",\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v;}
+
+function gen(){
+  const idx=parseInt(val("respondent_index")||"0",10)||0, mp=mapping(idx);
+  const rid=val("respondent_id")||("R"+String(idx+1).padStart(2,"0"));
+  const obs=multi("observations"), first=radio("first_looked");
+  const observations=[first?("FIRST_OPTION_LOOKED_AT:"+first):"",obs].filter(Boolean).join("|");
+  const rows=["X","Y","Z"].map(b=>{
+    const r={};
+    r.respondent_id=rid; r.role=val("role"); r.years_experience=val("years_experience");
+    r.session_date=val("session_date");
+    r.option_blind=b; r.option_real=mp[b]; r.display_order=mp.label;
+    r.send_to_client=radio(b+"_send_to_client"); r.confidence=radio(b+"_confidence");
+    r.blocking_error=radio(b+"_blocking_error"); r.defect_categories=multi(b+"_defect_categories");
+    r.change_magnitude=radio(b+"_change_magnitude"); r.strategy_tags=multi(b+"_strategy_tags");
+    r.reception_ok=radio(b+"_reception_ok"); r.move_reception=radio(b+"_move_reception");
+    r.preferred_option=radio("preferred_option"); r.options_distinct=radio("options_distinct");
+    r.similar_pair=val("similar_pair"); r.current_testfit_method=val("current_testfit_method");
+    r.current_turnaround=val("current_turnaround"); r.frequency=val("frequency");
+    r.useful_generated=radio("useful_generated");
+    r.would_use_under_2min=radio("would_use_under_2min"); r.use_case=val("use_case");
+    r.share_of_searches=val("share_of_searches"); r.human_qa_need=val("human_qa_need");
+    r.qa_time_minutes=val("qa_time_minutes");
+    r.time_to_first_decision_s=val("time_to_first_decision_s");
+    r.observations=observations; r.level2_done=radio("level2_done");
+    r.comparison_vs_architect=val("comparison_vs_architect");
+    r.brand_understood=radio("brand_understood"); r.notes=val("notes");
+    return CFG.columns.map(c=>esc(r[c])).join(",");
+  });
+  $("#out").textContent=rows.join("\n");
+}
+function copyOut(){navigator.clipboard.writeText($("#out").textContent);}
+function dl(){const b=new Blob([$("#out").textContent+"\n"],{type:"text/csv"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(b);
+  a.download=(val("respondent_id")||"respondent")+"_rows.csv";a.click();}
+</script></body></html>
