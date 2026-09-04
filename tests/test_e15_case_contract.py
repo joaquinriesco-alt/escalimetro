@@ -162,7 +162,7 @@ def test_el_board_exige_contexto_y_no_inventa_uno():
     with pytest.raises(ValueError):
         build_board([], None, {}, ctx=None)
     from escalimetro.case_context import CaseContext as CC
-    with pytest.raises(ValueError):   # E15.1: sin evidencia formateada tampoco
+    with pytest.raises(TypeError):    # E15.2: un dict ya no pasa, se exige PresentationFit
         build_board([], None, {"fit_label": "inventado"}, ctx=CC(case_id="X", unit_label="Y"))
 
 
@@ -244,7 +244,7 @@ def test_la_lamina_de_403_sigue_siendo_byte_identica():
             layout=Layout.load(os.path.join(d, "layout.json")),
             metrics=json.load(open(os.path.join(d, "metrics.json"), encoding="utf-8")),
             critique=json.load(open(os.path.join(d, "critique.json"), encoding="utf-8")))})
-    fit = presentation_fit(ctx, load_fit_evidence(C403))
+    fit = presentation_fit(ctx, load_fit_evidence(C403))   # PresentationFit tipado
     new = build_board(alts, shell, fit=fit, ctx=ctx)
     old = open(os.path.join(e07, "ESCALIMETRO_PRESENTATION_STANDARD_01.svg"), encoding="utf-8").read()
     assert new == old

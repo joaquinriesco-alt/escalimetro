@@ -1,0 +1,135 @@
+{
+  "_doc": "E15.2 §7-§9 — compatibilidad de evidencia entre versiones del motor. Una evidencia producida bajo el baseline X sigue vigente bajo Y SÓLO si existe una cadena explícita de transiciones declaradas NON_SEMANTIC entre X e Y. No hay comodín: un baseline que no esté en compatible_with_current vuelve STALE toda evidencia producida bajo él.",
+  "current_baseline": "E15.2",
+  "baselines": {
+    "E14": "5ce5f6a1f4e3dd17f5f4518fb8365bc24ed90d337dfc5aacb1c1b144b7877259",
+    "E15": "d213b4294290247913011d50a15df03fd5ba51b380e905b4a74a7d44ba1201ff",
+    "E15.1": "1bf28635dab42bfbbcd9dfca62d8ee5ad28db503957552e3fe65536d87ca069e",
+    "E15.2": "74c60443aebae7f21b71be355975d3348ac106eae60cf309822f3e5770458ca4"
+  },
+  "semantic_surface": {
+    "_doc": "Archivos cuyo contenido determina QUÉ COMPUTA el motor. Si una transición toca uno de éstos, no puede declararse NON_SEMANTIC sin mostrar el diff línea a línea, y ese diff queda escrito en semantic_surface_touched.",
+    "files": [
+      "program_templates/modules_office.json",
+      "program_templates/office_balanced_48.json",
+      "src/escalimetro/geometry/__init__.py",
+      "src/escalimetro/geometry/elements.py",
+      "src/escalimetro/geometry/extractor.py",
+      "src/escalimetro/geometry/scale.py",
+      "src/escalimetro/layout/circulation.py",
+      "src/escalimetro/layout/e06/evidence.py",
+      "src/escalimetro/layout/e06/qa.py",
+      "src/escalimetro/layout/e06/scale.py",
+      "src/escalimetro/layout/e06/sweep.py",
+      "src/escalimetro/layout/e07/engine.py",
+      "src/escalimetro/layout/e07/graph.py",
+      "src/escalimetro/layout/e07/pipeline.py",
+      "src/escalimetro/layout/e07/strategies.py",
+      "src/escalimetro/layout/grid.py",
+      "src/escalimetro/layout/model.py",
+      "src/escalimetro/layout/scoring.py",
+      "src/escalimetro/layout/shell_adapter.py",
+      "src/escalimetro/layout/solver.py",
+      "src/escalimetro/layout/strips.py",
+      "src/escalimetro/layout/zoning.py",
+      "src/escalimetro/schemas/__init__.py",
+      "src/escalimetro/schemas/floorplate.py",
+      "src/escalimetro/segmentation/__init__.py",
+      "src/escalimetro/segmentation/base.py",
+      "src/escalimetro/segmentation/providers.py",
+      "src/escalimetro/semantics/__init__.py",
+      "src/escalimetro/semantics/columns_v2.py",
+      "src/escalimetro/semantics/daylight.py",
+      "src/escalimetro/semantics/entrance.py",
+      "src/escalimetro/semantics/shell.py",
+      "src/escalimetro/vision/__init__.py",
+      "src/escalimetro/vision/adapters.py",
+      "src/escalimetro/vision/base.py",
+      "src/escalimetro/vision/ocr_localizer.py"
+    ]
+  },
+  "note_on_repo_hash": "El hash del repositorio NO se usa como criterio: E15, E15.1 y E15.2 cambian metadatos y presentación sin tocar la semántica del solver, y exigir igualdad de hash convertiría cada refactorización en una invalidación masiva. Tampoco vale lo contrario: 'legacy => compatible para siempre'. Por eso la unidad de decisión es la TRANSICIÓN declarada, con su diff calculado a la vista.",
+  "transitions": [
+    {
+      "from": "E14",
+      "to": "E15",
+      "kind": "NON_SEMANTIC",
+      "summary": "Contrato genérico de caso: la identidad del inmueble deja de estar incrustada en el motor.",
+      "changed_files": [
+        "src/escalimetro/layout/e06/run.py",
+        "src/escalimetro/layout/e06/scale.py",
+        "src/escalimetro/layout/e06/verdict.py",
+        "src/escalimetro/layout/e07/board.py",
+        "src/escalimetro/layout/e07/engine.py",
+        "src/escalimetro/layout/e07/pipeline.py",
+        "src/escalimetro/layout/e07/run.py",
+        "src/escalimetro/layout/run.py"
+      ],
+      "added_files": [
+        "src/escalimetro/case_context.py"
+      ],
+      "removed_files": [],
+      "semantic_surface_touched": {
+        "src/escalimetro/layout/e07/engine.py": "Sólo el identificador del layout: 'OFFICE_403_{alt}_{name}' pasa a '{layout_id_prefix}_{alt}_{name}', con el prefijo recibido por parámetro. No cambia ninguna restricción, peso, candidato ni puntuación. Verificado además con un test: layout_id NO entra en canonical_geometry, así que renombrar no puede alterar un hash de geometría.",
+        "src/escalimetro/layout/e07/pipeline.py": "Sólo el handoff de presentación: se agrega el bloque 'case' y la cadena de origen de escala deja de decir '543 m²' a mano. Los gates E1-T/E1-A/E1-C y el QA interno no se tocan.",
+        "src/escalimetro/layout/e06/scale.py": "Se elimina el default published_m2=543.0. La FÓRMULA no cambia: sólo de dónde sale el área. Efecto medido: 403 sigue dando 490.1 a 0.95x; 401 pasa de 490.1 (incorrecto, heredado de 403) a 227.4 (correcto). implied_published_equiv_m2 es un campo informativo, no entra al solver."
+      },
+      "evidence": [
+        "Lámina Standard 01 de la 403 regenerada BYTE-IDÉNTICA (92.927 bytes)",
+        "fit_verdict.json y secondary_scale_evidence.json de la 403 regenerados IDÉNTICOS corriendo e06 report de verdad",
+        "fit_robustness.png PIXEL-IDÉNTICA tras el renombre: 0 de 699.660 píxeles distintos",
+        "hashes de geometría A/B/C sin cambios"
+      ]
+    },
+    {
+      "from": "E15",
+      "to": "E15.1",
+      "kind": "NON_SEMANTIC",
+      "summary": "Separación entre hechos de entrada y evidencia computada.",
+      "changed_files": [
+        "src/escalimetro/case_context.py",
+        "src/escalimetro/layout/e07/board.py",
+        "src/escalimetro/layout/e07/run.py"
+      ],
+      "added_files": [
+        "src/escalimetro/fit_evidence.py"
+      ],
+      "removed_files": [],
+      "semantic_surface_touched": {},
+      "evidence": [
+        "Ningún archivo de la superficie semántica fue tocado (diff calculado)",
+        "Lámina Standard 01 de la 403 BYTE-IDÉNTICA, ahora servida por evidencia computada",
+        "hashes de geometría A/B/C sin cambios"
+      ]
+    },
+    {
+      "from": "E15.1",
+      "to": "E15.2",
+      "kind": "NON_SEMANTIC",
+      "summary": "Cierre de la frontera: validación de entrada, procedencia de motor y presentación tipada.",
+      "changed_files": [
+        "src/escalimetro/case_context.py",
+        "src/escalimetro/fit_evidence.py",
+        "src/escalimetro/layout/e07/board.py"
+      ],
+      "added_files": [],
+      "removed_files": [],
+      "semantic_surface_touched": {},
+      "evidence": [
+        "Diff calculado desde los baselines guardados E15.1 y E15.2, no escrito a mano",
+        "Archivos modificados: 3; nuevos: 0; eliminados: 0",
+        "Ninguno de los archivos tocados pertenece a la superficie semántica (36 archivos)",
+        "Lámina Standard 01 de la 403 BYTE-IDÉNTICA (92927 caracteres / 92983 bytes UTF-8)",
+        "Hashes de geometría A/B/C de la 403 sin cambios"
+      ],
+      "correction_note": "Una versión anterior de este archivo registraba un solo archivo modificado y el engine_hash 20ed7f44f9d60b147717018ef3ab8e9c672f242c61f14c383dc419bc21399240. Ambos se calcularon a mitad del ciclo, antes de editar fit_evidence.py y layout/e07/board.py. Corregido recalculando contra el baseline E15.1 guardado. Se deja constancia en vez de reescribir en silencio."
+    }
+  ],
+  "compatible_with_current": [
+    "E14",
+    "E15",
+    "E15.1",
+    "E15.2"
+  ],
+  "limitation": "El baseline más antiguo registrado es E14. Los artefactos de E06/E07 de la Oficina 403 y los de E14 de la 401 se produjeron ANTES de que existiera un baseline, así que su productor exacto no está registrado y se declara como E14, el estado más antiguo que sí lo está. Es una limitación declarada, no una prueba: lo que sí está verificado es que E15 regeneró los artefactos de E06 de la 403 con un motor posterior y salieron idénticos."
+}

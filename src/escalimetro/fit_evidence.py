@@ -44,6 +44,7 @@ LEGACY_VERIFIED = "LEGACY_VERIFIED"
 FRESHNESS_NOT_EVALUATED = "NOT_EVALUATED"
 
 LEGACY_REGISTRY = "EVIDENCE_LEGACY.json"
+COMPATIBILITY_FILE = os.path.join("cases", "generalization", "ENGINE_COMPATIBILITY.json")
 
 
 def sha256_file(path: str) -> Optional[str]:
@@ -107,6 +108,30 @@ class FitEvidence:
 # ---------------------------------------------------------------------------------------------------
 # frescura — mínimo viable, sin base de datos (§11)
 # ---------------------------------------------------------------------------------------------------
+def engine_compatibility(path: str = COMPATIBILITY_FILE) -> Dict:
+    """Declaración explícita de qué baselines producen evidencia todavía vigente (§9).
+
+    No es un hash del repositorio ni un comodín: es una lista de TRANSICIONES declaradas, cada una con
+    su diff calculado a la vista. Si el archivo no existe, no se asume compatibilidad con nada."""
+    d = _load(path) or {}
+    return {"current": d.get("current_baseline"),
+            "compatible": set(d.get("compatible_with_current") or []),
+            "baselines": d.get("baselines") or {}, "transitions": d.get("transitions") or []}
+
+
+def engine_is_compatible(producer_baseline: Optional[str], path: str = COMPATIBILITY_FILE) -> (bool, str):
+    """¿Una evidencia producida bajo `producer_baseline` sigue vigente bajo el baseline actual?"""
+    c = engine_compatibility(path)
+    if not c["current"]:
+        return False, "no hay declaración de compatibilidad de motor"
+    if not producer_baseline:
+        return False, "la evidencia no declara con qué baseline de motor se produjo"
+    if producer_baseline not in c["compatible"]:
+        return False, (f"el baseline productor '{producer_baseline}' no está declarado compatible con "
+                       f"'{c['current']}'")
+    return True, ""
+
+
 def current_fingerprint(case_dir: str, program_path: str = "") -> Dict[str, Optional[str]]:
     """Las tres cosas que, si cambian, invalidan un veredicto: la geometría, el programa y el motor."""
     fp = os.path.join(case_dir, "outputs", "floorplate.json")
@@ -119,7 +144,7 @@ def current_fingerprint(case_dir: str, program_path: str = "") -> Dict[str, Opti
 
 
 def _freshness(case_dir: str, artifacts: List[str], recorded: Optional[Dict],
-               program_path: str) -> (str, List[str]):
+               program_path: str, compat_path: str = COMPATIBILITY_FILE) -> (str, List[str]):
     """Tres caminos, en orden:
 
     1. El artefacto declara su propia procedencia → se compara y sale FRESH o STALE.
@@ -128,14 +153,22 @@ def _freshness(case_dir: str, artifacts: List[str], recorded: Optional[Dict],
     3. Ninguna de las dos → STALE. No hay comodín."""
     now = current_fingerprint(case_dir, program_path)
     if recorded:
-        bad = [k for k in ("floorplate_sha256", "program_sha256", "engine_hash")
+        bad = [f"{k} cambió" for k in ("floorplate_sha256", "program_sha256")
                if recorded.get(k) and now.get(k) and recorded[k] != now[k]]
-        return (STALE, [f"{k} cambió" for k in bad]) if bad else (FRESH, [])
+        ok, why = engine_is_compatible(recorded.get("producer_engine_baseline"), compat_path)
+        if not ok:
+            bad.append(why)
+        return (STALE, bad) if bad else (FRESH, [])
 
     reg = _load(os.path.join(case_dir, "layouts", LEGACY_REGISTRY))
     if not reg:
         return STALE, ["el artefacto no declara procedencia y el caso no tiene registro legado"]
     bad = []
+    # E15.2 — la evidencia histórica ya no basta con que floorplate y programa sigan iguales: el
+    # baseline que la produjo tiene que estar declarado compatible con el vigente.
+    ok, why = engine_is_compatible(reg.get("producer_engine_baseline"), compat_path)
+    if not ok:
+        bad.append(why)
     pinned = reg.get("pinned_fingerprint", {})
     for k in ("floorplate_sha256", "program_sha256"):
         if pinned.get(k) and now.get(k) and pinned[k] != now[k]:
@@ -275,34 +308,76 @@ DEFAULT_RECOMMENDATION = "Confirma una dimensión real antes de comprometer capa
 NOTE = "Test-fit conceptual de space planning. No constituye proyecto de arquitectura."
 
 
-def presentation_fit(ctx, ev: "FitEvidence") -> Dict:
-    """Combina HECHOS DEL CASO con EVIDENCIA COMPUTADA para producir lo que la lámina muestra.
+@dataclass(frozen=True)
+class PresentationFit:
+    """E15.2 §14 — lo que la lámina consume. Tipado y construible **sólo** desde una `FitEvidence`.
 
-    Es la única función autorizada a convertir un resultado en copy. Si la evidencia no se puede
-    presentar —no existe, o está vieja— devuelve el estado correspondiente en vez del veredicto
-    anterior: una lámina nunca muestra en silencio un resultado que ya no corresponde."""
-    unit = ctx.display_name or ctx.unit_label
-    out = {"unit": f"{unit} ({ctx.source_name})" if ctx.source_name else unit,
-           "published_area_m2": ctx.published_area_m2,
-           "technical_fit": ev.technical, "robustness": ev.robustness, "freshness": ev.freshness,
-           "scale": "UNCONFIRMED",
-           "scale_confidence": ev.scale_confidence or (ctx.scale_confidence or "UNKNOWN"),
-           "headcount": ev.headcount, "program": ev.program,
-           "note": NOTE, "source": "evidencia computada: " + ", ".join(ev.source_artifacts)
-           if ev.source_artifacts else "sin artefactos de evidencia para este caso"}
-    if not ev.evaluated:
-        out.update(fit=TECHNICAL_NOT_EVALUATED, fit_label=NOT_EVALUATED_LABEL,
-                   recommendation=DEFAULT_RECOMMENDATION,
-                   reason="Ninguna etapa del motor produjo evidencia de fit para este caso.")
-        return out
-    if not ev.presentable:
-        out.update(fit=STALE, fit_label=STALE_LABEL, recommendation=DEFAULT_RECOMMENDATION,
-                   reason="La evidencia guardada no corresponde al floorplate o al programa "
-                          "actuales: " + "; ".join(ev.stale_reasons))
-        return out
-    out.update(fit=ev.robustness,
-               fit_label=ROBUSTNESS_LABEL.get(ev.robustness,
-                                              TECHNICAL_LABEL.get(ev.technical, NOT_EVALUATED_LABEL)),
-               recommendation=RECOMMENDATION_COPY.get(ev.robustness, DEFAULT_RECOMMENDATION),
-               reason=ev.reason or "")
-    return out
+    Un diccionario con las claves correctas ya no sirve: `build_board` exige esta clase, y el único
+    constructor público es `from_evidence`. Cerrar esta puerta importa porque un dict como
+
+        {"technical_fit": "FIT", "fit_label": "ROBUST WITHIN ASSUMED SCALE RANGE"}
+
+    tiene la forma de una conclusión técnica sin ninguna procedencia detrás.
+
+    `_provenance` guarda de qué artefactos salió, y es obligatorio: una instancia sin artefactos y sin
+    estado NOT_EVALUATED no se puede construir."""
+    unit: str
+    published_area_m2: Optional[float]
+    technical_fit: str
+    robustness: str
+    freshness: str
+    fit: str
+    fit_label: str
+    scale: str
+    scale_confidence: str
+    headcount: Optional[int]
+    program: Optional[str]
+    recommendation: str
+    reason: str
+    note: str
+    source: str
+    _provenance: tuple = ()
+
+    @classmethod
+    def from_evidence(cls, ctx, ev: "FitEvidence") -> "PresentationFit":
+        """CASE FACTS + COMPUTED EVIDENCE -> copy de lámina. Único camino autorizado."""
+        if not isinstance(ev, FitEvidence):
+            raise TypeError("PresentationFit sólo se construye desde una FitEvidence: un veredicto es "
+                            "un RESULTADO COMPUTADO, no un diccionario escrito a mano")
+        unit = ctx.display_name or ctx.unit_label
+        base = dict(
+            unit=f"{unit} ({ctx.source_name})" if ctx.source_name else unit,
+            published_area_m2=ctx.published_area_m2,
+            technical_fit=ev.technical, robustness=ev.robustness, freshness=ev.freshness,
+            scale="UNCONFIRMED",
+            scale_confidence=ev.scale_confidence or (ctx.scale_confidence or "UNKNOWN"),
+            headcount=ev.headcount, program=ev.program, note=NOTE,
+            source=("evidencia computada: " + ", ".join(ev.source_artifacts)
+                    if ev.source_artifacts else "sin artefactos de evidencia para este caso"),
+            _provenance=tuple(ev.source_artifacts))
+        if not ev.evaluated:
+            return cls(fit=TECHNICAL_NOT_EVALUATED, fit_label=NOT_EVALUATED_LABEL,
+                       recommendation=DEFAULT_RECOMMENDATION,
+                       reason="Ninguna etapa del motor produjo evidencia de fit para este caso.", **base)
+        if not ev.presentable:
+            return cls(fit=STALE, fit_label=STALE_LABEL, recommendation=DEFAULT_RECOMMENDATION,
+                       reason="La evidencia guardada no corresponde al floorplate, al programa o a una "
+                              "versión compatible del motor: " + "; ".join(ev.stale_reasons), **base)
+        return cls(fit=ev.robustness,
+                   fit_label=ROBUSTNESS_LABEL.get(ev.robustness,
+                                                  TECHNICAL_LABEL.get(ev.technical, NOT_EVALUATED_LABEL)),
+                   recommendation=RECOMMENDATION_COPY.get(ev.robustness, DEFAULT_RECOMMENDATION),
+                   reason=ev.reason or "", **base)
+
+    def get(self, key, default=None):
+        """Acceso de sólo lectura por nombre, para que los consumidores no cambien de forma. NO
+        convierte esto en un dict: `build_board` exige el tipo, no la interfaz."""
+        return getattr(self, key, default)
+
+    def to_dict(self) -> Dict:
+        return {k: v for k, v in self.__dict__.items() if not k.startswith("_")}
+
+
+def presentation_fit(ctx, ev: "FitEvidence") -> PresentationFit:
+    """Alias estable del único camino autorizado (se mantiene el nombre que usa E07)."""
+    return PresentationFit.from_evidence(ctx, ev)

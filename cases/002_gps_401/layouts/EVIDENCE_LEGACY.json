@@ -16,5 +16,7 @@
       "path": "layouts/E06/fit_robustness_report.json",
       "sha256": "3670aaa19239ddcd5f27271559794d19b77a6be49c7c5510cc047387b06276da"
     }
-  ]
+  ],
+  "producer_engine_baseline": "E14",
+  "producer_engine_baseline_note": "E14 es el baseline de motor más ANTIGUO registrado. Estos artefactos se produjeron antes de que existiera un baseline, así que su productor exacto no está registrado: se declara E14 como cota inferior verificable, no como prueba. Lo que sí está verificado: E15 regeneró los artefactos de E06 de la 403 con un motor posterior y salieron idénticos. La vigencia depende de que E14 siga en compatible_with_current de cases/generalization/ENGINE_COMPATIBILITY.json."
 }

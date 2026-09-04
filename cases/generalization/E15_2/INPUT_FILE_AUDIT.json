@@ -1,0 +1,90 @@
+{
+  "_doc": "E15.2 §16 — auditoría de archivos de entrada. Ningún case.json puede contener DERIVED_EVIDENCE ni COMPUTED_RESULT.",
+  "contract": {
+    "CASE_INPUT_FIELDS": [
+      "case_id",
+      "display_name",
+      "image",
+      "image_note",
+      "known_area_kind",
+      "known_area_m2",
+      "mask_open_px",
+      "overrides",
+      "segmentation",
+      "sibling_units",
+      "simplify_eps_frac",
+      "source_name",
+      "unit_label",
+      "vision"
+    ],
+    "DERIVED_EVIDENCE_FIELDS": [
+      "area_m2",
+      "scale",
+      "scale_confidence",
+      "scale_px_per_m",
+      "scale_status",
+      "usable_area_m2"
+    ],
+    "COMPUTED_RESULT_FIELDS": [
+      "ai_review",
+      "broker_ready",
+      "classification",
+      "collisions",
+      "commercial_readiness",
+      "critic_score",
+      "fit",
+      "fit_verdict",
+      "gate",
+      "gates",
+      "hard_violations",
+      "layout_quality",
+      "program_completeness",
+      "recommendation",
+      "robustness",
+      "robustness_result",
+      "score",
+      "seats",
+      "technical_fit",
+      "verdict"
+    ]
+  },
+  "files": [
+    {
+      "file": "cases/001_gps_403/case.json",
+      "n_fields": 13,
+      "derived_evidence_present": [],
+      "computed_result_present": [],
+      "unknown_present": [],
+      "verdict": "CLEAN",
+      "error": ""
+    },
+    {
+      "file": "cases/002_gps_401/case.json",
+      "n_fields": 12,
+      "derived_evidence_present": [],
+      "computed_result_present": [],
+      "unknown_present": [],
+      "verdict": "CLEAN",
+      "error": ""
+    },
+    {
+      "file": "cases/900_synthetic_fixture/case.json",
+      "n_fields": 8,
+      "derived_evidence_present": [],
+      "computed_result_present": [],
+      "unknown_present": [],
+      "verdict": "CLEAN",
+      "error": ""
+    },
+    {
+      "file": "tests/fixtures/generalization/TEST_GENERIC_CASE.json",
+      "n_fields": 5,
+      "derived_evidence_present": [],
+      "computed_result_present": [],
+      "unknown_present": [],
+      "verdict": "CLEAN",
+      "error": ""
+    }
+  ],
+  "verdict": "CLEAN"
+}

@@ -136,9 +136,9 @@ def test_las_dos_capas_son_independientes():
                         freshness=FE.FRESH)
     assert ev.evaluated is True and ev.presentable is True
     ctx = CaseContext(case_id="X", unit_label="Oficina 999")
-    p = FE.presentation_fit(ctx, ev)
-    assert p["technical_fit"] == FE.NO_FIT and p["robustness"] == FE.ROBUSTNESS_NOT_EVALUATED
-    assert p["fit_label"] == FE.TECHNICAL_LABEL[FE.NO_FIT]      # no colapsa en un único string
+    p = FE.presentation_fit(ctx, ev)   # E15.2: PresentationFit tipado, acceso por atributo
+    assert p.technical_fit == FE.NO_FIT and p.robustness == FE.ROBUSTNESS_NOT_EVALUATED
+    assert p.fit_label == FE.TECHNICAL_LABEL[FE.NO_FIT]      # no colapsa en un único string
 
 
 def test_la_disposicion_comercial_no_entra_en_la_evidencia_tecnica():
@@ -176,8 +176,8 @@ def test_un_cambio_de_floorplate_vuelve_la_evidencia_stale(tmp_path):
     assert any("floorplate" in r for r in ev.stale_reasons)
     assert ev.presentable is False
     p = FE.presentation_fit(from_case_dir(C403), ev)
-    assert p["fit_label"] == FE.STALE_LABEL
-    assert "ROBUST WITHIN" not in p["fit_label"]
+    assert p.fit_label == FE.STALE_LABEL
+    assert "ROBUST WITHIN" not in p.fit_label
 
 
 def test_un_cambio_de_programa_vuelve_la_evidencia_stale(tmp_path):
@@ -223,8 +223,9 @@ def test_un_artefacto_alterado_se_detecta(tmp_path):
 def test_la_procedencia_declarada_gana_sobre_el_registro_legado():
     """Un artefacto que declare su propia huella no necesita el registro; se compara directamente."""
     from escalimetro.fit_evidence import _freshness, current_fingerprint
-    now = current_fingerprint(C403, PROG)
-    ok, _ = _freshness(C403, [], dict(now), PROG)
+    now = dict(current_fingerprint(C403, PROG))
+    now["producer_engine_baseline"] = "E15.2"      # E15.2: la procedencia también declara el motor
+    ok, _ = _freshness(C403, [], now, PROG)
     assert ok == FE.FRESH
     bad, reasons = _freshness(C403, [], {**now, "floorplate_sha256": "0" * 64}, PROG)
     assert bad == FE.STALE and reasons
@@ -234,11 +235,13 @@ def test_la_procedencia_declarada_gana_sobre_el_registro_legado():
 # contrato de presentación (§16, §29)
 # ---------------------------------------------------------------------------------------------------
 def test_la_lamina_exige_evidencia_explicita():
+    """E15.2 endureció esto: antes bastaba con que el dict tuviera las claves correctas; ahora se
+    exige el TIPO PresentationFit, así que un diccionario falla con TypeError."""
     from escalimetro.layout.e07.board import build_board
     ctx = from_case_dir(C403)
-    with pytest.raises(ValueError):
+    with pytest.raises((TypeError, ValueError)):
         build_board([], None, fit=None, ctx=ctx)
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         build_board([], None, fit={"fit_label": "ROBUST WITHIN"}, ctx=ctx)   # blob a mano
 
 
@@ -247,10 +250,10 @@ def test_el_caso_generico_no_inventa_resultados():
     ctx = CaseContext(case_id=d["case_id"], unit_label=d["unit_label"],
                       source_name=d["source_name"], published_area_m2=d["known_area_m2"])
     p = FE.presentation_fit(ctx, FE.FitEvidence())
-    assert p["technical_fit"] == FE.TECHNICAL_NOT_EVALUATED
-    assert p["robustness"] == FE.ROBUSTNESS_NOT_EVALUATED
-    assert p["fit_label"] == FE.NOT_EVALUATED_LABEL
-    blob = json.dumps(p, ensure_ascii=False)
+    assert p.technical_fit == FE.TECHNICAL_NOT_EVALUATED
+    assert p.robustness == FE.ROBUSTNESS_NOT_EVALUATED
+    assert p.fit_label == FE.NOT_EVALUATED_LABEL
+    blob = json.dumps(p.to_dict(), ensure_ascii=False)
     for t in ("403", "543", "GPS", "ROBUST_FIT", "ROBUST WITHIN"):
         assert t not in blob, t
 

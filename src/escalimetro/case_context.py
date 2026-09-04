@@ -43,6 +43,26 @@ class MissingCaseMetadata(Exception):
     """Un dato del caso que esta etapa necesita no existe. Nunca se sustituye por el de otro caso."""
 
 
+DERIVED_EVIDENCE_NOT_ALLOWED = "DERIVED_EVIDENCE_NOT_ALLOWED"
+COMPUTED_RESULT_NOT_ALLOWED = "COMPUTED_RESULT_NOT_ALLOWED"
+UNKNOWN_CASE_FIELD = "UNKNOWN_CASE_FIELD"
+
+#: E15.2 — lo único que puede declararse en case.json. Cualquier otra cosa se rechaza al cargar.
+CASE_INPUT_FIELDS = {
+    "case_id", "image", "image_note", "unit_label", "display_name", "source_name",
+    "known_area_m2", "known_area_kind", "sibling_units",
+    "overrides", "vision", "segmentation", "simplify_eps_frac", "mask_open_px",
+}
+#: valores derivados de la geometría: se leen del floorplate, nunca se declaran a mano
+DERIVED_EVIDENCE_FIELDS = {"scale_confidence", "scale_px_per_m", "scale_status", "scale",
+                           "usable_area_m2", "area_m2"}
+#: resultados de ejecución: se leen de los artefactos computados
+COMPUTED_RESULT_FIELDS = {"fit_verdict", "fit", "technical_fit", "robustness", "robustness_result",
+                          "recommendation", "hard_violations", "program_completeness",
+                          "critic_score", "layout_quality", "ai_review", "broker_ready",
+                          "commercial_readiness", "gate", "gates", "classification", "verdict",
+                          "score", "seats", "collisions"}
+
 MISSING_PUBLISHED_AREA = "MISSING_PUBLISHED_AREA"
 MISSING_UNIT_LABEL = "MISSING_UNIT_LABEL"
 MISSING_CASE_METADATA = "MISSING_CASE_METADATA"
@@ -203,6 +223,45 @@ class CaseContext:
 # ---------------------------------------------------------------------------------------------------
 # constructores — un solo camino de datos
 # ---------------------------------------------------------------------------------------------------
+def validate_case_input(case: Dict, where: str = "case.json") -> Dict:
+    """E15.2 — `case.json` es ENTRADA. Un valor derivado o un resultado se rechazan al cargar, no se
+    ignoran en silencio: si alguien los escribe, es que cree que sirven para algo.
+
+    `scale_confidence` está en la lista de derivados. Es una evaluación de la geometría —sale de
+    `floorplate.json → scale.meta.confidence`— y declararla a mano permitiría afirmar que la escala
+    es fiable sin haberla medido."""
+    keys = {k for k in case if not k.startswith("_")}
+    bad_derived = sorted(keys & DERIVED_EVIDENCE_FIELDS)
+    if bad_derived:
+        raise MissingCaseMetadata(
+            f"{DERIVED_EVIDENCE_NOT_ALLOWED}: {where} declara {bad_derived}. Son valores DERIVADOS de "
+            f"la geometría y se leen de outputs/floorplate.json; no se declaran como entrada.")
+    bad_computed = sorted(keys & COMPUTED_RESULT_FIELDS)
+    if bad_computed:
+        raise MissingCaseMetadata(
+            f"{COMPUTED_RESULT_NOT_ALLOWED}: {where} declara {bad_computed}. Son RESULTADOS de "
+            f"ejecución y se leen de los artefactos computados; no se declaran como entrada.")
+    unknown = sorted(keys - CASE_INPUT_FIELDS)
+    if unknown:
+        raise MissingCaseMetadata(
+            f"{UNKNOWN_CASE_FIELD}: {where} declara {unknown}, que no están en el contrato de "
+            f"entrada. Si es un hecho del inmueble, agrégalo a CASE_INPUT_FIELDS; si es un resultado, "
+            f"no va aquí.")
+    return case
+
+
+def _confidence_label(value) -> Optional[str]:
+    """Etiqueta de confianza de escala a partir del valor numérico del floorplate. Es DERIVED_EVIDENCE:
+    describe cuánto se puede confiar en una medición, y por eso no puede declararse como entrada."""
+    if value is None:
+        return None
+    try:
+        v = float(value)
+    except (TypeError, ValueError):
+        return str(value)
+    return "LOW" if v < 0.5 else ("MEDIUM" if v < 0.8 else "HIGH")
+
+
 def _read_json(path: str) -> Optional[Dict]:
     if not os.path.exists(path):
         return None
@@ -218,6 +277,7 @@ def from_case_dir(case_dir: str) -> CaseContext:
     case = _read_json(os.path.join(case_dir, "case.json"))
     if case is None:
         raise MissingCaseMetadata(f"{MISSING_CASE_METADATA}: no existe {case_dir}/case.json")
+    validate_case_input(case, os.path.join(case_dir, "case.json"))
     fp = _read_json(os.path.join(case_dir, "outputs", "floorplate.json")) or {}
     scale = fp.get("scale") or {}
     meta = scale.get("meta") or {}
@@ -233,7 +293,7 @@ def from_case_dir(case_dir: str) -> CaseContext:
         published_area_kind=(fp.get("published_area_kind") or case.get("known_area_kind") or "unknown"),
         scale_px_per_m=scale.get("px_per_m"),
         scale_status=meta.get("status"),
-        scale_confidence=({0.4: "LOW"}.get(conf) if isinstance(conf, float) else None) or case.get("scale_confidence"),
+        scale_confidence=_confidence_label(conf),          # DERIVED_EVIDENCE: sólo del floorplate
         sibling_units=case.get("sibling_units") or {},
     )
 
