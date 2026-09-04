@@ -1,0 +1,147 @@
+{
+  "_doc": "E14 §10/§14 — RUN ASSISTED. Diez operaciones humanas, el máximo del protocolo, todas con mecanismos HITL que ya existían en el caso 001. Ninguna dibuja layout ni toca el solver.",
+  "hitl_operations": [
+    {
+      "op": 1,
+      "kind": "confirm_target",
+      "detail": "click dentro de la Oficina 401",
+      "estimated_human_seconds": 4
+    },
+    {
+      "op": 2,
+      "kind": "confirm",
+      "detail": "perimeter",
+      "estimated_human_seconds": 3
+    },
+    {
+      "op": 3,
+      "kind": "confirm",
+      "detail": "core",
+      "estimated_human_seconds": 3
+    },
+    {
+      "op": 4,
+      "kind": "confirm",
+      "detail": "columns",
+      "estimated_human_seconds": 3
+    },
+    {
+      "op": 5,
+      "kind": "confirm",
+      "detail": "daylight",
+      "estimated_human_seconds": 3
+    },
+    {
+      "op": 6,
+      "kind": "confirm",
+      "detail": "scale_assumption",
+      "estimated_human_seconds": 3
+    },
+    {
+      "op": 7,
+      "kind": "correct_access",
+      "detail": "acceso principal (507,207)",
+      "estimated_human_seconds": 12
+    },
+    {
+      "op": 8,
+      "kind": "add_column",
+      "detail": "(581,238)",
+      "estimated_human_seconds": 5
+    },
+    {
+      "op": 9,
+      "kind": "confirm_facade",
+      "detail": "segmento 17 = likely_glazing",
+      "estimated_human_seconds": 4
+    },
+    {
+      "op": 10,
+      "kind": "confirm_facade",
+      "detail": "segmento 27 = likely_glazing",
+      "estimated_human_seconds": 4
+    }
+  ],
+  "hitl_total_ops": 10,
+  "hitl_estimated_human_seconds": 44,
+  "localization": "assisted (seed_point)",
+  "shell": {
+    "vertices": 28,
+    "area_m2": 252.0,
+    "published_area_m2": 252.0,
+    "published_area_kind": "unknown",
+    "px_per_m": 8.43,
+    "scale_method": "published_area_inferred",
+    "scale_status": "inferred",
+    "scale_confidence": 0.4,
+    "columns": 2,
+    "cores": 1,
+    "entrances": 1,
+    "primary_entrance": {
+      "point": [
+        507,
+        207
+      ],
+      "kind": "primary",
+      "confidence": 1.0,
+      "evidence": [
+        "human:punto indicado"
+      ],
+      "width_px": null,
+      "segment_index": null,
+      "status": "confirmed",
+      "provenance": "manual"
+    },
+    "daylight_classes": [
+      "opaque",
+      "opaque",
+      "opaque",
+      "opaque",
+      "opaque",
+      "opaque",
+      "opaque",
+      "opaque",
+      "opaque",
+      "opaque",
+      "opaque",
+      "opaque",
+      "opaque",
+      "opaque",
+      "opaque",
+      "opaque",
+      "opaque",
+      "likely_glazing",
+      "opaque",
+      "opaque",
+      "exterior_unknown",
+      "opaque",
+      "exterior_unknown",
+      "opaque",
+      "unknown",
+      "exterior_unknown",
+      "likely_glazing",
+      "likely_glazing"
+    ],
+    "unknowns": [
+      {
+        "element": "scale.area_kind",
+        "reason": "superficie publicada de tipo 'unknown': la escala inferida depende de que esa cifra sea el área del polígono útil"
+      },
+      {
+        "element": "windows.exact",
+        "reason": "posición exacta de ventanas no extraída; sólo clasificación por lado"
+      }
+    ]
+  },
+  "shell_readiness": {
+    "geometry_ready": true,
+    "entrance_ready": true,
+    "columns_ready": true,
+    "daylight_ready": true,
+    "requires_confirmation": [],
+    "ready_for_layout": true,
+    "notes": "escala aceptada como SUPUESTO (published_area_inferred, 252.0 m² tipo unknown); las dimensiones del layout heredan esa incertidumbre; sin orientación: daylight_priority no considera sol"
+  },
+  "gate": "ASSISTED_READY",
+  "note": "El candidato de acceso que propuso la CV (531.5,207) cae sobre muro continuo. Con zoom x22 se identificaron dos arcos de puerta contiguos en el muro norte del núcleo; el derecho (x 502-513) cae dentro del límite de 401. Se corrigió a (507,207). Es exactamente el tipo de corrección que el operador de 403 hizo en E02→E03; no se copió ningún dato del caso 001."
+}

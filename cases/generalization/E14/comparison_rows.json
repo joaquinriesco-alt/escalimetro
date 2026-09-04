@@ -1,0 +1,140 @@
+[
+ [
+  "fuente",
+  "lámina GPS Property 800x424",
+  "misma lámina, sha256 idéntico",
+  "IGUAL"
+ ],
+ [
+  "superficie publicada",
+  "543 m²",
+  "252 m²",
+  "DIFIERE"
+ ],
+ [
+  "escala",
+  "8.3565 px/m · inferida · LOW",
+  "8.4300 px/m · inferida · LOW",
+  "DIFIERE"
+ ],
+ [
+  "complejidad del perímetro",
+  "20 vértices",
+  "28 vértices",
+  "DIFIERE"
+ ],
+ [
+  "pilares",
+  "10",
+  "2",
+  "DIFIERE"
+ ],
+ [
+  "accesos",
+  "2 (este y oeste del núcleo)",
+  "1 (norte del núcleo)",
+  "DIFIERE"
+ ],
+ [
+  "tramos de fachada exteriores",
+  "5",
+  "7",
+  "DIFIERE"
+ ],
+ [
+  "shell ready",
+  "ASSISTED (9 clicks)",
+  "ASSISTED (10 ops)",
+  "IGUAL"
+ ],
+ [
+  "operaciones HITL",
+  "9",
+  "10",
+  "IGUAL"
+ ],
+ [
+  "tiempo humano HITL",
+  "~36 s",
+  "~44 s",
+  "IGUAL"
+ ],
+ [
+  "localización automática",
+  "OK",
+  "FALLA",
+  "PEOR"
+ ],
+ [
+  "normalización (runtime)",
+  "~3 s",
+  "3.4 s",
+  "IGUAL"
+ ],
+ [
+  "solver (runtime)",
+  "84-115 s por alternativa",
+  "166 s nominal",
+  "DIFIERE"
+ ],
+ [
+  "completitud de programa",
+  "completo",
+  "4/40 puestos · 8/16 recintos",
+  "PEOR"
+ ],
+ [
+  "puestos",
+  "40/40",
+  "4/40",
+  "PEOR"
+ ],
+ [
+  "recintos",
+  "16/16",
+  "8/16",
+  "PEOR"
+ ],
+ [
+  "violaciones duras",
+  "0",
+  "5",
+  "PEOR"
+ ],
+ [
+  "colisiones",
+  "0",
+  "0",
+  "OK"
+ ],
+ [
+  "circulación conectada",
+  "sí",
+  "sí",
+  "OK"
+ ],
+ [
+  "distancia recepción-acceso",
+  "6.8 m (A)",
+  "16.7 m (viola hard 8 m)",
+  "PEOR"
+ ],
+ [
+  "daylight score",
+  "0.497 (A)",
+  "0.719",
+  "DIFIERE"
+ ],
+ [
+  "estado técnico de fit",
+  "TECHNICAL_FIT",
+  "TECHNICAL_NO_FIT",
+  "N/A"
+ ],
+ [
+  "crash / excepción",
+  "no",
+  "no",
+  "OK"
+ ]
+]

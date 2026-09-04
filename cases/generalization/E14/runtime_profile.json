@@ -1,0 +1,33 @@
+{
+  "_doc": "E14 §26 — perfil de tiempos. No se optimiza nada; sólo se identifica la etapa dominante.",
+  "second_shell": {
+    "target_localization_auto_s": 1.22,
+    "normalization_assisted_s": 3.4,
+    "solver_nominal_s": 166.0,
+    "robustness_sweep_s": 86.7,
+    "sweep_per_scenario_s": [
+      6.6,
+      11.1,
+      8.8,
+      13.3,
+      13.9,
+      15.6,
+      17.4
+    ]
+  },
+  "case_403_reference": {
+    "solver_e07_per_alternative_s": {
+      "A": 114.76,
+      "B": 83.76,
+      "C": 101.42
+    },
+    "solver_e07_total_s": 302.2
+  },
+  "dominant_stage": "solver",
+  "observations": [
+    "El solver domina en los dos casos: 166 s en un shell de 252 m² contra 84-115 s por alternativa en uno de 543 m².",
+    "Que el shell menor tarde MÁS que cualquier alternativa de 403 es contraintuitivo y coincide con el modo de fallo F10 previsto: la búsqueda no escala con el área sino con la dificultad. Aquí el motor gastó los 12 candidatos completos porque ninguno alcanzó a ser válido y no hubo poda temprana.",
+    "El sweep sí crece monótonamente con el factor de escala (6.6 s a 0.95x, 17.4 s a 1.05x): más área, más candidatos que probar antes de que CP-SAT declare INFEASIBLE.",
+    "La normalización es despreciable frente al solver: 3.4 s contra 166 s."
+  ]
+}

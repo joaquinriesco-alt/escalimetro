@@ -1,0 +1,68 @@
+{
+  "_doc": "E14 §23 — premortem escrito ANTES de ejecutar el segundo shell. Diez modos de fallo previstos, cada uno con su categoría. Después del experimento se mapea lo observado contra esta lista; no se crean categorías nuevas para suavizar el resultado.",
+  "written_before_execution": true,
+  "failure_modes": [
+    {
+      "id": "F01",
+      "category": "NORMALIZATION",
+      "hypothesis": "El OCR no encuentra 'Oficina 401': el rótulo está en dos líneas ('OFICINA' / '401') a 72 dpi, y el matcher podría buscar la cadena completa en un solo bloque."
+    },
+    {
+      "id": "F02",
+      "category": "SEGMENTATION",
+      "hypothesis": "El azul oscuro de 401 coincide con la muestra de color de la leyenda (esquina inferior izquierda). La segmentación por color podría capturar el swatch además del recinto y producir un polígono con dos componentes."
+    },
+    {
+      "id": "F03",
+      "category": "SEGMENTATION",
+      "hypothesis": "401 y 402 comparten el arco superior y son dos azules cercanos. Si el umbral CIELAB no los separa, el flood fusiona ambas unidades y el perímetro resultante es el de 401+402."
+    },
+    {
+      "id": "F04",
+      "category": "SCALE",
+      "hypothesis": "El área publicada de 401 (252 m²) puede ser de otro tipo que la de 403 (rentable vs útil). La escala inferida diferiría de la de 403 pese a ser la misma imagen, lo que revelaría que el área publicada no es una fuente de escala homogénea."
+    },
+    {
+      "id": "F05",
+      "category": "SEMANTICS",
+      "hypothesis": "El acceso de 401 está en el muro del núcleo, no en el perímetro exterior. Si el detector de accesos sólo busca arcos en fachada, no encontrará ninguno y el shell quedará NOT_READY por falta de acceso."
+    },
+    {
+      "id": "F06",
+      "category": "REPRESENTATION",
+      "hypothesis": "401 envuelve el núcleo en forma de L. El polígono puede resultar no simple, con auto-intersección o con un agujero que el contrato Floorplate no admita."
+    },
+    {
+      "id": "F07",
+      "category": "SOLVER",
+      "hypothesis": "252 m² publicados contra 305.9 m² de programa neto: se espera NO_FIT. El riesgo es que el motor no sepa declararlo y en su lugar lance una excepción, agote el tiempo o devuelva un layout inválido."
+    },
+    {
+      "id": "F08",
+      "category": "CATALOG",
+      "hypothesis": "El directorio de 12 es el módulo más grande. En un shell 2.2× menor puede no existir candidato de emplazamiento. Si el catálogo devuelve vacío por un bug y no por geometría, sería un SOLVER_FAILURE disfrazado de NO_FIT."
+    },
+    {
+      "id": "F09",
+      "category": "SCORING",
+      "hypothesis": "Umbrales de daylight, privacidad y fragmentación calibrados sobre 543 m² pueden degenerar en un shell mucho menor: divisiones por área cero, normalizaciones fuera de rango o scores no comparables."
+    },
+    {
+      "id": "F10",
+      "category": "PERFORMANCE",
+      "hypothesis": "El solver podría tardar desproporcionadamente: un shell fragmentado en forma de L puede hacer explotar la generación de candidatos aunque el área sea menor."
+    },
+    {
+      "id": "F11",
+      "category": "PRESENTATION",
+      "hypothesis": "Las visuales y la lámina asumen la proporción de 403 (ancho/alto ≈ 1.73). Un shell de otra proporción podría desbordar o quedar ilegible.",
+      "note": "extra, fuera de los diez pedidos"
+    },
+    {
+      "id": "F12",
+      "category": "OTHER",
+      "hypothesis": "El caso 403 podría tener acoplamiento oculto: rutas, nombres de archivo o constantes que asuman '403' o 543. La auditoría de §25 lo revisa por separado.",
+      "note": "extra, fuera de los diez pedidos"
+    }
+  ]
+}

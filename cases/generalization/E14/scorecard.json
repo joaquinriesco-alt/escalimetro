@@ -1,0 +1,55 @@
+{
+  "checks": [
+    {
+      "id": "G0",
+      "check": "INPUT — existe un segundo shell real",
+      "status": "PASS",
+      "evidence": "Oficina 401 en la misma lámina de GPS Property, con superficie publicada"
+    },
+    {
+      "id": "G1",
+      "check": "LOCALIZATION — target identificado",
+      "status": "ASSISTED",
+      "evidence": "AUTO falló: el OCR no lee el rótulo dentro del plano. ASSISTED con 1 click."
+    },
+    {
+      "id": "G2",
+      "check": "NORMALIZATION — shell ready",
+      "status": "ASSISTED",
+      "evidence": "10 operaciones HITL, dentro del máximo de 10"
+    },
+    {
+      "id": "G3",
+      "check": "PROGRAM EXECUTION — el motor produce FIT/NO_FIT sin crash",
+      "status": "PASS",
+      "evidence": "TECHNICAL_NO_FIT: el motor distinguió no-fit de fallo y explicó por qué"
+    },
+    {
+      "id": "G4",
+      "check": "GEOMETRY SAFETY — 0 colisiones, restricciones coherentes, circulación computable",
+      "status": "PASS",
+      "evidence": "collisions=0, circulación conectada=True"
+    },
+    {
+      "id": "G5",
+      "check": "SEMANTIC QUALITY — acceso, núcleo y fachada correctos según la evidencia disponible",
+      "status": "PASS",
+      "evidence": "núcleo y muros medianeros clasificados como opacos; fachada norte y este como exteriores"
+    },
+    {
+      "id": "G6",
+      "check": "ZERO TUNING — hash del motor antes == después",
+      "status": "PASS",
+      "evidence": "manifiesto congelado idéntico"
+    },
+    {
+      "id": "G7",
+      "check": "RUNTIME — registrado, sin umbral artificial",
+      "status": "PASS",
+      "evidence": "localization_auto=1.22s; normalization_assisted=3.4s; solver_nominal=166.0s; robustness_sweep=86.7s"
+    }
+  ],
+  "result": "ASSISTED_GENERALIZATION_PASS",
+  "pass_does_not_mean_fit": "El resultado del programa fue NO_FIT. Eso no cuenta contra el gate: se está validando el motor, no la capacidad del inmueble.",
+  "generalization_level": "INTRA-DRAWING"
+}

@@ -1,0 +1,29 @@
+{
+  "_doc": "PASE ASSISTED (E14 §10). Exactamente 10 operaciones conceptuales, el maximo permitido. Mismo vocabulario HITL que el caso 001 (seed_points, confirm, entrances, columns.add, daylight_confirm). NO se dibuja layout, NO se mueven salas, NO se toca el solver. Ningun dato se copio del caso 001: cada marca se leyo sobre la misma lamina con zoom.",
+  "seed_points": [[660, 250]],
+  "confirm": ["perimeter", "core", "columns", "daylight", "scale_assumption"],
+  "entrances": [
+    {"point": [507, 207], "kind": "main", "notes": "E14: el candidato CV (531.5,207) cae sobre un tramo de muro continuo. Con zoom x22 se ven DOS arcos de puerta contiguos en el muro norte del nucleo: uno abre a 402 (x 489-501) y otro a 401 (x 502-513). Se marca el centro del arco derecho, que cae dentro del limite de 401 (x>502)."}
+  ],
+  "columns": {
+    "replace": false,
+    "add": [
+      {"center": [581, 238], "size_px": 9, "shape": "rect", "notes": "rectangulo hueco visible en el interior de 401, no detectado"}
+    ]
+  },
+  "daylight_confirm": {"17": "likely_glazing", "27": "likely_glazing"},
+  "_hitl_log": [
+    {"op": 1,  "kind": "confirm_target",   "detail": "click dentro de la Oficina 401", "estimated_human_seconds": 4},
+    {"op": 2,  "kind": "confirm",          "detail": "perimeter", "estimated_human_seconds": 3},
+    {"op": 3,  "kind": "confirm",          "detail": "core", "estimated_human_seconds": 3},
+    {"op": 4,  "kind": "confirm",          "detail": "columns", "estimated_human_seconds": 3},
+    {"op": 5,  "kind": "confirm",          "detail": "daylight", "estimated_human_seconds": 3},
+    {"op": 6,  "kind": "confirm",          "detail": "scale_assumption", "estimated_human_seconds": 3},
+    {"op": 7,  "kind": "correct_access",   "detail": "acceso principal (507,207)", "estimated_human_seconds": 12},
+    {"op": 8,  "kind": "add_column",       "detail": "(581,238)", "estimated_human_seconds": 5},
+    {"op": 9,  "kind": "confirm_facade",   "detail": "segmento 17 = likely_glazing", "estimated_human_seconds": 4},
+    {"op": 10, "kind": "confirm_facade",   "detail": "segmento 27 = likely_glazing", "estimated_human_seconds": 4}
+  ],
+  "_hitl_total_ops": 10,
+  "_hitl_estimated_human_seconds": 44
+}

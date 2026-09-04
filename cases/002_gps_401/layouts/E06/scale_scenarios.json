@@ -1,0 +1,219 @@
+[
+  {
+    "scale_factor": 0.95,
+    "px_per_m": 8.8737,
+    "implied_shell_area_m2": 227.4,
+    "implied_published_equiv_m2": 490.1,
+    "source": "published_area_inferred × 0.95",
+    "confidence": "LOW",
+    "layout_result": {
+      "strategy_id": "B_CLIENT_FRONT",
+      "spine_feasible": false,
+      "n_candidates": 1054,
+      "n_branches": 13,
+      "usable_m2": 227.4,
+      "probe": {
+        "status": "INFEASIBLE",
+        "runtime_s": 1.23
+      },
+      "exact_feasibility_phase": {
+        "status": "INFEASIBLE",
+        "runtime_s": 1.2
+      },
+      "exact": {
+        "status": "INFEASIBLE",
+        "runtime_s": 1.2,
+        "reason": "CP-SAT: sin asignación que cumpla las restricciones duras"
+      },
+      "exact_fit": false,
+      "max_seats": null,
+      "runtime_total_s": 6.6
+    }
+  },
+  {
+    "scale_factor": 0.975,
+    "px_per_m": 8.6462,
+    "implied_shell_area_m2": 239.6,
+    "implied_published_equiv_m2": 516.2,
+    "source": "published_area_inferred × 0.975",
+    "confidence": "LOW",
+    "layout_result": {
+      "strategy_id": "B_CLIENT_FRONT",
+      "spine_feasible": false,
+      "n_candidates": 1386,
+      "n_branches": 13,
+      "usable_m2": 239.6,
+      "probe": {
+        "status": "INFEASIBLE",
+        "runtime_s": 2.84
+      },
+      "exact_feasibility_phase": {
+        "status": "INFEASIBLE",
+        "runtime_s": 2.85
+      },
+      "exact": {
+        "status": "INFEASIBLE",
+        "runtime_s": 2.85,
+        "reason": "CP-SAT: sin asignación que cumpla las restricciones duras"
+      },
+      "exact_fit": false,
+      "max_seats": null,
+      "runtime_total_s": 11.1
+    }
+  },
+  {
+    "scale_factor": 0.99,
+    "px_per_m": 8.5152,
+    "implied_shell_area_m2": 247.0,
+    "implied_published_equiv_m2": 532.2,
+    "source": "published_area_inferred × 0.99",
+    "confidence": "LOW",
+    "layout_result": {
+      "strategy_id": "B_CLIENT_FRONT",
+      "spine_feasible": false,
+      "n_candidates": 1240,
+      "n_branches": 12,
+      "usable_m2": 247.0,
+      "probe": {
+        "status": "INFEASIBLE",
+        "runtime_s": 1.93
+      },
+      "exact_feasibility_phase": {
+        "status": "INFEASIBLE",
+        "runtime_s": 1.91
+      },
+      "exact": {
+        "status": "INFEASIBLE",
+        "runtime_s": 1.91,
+        "reason": "CP-SAT: sin asignación que cumpla las restricciones duras"
+      },
+      "exact_fit": false,
+      "max_seats": null,
+      "runtime_total_s": 8.8
+    }
+  },
+  {
+    "scale_factor": 1.0,
+    "px_per_m": 8.43,
+    "implied_shell_area_m2": 252.0,
+    "implied_published_equiv_m2": 543.0,
+    "source": "published_area_inferred × 1.0",
+    "confidence": "LOW",
+    "layout_result": {
+      "strategy_id": "B_CLIENT_FRONT",
+      "spine_feasible": false,
+      "n_candidates": 1534,
+      "n_branches": 14,
+      "usable_m2": 252.0,
+      "probe": {
+        "status": "INFEASIBLE",
+        "runtime_s": 3.59
+      },
+      "exact_feasibility_phase": {
+        "status": "INFEASIBLE",
+        "runtime_s": 3.44
+      },
+      "exact": {
+        "status": "INFEASIBLE",
+        "runtime_s": 3.44,
+        "reason": "CP-SAT: sin asignación que cumpla las restricciones duras"
+      },
+      "exact_fit": false,
+      "max_seats": null,
+      "runtime_total_s": 13.3
+    }
+  },
+  {
+    "scale_factor": 1.01,
+    "px_per_m": 8.3466,
+    "implied_shell_area_m2": 257.1,
+    "implied_published_equiv_m2": 553.9,
+    "source": "published_area_inferred × 1.01",
+    "confidence": "LOW",
+    "layout_result": {
+      "strategy_id": "B_CLIENT_FRONT",
+      "spine_feasible": false,
+      "n_candidates": 1553,
+      "n_branches": 14,
+      "usable_m2": 257.1,
+      "probe": {
+        "status": "INFEASIBLE",
+        "runtime_s": 3.67
+      },
+      "exact_feasibility_phase": {
+        "status": "INFEASIBLE",
+        "runtime_s": 3.66
+      },
+      "exact": {
+        "status": "INFEASIBLE",
+        "runtime_s": 3.66,
+        "reason": "CP-SAT: sin asignación que cumpla las restricciones duras"
+      },
+      "exact_fit": false,
+      "max_seats": null,
+      "runtime_total_s": 13.9
+    }
+  },
+  {
+    "scale_factor": 1.025,
+    "px_per_m": 8.2244,
+    "implied_shell_area_m2": 264.8,
+    "implied_published_equiv_m2": 570.5,
+    "source": "published_area_inferred × 1.025",
+    "confidence": "LOW",
+    "layout_result": {
+      "strategy_id": "B_CLIENT_FRONT",
+      "spine_feasible": false,
+      "n_candidates": 1633,
+      "n_branches": 14,
+      "usable_m2": 264.8,
+      "probe": {
+        "status": "INFEASIBLE",
+        "runtime_s": 4.16
+      },
+      "exact_feasibility_phase": {
+        "status": "INFEASIBLE",
+        "runtime_s": 4.66
+      },
+      "exact": {
+        "status": "INFEASIBLE",
+        "runtime_s": 4.66,
+        "reason": "CP-SAT: sin asignación que cumpla las restricciones duras"
+      },
+      "exact_fit": false,
+      "max_seats": null,
+      "runtime_total_s": 15.6
+    }
+  },
+  {
+    "scale_factor": 1.05,
+    "px_per_m": 8.0286,
+    "implied_shell_area_m2": 277.8,
+    "implied_published_equiv_m2": 598.7,
+    "source": "published_area_inferred × 1.05",
+    "confidence": "LOW",
+    "layout_result": {
+      "strategy_id": "B_CLIENT_FRONT",
+      "spine_feasible": false,
+      "n_candidates": 1766,
+      "n_branches": 15,
+      "usable_m2": 277.8,
+      "probe": {
+        "status": "INFEASIBLE",
+        "runtime_s": 4.64
+      },
+      "exact_feasibility_phase": {
+        "status": "INFEASIBLE",
+        "runtime_s": 4.91
+      },
+      "exact": {
+        "status": "INFEASIBLE",
+        "runtime_s": 4.91,
+        "reason": "CP-SAT: sin asignación que cumpla las restricciones duras"
+      },
+      "exact_fit": false,
+      "max_seats": null,
+      "runtime_total_s": 17.4
+    }
+  }
+]

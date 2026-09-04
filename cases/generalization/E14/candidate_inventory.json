@@ -1,0 +1,127 @@
+{
+  "_doc": "E14 §4 — inventario de segundos shells. Sólo evidencia YA presente en el repositorio. No se usó web ni se descargó ningún caso nuevo.",
+  "search": {
+    "scope": "todo el repositorio",
+    "patterns": [
+      "*.png",
+      "*.jpg",
+      "*.jpeg",
+      "*.pdf",
+      "*.tif*"
+    ],
+    "image_assets_found": 2,
+    "note": "Los demás PNG del repo son salidas generadas (outputs/, ai/, layouts/, validation/), no fuentes."
+  },
+  "source_images": [
+    {
+      "path": "cases/001_gps_403/original.png",
+      "sha256": "89546a14dd941bd7c17e985bf316b43141583f51cf7cff74d4b45c4525cabb02",
+      "size_px": [
+        800,
+        424
+      ],
+      "contains_units": [
+        "Oficina 401",
+        "Oficina 402",
+        "Oficina 403"
+      ],
+      "note": "Una sola lámina de GPS Property con las tres unidades de la planta 4 y una leyenda con sus superficies."
+    },
+    {
+      "path": "cases/900_synthetic_fixture/original.jpg",
+      "size_px": [
+        1400,
+        1000
+      ],
+      "contains_units": [
+        "OF. 903 (sintética)"
+      ],
+      "note": "Fixture sintético, no es un inmueble real."
+    }
+  ],
+  "candidates": [
+    {
+      "candidate": "Oficina 401",
+      "source_file": "cases/001_gps_403/original.png",
+      "real_or_synthetic": "REAL",
+      "boundary_visible": "YES — borde de pintura continuo, misma convención que 403",
+      "access_visible": "PARTIAL — no hay arco en el perímetro exterior; el acceso plausible son las puertas del núcleo",
+      "columns_visible": "YES — rectángulos huecos en fachada norte y este, misma grafía que 403",
+      "facade_daylight_interpretable": "YES — fachada norte (arco) y este",
+      "area_known": "252 m² (leyenda, tipo desconocido)",
+      "scale_transfer_possible": "YES — misma imagen fuente, mismo sistema de coordenadas de píxel",
+      "drawing_style": "idéntico a 403 (misma lámina)",
+      "suitability": "ALTA"
+    },
+    {
+      "candidate": "Oficina 402",
+      "source_file": "cases/001_gps_403/original.png",
+      "real_or_synthetic": "REAL",
+      "boundary_visible": "YES",
+      "access_visible": "PARTIAL — mismo caso que 401",
+      "columns_visible": "YES",
+      "facade_daylight_interpretable": "YES — fachada norte y oeste",
+      "area_known": "186 m² (leyenda, tipo desconocido)",
+      "scale_transfer_possible": "YES",
+      "drawing_style": "idéntico a 403",
+      "suitability": "ALTA"
+    },
+    {
+      "candidate": "OF. 903 sintética",
+      "source_file": "cases/900_synthetic_fixture/original.jpg",
+      "real_or_synthetic": "SYNTHETIC",
+      "boundary_visible": "YES (construida)",
+      "access_visible": "YES (construida)",
+      "columns_visible": "YES (construidas)",
+      "facade_daylight_interpretable": "YES (construida)",
+      "area_known": "557 m² (declarada, útil)",
+      "scale_transfer_possible": "N/A",
+      "drawing_style": "sintético, generado para tests",
+      "suitability": "DESCARTADA — §5 regla 1: REAL antes que synthetic. Además fue construida por nosotros, así que no puede probar generalización a un dibujo ajeno."
+    },
+    {
+      "candidate": "Oficina 403",
+      "source_file": "cases/001_gps_403/original.png",
+      "real_or_synthetic": "REAL",
+      "boundary_visible": "YES",
+      "access_visible": "YES",
+      "columns_visible": "YES",
+      "facade_daylight_interpretable": "YES",
+      "area_known": "543 m²",
+      "scale_transfer_possible": "N/A",
+      "drawing_style": "—",
+      "suitability": "DESCARTADA — es el caso de entrenamiento"
+    }
+  ],
+  "selection_rule": {
+    "declared_before_execution": true,
+    "rule": "Entre los candidatos REALES del repositorio que no sean el caso de entrenamiento, elegir el de identificador numéricamente MENOR que cumpla las tres condiciones: (a) rótulo legible en el dibujo, (b) polígono delimitado por borde continuo, (c) superficie publicada en la leyenda.",
+    "tie_break": "no aplica: los identificadores son únicos",
+    "single_run": "Se ejecuta UN solo candidato. Si resulta NOT_READY o FAIL, E14 termina con ese resultado; no se prueba el siguiente y no se reporta 'el mejor de dos'.",
+    "evaluation": {
+      "Oficina 401": {
+        "a": true,
+        "b": true,
+        "c": true
+      },
+      "Oficina 402": {
+        "a": true,
+        "b": true,
+        "c": true
+      }
+    },
+    "selected": "Oficina 401",
+    "reason": "401 < 402 y cumple las tres condiciones."
+  },
+  "generalization_level": {
+    "class": "INTRA-DRAWING",
+    "statement": "El segundo shell proviene de la MISMA lámina fuente que 403. Comparte estilo gráfico, convenciones de dibujo, resolución, sistema de coordenadas y contexto de núcleo y fachada. ESTO NO ES UNA PRUEBA DE GENERALIZACIÓN DE DOMINIO COMPLETA. No permite afirmar que Escalímetro generaliza a cualquier oficina.",
+    "what_it_does_test": [
+      "que el pipeline no esté acoplado a la geometría concreta de 403",
+      "que la localización encuentre otro rótulo",
+      "que la segmentación separe otra región de color",
+      "que el solver distinga FIT de NO_FIT en otra superficie",
+      "que nada reviente por supuestos de 543 m²"
+    ]
+  }
+}

@@ -1,0 +1,1843 @@
+{
+  "layout_id": "OFFICE_BALANCED_001",
+  "template_id": "office_balanced_48",
+  "seed": 100005,
+  "placements": [
+    {
+      "id": "lounge_1",
+      "module": "lounge",
+      "x": 3.2110000000000003,
+      "y": 10.871,
+      "w": 5.0,
+      "d": 3.5,
+      "rot": 0,
+      "zone": "SEMI_PUBLIC",
+      "seats": 8,
+      "door": [
+        3.2110000000000003,
+        10.871
+      ],
+      "desks": [],
+      "meta": {}
+    },
+    {
+      "id": "boardroom_12_1",
+      "module": "boardroom_12",
+      "x": 8.261000000000001,
+      "y": 10.571,
+      "w": 7.200000000000001,
+      "d": 5.0,
+      "rot": 0,
+      "zone": "SEMI_PUBLIC",
+      "seats": 12,
+      "door": [
+        8.261000000000001,
+        10.571
+      ],
+      "desks": [],
+      "meta": {}
+    },
+    {
+      "id": "meeting_8_1",
+      "module": "meeting_8",
+      "x": 9.253,
+      "y": 0.0,
+      "w": 5.0,
+      "d": 4.0,
+      "rot": 0,
+      "zone": "SEMI_PUBLIC",
+      "seats": 8,
+      "door": [
+        14.253,
+        4.0
+      ],
+      "desks": [],
+      "meta": {}
+    },
+    {
+      "id": "dining_1",
+      "module": "dining",
+      "x": 14.253,
+      "y": 0.0,
+      "w": 5.0,
+      "d": 4.0,
+      "rot": 0,
+      "zone": "SUPPORT",
+      "seats": 16,
+      "door": [
+        18.6,
+        4.0
+      ],
+      "desks": [],
+      "meta": {}
+    },
+    {
+      "id": "meeting_4_3",
+      "module": "meeting_4",
+      "x": 19.253,
+      "y": 0.0,
+      "w": 3.0,
+      "d": 3.5,
+      "rot": 90,
+      "zone": "SEMI_PUBLIC",
+      "seats": 4,
+      "door": [
+        19.8,
+        3.5
+      ],
+      "desks": [],
+      "meta": {}
+    },
+    {
+      "id": "phone_booth_2",
+      "module": "phone_booth",
+      "x": 0.0,
+      "y": 15.836,
+      "w": 1.2,
+      "d": 1.4000000000000004,
+      "rot": 90,
+      "zone": "SUPPORT",
+      "seats": 1,
+      "door": [
+        1.2,
+        15.836
+      ],
+      "desks": [],
+      "meta": {}
+    },
+    {
+      "id": "phone_booth_3",
+      "module": "phone_booth",
+      "x": 1.2,
+      "y": 15.836,
+      "w": 1.2,
+      "d": 1.4000000000000004,
+      "rot": 90,
+      "zone": "SUPPORT",
+      "seats": 1,
+      "door": [
+        2.2,
+        15.836
+      ],
+      "desks": [],
+      "meta": {}
+    },
+    {
+      "id": "phone_booth_1",
+      "module": "phone_booth",
+      "x": 2.4,
+      "y": 15.836,
+      "w": 1.1999999999999997,
+      "d": 1.4000000000000004,
+      "rot": 90,
+      "zone": "SUPPORT",
+      "seats": 1,
+      "door": [
+        2.4,
+        15.836
+      ],
+      "desks": [],
+      "meta": {}
+    },
+    {
+      "id": "reception_1",
+      "module": "reception",
+      "x": 19.230999999999998,
+      "y": 5.338,
+      "w": 3.0,
+      "d": 4.500000000000001,
+      "rot": 0,
+      "zone": "PUBLIC",
+      "seats": 1,
+      "door": [
+        19.230999999999998,
+        9.8
+      ],
+      "desks": [],
+      "meta": {}
+    },
+    {
+      "id": "workstation_cluster_1",
+      "module": "workstation_cluster",
+      "x": 19.230999999999998,
+      "y": 9.838000000000001,
+      "w": 3.1999999999999993,
+      "d": 3.1999999999999993,
+      "rot": 0,
+      "zone": "WORK",
+      "seats": 4,
+      "door": [
+        19.230999999999998,
+        9.838000000000001
+      ],
+      "desks": [
+        [
+          19.230999999999998,
+          9.838000000000001,
+          1.5999999999999996,
+          1.5999999999999996
+        ],
+        [
+          20.830999999999996,
+          9.838000000000001,
+          1.5999999999999996,
+          1.5999999999999996
+        ],
+        [
+          19.230999999999998,
+          11.438,
+          1.5999999999999996,
+          1.5999999999999996
+        ],
+        [
+          20.830999999999996,
+          11.438,
+          1.5999999999999996,
+          1.5999999999999996
+        ]
+      ],
+      "meta": {}
+    }
+  ],
+  "circulation_cells": [
+    [
+      48,
+      9
+    ],
+    [
+      49,
+      9
+    ],
+    [
+      50,
+      9
+    ],
+    [
+      35,
+      10
+    ],
+    [
+      36,
+      10
+    ],
+    [
+      37,
+      10
+    ],
+    [
+      45,
+      10
+    ],
+    [
+      46,
+      10
+    ],
+    [
+      47,
+      10
+    ],
+    [
+      48,
+      10
+    ],
+    [
+      49,
+      10
+    ],
+    [
+      50,
+      10
+    ],
+    [
+      35,
+      11
+    ],
+    [
+      36,
+      11
+    ],
+    [
+      37,
+      11
+    ],
+    [
+      38,
+      11
+    ],
+    [
+      45,
+      11
+    ],
+    [
+      46,
+      11
+    ],
+    [
+      47,
+      11
+    ],
+    [
+      48,
+      11
+    ],
+    [
+      49,
+      11
+    ],
+    [
+      50,
+      11
+    ],
+    [
+      35,
+      12
+    ],
+    [
+      36,
+      12
+    ],
+    [
+      37,
+      12
+    ],
+    [
+      38,
+      12
+    ],
+    [
+      39,
+      12
+    ],
+    [
+      45,
+      12
+    ],
+    [
+      46,
+      12
+    ],
+    [
+      47,
+      12
+    ],
+    [
+      48,
+      12
+    ],
+    [
+      49,
+      12
+    ],
+    [
+      36,
+      13
+    ],
+    [
+      37,
+      13
+    ],
+    [
+      38,
+      13
+    ],
+    [
+      39,
+      13
+    ],
+    [
+      40,
+      13
+    ],
+    [
+      41,
+      13
+    ],
+    [
+      42,
+      13
+    ],
+    [
+      45,
+      13
+    ],
+    [
+      46,
+      13
+    ],
+    [
+      47,
+      13
+    ],
+    [
+      37,
+      14
+    ],
+    [
+      38,
+      14
+    ],
+    [
+      39,
+      14
+    ],
+    [
+      40,
+      14
+    ],
+    [
+      41,
+      14
+    ],
+    [
+      42,
+      14
+    ],
+    [
+      43,
+      14
+    ],
+    [
+      45,
+      14
+    ],
+    [
+      46,
+      14
+    ],
+    [
+      47,
+      14
+    ],
+    [
+      38,
+      15
+    ],
+    [
+      39,
+      15
+    ],
+    [
+      40,
+      15
+    ],
+    [
+      41,
+      15
+    ],
+    [
+      42,
+      15
+    ],
+    [
+      43,
+      15
+    ],
+    [
+      44,
+      15
+    ],
+    [
+      45,
+      15
+    ],
+    [
+      46,
+      15
+    ],
+    [
+      47,
+      15
+    ],
+    [
+      41,
+      16
+    ],
+    [
+      42,
+      16
+    ],
+    [
+      43,
+      16
+    ],
+    [
+      44,
+      16
+    ],
+    [
+      45,
+      16
+    ],
+    [
+      46,
+      16
+    ],
+    [
+      47,
+      16
+    ],
+    [
+      42,
+      17
+    ],
+    [
+      43,
+      17
+    ],
+    [
+      44,
+      17
+    ],
+    [
+      45,
+      17
+    ],
+    [
+      46,
+      17
+    ],
+    [
+      47,
+      17
+    ],
+    [
+      43,
+      18
+    ],
+    [
+      44,
+      18
+    ],
+    [
+      45,
+      18
+    ],
+    [
+      46,
+      18
+    ],
+    [
+      47,
+      18
+    ],
+    [
+      44,
+      19
+    ],
+    [
+      45,
+      19
+    ],
+    [
+      46,
+      19
+    ],
+    [
+      47,
+      19
+    ],
+    [
+      45,
+      20
+    ],
+    [
+      46,
+      20
+    ],
+    [
+      47,
+      20
+    ],
+    [
+      45,
+      21
+    ],
+    [
+      46,
+      21
+    ],
+    [
+      47,
+      21
+    ],
+    [
+      45,
+      22
+    ],
+    [
+      46,
+      22
+    ],
+    [
+      47,
+      22
+    ],
+    [
+      4,
+      23
+    ],
+    [
+      5,
+      23
+    ],
+    [
+      6,
+      23
+    ],
+    [
+      7,
+      23
+    ],
+    [
+      8,
+      23
+    ],
+    [
+      9,
+      23
+    ],
+    [
+      10,
+      23
+    ],
+    [
+      11,
+      23
+    ],
+    [
+      12,
+      23
+    ],
+    [
+      13,
+      23
+    ],
+    [
+      14,
+      23
+    ],
+    [
+      15,
+      23
+    ],
+    [
+      16,
+      23
+    ],
+    [
+      17,
+      23
+    ],
+    [
+      19,
+      23
+    ],
+    [
+      20,
+      23
+    ],
+    [
+      21,
+      23
+    ],
+    [
+      22,
+      23
+    ],
+    [
+      23,
+      23
+    ],
+    [
+      24,
+      23
+    ],
+    [
+      25,
+      23
+    ],
+    [
+      26,
+      23
+    ],
+    [
+      27,
+      23
+    ],
+    [
+      28,
+      23
+    ],
+    [
+      29,
+      23
+    ],
+    [
+      30,
+      23
+    ],
+    [
+      31,
+      23
+    ],
+    [
+      32,
+      23
+    ],
+    [
+      33,
+      23
+    ],
+    [
+      34,
+      23
+    ],
+    [
+      35,
+      23
+    ],
+    [
+      36,
+      23
+    ],
+    [
+      37,
+      23
+    ],
+    [
+      38,
+      23
+    ],
+    [
+      39,
+      23
+    ],
+    [
+      40,
+      23
+    ],
+    [
+      41,
+      23
+    ],
+    [
+      42,
+      23
+    ],
+    [
+      43,
+      23
+    ],
+    [
+      44,
+      23
+    ],
+    [
+      45,
+      23
+    ],
+    [
+      46,
+      23
+    ],
+    [
+      47,
+      23
+    ],
+    [
+      4,
+      24
+    ],
+    [
+      5,
+      24
+    ],
+    [
+      6,
+      24
+    ],
+    [
+      7,
+      24
+    ],
+    [
+      8,
+      24
+    ],
+    [
+      9,
+      24
+    ],
+    [
+      10,
+      24
+    ],
+    [
+      11,
+      24
+    ],
+    [
+      12,
+      24
+    ],
+    [
+      13,
+      24
+    ],
+    [
+      14,
+      24
+    ],
+    [
+      15,
+      24
+    ],
+    [
+      16,
+      24
+    ],
+    [
+      17,
+      24
+    ],
+    [
+      18,
+      24
+    ],
+    [
+      19,
+      24
+    ],
+    [
+      20,
+      24
+    ],
+    [
+      21,
+      24
+    ],
+    [
+      22,
+      24
+    ],
+    [
+      23,
+      24
+    ],
+    [
+      24,
+      24
+    ],
+    [
+      25,
+      24
+    ],
+    [
+      26,
+      24
+    ],
+    [
+      27,
+      24
+    ],
+    [
+      28,
+      24
+    ],
+    [
+      29,
+      24
+    ],
+    [
+      30,
+      24
+    ],
+    [
+      31,
+      24
+    ],
+    [
+      32,
+      24
+    ],
+    [
+      33,
+      24
+    ],
+    [
+      34,
+      24
+    ],
+    [
+      35,
+      24
+    ],
+    [
+      36,
+      24
+    ],
+    [
+      37,
+      24
+    ],
+    [
+      38,
+      24
+    ],
+    [
+      39,
+      24
+    ],
+    [
+      40,
+      24
+    ],
+    [
+      41,
+      24
+    ],
+    [
+      42,
+      24
+    ],
+    [
+      43,
+      24
+    ],
+    [
+      44,
+      24
+    ],
+    [
+      45,
+      24
+    ],
+    [
+      46,
+      24
+    ],
+    [
+      47,
+      24
+    ],
+    [
+      4,
+      25
+    ],
+    [
+      5,
+      25
+    ],
+    [
+      6,
+      25
+    ],
+    [
+      7,
+      25
+    ],
+    [
+      8,
+      25
+    ],
+    [
+      9,
+      25
+    ],
+    [
+      10,
+      25
+    ],
+    [
+      11,
+      25
+    ],
+    [
+      12,
+      25
+    ],
+    [
+      13,
+      25
+    ],
+    [
+      14,
+      25
+    ],
+    [
+      15,
+      25
+    ],
+    [
+      16,
+      25
+    ],
+    [
+      17,
+      25
+    ],
+    [
+      18,
+      25
+    ],
+    [
+      19,
+      25
+    ],
+    [
+      20,
+      25
+    ],
+    [
+      21,
+      25
+    ],
+    [
+      22,
+      25
+    ],
+    [
+      23,
+      25
+    ],
+    [
+      24,
+      25
+    ],
+    [
+      25,
+      25
+    ],
+    [
+      26,
+      25
+    ],
+    [
+      27,
+      25
+    ],
+    [
+      28,
+      25
+    ],
+    [
+      29,
+      25
+    ],
+    [
+      30,
+      25
+    ],
+    [
+      31,
+      25
+    ],
+    [
+      32,
+      25
+    ],
+    [
+      33,
+      25
+    ],
+    [
+      34,
+      25
+    ],
+    [
+      35,
+      25
+    ],
+    [
+      36,
+      25
+    ],
+    [
+      37,
+      25
+    ],
+    [
+      38,
+      25
+    ],
+    [
+      39,
+      25
+    ],
+    [
+      40,
+      25
+    ],
+    [
+      41,
+      25
+    ],
+    [
+      42,
+      25
+    ],
+    [
+      43,
+      25
+    ],
+    [
+      44,
+      25
+    ],
+    [
+      45,
+      25
+    ],
+    [
+      46,
+      25
+    ],
+    [
+      47,
+      25
+    ],
+    [
+      4,
+      26
+    ],
+    [
+      5,
+      26
+    ],
+    [
+      6,
+      26
+    ],
+    [
+      7,
+      26
+    ],
+    [
+      16,
+      26
+    ],
+    [
+      17,
+      26
+    ],
+    [
+      18,
+      26
+    ],
+    [
+      19,
+      26
+    ],
+    [
+      20,
+      26
+    ],
+    [
+      4,
+      27
+    ],
+    [
+      5,
+      27
+    ],
+    [
+      6,
+      27
+    ],
+    [
+      4,
+      28
+    ],
+    [
+      5,
+      28
+    ],
+    [
+      6,
+      28
+    ],
+    [
+      4,
+      29
+    ],
+    [
+      5,
+      29
+    ],
+    [
+      6,
+      29
+    ],
+    [
+      4,
+      30
+    ],
+    [
+      5,
+      30
+    ],
+    [
+      6,
+      30
+    ],
+    [
+      4,
+      31
+    ],
+    [
+      5,
+      31
+    ],
+    [
+      6,
+      31
+    ],
+    [
+      4,
+      32
+    ],
+    [
+      5,
+      32
+    ],
+    [
+      6,
+      32
+    ],
+    [
+      4,
+      33
+    ],
+    [
+      5,
+      33
+    ],
+    [
+      6,
+      33
+    ],
+    [
+      4,
+      34
+    ],
+    [
+      5,
+      34
+    ],
+    [
+      6,
+      34
+    ],
+    [
+      3,
+      35
+    ],
+    [
+      4,
+      35
+    ],
+    [
+      5,
+      35
+    ],
+    [
+      6,
+      35
+    ],
+    [
+      2,
+      36
+    ],
+    [
+      3,
+      36
+    ],
+    [
+      4,
+      36
+    ],
+    [
+      5,
+      36
+    ],
+    [
+      6,
+      36
+    ],
+    [
+      2,
+      37
+    ],
+    [
+      3,
+      37
+    ],
+    [
+      4,
+      37
+    ],
+    [
+      5,
+      37
+    ],
+    [
+      6,
+      37
+    ],
+    [
+      2,
+      38
+    ],
+    [
+      3,
+      38
+    ],
+    [
+      4,
+      38
+    ],
+    [
+      5,
+      38
+    ],
+    [
+      6,
+      38
+    ]
+  ],
+  "circulation_graph": {
+    "nodes": [
+      {
+        "id": "entrance",
+        "cell": [
+          5,
+          24
+        ],
+        "xy": [
+          2.2,
+          9.8
+        ]
+      },
+      {
+        "id": "lounge_1",
+        "cell": [
+          6,
+          25
+        ],
+        "xy": [
+          3.2110000000000003,
+          10.871
+        ],
+        "path_m": 0.6
+      },
+      {
+        "id": "boardroom_12_1",
+        "cell": [
+          19,
+          25
+        ],
+        "xy": [
+          8.261000000000001,
+          10.571
+        ],
+        "path_m": 5.8
+      },
+      {
+        "id": "meeting_8_1",
+        "cell": [
+          36,
+          11
+        ],
+        "xy": [
+          14.253,
+          4.0
+        ],
+        "path_m": 23.8
+      },
+      {
+        "id": "dining_1",
+        "cell": [
+          46,
+          11
+        ],
+        "xy": [
+          18.6,
+          4.0
+        ],
+        "path_m": 21.7
+      },
+      {
+        "id": "meeting_4_3",
+        "cell": [
+          49,
+          10
+        ],
+        "xy": [
+          19.8,
+          3.5
+        ],
+        "path_m": 22.8
+      },
+      {
+        "id": "phone_booth_2",
+        "cell": [
+          3,
+          37
+        ],
+        "xy": [
+          1.2,
+          15.836
+        ],
+        "path_m": 5.5
+      },
+      {
+        "id": "phone_booth_3",
+        "cell": [
+          5,
+          37
+        ],
+        "xy": [
+          2.2,
+          15.836
+        ],
+        "path_m": 5.2
+      },
+      {
+        "id": "phone_booth_1",
+        "cell": [
+          5,
+          37
+        ],
+        "xy": [
+          2.4,
+          15.836
+        ],
+        "path_m": 5.2
+      },
+      {
+        "id": "reception_1",
+        "cell": [
+          46,
+          24
+        ],
+        "xy": [
+          19.230999999999998,
+          9.8
+        ],
+        "path_m": 16.7
+      },
+      {
+        "id": "workstation_cluster_1",
+        "cell": [
+          46,
+          24
+        ],
+        "xy": [
+          19.230999999999998,
+          9.838000000000001
+        ],
+        "path_m": 16.7
+      }
+    ],
+    "edges": [
+      {
+        "from": "entrance",
+        "to": "lounge_1",
+        "length_m": 0.8
+      },
+      {
+        "from": "entrance",
+        "to": "boardroom_12_1",
+        "length_m": 6.0
+      },
+      {
+        "from": "entrance",
+        "to": "meeting_8_1",
+        "length_m": 22.4
+      },
+      {
+        "from": "entrance",
+        "to": "dining_1",
+        "length_m": 21.6
+      },
+      {
+        "from": "entrance",
+        "to": "meeting_4_3",
+        "length_m": 22.4
+      },
+      {
+        "from": "entrance",
+        "to": "phone_booth_2",
+        "length_m": 5.6
+      },
+      {
+        "from": "entrance",
+        "to": "phone_booth_3",
+        "length_m": 5.6
+      },
+      {
+        "from": "entrance",
+        "to": "phone_booth_1",
+        "length_m": 5.6
+      },
+      {
+        "from": "entrance",
+        "to": "reception_1",
+        "length_m": 16.8
+      },
+      {
+        "from": "entrance",
+        "to": "workstation_cluster_1",
+        "length_m": 16.8
+      }
+    ]
+  },
+  "zones": {
+    "sections": [
+      {
+        "bay": [
+          1.7,
+          9.4,
+          8.3,
+          15.8
+        ],
+        "facade": "",
+        "ref_side": "S",
+        "section": [
+          [
+            "corridor",
+            1.5
+          ],
+          [
+            "rooms",
+            3.0
+          ],
+          [
+            "corridor",
+            1.5
+          ]
+        ]
+      },
+      {
+        "bay": [
+          8.3,
+          9.4,
+          15.7,
+          15.8
+        ],
+        "facade": "",
+        "ref_side": "S",
+        "section": [
+          [
+            "corridor",
+            1.2
+          ],
+          [
+            "rooms",
+            3.5
+          ]
+        ]
+      },
+      {
+        "bay": [
+          9.3,
+          0.0,
+          22.5,
+          5.3
+        ],
+        "facade": "E",
+        "ref_side": "S",
+        "section": [
+          [
+            "rooms",
+            4.0
+          ],
+          [
+            "corridor",
+            1.2
+          ]
+        ]
+      },
+      {
+        "bay": [
+          18.0,
+          5.3,
+          22.5,
+          13.0
+        ],
+        "facade": "E",
+        "ref_side": "E",
+        "section": [
+          [
+            "desks",
+            3.2
+          ],
+          [
+            "corridor",
+            1.2
+          ]
+        ]
+      },
+      {
+        "bay": [
+          0.0,
+          15.8,
+          9.9,
+          18.5
+        ],
+        "facade": "N",
+        "ref_side": "N",
+        "section": [
+          [
+            "corridor",
+            1.2
+          ]
+        ]
+      }
+    ],
+    "connectors": [
+      [
+        4.21,
+        15.84,
+        5.71,
+        17.3
+      ],
+      [
+        1.66,
+        9.37,
+        3.16,
+        15.84
+      ]
+    ],
+    "strips": [
+      [
+        "corridor",
+        1.5,
+        [
+          1.66,
+          9.37,
+          8.26,
+          10.87
+        ]
+      ],
+      [
+        "rooms",
+        3.46,
+        [
+          1.66,
+          10.87,
+          8.26,
+          14.34
+        ]
+      ],
+      [
+        "corridor",
+        1.5,
+        [
+          1.66,
+          14.34,
+          8.26,
+          15.84
+        ]
+      ],
+      [
+        "corridor",
+        1.2,
+        [
+          8.26,
+          9.37,
+          15.66,
+          10.57
+        ]
+      ],
+      [
+        "rooms",
+        5.26,
+        [
+          8.26,
+          10.57,
+          15.66,
+          15.84
+        ]
+      ],
+      [
+        "rooms",
+        4.14,
+        [
+          9.25,
+          0.0,
+          22.48,
+          4.14
+        ]
+      ],
+      [
+        "corridor",
+        1.2,
+        [
+          9.25,
+          4.14,
+          22.48,
+          5.34
+        ]
+      ],
+      [
+        "desks",
+        3.25,
+        [
+          19.23,
+          5.34,
+          22.48,
+          13.05
+        ]
+      ],
+      [
+        "corridor",
+        1.2,
+        [
+          18.03,
+          5.34,
+          19.23,
+          13.05
+        ]
+      ],
+      [
+        "corridor",
+        1.2,
+        [
+          0.0,
+          17.3,
+          9.9,
+          18.5
+        ]
+      ],
+      [
+        "rooms",
+        1.47,
+        [
+          0.0,
+          15.84,
+          9.9,
+          17.3
+        ]
+      ]
+    ],
+    "areas_m2": {
+      "PUBLIC": 43.5,
+      "SEMI_PUBLIC": 10.9,
+      "WORK": 155.8,
+      "SUPPORT": 43.4
+    }
+  },
+  "scores": {
+    "objectives": {
+      "daylight_utilization": 0.719,
+      "circulation_efficiency": 1.0,
+      "entrance_logic": 0.0,
+      "adjacency_quality": 0.252,
+      "compactness": 0.889,
+      "privacy_gradient": 0.0,
+      "meeting_accessibility": 0.982,
+      "facade_preservation": 1.0,
+      "wasted_space": 0.912
+    },
+    "weights": {
+      "daylight_utilization": 0.2,
+      "circulation_efficiency": 0.12,
+      "entrance_logic": 0.12,
+      "adjacency_quality": 0.14,
+      "compactness": 0.08,
+      "privacy_gradient": 0.08,
+      "meeting_accessibility": 0.1,
+      "facade_preservation": 0.08,
+      "wasted_space": 0.08
+    },
+    "total": 0.6213,
+    "detail": {
+      "daylight_utilization": "4 puestos; media de (1−d/7)·prioridad",
+      "circulation_efficiency": "pasillos usados 44 m² = 17% del usable",
+      "entrance_logic": "recepción a 16.7 m geodésicos del acceso",
+      "adjacency_quality": "salas cerca de recepción=1.00; cabina cerca de puestos=0.00; cabina cerca de puestos=0.00; cabina cerca de puestos=0.00; lounge con luz=0.26",
+      "compactness": "8/9 recintos apoyados en muro o en otro recinto",
+      "privacy_gradient": "0/1 módulos de trabajo a > 2 m más profundos que recepción",
+      "meeting_accessibility": "fracción media de ruta junto a puestos = 0.01",
+      "facade_preservation": "19% de la fachada con luz frente a recintos cerrados (tolerancia 30 %)",
+      "wasted_space": "2 m² en bolsillos no alcanzables (0.9% del usable)"
+    },
+    "areas": {
+      "usable_m2": 253.6,
+      "circulation_used_m2": 44.2,
+      "wasted_m2": 2.2
+    }
+  },
+  "hard_violations": [
+    "programa incompleto: private_office 0/4",
+    "programa incompleto: meeting_4 1/3",
+    "programa incompleto: kitchenette 0/1",
+    "puestos open 4 ≠ 40",
+    "reception_1 a 16.7 m geodésicos del acceso (> 8 m, hard within_8m_of_entrance)"
+  ],
+  "metrics": {
+    "program_completeness": {
+      "complete": false,
+      "open_seats": "4/40",
+      "rooms": {
+        "lounge": 1,
+        "boardroom_12": 1,
+        "meeting_8": 1,
+        "dining": 1,
+        "meeting_4": 1,
+        "phone_booth": 3,
+        "reception": 1,
+        "workstation_cluster": 1
+      }
+    },
+    "hard_constraint_violations": 5,
+    "violations": [
+      "programa incompleto: private_office 0/4",
+      "programa incompleto: meeting_4 1/3",
+      "programa incompleto: kitchenette 0/1",
+      "puestos open 4 ≠ 40",
+      "reception_1 a 16.7 m geodésicos del acceso (> 8 m, hard within_8m_of_entrance)"
+    ],
+    "collisions": 0,
+    "circulation_connectivity": true,
+    "daylight_score": 0.719,
+    "adjacency_score": 0.252,
+    "usable_area_m2": 253.6,
+    "net_programmed_area_m2": 132.8,
+    "circulation_area_m2": 44.2,
+    "unallocated_area_m2": 70.4,
+    "wasted_area_m2": 2.2,
+    "embedded_columns": 0,
+    "scale_note": "Dimensiones sujetas a confirmación de escala (published_area_inferred, confianza LOW).",
+    "candidate_count": 12,
+    "valid_candidate_count": 0,
+    "runtime_s": 166.0,
+    "best_total_score": null,
+    "status": "FAIL: sin candidato válido",
+    "top_scores": [],
+    "improve_moves_accepted": 0,
+    "search": {
+      "best_fitness": 0.548,
+      "found": false,
+      "unassigned": [
+        "boardroom_12_1",
+        "lounge_1",
+        "meeting_4_3",
+        "meeting_4_1",
+        "private_office_3",
+        "private_office_1",
+        "private_office_4",
+        "private_office_2",
+        "kitchenette_1"
+      ],
+      "seats_frac": 0.38,
+      "entrance_ok": true,
+      "conn_ok": false
+    }
+  },
+  "notes": [
+    "ninguna combinación de secciones cubre el programa (capacidad con pilares): se devuelve el mejor parcial",
+    "parcial: sin asignar ['meeting_4_2', 'meeting_4_1', 'private_office_2', 'private_office_4', 'private_office_1', 'private_office_3', 'kitchenette_1'], puestos 10%"
+  ]
+}

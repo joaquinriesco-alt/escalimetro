@@ -1,0 +1,94 @@
+{
+  "_doc": "E14 §10 — RUN AUTO, sin ninguna operación humana. overrides.json vacío.",
+  "case": "cases/002_gps_401",
+  "unit_label": "Oficina 401",
+  "overrides": "vacío",
+  "stage_reached": "target_localization",
+  "status": "FAILED",
+  "error_type": "RuntimeError",
+  "error": "Sin localización: ni hint unit_region (OCR/VLM) ni seed_points/bbox en overrides.json. Pase B (assisted): agrega \"seed_points\": [[x, y]] en overrides.json.",
+  "runtime_s": 1.22,
+  "evidence": {
+    "ocr_tokens_numericos_leidos": [
+      {
+        "token": "401",
+        "conf": 96.0,
+        "bbox": [
+          98,
+          294,
+          126,
+          305
+        ],
+        "zona": "LEYENDA"
+      },
+      {
+        "token": "402",
+        "conf": 96.0,
+        "bbox": [
+          98,
+          338,
+          127,
+          349
+        ],
+        "zona": "LEYENDA"
+      },
+      {
+        "token": "403",
+        "conf": 95.0,
+        "bbox": [
+          481,
+          367,
+          508,
+          380
+        ],
+        "zona": "PLANO"
+      },
+      {
+        "token": "403",
+        "conf": 96.0,
+        "bbox": [
+          98,
+          381,
+          127,
+          393
+        ],
+        "zona": "LEYENDA"
+      }
+    ],
+    "hints_producidos": {
+      "Oficina 403": [
+        "unit_label x2",
+        "unit_region",
+        "legend_swatch"
+      ],
+      "Oficina 401": [
+        "unit_label (leyenda)",
+        "legend_swatch"
+      ],
+      "Oficina 402": [
+        "unit_label (leyenda)",
+        "legend_swatch"
+      ]
+    },
+    "contraste_rotulo_en_el_plano": {
+      "401": 140,
+      "402": 162,
+      "403": 206,
+      "metodo": "p95 - p5 del gris dentro de la caja del rótulo"
+    },
+    "gris_del_relleno": {
+      "401": 173,
+      "402": 200,
+      "403": 227,
+      "umbral_ring_color": 120
+    }
+  },
+  "root_cause": {
+    "observed": "El OCR NO lee el rótulo '401' dentro del plano; sólo lo lee en la leyenda. Sin un token numérico dentro de una región coloreada no se emite el hint unit_region, y el pipeline aborta con RuntimeError antes de segmentar.",
+    "not_the_cause": "No es el filtro de brillo de _ring_color: el relleno de 401 tiene gris 173, muy por encima del umbral 120. El fallo es anterior, en la lectura del texto.",
+    "hypothesis": "Contraste 32% menor que el de 403 (140 vs 206) sobre un relleno más oscuro, rótulo partido en dos líneas y 72 dpi. Es hipótesis: no se aisló cada factor.",
+    "stage": "vision / target localization",
+    "premortem_id": "F01",
+    "premortem_category": "NORMALIZATION"
+  }
+}

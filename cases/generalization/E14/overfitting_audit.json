@@ -1,0 +1,136 @@
+{
+  "_doc": "E14 §25 — auditoría de acoplamiento al caso 403 sobre el código congelado. NO se corrige nada aquí: sólo se reporta. Los arreglos son backlog de E15.",
+  "method": "grep de '403', '543', '401', '402', 'gps', coordenadas de píxel y condicionales por caso sobre todo src/escalimetro (95 archivos congelados).",
+  "findings": [
+    {
+      "id": "OF01",
+      "file": "src/escalimetro/layout/run.py",
+      "line": 94,
+      "snippet": "cv2.imread(os.path.join(args.case, \"outputs\", \"shell_semantics_403.png\"))",
+      "classification": "CONFIRMED_CASE_COUPLING",
+      "impact": "El tríptico original+shell+layout NO se genera para ningún caso que no sea el 403. En 401 OpenCV avisó y el guard `if ... is not None` evitó el crash: degrada en silencio.",
+      "observed_in_e14": true,
+      "severity": "P2 — presentación"
+    },
+    {
+      "id": "OF02",
+      "file": "src/escalimetro/layout/e06/run.py",
+      "line": "210-211",
+      "snippet": "{\"401\": 252, \"402\": 186, \"403\": 543}  y  {\"401\": (470,200), \"402\": (330,175), \"403\": (400,340)}",
+      "classification": "CONFIRMED_CASE_COUPLING",
+      "impact": "Un mapa de unidades Y de posiciones de píxel de ESTA lámina, incrustado en el motor. Sólo lo usa el subcomando `report` de E06, que no se ejecutó en E14.",
+      "observed_in_e14": false,
+      "severity": "P1 — invalida el reporte de E06 en otro plano"
+    },
+    {
+      "id": "OF03",
+      "file": "src/escalimetro/layout/e06/scale.py",
+      "line": 50,
+      "snippet": "def make_scenario(fp, factor, published_m2: float = 543.0)",
+      "classification": "CASE_COUPLING_RISK",
+      "impact": "Default 543.0. En E14 no mordió porque el sweep pasa el área del floorplate; pero un llamador que omita el argumento obtiene la cifra de 403 en silencio.",
+      "observed_in_e14": false,
+      "severity": "P1"
+    },
+    {
+      "id": "OF04",
+      "file": "src/escalimetro/layout/e07/run.py",
+      "line": "34-35",
+      "snippet": "\"unit\": \"Oficina 403 (GPS Property)\", \"published_area_m2\": 543.0",
+      "classification": "CONFIRMED_CASE_COUPLING",
+      "impact": "El veredicto de fit de E07 está escrito a mano para 403. Correr las tres estrategias en otro shell produciría un veredicto que dice 403 y 543 m². No se ejecutó en E14 porque no hubo TECHNICAL_FIT — el acoplamiento habría salido a la luz ahí.",
+      "observed_in_e14": false,
+      "severity": "P0 — impide usar E07 en otro shell"
+    },
+    {
+      "id": "OF05",
+      "file": "src/escalimetro/layout/e07/board.py",
+      "line": "82-83, 115",
+      "snippet": "\"OFICINA 403 · GPS PROPERTY\", \"543 m² publicados\", (\"Publicada\", \"543 m²\")",
+      "classification": "CONFIRMED_CASE_COUPLING",
+      "impact": "La lámina Presentation Standard 01 rotularía cualquier shell como Oficina 403, 543 m².",
+      "observed_in_e14": false,
+      "severity": "P0 — produciría una lámina falsa"
+    },
+    {
+      "id": "OF06",
+      "file": "src/escalimetro/layout/e07/engine.py",
+      "line": "165, 188",
+      "snippet": "lay.layout_id = f\"OFFICE_403_{spec.alt}_{spec.name}\"",
+      "classification": "CASE_COUPLING_RISK",
+      "impact": "Identificadores de layout con '403' incrustado. Cosmético, pero contamina los artefactos.",
+      "observed_in_e14": false,
+      "severity": "P2"
+    },
+    {
+      "id": "OF07",
+      "file": "src/escalimetro/layout/e06/run.py",
+      "line": "190, 229, 231, 281",
+      "snippet": "title=\"OFFICE 403 · assisted\", \"fit_robustness_403.png\", set_title(\"Oficina 403 · ...\")",
+      "classification": "CONFIRMED_CASE_COUPLING",
+      "impact": "Títulos y nombre de archivo del reporte de E06. El sweep que sí se ejecutó en E14 no pasa por estas líneas.",
+      "observed_in_e14": false,
+      "severity": "P2"
+    },
+    {
+      "id": "OF08",
+      "file": "src/escalimetro/ai/orchestrator.py",
+      "line": 65,
+      "snippet": "def __init__(self, project: str = \"001_gps_403\", ...)",
+      "classification": "BENIGN",
+      "impact": "Etiqueta de proyecto para telemetría. No afecta geometría ni resultado.",
+      "observed_in_e14": false,
+      "severity": "—"
+    },
+    {
+      "id": "OF09",
+      "file": "src/escalimetro/ai/railway_e09_runner.py",
+      "line": 32,
+      "snippet": "DEFAULT_CASE = \"cases/001_gps_403\"",
+      "classification": "BENIGN",
+      "impact": "Default de un runner, sobreescribible por ESCALIMETRO_CASE y por --case.",
+      "observed_in_e14": false,
+      "severity": "—"
+    },
+    {
+      "id": "OF10",
+      "file": "src/escalimetro/layout/run.py",
+      "line": 65,
+      "snippet": "Floorplate.load(os.path.join(args.case, \"outputs\", \"floorplate.json\"))",
+      "classification": "BENIGN",
+      "impact": "Convención de rutas del repositorio, no del caso. Funcionó igual en 002.",
+      "observed_in_e14": false,
+      "severity": "—"
+    },
+    {
+      "id": "OF11",
+      "file": "src/escalimetro/cli.py, ai/e09.py, ai/run.py, layout/e05/run.py, layout/e06/run.py",
+      "line": "docstrings",
+      "snippet": "ejemplos de uso con cases/001_gps_403",
+      "classification": "BENIGN",
+      "impact": "Documentación.",
+      "observed_in_e14": false,
+      "severity": "—"
+    },
+    {
+      "id": "OF12",
+      "file": "src/escalimetro/vision/ocr_localizer.py",
+      "line": 52,
+      "snippet": "X0, X1 = max(0, x0 - 12*th), max(0, x0 - 2)  # 'Oficinas 403': la muestra queda lejos",
+      "classification": "CASE_COUPLING_RISK",
+      "impact": "La ventana de búsqueda de la muestra de leyenda está dimensionada sobre la maquetación de ESTA lámina. Funcionó en 401 y 402 —encontró las tres muestras— pero es una constante ajustada a un dibujo.",
+      "observed_in_e14": true,
+      "severity": "P2"
+    }
+  ],
+  "summary": {
+    "CONFIRMED_CASE_COUPLING": 5,
+    "CASE_COUPLING_RISK": 3,
+    "BENIGN": 4,
+    "observed_in_e14": [
+      "OF01",
+      "OF12"
+    ],
+    "note": "Cinco acoplamientos confirmados. Ninguno impidió el experimento porque E14 no llegó a E07 —que es donde están los dos P0—. Si el segundo shell hubiera dado FIT, OF04 y OF05 habrían producido una lámina que dice 'Oficina 403 · 543 m²' sobre la geometría de la 401. Eso es un hallazgo del gate, no un accidente afortunado."
+  }
+}

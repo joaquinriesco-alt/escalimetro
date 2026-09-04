@@ -1,0 +1,50 @@
+{
+  "_doc": "E14 §19 — diagnóstico de NO_FIT. Se separa evidencia de inferencia.",
+  "evidence": [
+    {
+      "id": "E1",
+      "fact": "Superficie útil del shell: 252.0 m² (publicada) / 253.6 m² (del modelo)."
+    },
+    {
+      "id": "E2",
+      "fact": "El mismo programa consume 305.9 m² netos en la Oficina 403, medido allí."
+    },
+    {
+      "id": "E3",
+      "fact": "305.9 > 253.6: el programa no cabe ni con circulación cero. Cota aritmética, independiente del layout y del solver."
+    },
+    {
+      "id": "E4",
+      "fact": "El modelo exacto CP-SAT devolvió INFEASIBLE en los 7 factores de escala de E06 (0.95 a 1.05), es decir entre 227.4 y 277.8 m² útiles."
+    },
+    {
+      "id": "E5",
+      "fact": "El mejor candidato heurístico colocó 4/40 puestos open y dejó 5 violaciones duras, todas de completitud de programa más la distancia recepción-acceso."
+    },
+    {
+      "id": "E6",
+      "fact": "El shell envuelve el núcleo en L: 253.6 m² útiles se reparten en 4 bahías, contra las bahías mucho mayores de 403."
+    }
+  ],
+  "inference": [
+    {
+      "id": "I1",
+      "claim": "La restricción dominante es la superficie, no la forma.",
+      "support": "E3 y E4: la infactibilidad se mantiene incluso a 1.05× de escala (277.8 m²), aún por debajo de los 305.9 m² netos. La fragmentación en L (E6) agrava el caso pero no es necesaria para explicarlo.",
+      "confidence": "ALTA"
+    },
+    {
+      "id": "I2",
+      "claim": "La violación de recepción a 16.7 m del acceso es consecuencia, no causa.",
+      "support": "Con el programa incompleto el solver ubica la recepción donde puede. No se puede atribuir a la lógica de recepción sin un caso donde el programa sí quepa.",
+      "confidence": "MEDIA"
+    },
+    {
+      "id": "I3",
+      "claim": "252 m² admitirían un programa proporcional (~20 puestos y 7-8 recintos).",
+      "support": "Regla de tres sobre 403. NO SE PROBÓ: E14 prohíbe adaptar el programa. Queda como experimento para E15.",
+      "confidence": "NO VERIFICADA"
+    }
+  ],
+  "conclusion": "NO_FIT es el resultado correcto y el motor lo declaró correctamente. El inmueble no da para el programa; el motor no falló."
+}

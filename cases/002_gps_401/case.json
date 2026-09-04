@@ -1,0 +1,13 @@
+{
+  "case_id": "002_gps_401",
+  "image": "original.png",
+  "image_note": "MISMA lámina fuente que el caso 001. Copiada sin modificar: sha256 idéntico. Cambian sólo tres campos respecto a 001: case_id, unit_label y known_area_m2.",
+  "unit_label": "Oficina 401",
+  "known_area_m2": 252,
+  "known_area_kind": "unknown",
+  "overrides": "overrides.json",
+  "vision": "ocr",
+  "segmentation": "auto",
+  "simplify_eps_frac": 0.004,
+  "mask_open_px": 5
+}
