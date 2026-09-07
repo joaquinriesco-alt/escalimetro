@@ -6,8 +6,10 @@
   "known_area_m2": 608.12,
   "known_area_kind": "useful",
   "source_name": "RES Real Estate Services",
+  "drawing_scope": "whole_shell",
   "vision": "ocr",
   "segmentation": "auto",
   "_contract": "E16.4 — case.json contiene SOLO HECHOS DE ENTRADA bajo el contrato vigente (E15.2 CASE_INPUT_FIELDS). unit_label es UNKNOWN porque el aviso no identifica la unidad: declarar ignorancia, no inventar una oficina. La configuracion de vision y segmentacion es la misma ruta automatica por defecto que usan 001 y 002; no se eligio en funcion de este plano.",
-  "_source_facts_fuera_del_contrato": "El plano muestra 4 oficinas privadas y 8 banos. Son HECHOS DEL PLANO EXISTENTE, no el programa objetivo, y el contrato vigente no admite campos para ellos (E16.3 §12: AVAILABLE SOURCE FACT - NOT PART OF CURRENT CASE CONTRACT). Se documentan aqui como nota y NO se usan como entrada."
+  "_source_facts_fuera_del_contrato": "El plano muestra 4 oficinas privadas y 8 banos. Son HECHOS DEL PLANO EXISTENTE, no el programa objetivo, y el contrato vigente no admite campos para ellos (E16.3 §12: AVAILABLE SOURCE FACT - NOT PART OF CURRENT CASE CONTRACT). Se documentan aqui como nota y NO se usan como entrada.",
+  "_drawing_scope_note": "E16.5 — HECHO DE LA FUENTE, no un override tecnico. La lamina de RES muestra UNA planta completa continua: perimetro unico, nucleo central, mobiliario a ambos lados, y ninguna unidad comercial separada rotulada. Quien publica el aviso sabe si vende varias unidades o una planta entera; nosotros no podemos inferirlo de forma robusta desde la imagen. Se declara con la misma categoria que source_name o known_area_m2. NO se declaro por unit_label=UNKNOWN: la ausencia de un dato no es evidencia sobre la naturaleza del dibujo."
 }

@@ -54,7 +54,9 @@ def test_case_json_solo_tiene_campos_del_contrato():
     """Lista blanca explícita: si aparece un campo nuevo hay que decidir de qué lado de la frontera está."""
     allowed = {"case_id", "image", "image_note", "unit_label", "known_area_m2", "known_area_kind",
                "overrides", "vision", "segmentation", "simplify_eps_frac", "mask_open_px",
-               "source_name", "display_name", "sibling_units"}   # E15.2/E15.3: scale_confidence
+               "source_name", "display_name", "sibling_units",
+               "drawing_scope"}                                   # E16.5: alcance del dibujo
+    #: E15.2/E15.3: scale_confidence
     #: es DERIVED_EVIDENCE y no puede declararse como entrada; esta lista blanca lo admitía todavía
     for p in _case_files():
         extra = {k for k in _j(p) if not k.startswith("_")} - allowed

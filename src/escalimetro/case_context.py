@@ -52,6 +52,7 @@ CASE_INPUT_FIELDS = {
     "case_id", "image", "image_note", "unit_label", "display_name", "source_name",
     "known_area_m2", "known_area_kind", "sibling_units",
     "overrides", "vision", "segmentation", "simplify_eps_frac", "mask_open_px",
+    "drawing_scope",          # E16.5 — hecho de la fuente: multi_unit | whole_shell
 }
 #: valores derivados de la geometría: se leen del floorplate, nunca se declaran a mano
 DERIVED_EVIDENCE_FIELDS = {"scale_confidence", "scale_px_per_m", "scale_status", "scale",

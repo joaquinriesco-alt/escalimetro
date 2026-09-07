@@ -140,8 +140,19 @@ def test_los_outputs_de_res_solo_mencionan_gps_en_el_bloque_de_comparacion():
 # ---------------------------------------------------------------------------------------------------
 # el motor no cambió, y los casos anteriores tampoco
 # ---------------------------------------------------------------------------------------------------
-def test_el_motor_sigue_en_el_baseline_e16_1():
-    assert freeze.manifest()["engine_hash"] == ENGINE_E16_1
+def test_el_motor_coincide_con_el_baseline_vigente_declarado():
+    """E16.5 — CAMBIO INTENCIONAL. Este test pinchaba el hash de E16.1, y E16.5 cambia el motor a
+    propósito (la localización pasó a soportar dibujos de planta completa). Pincharlo a un literal
+    obligaría a editarlo cada ciclo y dejaría de detectar lo que importa: que alguien toque el motor
+    SIN declarar un baseline nuevo. Ahora compara contra el baseline vigente en disco."""
+    import glob
+    baselines = sorted(glob.glob(os.path.join(ROOT, "cases", "generalization", "*",
+                                              "GENERIC_ENGINE_BASELINE.json")),
+                       key=os.path.getmtime)
+    vigente = _j(baselines[-1])
+    assert freeze.manifest()["engine_hash"] == vigente["engine_hash"], \
+        "el motor cambió sin crear un baseline nuevo"
+    assert vigente["engine_hash"] != ENGINE_E16_1, "E16.5 debe haber avanzado el baseline"
 
 
 def test_403_sigue_intacta():

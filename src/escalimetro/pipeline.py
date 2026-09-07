@@ -13,6 +13,7 @@ target_localization:
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 from dataclasses import dataclass
 from typing import Optional
@@ -25,6 +26,10 @@ from .geometry import (GeometryExtractor, classify_facade_segments, detect_colum
                        scale_manual, scale_unknown, snap_point_to_ring)
 from .geometry.elements import detect_core_enclosed, detect_hollow_columns
 from .overrides import Overrides
+from .localization import (ASSISTED as LOC_ASSISTED, DEFAULT_SCOPE, Localization,
+                           MANUAL as LOC_MANUAL, PROV_MANUAL, PROV_OCR_HINT,
+                           TARGET_UNIT_BY_LABEL as LOC_BY_LABEL, WHOLE_DRAWING_TARGET as LOC_WHOLE,
+                           WHOLE_SHELL, validate_scope, whole_drawing_localization)
 from .renderer import grid_image, overlay_on_original, render_svg, side_by_side
 from .renderer.side_by_side import comparison_three, geometry_only, contour_svg
 from .schemas.floorplate import (SCHEMA_VERSION, Column, Core, CoordinateSystem, Entrance, FixedElement, Floorplate,
@@ -49,6 +54,7 @@ class PipelineConfig:
     mask_open_px: int = 3
     column_detector: str = "both"             # hollow | dark | both
     semantics: bool = True                    # E03: construir shell semántico
+    drawing_scope: str = DEFAULT_SCOPE        # E16.5: multi_unit | whole_shell (hecho de la fuente)
     source_name: str = ""                     # E16.1: la fuente/broker es dato del caso, no del renderer
 
 
@@ -75,30 +81,53 @@ def run(cfg: PipelineConfig) -> Floorplate:
     region = vres.best("unit_region")
 
     # 2. segmentación
+    #    E16.5 — la localización tiene DOS modos, porque hay dos clases de lámina. El modo es un
+    #    hecho de la fuente (`drawing_scope`), no algo que se infiera de la ausencia de datos.
+    scope = validate_scope(cfg.drawing_scope)
     localization = "unknown"
+    loc = None
     if ov.has("perimeter"):
         seg = SEG_REGISTRY["manual"]().segment(SegmentationRequest(img, polygon=ov.get("perimeter")["ring"]))
         localization = "manual"
+        loc = Localization(method=LOC_MANUAL, provenance=PROV_MANUAL, notes="perímetro humano en overrides")
         seeds = []
     else:
         seeds = list(ov.get("seed_points", []))
         if seeds or ov.has("bbox"):
             localization = "assisted"
+            loc = Localization(method=LOC_ASSISTED, provenance=PROV_MANUAL, seeds=tuple(map(tuple, seeds)),
+                               notes="seed_points/bbox humanos en overrides")
         elif region and (region.point or region.bbox):
             seeds = [region.point] if region.point else [((region.bbox[0] + region.bbox[2]) / 2, (region.bbox[1] + region.bbox[3]) / 2)]
             localization = "automatic"
+            loc = Localization(method=LOC_BY_LABEL, provenance=PROV_OCR_HINT, seeds=tuple(map(tuple, seeds)),
+                               roi=tuple(map(int, region.bbox)) if region.bbox else None,
+                               notes="rótulo de la unidad localizado sobre el dibujo")
+        elif scope == WHOLE_SHELL:
+            # El dibujo completo ES el objetivo: no hay unidad interna que localizar. La región de
+            # interés es la extensión de lo dibujado, no el rectángulo del archivo.
+            loc = whole_drawing_localization(img)
+            seeds = [tuple(s) for s in loc.seeds]
+            localization = "whole_drawing"
         if not seeds:
             raise RuntimeError("Sin localización: ni hint unit_region (OCR/VLM) ni seed_points/bbox en overrides.json. "
-                               "Pase B (assisted): agrega \"seed_points\": [[x, y]] en overrides.json.")
+                               "Pase B (assisted): agrega \"seed_points\": [[x, y]] en overrides.json. "
+                               "Si el dibujo completo es el espacio a evaluar, declara "
+                               "\"drawing_scope\": \"whole_shell\" en case.json.")
         seg_name = cfg.segmentation
         if seg_name == "auto":
             # relleno de color detectado alrededor del label → color; si no, flood por muros
             seg_name = "opencv_color" if (region and region.color_bgr) or ov.get("segmentation_params", {}).get("mode") == "color" else "opencv_flood"
         bbox = tuple(ov.get("bbox")) if ov.has("bbox") else (region.bbox if (region and seg_name != "opencv_color") else None)
+        if bbox is None and loc is not None and loc.method == LOC_WHOLE and seg_name != "opencv_color":
+            bbox = loc.roi                      # la ROI declarada acota la búsqueda a lo dibujado
         seg = SEG_REGISTRY[seg_name]().segment(SegmentationRequest(
             img, seed_points=seeds, bbox=bbox, params=ov.get("segmentation_params")))
     cv2.imwrite(out("mask.png"), seg.mask)
     cv2.imwrite(out("target_mask.png"), seg.mask)
+    if loc is not None:                         # E16.5 — cómo se resolvió la localización, y por qué
+        with open(out("localization.json"), "w", encoding="utf-8") as fh:
+            json.dump(loc.to_dict(), fh, indent=2, ensure_ascii=False)
     # evidencia intermedia de localización
     ev = img.copy()
     for hnt in vres.hints:

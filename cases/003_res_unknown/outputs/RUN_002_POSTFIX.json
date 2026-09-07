@@ -1,0 +1,85 @@
+{
+  "_doc": "E16.5 — PRIMERA Y UNICA ejecucion de RES despues del fix de localizacion, con el motor congelado en el baseline E16.5. La localizacion paso. La segmentacion corrio y devolvio mascara vacia. El ciclo se detiene aqui: no se ajusto la segmentacion.",
+  "run": 2,
+  "runs_post_fix": 1,
+  "timestamp_utc": "2026-09-07T14:05:00Z",
+  "command": "PYTHONPATH=src python -m escalimetro.cli run --case cases/003_res_unknown",
+  "frozen": {
+    "engine_baseline": "E16.5",
+    "engine_hash_previous": "a6ee3213b6994897aaa16c0852e2079a5eab0b1750f55db4b1d670a39d3c07fa",
+    "program_sha256": "6f21f50330110b7c4d43b5c0cfe7d6587f7ee0827482d76e00df26a382f56107",
+    "input_image_sha256": "9c5429109cc0073b71bb46780489d0061c9cf0e3726a84d54b90ade1c286c916",
+    "case_input_change": "unico: drawing_scope = whole_shell (hecho de la fuente)",
+    "engine_hash_at_run": "bae837a17d760f479a919ef3642a20b82897dbc67ea1b9504a74f3339429d45e",
+    "engine_hash_final_e16_5": "1fdc9b64b824edf70d0c908f19f1682e470b6abe83c19b3a12da01eb4ef39456"
+  },
+  "localization": {
+    "status": "PASS",
+    "method": "WHOLE_DRAWING_TARGET",
+    "provenance": "SOURCE_FACT_WHOLE_DRAWING",
+    "roi": [
+      70,
+      37,
+      1750,
+      1048
+    ],
+    "seeds": [
+      [
+        910.0,
+        542.5
+      ]
+    ],
+    "human_override": false,
+    "note": "La ROI es la extension de lo dibujado (1680x1011 de una imagen de 1788x1070): los margenes blancos y el titulo quedaron fuera. No se uso el rectangulo del archivo."
+  },
+  "next_pipeline_state": "B_SEGMENTATION_FAILURE",
+  "segmentation": {
+    "status": "FAIL",
+    "provider": "opencv_flood",
+    "confidence": 0.0,
+    "notes": "flood vacio",
+    "mask_pixels": 0,
+    "mask_total": 1913160,
+    "seed_pixel_bgr": [
+      144,
+      146,
+      124
+    ],
+    "observation": "La semilla, centro de la ROI, cae sobre el watermark de la fuente superpuesto al nucleo central de ascensores. El flood no encontro region. NO se corrigio: ajustar la semilla o el segmentador mirando este resultado seria tunear."
+  },
+  "downstream_exception": {
+    "type": "ValueError",
+    "where": "src/escalimetro/geometry/extractor.py:29 (mask_to_raw_contour)",
+    "message": "mascara vacia",
+    "note": "La geometria es donde la excepcion aparece, pero el primer output invalido es la mascara vacia de la etapa 2."
+  },
+  "downstream": {
+    "stage_3_geometry": "FAIL_BY_EMPTY_MASK",
+    "stage_4_scale": "NOT_RUN",
+    "stage_5_shell_access": "NOT_RUN",
+    "stage_6_program": "NOT_RUN",
+    "stage_7_solver": "NOT_RUN",
+    "stage_8_robustness": "NOT_RUN",
+    "stage_9_fit_evidence": "NOT_EVALUATED",
+    "stage_10_presentation": "NOT_RUN"
+  },
+  "human_intervention": {
+    "manual_geometry": false,
+    "manual_scale": false,
+    "manual_access": false,
+    "manual_ocr_hints": false,
+    "seed_points_added": false,
+    "bbox_added": false,
+    "perimeter_added": false,
+    "program_change": false,
+    "image_edited": false,
+    "segmentation_tuned": false
+  },
+  "freeze_deviation": {
+    "_doc": "DESVIACION DECLARADA. El run se ejecuto con el motor en bae837a1. DESPUES de observar el resultado, al escribir los tests, edite UN docstring de src/escalimetro/localization.py: la frase de ejemplo decia '¿donde esta la unidad 608?' y un test de acoplamiento la marcaba como mencion del caso. La reescribi a '¿donde esta la unidad tal?'. Eso cambio el hash del motor a 1fdc9b64, que es el baseline E16.5.",
+    "what_changed": "una linea de docstring; ningun cambio de comportamiento, ninguna linea de codigo ejecutable",
+    "why_it_matters": "El §23 dice no tocar nada despues de observar el run. Aunque el cambio es inerte, el hash registrado del run ya no coincide con el baseline vigente, y eso hay que decirlo en vez de recalcular en silencio.",
+    "better_alternative_in_hindsight": "Haber ajustado el test para auditar solo codigo sin docstrings (la convencion del escaner de E16.1) en vez de tocar el modulo. Habria preservado el freeze exacto.",
+    "result_unaffected": "El resultado del run —localizacion PASS, segmentacion con mascara vacia— no depende de un docstring."
+  }
+}
