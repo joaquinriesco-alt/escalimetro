@@ -1,0 +1,17 @@
+{
+  "method": "WHOLE_DRAWING_TARGET",
+  "provenance": "SOURCE_FACT_WHOLE_DRAWING",
+  "seeds": [
+    [
+      910.0,
+      542.5
+    ]
+  ],
+  "roi": [
+    70,
+    37,
+    1750,
+    1048
+  ],
+  "notes": "el caso declara drawing_scope=whole_shell: el dibujo completo es el espacio a evaluar, así que no se busca ningún rótulo de unidad"
+}

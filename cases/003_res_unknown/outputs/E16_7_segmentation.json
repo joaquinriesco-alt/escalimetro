@@ -1,0 +1,40 @@
+{
+  "provider": "whole_shell",
+  "confidence": 0.65,
+  "provenance": "cv_segmentation",
+  "notes": "whole_shell ink=local_contrast_blackhat min_contrast=25 stroke_scale_px=19 gap_px=30 span_ratio=0.943 roi_frac=0.7121 fill=0.955 componentes=1 second_ratio=0.029 open_ratio=0.162 aceptacion=PASS",
+  "barrier": {
+    "barrier_frac_roi": 0.689767,
+    "barrier_components": 2,
+    "span_ratio": 0.9425,
+    "outside_reachable_frac_roi": 0.235924,
+    "outside_reachable_frac_image": 0.308016,
+    "ink_frac_roi": 0.217289,
+    "accepted": true,
+    "reason": null
+  },
+  "structural_ink": {
+    "method": "local_contrast_blackhat",
+    "min_contrast": 25,
+    "stroke_scale_frac": 0.01,
+    "stroke_scale_px": 19,
+    "ink_frac_roi": 0.217289,
+    "contrast_p99": 153.0,
+    "background_median": 255.0
+  },
+  "roi": [
+    70,
+    37,
+    1750,
+    1048
+  ],
+  "mask": {
+    "roi_frac": 0.71209,
+    "fill": 0.9547,
+    "components": 1,
+    "second_ratio": 0.0286,
+    "open_ratio": 0.1621,
+    "mask_px": 1209471,
+    "accepted": true
+  }
+}

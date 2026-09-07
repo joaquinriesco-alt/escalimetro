@@ -1,0 +1,154 @@
+{
+  "_doc": "E16.7 — PRIMERA Y UNICA ejecucion de RES tras generalizar la deteccion de evidencia estructural, con el motor congelado en el baseline E16.7 ANTES del run (commit 949573e). La segmentacion whole_shell produjo por primera vez una mascara aceptada, y la extraccion de geometria produjo un perimetro de 10 vertices que corresponde a la planta. El ciclo se detiene en el primer fallo nuevo: los detectores de ELEMENTOS (nucleo, pilares) siguen asumiendo la lamina comercial coloreada.",
+  "run": 4,
+  "runs_this_cycle": 1,
+  "command": "PYTHONPATH=src python -m escalimetro run --case cases/003_res_unknown",
+  "frozen_before_run": {
+    "engine_baseline": "E16.7",
+    "engine_hash": "2de297f99507d0a27d4e68e56f2f13dbc2903389db8b7cd1bdcf0b6d731804d4",
+    "engine_hash_after_run": "2de297f99507d0a27d4e68e56f2f13dbc2903389db8b7cd1bdcf0b6d731804d4",
+    "identical": true,
+    "commit_before_run": "949573e",
+    "pre_run_suite": "578 passed, 2 skipped, 0 failed",
+    "input_image_sha256": "9c5429109cc0073b71bb46780489d0061c9cf0e3726a84d54b90ade1c286c916",
+    "case_input_change": "ninguno respecto de E16.5/E16.6"
+  },
+  "localization": {
+    "status": "PASS",
+    "method": "WHOLE_DRAWING_TARGET",
+    "provenance": "SOURCE_FACT_WHOLE_DRAWING",
+    "roi": [
+      70,
+      37,
+      1750,
+      1048
+    ]
+  },
+  "structural_ink": {
+    "method": "local_contrast_blackhat",
+    "min_contrast": 25,
+    "stroke_scale_frac": 0.01,
+    "stroke_scale_px": 19,
+    "ink_frac_roi": 0.217289,
+    "contrast_p99": 153.0,
+    "background_median": 255.0
+  },
+  "barrier": {
+    "barrier_frac_roi": 0.689767,
+    "barrier_components": 2,
+    "span_ratio": 0.9425,
+    "outside_reachable_frac_roi": 0.235924,
+    "outside_reachable_frac_image": 0.308016,
+    "ink_frac_roi": 0.217289,
+    "accepted": true,
+    "reason": null,
+    "status": "PASS"
+  },
+  "segmentation": {
+    "status": "PASS",
+    "provider": "whole_shell",
+    "confidence": 0.65,
+    "notes": "whole_shell ink=local_contrast_blackhat min_contrast=25 stroke_scale_px=19 gap_px=30 span_ratio=0.943 roi_frac=0.7121 fill=0.955 componentes=1 second_ratio=0.029 open_ratio=0.162 aceptacion=PASS",
+    "mask": {
+      "roi_frac": 0.71209,
+      "fill": 0.9547,
+      "components": 1,
+      "second_ratio": 0.0286,
+      "open_ratio": 0.1621,
+      "mask_px": 1209471,
+      "accepted": true
+    }
+  },
+  "geometry": {
+    "status": "PASS",
+    "vertices": 10,
+    "ring_px": [
+      [
+        72.0,
+        298.5
+      ],
+      [
+        72.0,
+        1030.0
+      ],
+      [
+        1739.0,
+        1030.0
+      ],
+      [
+        1739.0,
+        297.0
+      ],
+      [
+        1142.0,
+        298.0
+      ],
+      [
+        1097.0,
+        298.0
+      ],
+      [
+        1097.0,
+        335.0
+      ],
+      [
+        725.5,
+        335.0
+      ],
+      [
+        725.5,
+        297.0
+      ],
+      [
+        650.0,
+        298.5
+      ]
+    ],
+    "area_px2": 1206526.875,
+    "visual_qa": "la mascara y el perimetro corresponden a la planta completa, incluido el retranqueo real del borde superior central; no captura nucleo aislado, ni mobiliario, ni media planta, ni papel. Inspeccion visual concordante con las metricas."
+  },
+  "scale": {
+    "status": "PENDING_SEMANTICS",
+    "px_per_m": 44.54242492168967,
+    "method": "published_area_inferred",
+    "note": "la escala se infiere igualando el area del poligono al area publicada declarada como 'useful'. El poligono es la huella COMPLETA (incluye nucleo y banos), asi que la igualdad solo vale si el area publicada tambien lo es. Un contraste independiente contra las dimensiones rotuladas de las cabinas de ascensor es INCONCLUYENTE por resolucion del rotulo, pero ambas lecturas posibles dan 35-41 px/m frente a los 44.5 inferidos, en la direccion esperada si el area publicada excluye el nucleo. E16.7 NO toca escala: queda declarado, no corregido."
+  },
+  "next_pipeline_state": "GEOMETRY_FAILURE (deteccion de ELEMENTOS)",
+  "downstream": {
+    "core": {
+      "status": "FAIL",
+      "detected": 0,
+      "cause": "detect_core_enclosed define el nucleo como el VACIO ENCERRADO por la union de las unidades COLOREADAS (saturacion > 20). En un plano de arquitectura en blanco y negro no hay ninguna region saturada, asi que no hay union, no hay agujero y no hay candidato. Es la misma clase de supuesto que E16.5 y E16.6 retiraron en su capa: una abstraccion traida de la lamina comercial de la primera familia de dibujos."
+    },
+    "columns": {
+      "status": "FAIL",
+      "detected": 0
+    },
+    "primary_entrance": {
+      "status": "FAIL",
+      "detected": 0
+    },
+    "daylight": {
+      "status": "FAIL",
+      "segmentos_con_evidencia": 0
+    },
+    "ready_for_layout": false,
+    "requires": [
+      "perimeter/core",
+      "primary_entrance",
+      "columns",
+      "daylight",
+      "scale_assumption"
+    ]
+  },
+  "human_intervention": {
+    "manual_threshold": false,
+    "manual_walls": false,
+    "manual_crop": false,
+    "manual_mask": false,
+    "watermark_removal": false,
+    "furniture_removal": false,
+    "engine_change_after_freeze": false,
+    "runs": 1
+  }
+}
