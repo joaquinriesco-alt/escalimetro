@@ -1,0 +1,13 @@
+{
+  "case_id": "003_res_unknown",
+  "image": "original.png",
+  "image_note": "Plano publicado por RES Real Estate Services, recibido como PNG 1788x1070 a 144 dpi. Lleva el rótulo 'Plano y mobiliario referencial' y un watermark central de la fuente. Es el input tal cual: no se recortó, no se rotó, no se limpió el mobiliario.",
+  "unit_label": "UNKNOWN",
+  "known_area_m2": 608.12,
+  "known_area_kind": "useful",
+  "source_name": "RES Real Estate Services",
+  "vision": "ocr",
+  "segmentation": "auto",
+  "_contract": "E16.4 — case.json contiene SOLO HECHOS DE ENTRADA bajo el contrato vigente (E15.2 CASE_INPUT_FIELDS). unit_label es UNKNOWN porque el aviso no identifica la unidad: declarar ignorancia, no inventar una oficina. La configuracion de vision y segmentacion es la misma ruta automatica por defecto que usan 001 y 002; no se eligio en funcion de este plano.",
+  "_source_facts_fuera_del_contrato": "El plano muestra 4 oficinas privadas y 8 banos. Son HECHOS DEL PLANO EXISTENTE, no el programa objetivo, y el contrato vigente no admite campos para ellos (E16.3 §12: AVAILABLE SOURCE FACT - NOT PART OF CURRENT CASE CONTRACT). Se documentan aqui como nota y NO se usan como entrada."
+}

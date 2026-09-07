@@ -1,0 +1,62 @@
+{
+  "_doc": "E16.4 — registro de la PRIMERA Y UNICA ejecucion del caso 003 con el motor congelado en el baseline E16.1. El pipeline se detuvo en la etapa de localizacion. Este archivo NO es evidencia tecnica de fit: es el registro del examen. No se ejecuto un segundo run, no se agregaron seed_points, no se toco el motor.",
+  "run": 1,
+  "runs_total": 1,
+  "timestamp_utc": "2026-09-07T13:41:49Z",
+  "command": "PYTHONPATH=src python -m escalimetro.cli run --case cases/003_res_unknown",
+  "frozen": {
+    "commit": "64fd9c5d12f5bc276556a1bcbd3e446c6d3b024c",
+    "engine_baseline": "E16.1",
+    "engine_hash": "a6ee3213b6994897aaa16c0852e2079a5eab0b1750f55db4b1d670a39d3c07fa",
+    "program_path": "program_templates/office_balanced_48.json",
+    "program_sha256": "6f21f50330110b7c4d43b5c0cfe7d6587f7ee0827482d76e00df26a382f56107",
+    "case_json_sha256": "5984467859e7345ba67b53f7e36c4ff0a95c6b55d6b64e5b26667d42fc0a055e",
+    "input_image_sha256": "9c5429109cc0073b71bb46780489d0061c9cf0e3726a84d54b90ade1c286c916"
+  },
+  "outcome": "C_GENERALIZATION_FAILURE",
+  "root_failure_stage": "STAGE_1_2_LOCALIZATION",
+  "exception": {
+    "type": "RuntimeError",
+    "where": "src/escalimetro/pipeline.py:91",
+    "message": "Sin localizacion: ni hint unit_region (OCR/VLM) ni seed_points/bbox en overrides.json. Pase B (assisted): agrega \"seed_points\": [[x, y]] en overrides.json."
+  },
+  "stage_1_vision": {
+    "provider": "ocr",
+    "model": "tesseract",
+    "target_unit": "UNKNOWN",
+    "hints": 0,
+    "raw": {"error": "unidad sin numero"},
+    "note": "ocr_localizer.py:75-77 devuelve cero hints cuando el rotulo no tiene digitos. No lanza excepcion."
+  },
+  "postmortem_diagnostic": {
+    "_doc": "Instrumentacion posterior al fallo sobre el mismo motor y el mismo input. No es un segundo run del pipeline ni cambia el resultado.",
+    "ocr_tokens_conf_ge_60": 24,
+    "ocr_tokens_with_digits": 1,
+    "ocr_tokens_sample": ["Plano", "y", "mobiliario", "referencial", "Real", "Estate"],
+    "hypothetical_label_608_hints": 0,
+    "conclusion": "El plano RES no imprime ningun numero de unidad. Aunque se le hubiera declarado un unit_label con digitos, la localizacion por OCR habria fallado igual: no es un problema del rotulo declarado, es que el dibujo no contiene el dato que el contrato de localizacion asume."
+  },
+  "comparison_drawing_1": {
+    "case": "001_gps_403",
+    "ocr_tokens_conf_ge_60": 23,
+    "ocr_tokens_with_digits": 9,
+    "digit_tokens": ["401", "252", "402", "186", "403", "543"],
+    "note": "La lamina de GPS imprime el numero de unidad y la superficie sobre el dibujo. De ahi sale la localizacion automatica de 403 y 401."
+  },
+  "downstream": {
+    "stage_2_segmentation": "NOT_RUN",
+    "stage_3_geometry": "NOT_RUN",
+    "stage_4_scale": "NOT_RUN",
+    "stage_5_shell_access": "NOT_RUN",
+    "stage_6_program": "NOT_RUN",
+    "stage_7_solver": "NOT_RUN",
+    "stage_8_robustness": "NOT_RUN",
+    "stage_9_fit_evidence": "NOT_EVALUATED",
+    "stage_10_presentation": "NOT_RUN"
+  },
+  "human_intervention": {
+    "manual_geometry": false, "manual_scale": false, "manual_access": false,
+    "manual_ocr_hints": false, "seed_points_added": false,
+    "program_change": false, "engine_change": false, "image_edited": false
+  }
+}
