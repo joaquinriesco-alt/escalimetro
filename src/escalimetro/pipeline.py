@@ -34,7 +34,7 @@ from .renderer import grid_image, overlay_on_original, render_svg, side_by_side
 from .renderer.side_by_side import comparison_three, geometry_only, contour_svg
 from .schemas.floorplate import (SCHEMA_VERSION, Column, Core, CoordinateSystem, Entrance, FixedElement, Floorplate,
                                  Meta, Perimeter, Provenance, SourceImage, Status, Unknown, Window)
-from .segmentation import REGISTRY as SEG_REGISTRY, SegmentationRequest
+from .segmentation import REGISTRY as SEG_REGISTRY, SegmentationRequest, strategy_for
 from .vision import REGISTRY as VIS_REGISTRY, VisionResult
 
 
@@ -114,10 +114,12 @@ def run(cfg: PipelineConfig) -> Floorplate:
                                "Pase B (assisted): agrega \"seed_points\": [[x, y]] en overrides.json. "
                                "Si el dibujo completo es el espacio a evaluar, declara "
                                "\"drawing_scope\": \"whole_shell\" en case.json.")
-        seg_name = cfg.segmentation
-        if seg_name == "auto":
-            # relleno de color detectado alrededor del label → color; si no, flood por muros
-            seg_name = "opencv_color" if (region and region.color_bgr) or ov.get("segmentation_params", {}).get("mode") == "color" else "opencv_flood"
+        # E16.6 — la estrategia sale de la SEMANTICA del problema, no de un if por caso.
+        seg_name = strategy_for(
+            scope,
+            has_color_hint=bool((region and region.color_bgr)
+                                or ov.get("segmentation_params", {}).get("mode") == "color"),
+            explicit=cfg.segmentation)
         bbox = tuple(ov.get("bbox")) if ov.has("bbox") else (region.bbox if (region and seg_name != "opencv_color") else None)
         if bbox is None and loc is not None and loc.method == LOC_WHOLE and seg_name != "opencv_color":
             bbox = loc.roi                      # la ROI declarada acota la búsqueda a lo dibujado

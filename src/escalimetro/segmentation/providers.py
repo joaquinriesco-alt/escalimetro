@@ -189,9 +189,118 @@ class SAM2Provider(SegmentationProvider):
                                   confidence=float(scores[i]), provenance=Provenance.ML_SEGMENTATION.value)
 
 
+class WholeShellProvider(SegmentationProvider):
+    """E16.6 — huella de la planta en un plano de arquitectura, sin semilla.
+
+    Por qué existe. `opencv_flood` resuelve un problema distinto: *crecer una región desde un punto
+    que ya se sabe interior*. Esa abstracción es correcta para una unidad rellena de color dentro de
+    una lámina multiunidad, donde el hint del OCR dice dónde empezar. Sobre un plano de planta
+    completa en blanco y negro no hay tal punto: pedirle a alguien —o a una heurística— que elija
+    "un píxel interior" reintroduce por la puerta de atrás la intervención que E16.5 eliminó.
+
+    La pregunta correcta para un plano de arquitectura no es *dónde empiezo*, sino:
+
+        ¿QUÉ ENCIERRAN LOS MUROS EXTERIORES?
+
+    Y esa pregunta se responde por conectividad con el exterior, no por crecimiento desde un punto:
+    el fondo de la hoja es alcanzable desde los bordes de la imagen; la huella del edificio no lo es.
+    Todo lo que quede encerrado —mobiliario, textos, marcas de agua, núcleo, baños— está adentro por
+    construcción, y no hay que reconocerlo ni removerlo. Ésa es la propiedad genérica: no depende del
+    color, ni del contenido interior, ni de qué anotaciones traiga la lámina.
+
+    El contrato de salida es el que `GeometryExtractor` consume: su contorno EXTERNO es el perímetro
+    de la unidad (`RETR_EXTERNAL` + contorno mayor). Por eso la máscara es la huella LLENA delimitada
+    por el muro exterior, no el espacio libre ni el área arrendable; el núcleo y las exclusiones se
+    extraen aguas abajo por su cuenta.
+
+    params:
+      wall_thresh : gris < wall_thresh es tinta (muro, línea, texto). Default 110, el mismo umbral
+                    de `opencv_flood`: es una constante de dominio del repo, no de un caso.
+      gap_px      : ancho máximo de puerta o hueco de dibujo que se cierra antes de evaluar la
+                    conectividad. Default 30, la misma noción de "≈1 m" que ya usa `opencv_flood`.
+      min_roi_frac / max_roi_frac : banda plausible de la huella dentro de la región de interés.
+                    `max_roi_frac` vale 1.0 a propósito: la región de interés es la extensión de la
+                    tinta, y en una lámina sin anotaciones la huella ES esa extensión. Un primer
+                    borrador puso 0.98 y un fixture genérico —una planta sola en la hoja, sin título—
+                    lo desmintió antes de que este código viera ningún caso real. Lo que descarta una
+                    máscara absurda es `min_fill` y la conectividad, no un techo sobre la fracción.
+      min_fill    : cuánto de su propio recuadro debe llenar la huella. Descarta marcos delgados y
+                    formas dispersas que no son una planta.
+    """
+    name = "whole_shell"
+
+    def segment(self, req: SegmentationRequest) -> SegmentationResult:
+        p = {"wall_thresh": 110, "gap_px": 30, "min_roi_frac": 0.10, "max_roi_frac": 1.0,
+             "min_fill": 0.30, **(req.params or {})}
+        img = req.image_bgr
+        h, w = img.shape[:2]
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) if img.ndim == 3 else img
+
+        # 1. tinta = todo lo dibujado. No se distingue muro de mueble: no hace falta.
+        ink = (gray < int(p["wall_thresh"])).astype(np.uint8) * 255
+        # 2. cerrar puertas y huecos de dibujo para que el exterior no se filtre por un vano
+        r = max(1, int(p["gap_px"]) // 2)
+        k = cv2.getStructuringElement(cv2.MORPH_RECT, (2 * r + 1, 2 * r + 1))
+        closed = cv2.dilate(ink, k)
+        # 3. el exterior es lo alcanzable desde el borde de la hoja SIN cruzar tinta
+        free = (closed == 0).astype(np.uint8)
+        ff = np.zeros((h + 2, w + 2), np.uint8)
+        border = np.zeros((h, w), np.uint8)
+        for sx, sy in ((0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1)):
+            if free[sy, sx]:
+                cv2.floodFill(free, ff, (sx, sy), 2, 0, 0, 4)
+        for x in range(0, w, max(1, w // 200)):          # el borde puede estar tapado en una esquina
+            for y in (0, h - 1):
+                if free[y, x] == 1:
+                    cv2.floodFill(free, ff, (x, y), 2, 0, 0, 4)
+        for y in range(0, h, max(1, h // 200)):
+            for x in (0, w - 1):
+                if free[y, x] == 1:
+                    cv2.floodFill(free, ff, (x, y), 2, 0, 0, 4)
+        border[free == 2] = 255
+        # 4. lo NO alcanzable desde afuera: tinta + todo lo que la tinta encierra
+        inside = np.where(border > 0, 0, 255).astype(np.uint8)
+        # 5. la huella es la componente mayor de eso
+        n, lab, stats, _ = cv2.connectedComponentsWithStats(inside, 8)
+        if n <= 1:
+            return SegmentationResult(mask=np.zeros((h, w), np.uint8), provider=self.name,
+                                      confidence=0.0, provenance=Provenance.CV_SEGMENTATION.value,
+                                      notes="sin region encerrada por tinta")
+        idx = 1 + int(np.argmax(stats[1:, cv2.CC_STAT_AREA]))
+        comp = (lab == idx).astype(np.uint8) * 255
+        # 6. rellenar y devolver la franja que el cierre morfologico habia engordado
+        cnts, _ = cv2.findContours(comp, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+        filled = np.zeros((h, w), np.uint8)
+        cv2.drawContours(filled, [max(cnts, key=cv2.contourArea)], -1, 255, cv2.FILLED)
+        filled = cv2.erode(filled, k)
+        if req.bbox:
+            x0, y0, x1, y1 = map(int, req.bbox)
+            box = np.zeros((h, w), np.uint8); box[y0:y1, x0:x1] = 255
+            filled &= box
+
+        # 7. aceptacion: metricas declaradas de antemano, no elegidas mirando el resultado
+        area = int((filled > 0).sum())
+        roi_area = ((int(req.bbox[2]) - int(req.bbox[0])) * (int(req.bbox[3]) - int(req.bbox[1]))
+                    if req.bbox else h * w)
+        roi_frac = area / float(roi_area) if roi_area else 0.0
+        ys, xs = np.where(filled > 0)
+        fill = (area / float((xs.max() - xs.min() + 1) * (ys.max() - ys.min() + 1))) if area else 0.0
+        n_cc = cv2.connectedComponentsWithStats(filled, 8)[0] - 1
+        ok = (area > 0 and n_cc == 1
+              and p["min_roi_frac"] <= roi_frac <= p["max_roi_frac"]
+              and fill >= p["min_fill"])
+        notes = (f"whole_shell wall_thresh={p['wall_thresh']} gap_px={p['gap_px']} "
+                 f"roi_frac={roi_frac:.4f} fill={fill:.3f} componentes={n_cc} "
+                 f"aceptacion={'PASS' if ok else 'FAIL'}")
+        return SegmentationResult(mask=filled if ok else np.zeros((h, w), np.uint8),
+                                  provider=self.name, confidence=0.65 if ok else 0.0,
+                                  provenance=Provenance.CV_SEGMENTATION.value, notes=notes)
+
+
 REGISTRY = {
     "manual": ManualPolygonProvider,
     "opencv_flood": OpenCVFloodProvider,
     "opencv_color": OpenCVColorRangeProvider,
     "sam2": SAM2Provider,
+    "whole_shell": WholeShellProvider,
 }

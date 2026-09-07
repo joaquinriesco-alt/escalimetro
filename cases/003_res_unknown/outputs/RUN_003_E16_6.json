@@ -1,0 +1,64 @@
+{
+  "_doc": "E16.6 — PRIMERA Y UNICA ejecucion de RES tras generalizar la segmentacion, con el motor congelado en el baseline E16.6 ANTES del run. La segmentacion whole_shell corrio y rechazo su propia mascara por el contrato de aceptacion declarado de antemano. El ciclo se detiene aqui.",
+  "run": 3,
+  "runs_this_cycle": 1,
+  "command": "PYTHONPATH=src python -m escalimetro.cli run --case cases/003_res_unknown",
+  "frozen_before_run": {
+    "engine_baseline": "E16.6",
+    "engine_hash": "9f25241d8d88066f2567299594bd3faef35364bfc4ea0deafa52a70199385bf0",
+    "engine_hash_after_run": "9f25241d8d88066f2567299594bd3faef35364bfc4ea0deafa52a70199385bf0",
+    "identical": true,
+    "pre_run_suite": "550 passed, 2 skipped, 0 failed",
+    "program_sha256": "6f21f50330110b7c4d43b5c0cfe7d6587f7ee0827482d76e00df26a382f56107",
+    "input_image_sha256": "9c5429109cc0073b71bb46780489d0061c9cf0e3726a84d54b90ade1c286c916",
+    "case_input_change": "ninguno respecto de E16.5"
+  },
+  "localization": { "status": "PASS", "method": "WHOLE_DRAWING_TARGET", "provenance": "SOURCE_FACT_WHOLE_DRAWING", "roi": [70, 37, 1750, 1048] },
+  "segmentation": {
+    "status": "FAIL",
+    "provider": "whole_shell",
+    "confidence": 0.0,
+    "notes": "whole_shell wall_thresh=110 gap_px=30 roi_frac=0.0439 fill=0.313 componentes=2 aceptacion=FAIL",
+    "mask_pixels": 0,
+    "acceptance": {
+      "no_vacia": true,
+      "una_componente": false,
+      "roi_frac": 0.0439,
+      "roi_frac_criterio": "0.10 <= x <= 1.0",
+      "roi_frac_pass": false,
+      "fill": 0.313,
+      "fill_criterio": ">= 0.30",
+      "fill_pass": true,
+      "veredicto": "FAIL"
+    },
+    "diagnostico_postmortem": {
+      "_doc": "Instrumentacion posterior sobre el mismo motor y el mismo input. No es un segundo run ni cambia nada.",
+      "tinta_px": 77585,
+      "tinta_frac": 0.041,
+      "tinta_tras_cierre_frac": 0.271,
+      "exterior_alcanzado_frac": 0.723,
+      "componentes_interiores": 76,
+      "cinco_mayores_px": [141656, 94659, 37180, 11486, 11012],
+      "huella_candidata_frac": 0.074,
+      "causa": "El exterior de la hoja alcanzo el 72.3% de la imagen: el fondo se filtro DENTRO del edificio. El supuesto del metodo whole_shell —que el muro exterior cierra, salvo vanos menores a gap_px— no se cumple en este dibujo con gap_px=30. La region interior quedo fragmentada en 76 componentes y la mayor cubre solo el 7.4% de la imagen: es un recinto interior, no la huella de la planta.",
+      "NO_corregido": "No se ajusto gap_px, ni wall_thresh, ni ningun umbral. Elegir el valor que hace funcionar este plano seria tunear al caso."
+    }
+  },
+  "next_pipeline_state": "SEGMENTATION_FAILURE",
+  "downstream_exception": {
+    "type": "ValueError",
+    "where": "src/escalimetro/geometry/extractor.py:29",
+    "message": "mascara vacia",
+    "note": "La mascara sale vacia porque el proveedor RECHAZO su candidata: prefiere no entregar nada antes que entregar un recinto interior haciendolo pasar por la planta."
+  },
+  "downstream": {
+    "stage_3_geometry": "FAIL_BY_EMPTY_MASK", "stage_4_scale": "NOT_RUN",
+    "stage_5_shell_access": "NOT_RUN", "stage_6_program": "NOT_RUN", "stage_7_solver": "NOT_RUN",
+    "stage_8_robustness": "NOT_RUN", "stage_9_fit_evidence": "NOT_EVALUATED", "stage_10_presentation": "NOT_RUN"
+  },
+  "human_intervention": {
+    "manual_seed": false, "manual_bbox": false, "manual_perimeter": false, "manual_crop": false,
+    "watermark_removal": false, "furniture_removal": false, "threshold_tuned_to_case": false,
+    "engine_change_after_freeze": false, "test_change_after_run": false, "program_change": false
+  }
+}

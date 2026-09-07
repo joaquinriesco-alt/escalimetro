@@ -1,6 +1,6 @@
 {
   "_doc": "E15.2 §7-§9 — compatibilidad de evidencia entre versiones del motor. Una evidencia producida bajo el baseline X sigue vigente bajo Y SÓLO si existe una cadena explícita de transiciones declaradas NON_SEMANTIC entre X e Y. No hay comodín: un baseline que no esté en compatible_with_current vuelve STALE toda evidencia producida bajo él.",
-  "current_baseline": "E16.5",
+  "current_baseline": "E16.6",
   "baselines": {
     "E14": "5ce5f6a1f4e3dd17f5f4518fb8365bc24ed90d337dfc5aacb1c1b144b7877259",
     "E15": "d213b4294290247913011d50a15df03fd5ba51b380e905b4a74a7d44ba1201ff",
@@ -8,7 +8,8 @@
     "E15.2": "74c60443aebae7f21b71be355975d3348ac106eae60cf309822f3e5770458ca4",
     "E15.3": "49f36d0a63a14a0bbf1610d3fc086ea4052a0b14e5c9b2b61b9fd8f1616e5e68",
     "E16.1": "a6ee3213b6994897aaa16c0852e2079a5eab0b1750f55db4b1d670a39d3c07fa",
-    "E16.5": "1fdc9b64b824edf70d0c908f19f1682e470b6abe83c19b3a12da01eb4ef39456"
+    "E16.5": "1fdc9b64b824edf70d0c908f19f1682e470b6abe83c19b3a12da01eb4ef39456",
+    "E16.6": "9f25241d8d88066f2567299594bd3faef35364bfc4ea0deafa52a70199385bf0"
   },
   "semantic_surface": {
     "_doc": "Archivos cuyo contenido determina QUÉ COMPUTA el motor. Si una transición toca uno de éstos, no puede declararse NON_SEMANTIC sin mostrar el diff línea a línea, y ese diff queda escrito en semantic_surface_touched.",
@@ -210,6 +211,35 @@
         "Hashes de geometria A/B/C de la 403 sin cambios",
         "401 conserva NO_FIT / ROBUST_NO_FIT / LEGACY_VERIFIED"
       ]
+    },
+    {
+      "from": "E16.5",
+      "to": "E16.6",
+      "kind": "SEMANTIC",
+      "summary": "Generalizacion de la segmentacion para dibujos de planta completa.",
+      "changed_files": [
+        "src/escalimetro/pipeline.py",
+        "src/escalimetro/segmentation/__init__.py",
+        "src/escalimetro/segmentation/providers.py"
+      ],
+      "added_files": [
+        "src/escalimetro/segmentation/strategy.py"
+      ],
+      "removed_files": [],
+      "semantic_surface_touched": {
+        "src/escalimetro/segmentation/__init__.py": "nueva estrategia de segmentacion seleccionable por semantica; el camino multi_unit no cambia",
+        "src/escalimetro/segmentation/providers.py": "nueva estrategia de segmentacion seleccionable por semantica; el camino multi_unit no cambia"
+      },
+      "semantic_change": "SEGMENTATION NOW SUPPORTS WHOLE-SHELL DRAWINGS. Antes existia una sola familia de tecnicas: crecer una region desde una semilla conocida (opencv_flood / opencv_color). Esa abstraccion asume que algo externo ya sabe donde esta la unidad. Para un plano de planta completa no existe tal punto, y ahora hay un proveedor que responde la pregunta correcta —que encierran los muros exteriores— por conectividad con el exterior de la hoja, sin semilla. La correspondencia problema→estrategia vive en segmentation/strategy.py, no en un if dentro del pipeline.",
+      "evidence_compatibility": "COMPATIBLE — 403/401 siguen por multi_unit; verificado por regresion.",
+      "evidence": [
+        "Diff calculado desde los baselines guardados E16.5 y E16.6",
+        "Modificados: 3; nuevos: 1",
+        "Superficie semantica tocada: ['src/escalimetro/segmentation/__init__.py', 'src/escalimetro/segmentation/providers.py']",
+        "Metodo validado en 3 fixtures positivos y 3 negativos ANTES de correr RES",
+        "Lamina Standard 01 de la 403 BYTE-IDENTICA",
+        "Hashes de geometria A/B/C de la 403 sin cambios"
+      ]
     }
   ],
   "compatible_with_current": [
@@ -219,7 +249,8 @@
     "E15.2",
     "E15.3",
     "E16.1",
-    "E16.5"
+    "E16.5",
+    "E16.6"
   ],
   "limitation": "El baseline más antiguo registrado es E14. Los artefactos de E06/E07 de la Oficina 403 y los de E14 de la 401 se produjeron ANTES de que existiera un baseline, así que su productor exacto no está registrado y se declara como E14, el estado más antiguo que sí lo está. Es una limitación declarada, no una prueba: lo que sí está verificado es que E15 regeneró los artefactos de E06 de la 403 con un motor posterior y salieron idénticos."
 }
