@@ -1,0 +1,62 @@
+{
+  "_doc": "E16.8 — run de VALIDACION DE PROPAGACION del contrato semantico de escala, con el motor congelado en el baseline E16.8 ANTES del run (commit 3201cec). No es un intento de llegar mas lejos: es comprobar que el rechazo llega hasta el final del pipeline en vez de quedarse en el modulo de escala. RUN_004 NO se modifica: lo que el motor computo entonces sigue escrito ahi.",
+  "run": 5,
+  "runs_this_cycle": 1,
+  "command": "PYTHONPATH=src python -m escalimetro run --case cases/003_res_unknown",
+  "frozen_before_run": {
+    "engine_baseline": "E16.8",
+    "engine_hash": "29a9129867d3b770f1061e5b58c531e7c9e3958f3275583a5fc8e8fba0c5f1bf",
+    "engine_hash_after_run": "29a9129867d3b770f1061e5b58c531e7c9e3958f3275583a5fc8e8fba0c5f1bf",
+    "identical": true,
+    "commit_before_run": "3201cec",
+    "pre_run_suite": "596 passed, 2 skipped, 0 failed",
+    "case_input_change": "ninguno: case.json no se toco en E16.8"
+  },
+  "unchanged_vs_run_004": {
+    "localization": "PASS",
+    "segmentation": "PASS",
+    "geometry": "PASS",
+    "perimeter_vertices": 10,
+    "area_px2": 1206526.875,
+    "note": "la huella y el perimetro son identicos: E16.8 no toco segmentacion ni geometria"
+  },
+  "scale": {
+    "status": "REJECTED",
+    "semantic_validity": "SCALE_INCOMPATIBLE_REGION",
+    "pixel_region": "full_footprint",
+    "area_kind": "useful",
+    "px_per_m": null,
+    "rejected_px_per_m": 44.54242492168967,
+    "reason": "'useful' y 'full_footprint' nombran regiones distintas: la cifra publicada no puede fijar la escala de este polígono sin una equivalencia declarada por la fuente",
+    "historical": {
+      "run_004_px_per_m": 44.54242492168967,
+      "note": "mismo valor, ahora rechazado: no cambio el calculo, cambio el permiso para usarlo"
+    }
+  },
+  "area_m2": null,
+  "downstream": {
+    "ready_for_layout": false,
+    "requires": [
+      "perimeter/core",
+      "primary_entrance",
+      "columns",
+      "daylight",
+      "scale_semantics"
+    ],
+    "solver": "NOT_RUN (SCALE_NOT_VALIDATED)",
+    "core": 0,
+    "primary_entrance": 0,
+    "daylight_segments_con_evidencia": 0,
+    "columns_detected": 17,
+    "columns_note": "EFECTO COLATERAL MEDIDO, NO UNA CORRECCION: los detectores de elementos no se tocaron, pero reciben px_per_m como entrada y al quedar en None caen a su banda en pixeles por defecto en vez de a una banda en metros. En RUN_004 el detector devolvia 0 pilares con la banda derivada de una escala invalida; ahora devuelve candidatos con la banda por defecto. Ninguno esta confirmado y columns_ready sigue en false: no cambia el estado del pipeline"
+  },
+  "expected_and_obtained": "El resultado correcto para este ciclo era exactamente este: SEGMENTATION PASS, PERIMETER PASS, SCALE UNCONFIRMED/INCOMPATIBLE, ELEMENT DETECTION NOT_TOUCHED, SOLVER NOT_RUN.",
+  "human_intervention": {
+    "manual_scale": false,
+    "manual_factor": false,
+    "core_estimated": false,
+    "area_modified": false,
+    "engine_change_after_freeze": false,
+    "runs": 1
+  }
+}
