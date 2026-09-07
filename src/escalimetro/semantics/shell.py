@@ -18,6 +18,7 @@ from typing import List, Optional
 import cv2
 import numpy as np
 
+from ..area_semantics import SCALE_INCOMPATIBLE_REGION
 from ..schemas.floorplate import (Column, ColumnCandidate, DaylightSegment, Entrance, EntranceCandidate, Floorplate, Meta,
                                   NorthArrow, Provenance, ShellReadiness, Status, Unknown)
 from .columns_v2 import detect_columns_v2
@@ -142,11 +143,23 @@ def build_shell(fp: Floorplate, image_bgr: np.ndarray, raw_mask: Optional[np.nda
     daylight_ready = bool(ext) and all(d.status == Status.CONFIRMED.value and d.classification != "unknown" for d in ext)
     if not daylight_ready:
         req.append("daylight")
-    scale_ok = fp.scale.meta.status == Status.CONFIRMED.value or "scale_assumption" in confirm
+    # E16.8 — una escala semánticamente incompatible NO la salva una confirmación humana genérica.
+    # Confirmar "scale_assumption" acepta la INCERTIDUMBRE NUMÉRICA de un supuesto; no convierte en
+    # equivalentes dos regiones que el vocabulario define como distintas. Para eso hace falta que la
+    # fuente declare la equivalencia (known_area_region), que es un hecho de origen y entra antes.
+    scale_incompatible = fp.scale.semantic_validity == SCALE_INCOMPATIBLE_REGION
+    scale_ok = (not scale_incompatible) and (fp.scale.meta.status == Status.CONFIRMED.value
+                                             or "scale_assumption" in confirm)
     if not scale_ok:
-        req.append("scale_assumption")
+        req.append("scale_semantics" if scale_incompatible else "scale_assumption")
     notes = []
-    if "scale_assumption" in confirm and fp.scale.meta.status != Status.CONFIRMED.value:
+    if scale_incompatible:
+        notes.append(f"ESCALA NO DISPONIBLE: {fp.scale.semantic_reason}. Ninguna medida en metros de "
+                     "este shell es utilizable mientras eso no se resuelva")
+    if "scale_assumption" in confirm and scale_incompatible:
+        notes.append("la confirmación humana de 'scale_assumption' NO aplica: acepta incertidumbre "
+                     "numérica, no una región equivocada")
+    if "scale_assumption" in confirm and not scale_incompatible and fp.scale.meta.status != Status.CONFIRMED.value:
         notes.append(f"escala aceptada como SUPUESTO ({fp.scale.method}, {fp.published_area_m2} m² tipo {fp.published_area_kind}); "
                      "las dimensiones del layout heredan esa incertidumbre")
     if not fp.north_arrow.detected:

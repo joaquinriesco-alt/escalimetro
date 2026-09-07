@@ -77,6 +77,16 @@ class Scale:
     method: str                       # published_area_inferred | known_area | scale_bar | dimension_text | manual | unknown
     reference_area_m2: Optional[float] = None
     meta: Meta = field(default_factory=Meta)
+    # E16.8 — de qué región del espacio habla cada lado de la división, y si eso autoriza la
+    # inferencia. Sin estos tres campos, `px_per_m` es un número sin sujeto.
+    pixel_region: str = "unknown_region"      # ver area_semantics.PIXEL_REGIONS
+    area_kind: str = "unknown"                # ver area_semantics.AREA_KINDS
+    semantic_validity: str = "SCALE_NOT_EVALUATED"   # ver area_semantics
+    semantic_reason: str = ""
+    # Valor que HABRÍA salido si se ignorara la semántica. Se guarda por trazabilidad —para poder
+    # comparar contra corridas históricas— y NO debe consumirse como escala: cuando este campo está
+    # poblado, `px_per_m` es None a propósito.
+    rejected_px_per_m: Optional[float] = None
 
 
 @dataclass
@@ -262,7 +272,12 @@ class Floorplate:
             source_image=SourceImage(**d["source_image"]),
             coordinate_system=CoordinateSystem(**d["coordinate_system"]),
             scale=Scale(px_per_m=d["scale"]["px_per_m"], method=d["scale"]["method"],
-                        reference_area_m2=d["scale"].get("reference_area_m2"), meta=m(d["scale"].get("meta"))),
+                        reference_area_m2=d["scale"].get("reference_area_m2"), meta=m(d["scale"].get("meta")),
+                        pixel_region=d["scale"].get("pixel_region", "unknown_region"),
+                        area_kind=d["scale"].get("area_kind", "unknown"),
+                        semantic_validity=d["scale"].get("semantic_validity", "SCALE_NOT_EVALUATED"),
+                        semantic_reason=d["scale"].get("semantic_reason", ""),
+                        rejected_px_per_m=d["scale"].get("rejected_px_per_m")),
             perimeter=Perimeter(ring=tup(d["perimeter"]["ring"]), raw_ring=tup(d["perimeter"].get("raw_ring", [])),
                                 meta=m(d["perimeter"].get("meta"))),
             holes=[Polygon(ring=tup(h["ring"]), meta=m(h.get("meta"))) for h in d.get("holes", [])],

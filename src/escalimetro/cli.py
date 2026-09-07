@@ -41,6 +41,7 @@ def main(argv=None):
             source_name=c.get("source_name", ""),          # E16.1: la fuente sale del caso
             drawing_scope=c.get("drawing_scope", "multi_unit"),   # E16.5: hecho de la fuente
             known_area_m2=c.get("known_area_m2"), known_area_kind=c.get("known_area_kind", "unknown"),
+            known_area_region=c.get("known_area_region"),   # E16.8: equivalencia declarada por la fuente
             vision=args.vision or c.get("vision", "manual"), segmentation=args.segmentation or c.get("segmentation", "opencv_flood"),
             overrides_path=os.path.join(case_dir, args.overrides or c.get("overrides")) if (args.overrides or c.get("overrides")) else None,
             out_dir=args.out or os.path.join(case_dir, "outputs"),

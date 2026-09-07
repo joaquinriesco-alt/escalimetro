@@ -48,14 +48,17 @@ COMPUTED_RESULT_NOT_ALLOWED = "COMPUTED_RESULT_NOT_ALLOWED"
 UNKNOWN_CASE_FIELD = "UNKNOWN_CASE_FIELD"
 
 #: E15.2 — lo único que puede declararse en case.json. Cualquier otra cosa se rechaza al cargar.
+from .area_semantics import SCALE_INCOMPATIBLE_REGION
+
 CASE_INPUT_FIELDS = {
     "case_id", "image", "image_note", "unit_label", "display_name", "source_name",
-    "known_area_m2", "known_area_kind", "sibling_units",
+    "known_area_m2", "known_area_kind", "known_area_region", "sibling_units",
     "overrides", "vision", "segmentation", "simplify_eps_frac", "mask_open_px",
     "drawing_scope",          # E16.5 — hecho de la fuente: multi_unit | whole_shell
 }
 #: valores derivados de la geometría: se leen del floorplate, nunca se declaran a mano
 DERIVED_EVIDENCE_FIELDS = {"scale_confidence", "scale_px_per_m", "scale_status", "scale",
+                           "scale_semantic_validity",   # E16.8: la valida el motor, no el caso
                            "usable_area_m2", "area_m2"}
 #: resultados de ejecución: se leen de los artefactos computados
 COMPUTED_RESULT_FIELDS = {"fit_verdict", "fit", "technical_fit", "robustness", "robustness_result",
@@ -148,6 +151,7 @@ class CaseContext:
     scale_px_per_m: Optional[float] = None
     scale_status: Optional[str] = None
     scale_confidence: Optional[str] = None
+    scale_semantic_validity: Optional[str] = None   # E16.8, DERIVED_EVIDENCE
     sibling_units: Dict = field(default_factory=dict)
 
     # ----------------------------------------------------------------------------------------------
@@ -192,6 +196,10 @@ class CaseContext:
         return f"{v:.0f} m²" if abs(v - round(v)) < 1e-6 else f"{v:.1f} m²"
 
     def scale_label(self) -> str:
+        # E16.8 — "no validada" y "desconocida" no son lo mismo, y presentarlas igual borra
+        # justamente la información que costó un ciclo producir.
+        if self.scale_semantic_validity == SCALE_INCOMPATIBLE_REGION:
+            return "escala no validada"
         if self.scale_px_per_m is None:
             return "escala desconocida"
         return f"{self.scale_px_per_m:.2f}".replace(".", ",") + " px/m"
@@ -217,6 +225,7 @@ class CaseContext:
                 "published_area_kind": self.published_area_kind,
                 "scale_px_per_m": self.scale_px_per_m, "scale_status": self.scale_status,
                 "scale_confidence": self.scale_confidence,
+                "scale_semantic_validity": self.scale_semantic_validity,
                 "unit_title": self.unit_title(), "title": self.title(), "published_area_label": self.published_area_label(),
                 "layout_id_example": self.layout_id("A", "EJEMPLO")}
 
@@ -265,6 +274,10 @@ def _confidence_label(scale: Dict) -> Optional[str]:
     de escala no puede definir cuándo una medición pasa a ser MEDIUM o HIGH. Se eliminaron."""
     if not isinstance(scale, dict) or not scale:
         return None                       # un número suelto ya no clasifica nada: hace falta el método
+    # E16.8 — una escala rechazada por semántica no tiene grado de confianza: no hay medición que
+    # calificar. Devolver MEDIUM aquí la presentaría como una escala peor en vez de como ninguna.
+    if scale.get("semantic_validity") == SCALE_INCOMPATIBLE_REGION:
+        return None
     method = scale.get("method")
     status = (scale.get("meta") or {}).get("status")
     if method is None and status is None:
@@ -305,6 +318,7 @@ def from_case_dir(case_dir: str) -> CaseContext:
         scale_px_per_m=scale.get("px_per_m"),
         scale_status=meta.get("status"),
         scale_confidence=_confidence_label(scale),         # DERIVED_EVIDENCE: regla del pipeline
+        scale_semantic_validity=scale.get("semantic_validity"),
         sibling_units=case.get("sibling_units") or {},
     )
 

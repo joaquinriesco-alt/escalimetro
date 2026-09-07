@@ -22,6 +22,8 @@ import cv2
 import numpy as np
 
 from . import __version__
+from .area_semantics import (FULL_FOOTPRINT, SCALE_INCOMPATIBLE_REGION, SCALE_UNCONFIRMED_REGION,
+                             TARGET_UNIT)
 from .geometry import (GeometryExtractor, classify_facade_segments, detect_columns, scale_from_known_area,
                        scale_manual, scale_unknown, snap_point_to_ring)
 from .geometry.elements import detect_core_enclosed, detect_hollow_columns
@@ -44,7 +46,7 @@ class PipelineConfig:
     image_path: str
     unit_label: str
     known_area_m2: Optional[float] = None
-    known_area_kind: str = "unknown"          # useful | rentable | total | unknown
+    known_area_kind: str = "unknown"          # useful | rentable | total | full_footprint | unknown
     vision: str = "ocr"
     segmentation: str = "auto"                # auto | opencv_color | opencv_flood | sam2 | manual
     overrides_path: Optional[str] = None
@@ -56,6 +58,12 @@ class PipelineConfig:
     semantics: bool = True                    # E03: construir shell semántico
     drawing_scope: str = DEFAULT_SCOPE        # E16.5: multi_unit | whole_shell (hecho de la fuente)
     source_name: str = ""                     # E16.1: la fuente/broker es dato del caso, no del renderer
+    # E16.8 — equivalencia DECLARADA por la fuente entre su cifra publicada y una región del dibujo.
+    # Es un hecho de origen ("estos m² son los que encierra el perímetro"), no una inferencia. None =
+    # la fuente no lo declara, y entonces decide la matriz de compatibilidad. Va al final del
+    # dataclass a propósito: insertar un campo en medio rompe toda construcción posicional (el mismo
+    # error que E16.1 cometió con source_name).
+    known_area_region: Optional[str] = None
 
 
 def _manual_meta(note=""):
@@ -175,14 +183,23 @@ def run(cfg: PipelineConfig) -> Floorplate:
         f.write(contour_svg(geo.ring, w, h, stroke="#111", title="simplified contour", raw=geo.raw_ring))
 
     # 6. escala
-    published = ov.get("known_area") or ({"m2": cfg.known_area_m2, "kind": cfg.known_area_kind} if cfg.known_area_m2 else None)
+    # E16.8 — qué región recortó el motor. Sale de un HECHO DE ORIGEN del caso (drawing_scope), no
+    # de una heurística sobre el resultado: si el dibujo completo es el objetivo, el polígono es la
+    # huella completa; si el objetivo es una unidad dentro de una lámina, es esa unidad.
+    pixel_region = FULL_FOOTPRINT if scope == WHOLE_SHELL else TARGET_UNIT
+    published = ov.get("known_area") or ({"m2": cfg.known_area_m2, "kind": cfg.known_area_kind,
+                                          "region": cfg.known_area_region} if cfg.known_area_m2 else None)
     if ov.has("scale"):
         scale = scale_manual(ov.get("scale")["px_per_m"], "override")
     elif published and published.get("m2"):
-        scale = scale_from_known_area(geo.area_px2, float(published["m2"]), published.get("kind", "unknown"))
-        if published.get("kind", "unknown") in ("unknown", "rentable", "total"):
-            unknowns.append(Unknown("scale.area_kind", f"superficie publicada de tipo '{published.get('kind', 'unknown')}': "
-                                                       "la escala inferida depende de que esa cifra sea el área del polígono útil"))
+        scale = scale_from_known_area(geo.area_px2, float(published["m2"]), published.get("kind", "unknown"),
+                                      pixel_region=pixel_region, declared_region=published.get("region"),
+                                      source=cfg.source_name or "")
+        if scale.semantic_validity == SCALE_INCOMPATIBLE_REGION:
+            unknowns.append(Unknown("scale", scale.semantic_reason))
+        elif scale.semantic_validity == SCALE_UNCONFIRMED_REGION:
+            unknowns.append(Unknown("scale.area_kind", f"superficie publicada de tipo '{published.get('kind', 'unknown')}' "
+                                                       f"contra una región '{pixel_region}': {scale.semantic_reason}"))
     else:
         scale = scale_unknown()
         unknowns.append(Unknown("scale", "sin superficie publicada ni barra de escala ni cota"))

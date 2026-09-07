@@ -1,6 +1,6 @@
 {
   "_doc": "E15.2 §7-§9 — compatibilidad de evidencia entre versiones del motor. Una evidencia producida bajo el baseline X sigue vigente bajo Y SÓLO si existe una cadena explícita de transiciones declaradas NON_SEMANTIC entre X e Y. No hay comodín: un baseline que no esté en compatible_with_current vuelve STALE toda evidencia producida bajo él.",
-  "current_baseline": "E16.7",
+  "current_baseline": "E16.8",
   "baselines": {
     "E14": "5ce5f6a1f4e3dd17f5f4518fb8365bc24ed90d337dfc5aacb1c1b144b7877259",
     "E15": "d213b4294290247913011d50a15df03fd5ba51b380e905b4a74a7d44ba1201ff",
@@ -10,13 +10,15 @@
     "E16.1": "a6ee3213b6994897aaa16c0852e2079a5eab0b1750f55db4b1d670a39d3c07fa",
     "E16.5": "1fdc9b64b824edf70d0c908f19f1682e470b6abe83c19b3a12da01eb4ef39456",
     "E16.6": "9f25241d8d88066f2567299594bd3faef35364bfc4ea0deafa52a70199385bf0",
-    "E16.7": "2de297f99507d0a27d4e68e56f2f13dbc2903389db8b7cd1bdcf0b6d731804d4"
+    "E16.7": "2de297f99507d0a27d4e68e56f2f13dbc2903389db8b7cd1bdcf0b6d731804d4",
+    "E16.8": "29a9129867d3b770f1061e5b58c531e7c9e3958f3275583a5fc8e8fba0c5f1bf"
   },
   "semantic_surface": {
     "_doc": "Archivos cuyo contenido determina QUÉ COMPUTA el motor. Si una transición toca uno de éstos, no puede declararse NON_SEMANTIC sin mostrar el diff línea a línea, y ese diff queda escrito en semantic_surface_touched.",
     "files": [
       "program_templates/modules_office.json",
       "program_templates/office_balanced_48.json",
+      "src/escalimetro/area_semantics.py",
       "src/escalimetro/geometry/__init__.py",
       "src/escalimetro/geometry/elements.py",
       "src/escalimetro/geometry/extractor.py",
@@ -53,7 +55,8 @@
       "src/escalimetro/vision/base.py",
       "src/escalimetro/vision/ocr_localizer.py"
     ],
-    "_note_e16_7": "E16.7 incorpora segmentation/structural.py a la superficie semantica: define QUE cuenta como evidencia estructural en un dibujo, y de eso depende todo lo que el proveedor whole_shell computa despues."
+    "_note_e16_7": "E16.7 incorpora segmentation/structural.py a la superficie semantica: define QUE cuenta como evidencia estructural en un dibujo, y de eso depende todo lo que el proveedor whole_shell computa despues.",
+    "_note_e16_8": "E16.8 incorpora area_semantics.py a la superficie semantica: define que region del espacio mide cada cifra y cuando una superficie publicada puede fijar la escala. De eso depende si el motor computa metros y si el solver corre."
   },
   "note_on_repo_hash": "El hash del repositorio NO se usa como criterio: E15, E15.1 y E15.2 cambian metadatos y presentación sin tocar la semántica del solver, y exigir igualdad de hash convertiría cada refactorización en una invalidación masiva. Tampoco vale lo contrario: 'legacy => compatible para siempre'. Por eso la unidad de decisión es la TRANSICIÓN declarada, con su diff calculado a la vista.",
   "transitions": [
@@ -275,6 +278,43 @@
         "perimetro, area_m2, area_px2 y escala de la 403 identicos tras re-ejecutar el pipeline",
         "Hashes de geometria A/B/C de la 403 sin cambios"
       ]
+    },
+    {
+      "from": "E16.7",
+      "to": "E16.8",
+      "kind": "SEMANTIC",
+      "summary": "La inferencia de escala exige compatibilidad semantica de region.",
+      "changed_files": [
+        "src/escalimetro/case_context.py",
+        "src/escalimetro/cli.py",
+        "src/escalimetro/geometry/scale.py",
+        "src/escalimetro/layout/shell_adapter.py",
+        "src/escalimetro/pipeline.py",
+        "src/escalimetro/schemas/floorplate.py",
+        "src/escalimetro/semantics/shell.py"
+      ],
+      "added_files": [
+        "src/escalimetro/area_semantics.py"
+      ],
+      "removed_files": [],
+      "semantic_surface_touched": {
+        "src/escalimetro/area_semantics.py": "modulo nuevo: define regiones en pixeles, tipos de area publicada y la matriz de compatibilidad que autoriza o bloquea la inferencia de escala. No cambia ningun resultado historico por si mismo",
+        "src/escalimetro/geometry/scale.py": "scale_from_known_area recibe la region en pixeles y consulta la matriz. Con regiones compatibles o indemostrables devuelve exactamente el mismo px_per_m y la misma confianza que antes; con regiones incompatibles devuelve None en vez de un numero. Ningun caso historico cae en esa rama: 403 y 401 declaran area de tipo unknown contra una region target_unit, que la matriz clasifica UNKNOWN",
+        "src/escalimetro/layout/shell_adapter.py": "shell_from_floorplate se niega explicitamente a construir el shell en metros cuando la escala fue rechazada por semantica: lanza ScaleNotValidated en vez de operar con un px/m que el motor ya descarto. Un FIT/NO_FIT calculado sobre una escala invalida es peor que no correr, porque se ve igual de bien que uno valido. Para 403/401 no cambia nada: su escala no cae en esa rama",
+        "src/escalimetro/schemas/floorplate.py": "Scale gana cinco campos con default (pixel_region, area_kind, semantic_validity, semantic_reason, rejected_px_per_m). Un floorplate.json antiguo se lee con defaults y no cambia de comportamiento",
+        "src/escalimetro/semantics/shell.py": "la puerta de readiness distingue incompatibilidad semantica de supuesto numerico: confirmar scale_assumption ya no puede autorizar una region equivocada. Para 403/401 no cambia nada porque no son incompatibles"
+      },
+      "semantic_change": "SCALE INFERENCE NOW REQUIRES SEMANTIC REGION COMPATIBILITY BETWEEN PIXEL AREA AND SOURCE AREA. Hasta E16.7 la escala se obtenia dividiendo un area en pixeles por un area en metros sin preguntar si ambas median la misma region del espacio: el tipo de area publicada solo movia un numero de confianza y no tenia poder de veto. Ahora la inferencia pasa por una matriz explicita region_en_pixeles x tipo_de_area, y cuando las regiones son distintas por definicion NO hay escala: px_per_m queda en None, el valor que habria salido se guarda como rejected_px_per_m para trazabilidad, el solver se niega a correr y la presentacion no le asigna grado de confianza.",
+      "evidence_compatibility": "COMPATIBLE, y con una precision: la evidencia historica de 403 y 401 sigue siendo valida porque su escala no cae en la rama incompatible, no porque E16.8 la haya revisado. Lo que E16.8 hace explicito es que esa escala siempre fue un SUPUESTO (SCALE_UNCONFIRMED_REGION); eso ya estaba dicho en su confianza LOW y en scale_assumption, y ahora tiene nombre. Preservar el artefacto y que el artefacto sea evidencia vigente son cosas distintas: aqui se cumplen las dos, verificado por regresion.",
+      "evidence": [
+        "Diff calculado desde los baselines guardados E16.7 y E16.8",
+        "Modificados: 7; nuevos: 1; eliminados: 0",
+        "Superficie semantica tocada: [\"src/escalimetro/area_semantics.py\", \"src/escalimetro/geometry/scale.py\", \"src/escalimetro/layout/shell_adapter.py\", \"src/escalimetro/schemas/floorplate.py\", \"src/escalimetro/semantics/shell.py\"]",
+        "403 re-ejecutada con el motor de E16.8: px_per_m 8.35652390128259 identico, confianza 0.4 identica, perimetro identico, area identica, mask.png BYTE-IDENTICA (sha256 f8aeacdc417cb30d9dcd1338cca5336db206b7f83788cb0e9e94b54aceb107e2)",
+        "Lamina Standard 01 de la 403 BYTE-IDENTICA (test en suite verde)",
+        "Hashes de geometria A/B/C de la 403 sin cambios",
+        "401: NO_FIT / ROBUST_NO_FIT / LEGACY_VERIFIED sin cambios"
+      ]
     }
   ],
   "compatible_with_current": [
@@ -286,7 +326,8 @@
     "E16.1",
     "E16.5",
     "E16.6",
-    "E16.7"
+    "E16.7",
+    "E16.8"
   ],
   "limitation": "El baseline más antiguo registrado es E14. Los artefactos de E06/E07 de la Oficina 403 y los de E14 de la 401 se produjeron ANTES de que existiera un baseline, así que su productor exacto no está registrado y se declara como E14, el estado más antiguo que sí lo está. Es una limitación declarada, no una prueba: lo que sí está verificado es que E15 regeneró los artefactos de E06 de la 403 con un motor posterior y salieron idénticos."
 }
