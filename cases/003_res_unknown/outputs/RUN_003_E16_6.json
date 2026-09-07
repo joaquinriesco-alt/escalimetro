@@ -13,7 +13,17 @@
     "input_image_sha256": "9c5429109cc0073b71bb46780489d0061c9cf0e3726a84d54b90ade1c286c916",
     "case_input_change": "ninguno respecto de E16.5"
   },
-  "localization": { "status": "PASS", "method": "WHOLE_DRAWING_TARGET", "provenance": "SOURCE_FACT_WHOLE_DRAWING", "roi": [70, 37, 1750, 1048] },
+  "localization": {
+    "status": "PASS",
+    "method": "WHOLE_DRAWING_TARGET",
+    "provenance": "SOURCE_FACT_WHOLE_DRAWING",
+    "roi": [
+      70,
+      37,
+      1750,
+      1048
+    ]
+  },
   "segmentation": {
     "status": "FAIL",
     "provider": "whole_shell",
@@ -38,10 +48,30 @@
       "tinta_tras_cierre_frac": 0.271,
       "exterior_alcanzado_frac": 0.723,
       "componentes_interiores": 76,
-      "cinco_mayores_px": [141656, 94659, 37180, 11486, 11012],
+      "cinco_mayores_px": [
+        141656,
+        94659,
+        37180,
+        11486,
+        11012
+      ],
       "huella_candidata_frac": 0.074,
-      "causa": "El exterior de la hoja alcanzo el 72.3% de la imagen: el fondo se filtro DENTRO del edificio. El supuesto del metodo whole_shell —que el muro exterior cierra, salvo vanos menores a gap_px— no se cumple en este dibujo con gap_px=30. La region interior quedo fragmentada en 76 componentes y la mayor cubre solo el 7.4% de la imagen: es un recinto interior, no la huella de la planta.",
-      "NO_corregido": "No se ajusto gap_px, ni wall_thresh, ni ningun umbral. Elegir el valor que hace funcionar este plano seria tunear al caso."
+      "causa": "El exterior de la hoja alcanzo el 72.3% de la imagen: el fondo se filtro DENTRO del edificio. El supuesto del metodo whole_shell —que el muro exterior cierra, salvo vanos menores a gap_px— no se cumple en este dibujo con gap_px=30. La region interior quedo fragmentada en 76 componentes y la mayor cubre solo el 7.4% de la imagen: es un recinto interior, no la huella de la planta.  [VER causa_corregida: la atribucion causal de esta linea fue corregida tras medir el perfil de gris.]",
+      "NO_corregido": "No se ajusto gap_px, ni wall_thresh, ni ningun umbral. Elegir el valor que hace funcionar este plano seria tunear al caso.",
+      "causa_corregida": {
+        "_doc": "CORRECCION del campo 'causa' de mas arriba. La primera redaccion decia que el muro exterior no cerraba con gap_px=30. Al medir el perfil de gris resulto ser otra cosa, mas precisa y mas util.",
+        "medicion": "perfil de gris cruzando el muro perimetral izquierdo (fila y=600): minimos 156, 166, 176, 189, 197",
+        "causa_real": "El muro perimetral de este plano esta dibujado en GRIS CLARO (~156-200), no en tinta oscura. El proveedor considera tinta gris<110, asi que el perimetro es INVISIBLE para el metodo: el exterior no se filtra por un vano, entra porque para el metodo no hay muro. El negro pesado de este dibujo esta reservado a los pilares y al nucleo, no al perimetro.",
+        "contraste_con_el_dibujo_1": {
+          "gris<110": {
+            "RES": "4.06%",
+            "GPS_403": "1.50%"
+          },
+          "nota": "La 403 dibuja su contorno con linea suficientemente oscura; RES no. Es una diferencia de convencion de dibujo, no de calidad."
+        },
+        "supuesto_invalido": "El metodo whole_shell asume que el muro exterior esta dibujado en tinta oscura y continua.",
+        "NO_corregido": "No se bajo wall_thresh. Elegir el umbral que hace visible ESTE perimetro seria tunear al caso, y ademas bajarlo convertiria mobiliario y ejes en muro."
+      }
     }
   },
   "next_pipeline_state": "SEGMENTATION_FAILURE",
@@ -52,13 +82,25 @@
     "note": "La mascara sale vacia porque el proveedor RECHAZO su candidata: prefiere no entregar nada antes que entregar un recinto interior haciendolo pasar por la planta."
   },
   "downstream": {
-    "stage_3_geometry": "FAIL_BY_EMPTY_MASK", "stage_4_scale": "NOT_RUN",
-    "stage_5_shell_access": "NOT_RUN", "stage_6_program": "NOT_RUN", "stage_7_solver": "NOT_RUN",
-    "stage_8_robustness": "NOT_RUN", "stage_9_fit_evidence": "NOT_EVALUATED", "stage_10_presentation": "NOT_RUN"
+    "stage_3_geometry": "FAIL_BY_EMPTY_MASK",
+    "stage_4_scale": "NOT_RUN",
+    "stage_5_shell_access": "NOT_RUN",
+    "stage_6_program": "NOT_RUN",
+    "stage_7_solver": "NOT_RUN",
+    "stage_8_robustness": "NOT_RUN",
+    "stage_9_fit_evidence": "NOT_EVALUATED",
+    "stage_10_presentation": "NOT_RUN"
   },
   "human_intervention": {
-    "manual_seed": false, "manual_bbox": false, "manual_perimeter": false, "manual_crop": false,
-    "watermark_removal": false, "furniture_removal": false, "threshold_tuned_to_case": false,
-    "engine_change_after_freeze": false, "test_change_after_run": false, "program_change": false
+    "manual_seed": false,
+    "manual_bbox": false,
+    "manual_perimeter": false,
+    "manual_crop": false,
+    "watermark_removal": false,
+    "furniture_removal": false,
+    "threshold_tuned_to_case": false,
+    "engine_change_after_freeze": false,
+    "test_change_after_run": false,
+    "program_change": false
   }
 }
