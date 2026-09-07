@@ -130,6 +130,11 @@ def run(cfg: PipelineConfig) -> Floorplate:
     if loc is not None:                         # E16.5 — cómo se resolvió la localización, y por qué
         with open(out("localization.json"), "w", encoding="utf-8") as fh:
             json.dump(loc.to_dict(), fh, indent=2, ensure_ascii=False)
+    if getattr(seg, "diagnostics", None):       # E16.7 — con qué evidencia y con qué parámetros
+        with open(out("segmentation.json"), "w", encoding="utf-8") as fh:
+            json.dump({"provider": seg.provider, "confidence": seg.confidence,
+                       "provenance": seg.provenance, "notes": seg.notes,
+                       **seg.diagnostics}, fh, indent=2, ensure_ascii=False)
     # evidencia intermedia de localización
     ev = img.copy()
     for hnt in vres.hints:

@@ -8,6 +8,8 @@ import numpy as np
 
 from ..schemas.floorplate import Provenance
 from .base import SegmentationProvider, SegmentationRequest, SegmentationResult
+from .structural import (MIN_CONTRAST, STROKE_SCALE_FRAC, barrier_accept,
+                         barrier_diagnostics, structural_ink)
 
 
 class ManualPolygonProvider(SegmentationProvider):
@@ -190,7 +192,7 @@ class SAM2Provider(SegmentationProvider):
 
 
 class WholeShellProvider(SegmentationProvider):
-    """E16.6 — huella de la planta en un plano de arquitectura, sin semilla.
+    """E16.6/E16.7 — huella de la planta en un plano de arquitectura, sin semilla.
 
     Por qué existe. `opencv_flood` resuelve un problema distinto: *crecer una región desde un punto
     que ya se sabe interior*. Esa abstracción es correcta para una unidad rellena de color dentro de
@@ -213,9 +215,24 @@ class WholeShellProvider(SegmentationProvider):
     por el muro exterior, no el espacio libre ni el área arrendable; el núcleo y las exclusiones se
     extraen aguas abajo por su cuenta.
 
+    E16.7 cambió UNA cosa: de qué está hecha la barrera. Antes era `gris < 110`, que es una
+    propiedad de una tinta concreta y no del dibujo; ahora es la evidencia estructural de
+    `segmentation.structural` —trazo más oscuro que su fondo local—, que es la misma propiedad en
+    un plano negro sólido y en uno trazado en gris claro. Todo lo demás de este proveedor (cierre de
+    vanos, conectividad con el exterior, relleno, contrato de máscara) quedó como estaba.
+
+    Dos capas de aceptación, deliberadamente separadas (E16.7 §17):
+
+        1. BARRERA válida  → `structural.barrier_accept`: ¿hay una estructura con la que valga la
+           pena preguntar por conectividad? Se juzga ANTES de mirar qué encierra.
+        2. MÁSCARA válida  → este proveedor: ¿la huella resultante es una planta plausible?
+
+    Cualquiera de las dos puede fallar por su cuenta, y cada una lo dice con su propio motivo. Una
+    barrera inventada no puede salvarse porque la máscara dé métricas bonitas, ni al revés.
+
     params:
-      wall_thresh : gris < wall_thresh es tinta (muro, línea, texto). Default 110, el mismo umbral
-                    de `opencv_flood`: es una constante de dominio del repo, no de un caso.
+      min_contrast / stroke_scale_frac : ver `segmentation.structural`. Constantes del medio y de la
+                    escala de dibujo, no de un caso.
       gap_px      : ancho máximo de puerta o hueco de dibujo que se cierra antes de evaluar la
                     conectividad. Default 30, la misma noción de "≈1 m" que ya usa `opencv_flood`.
       min_roi_frac / max_roi_frac : banda plausible de la huella dentro de la región de interés.
@@ -226,23 +243,39 @@ class WholeShellProvider(SegmentationProvider):
                     máscara absurda es `min_fill` y la conectividad, no un techo sobre la fracción.
       min_fill    : cuánto de su propio recuadro debe llenar la huella. Descarta marcos delgados y
                     formas dispersas que no son una planta.
+      max_second_ratio : si la SEGUNDA región encerrada más grande es comparable a la primera, la
+                    lámina tiene más de un candidato y el proveedor no elige por el usuario. Cierra
+                    el agujero de E16.6, cuyo `componentes == 1` se evaluaba sobre la máscara ya
+                    rellenada y por construcción siempre valía 1.
+      min_open_ratio : una huella de edificio contiene un espacio libre DOMINANTE — el mayor recinto
+                    contiguo sin dibujar es una fracción apreciable de la huella. Una retícula de
+                    ejes, una lámina de anotaciones o una huella contaminada por estructura que no es
+                    el edificio no lo tienen: son celdas pequeñas y equivalentes. Se mide sobre la
+                    tinta SIN dilatar, para que el cierre de vanos no invente tabiques. El valor 0.10
+                    se fijó contra el fixture más sucio de E16.6 (`C_whole_shell_clutter`, 0.30, con
+                    mobiliario, ejes, textos y marca de agua): tres veces de margen sobre el peor
+                    caso genérico disponible, sin haber mirado ningún caso real.
     """
     name = "whole_shell"
 
     def segment(self, req: SegmentationRequest) -> SegmentationResult:
-        p = {"wall_thresh": 110, "gap_px": 30, "min_roi_frac": 0.10, "max_roi_frac": 1.0,
-             "min_fill": 0.30, **(req.params or {})}
+        p = {"min_contrast": MIN_CONTRAST, "stroke_scale_frac": STROKE_SCALE_FRAC,
+             "gap_px": 30, "min_roi_frac": 0.10, "max_roi_frac": 1.0,
+             "min_fill": 0.30, "max_second_ratio": 0.50, "min_open_ratio": 0.10,
+             **(req.params or {})}
         img = req.image_bgr
         h, w = img.shape[:2]
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY) if img.ndim == 3 else img
+        roi = tuple(map(int, req.bbox)) if req.bbox else None
 
-        # 1. tinta = todo lo dibujado. No se distingue muro de mueble: no hace falta.
-        ink = (gray < int(p["wall_thresh"])).astype(np.uint8) * 255
+        # 1. evidencia estructural = lo dibujado, medido contra su propio fondo (E16.7)
+        si = structural_ink(img, min_contrast=int(p["min_contrast"]),
+                            stroke_scale_frac=float(p["stroke_scale_frac"]), roi=roi)
+        ink = si.ink
         # 2. cerrar puertas y huecos de dibujo para que el exterior no se filtre por un vano
         r = max(1, int(p["gap_px"]) // 2)
         k = cv2.getStructuringElement(cv2.MORPH_RECT, (2 * r + 1, 2 * r + 1))
         closed = cv2.dilate(ink, k)
-        # 3. el exterior es lo alcanzable desde el borde de la hoja SIN cruzar tinta
+        # 3. el exterior es lo alcanzable desde el borde de la hoja SIN cruzar la barrera
         free = (closed == 0).astype(np.uint8)
         ff = np.zeros((h + 2, w + 2), np.uint8)
         border = np.zeros((h, w), np.uint8)
@@ -258,14 +291,31 @@ class WholeShellProvider(SegmentationProvider):
                 if free[y, x] == 1:
                     cv2.floodFill(free, ff, (x, y), 2, 0, 0, 4)
         border[free == 2] = 255
-        # 4. lo NO alcanzable desde afuera: tinta + todo lo que la tinta encierra
+
+        # 3b. ACEPTACIÓN DE LA BARRERA, antes de mirar qué encierra
+        bdiag = barrier_diagnostics(closed, border, roi=roi)
+        ink_frac = si.diagnostics["ink_frac_roi"]
+        ok_b, why_b = barrier_accept(ink_frac, bdiag)
+        diagnostics = {"barrier": dict(bdiag, ink_frac_roi=ink_frac, accepted=ok_b, reason=why_b or None),
+                       "structural_ink": dict(si.params, **si.diagnostics),
+                       "roi": list(roi) if roi else None}
+        if not ok_b:
+            return SegmentationResult(mask=np.zeros((h, w), np.uint8), provider=self.name,
+                                      confidence=0.0, provenance=Provenance.CV_SEGMENTATION.value,
+                                      notes=f"whole_shell barrera RECHAZADA: {why_b}",
+                                      diagnostics=diagnostics)
+
+        # 4. lo NO alcanzable desde afuera: barrera + todo lo que la barrera encierra
         inside = np.where(border > 0, 0, 255).astype(np.uint8)
         # 5. la huella es la componente mayor de eso
         n, lab, stats, _ = cv2.connectedComponentsWithStats(inside, 8)
         if n <= 1:
+            diagnostics["mask"] = {"accepted": False, "reason": "sin region encerrada"}
             return SegmentationResult(mask=np.zeros((h, w), np.uint8), provider=self.name,
                                       confidence=0.0, provenance=Provenance.CV_SEGMENTATION.value,
-                                      notes="sin region encerrada por tinta")
+                                      notes="sin region encerrada por la barrera", diagnostics=diagnostics)
+        areas = np.sort(stats[1:, cv2.CC_STAT_AREA])[::-1]
+        second_ratio = float(areas[1] / areas[0]) if len(areas) > 1 and areas[0] else 0.0
         idx = 1 + int(np.argmax(stats[1:, cv2.CC_STAT_AREA]))
         comp = (lab == idx).astype(np.uint8) * 255
         # 6. rellenar y devolver la franja que el cierre morfologico habia engordado
@@ -273,28 +323,39 @@ class WholeShellProvider(SegmentationProvider):
         filled = np.zeros((h, w), np.uint8)
         cv2.drawContours(filled, [max(cnts, key=cv2.contourArea)], -1, 255, cv2.FILLED)
         filled = cv2.erode(filled, k)
-        if req.bbox:
-            x0, y0, x1, y1 = map(int, req.bbox)
+        if roi:
+            x0, y0, x1, y1 = roi
             box = np.zeros((h, w), np.uint8); box[y0:y1, x0:x1] = 255
             filled &= box
 
-        # 7. aceptacion: metricas declaradas de antemano, no elegidas mirando el resultado
+        # 7. aceptacion de la MASCARA: metricas declaradas de antemano, no elegidas mirando el resultado
         area = int((filled > 0).sum())
-        roi_area = ((int(req.bbox[2]) - int(req.bbox[0])) * (int(req.bbox[3]) - int(req.bbox[1]))
-                    if req.bbox else h * w)
+        roi_area = ((roi[2] - roi[0]) * (roi[3] - roi[1])) if roi else h * w
         roi_frac = area / float(roi_area) if roi_area else 0.0
         ys, xs = np.where(filled > 0)
         fill = (area / float((xs.max() - xs.min() + 1) * (ys.max() - ys.min() + 1))) if area else 0.0
         n_cc = cv2.connectedComponentsWithStats(filled, 8)[0] - 1
+        libre = ((filled > 0) & (ink == 0)).astype(np.uint8)
+        nf, _, sf, _ = cv2.connectedComponentsWithStats(libre, 8)
+        open_ratio = (float(sf[1:, cv2.CC_STAT_AREA].max()) / area) if (nf > 1 and area) else 0.0
         ok = (area > 0 and n_cc == 1
+              and second_ratio < float(p["max_second_ratio"])
+              and open_ratio >= float(p["min_open_ratio"])
               and p["min_roi_frac"] <= roi_frac <= p["max_roi_frac"]
               and fill >= p["min_fill"])
-        notes = (f"whole_shell wall_thresh={p['wall_thresh']} gap_px={p['gap_px']} "
-                 f"roi_frac={roi_frac:.4f} fill={fill:.3f} componentes={n_cc} "
+        diagnostics["mask"] = {"roi_frac": round(roi_frac, 6), "fill": round(float(fill), 4),
+                               "components": int(n_cc), "second_ratio": round(second_ratio, 4),
+                               "open_ratio": round(open_ratio, 4), "mask_px": area,
+                               "accepted": bool(ok)}
+        notes = (f"whole_shell ink={si.params['method']} min_contrast={p['min_contrast']} "
+                 f"stroke_scale_px={si.params['stroke_scale_px']} gap_px={p['gap_px']} "
+                 f"span_ratio={bdiag['span_ratio']:.3f} roi_frac={roi_frac:.4f} fill={fill:.3f} "
+                 f"componentes={n_cc} second_ratio={second_ratio:.3f} open_ratio={open_ratio:.3f} "
                  f"aceptacion={'PASS' if ok else 'FAIL'}")
         return SegmentationResult(mask=filled if ok else np.zeros((h, w), np.uint8),
                                   provider=self.name, confidence=0.65 if ok else 0.0,
-                                  provenance=Provenance.CV_SEGMENTATION.value, notes=notes)
+                                  provenance=Provenance.CV_SEGMENTATION.value, notes=notes,
+                                  diagnostics=diagnostics)
 
 
 REGISTRY = {

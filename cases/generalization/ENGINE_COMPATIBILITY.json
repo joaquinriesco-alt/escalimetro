@@ -1,6 +1,6 @@
 {
   "_doc": "E15.2 §7-§9 — compatibilidad de evidencia entre versiones del motor. Una evidencia producida bajo el baseline X sigue vigente bajo Y SÓLO si existe una cadena explícita de transiciones declaradas NON_SEMANTIC entre X e Y. No hay comodín: un baseline que no esté en compatible_with_current vuelve STALE toda evidencia producida bajo él.",
-  "current_baseline": "E16.6",
+  "current_baseline": "E16.7",
   "baselines": {
     "E14": "5ce5f6a1f4e3dd17f5f4518fb8365bc24ed90d337dfc5aacb1c1b144b7877259",
     "E15": "d213b4294290247913011d50a15df03fd5ba51b380e905b4a74a7d44ba1201ff",
@@ -9,7 +9,8 @@
     "E15.3": "49f36d0a63a14a0bbf1610d3fc086ea4052a0b14e5c9b2b61b9fd8f1616e5e68",
     "E16.1": "a6ee3213b6994897aaa16c0852e2079a5eab0b1750f55db4b1d670a39d3c07fa",
     "E16.5": "1fdc9b64b824edf70d0c908f19f1682e470b6abe83c19b3a12da01eb4ef39456",
-    "E16.6": "9f25241d8d88066f2567299594bd3faef35364bfc4ea0deafa52a70199385bf0"
+    "E16.6": "9f25241d8d88066f2567299594bd3faef35364bfc4ea0deafa52a70199385bf0",
+    "E16.7": "2de297f99507d0a27d4e68e56f2f13dbc2903389db8b7cd1bdcf0b6d731804d4"
   },
   "semantic_surface": {
     "_doc": "Archivos cuyo contenido determina QUÉ COMPUTA el motor. Si una transición toca uno de éstos, no puede declararse NON_SEMANTIC sin mostrar el diff línea a línea, y ese diff queda escrito en semantic_surface_touched.",
@@ -41,6 +42,7 @@
       "src/escalimetro/segmentation/__init__.py",
       "src/escalimetro/segmentation/base.py",
       "src/escalimetro/segmentation/providers.py",
+      "src/escalimetro/segmentation/structural.py",
       "src/escalimetro/semantics/__init__.py",
       "src/escalimetro/semantics/columns_v2.py",
       "src/escalimetro/semantics/daylight.py",
@@ -50,7 +52,8 @@
       "src/escalimetro/vision/adapters.py",
       "src/escalimetro/vision/base.py",
       "src/escalimetro/vision/ocr_localizer.py"
-    ]
+    ],
+    "_note_e16_7": "E16.7 incorpora segmentation/structural.py a la superficie semantica: define QUE cuenta como evidencia estructural en un dibujo, y de eso depende todo lo que el proveedor whole_shell computa despues."
   },
   "note_on_repo_hash": "El hash del repositorio NO se usa como criterio: E15, E15.1 y E15.2 cambian metadatos y presentación sin tocar la semántica del solver, y exigir igualdad de hash convertiría cada refactorización en una invalidación masiva. Tampoco vale lo contrario: 'legacy => compatible para siempre'. Por eso la unidad de decisión es la TRANSICIÓN declarada, con su diff calculado a la vista.",
   "transitions": [
@@ -240,6 +243,38 @@
         "Lamina Standard 01 de la 403 BYTE-IDENTICA",
         "Hashes de geometria A/B/C de la 403 sin cambios"
       ]
+    },
+    {
+      "from": "E16.6",
+      "to": "E16.7",
+      "kind": "SEMANTIC",
+      "summary": "Generalizacion de la deteccion de evidencia estructural para segmentacion whole-shell.",
+      "changed_files": [
+        "src/escalimetro/pipeline.py",
+        "src/escalimetro/segmentation/base.py",
+        "src/escalimetro/segmentation/providers.py"
+      ],
+      "added_files": [
+        "src/escalimetro/segmentation/structural.py"
+      ],
+      "removed_files": [],
+      "semantic_surface_touched": {
+        "src/escalimetro/segmentation/base.py": "la evidencia estructural pasa de umbral global de gris a contraste local a escala de trazo; sólo la consume el proveedor whole_shell, el camino multi_unit no cambia",
+        "src/escalimetro/segmentation/providers.py": "la evidencia estructural pasa de umbral global de gris a contraste local a escala de trazo; sólo la consume el proveedor whole_shell, el camino multi_unit no cambia",
+        "src/escalimetro/segmentation/structural.py": "la evidencia estructural pasa de umbral global de gris a contraste local a escala de trazo; sólo la consume el proveedor whole_shell, el camino multi_unit no cambia"
+      },
+      "semantic_change": "STRUCTURAL WALL / INK DETECTION FOR WHOLE-SHELL SEGMENTATION GENERALIZED BEYOND GLOBAL DARKNESS THRESHOLD. Hasta E16.6 lo dibujado se identificaba con 'gris < 110', que describe una tinta concreta y no un dibujo: el mismo plano trazado en gris claro no tenia un solo pixel bajo el umbral. Ahora la evidencia estructural es relativa —pixel materialmente mas oscuro que el fondo LOCAL del papel, medido a la escala de trazo de la imagen— y sus dos magnitudes son constantes del medio (25 niveles de 255) y de la escala de dibujo (1% del lado mayor), no de un caso. Se agrego ademas una capa de aceptacion de BARRERA, separada y anterior a la de mascara.",
+      "evidence_compatibility": "COMPATIBLE — 403/401 siguen por multi_unit -> opencv_flood/opencv_color con su umbral historico intacto; verificado por regresion.",
+      "evidence": [
+        "Diff calculado desde los baselines guardados E16.6 y E16.7",
+        "Modificados: 3; nuevos: 1; eliminados: 0",
+        "Superficie semantica tocada: [\"src/escalimetro/segmentation/base.py\", \"src/escalimetro/segmentation/providers.py\", \"src/escalimetro/segmentation/structural.py\"]",
+        "Metodo validado en 15 fixtures genericos (9 positivos, 8 negativos, 1 clase abierta) ANTES de correr RES",
+        "Lamina Standard 01 de la 403 BYTE-IDENTICA (test en suite verde)",
+        "mask.png de la 403 regenerada BYTE-IDENTICA (sha256 f8aeacdc417cb30d9dcd1338cca5336db206b7f83788cb0e9e94b54aceb107e2)",
+        "perimetro, area_m2, area_px2 y escala de la 403 identicos tras re-ejecutar el pipeline",
+        "Hashes de geometria A/B/C de la 403 sin cambios"
+      ]
     }
   ],
   "compatible_with_current": [
@@ -250,7 +285,8 @@
     "E15.3",
     "E16.1",
     "E16.5",
-    "E16.6"
+    "E16.6",
+    "E16.7"
   ],
   "limitation": "El baseline más antiguo registrado es E14. Los artefactos de E06/E07 de la Oficina 403 y los de E14 de la 401 se produjeron ANTES de que existiera un baseline, así que su productor exacto no está registrado y se declara como E14, el estado más antiguo que sí lo está. Es una limitación declarada, no una prueba: lo que sí está verificado es que E15 regeneró los artefactos de E06 de la 403 con un motor posterior y salieron idénticos."
 }

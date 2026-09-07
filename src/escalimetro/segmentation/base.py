@@ -28,6 +28,10 @@ class SegmentationResult:
     confidence: float
     provenance: str             # valor de schemas.Provenance
     notes: str = ""
+    # E16.7 — métricas medidas y parámetros efectivamente usados, incluidos los derivados de la
+    # imagen. Se persisten tal cual: un parámetro adaptativo que no queda escrito es un parámetro
+    # oculto.
+    diagnostics: Optional[dict] = None
 
 
 class SegmentationProvider(ABC):
