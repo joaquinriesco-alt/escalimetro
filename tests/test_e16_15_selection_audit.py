@@ -166,7 +166,12 @@ def test_el_candidato_v3_es_artefacto_y_no_motor():
 
 
 def test_las_corridas_del_candidato_estan_registradas():
+    """El artefacto envuelve las corridas bajo `candidate` justamente para que nadie las confunda con
+    una medición del motor embarcado. E16.16 corrigió este test, que leía el nivel superior y quedó
+    rojo al escribirse el artefacto definitivo."""
     d = json.load(open(os.path.join(ART, "CANDIDATE_DEV_RUNS.json"), encoding="utf-8"))
+    assert d["engine_unchanged"] is True
     for caso in ("RES", "GPS"):
-        assert d[caso]["discovered"] > d[caso]["selected"] > 0
-        assert d[caso]["associations"], "cada pieza seleccionada declara de qué celdas es responsable"
+        c = d["candidate"][caso]
+        assert c["discovered"] > c["selected"] > 0
+        assert c["associations"], "cada pieza seleccionada declara de qué celdas es responsable"

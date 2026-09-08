@@ -1,0 +1,263 @@
+{
+ "_doc": "E16.16 — banco multi-resolucion sobre una escena vectorial unica. El motor NO cambio: estas cifras describen el motor vigente (E16.15) y tres candidatos medidos y NO embarcados.",
+ "engine_unchanged": true,
+ "engine_hash": "779a1eee6d3d2f2ce4fcc185dbf08da8890768e49a64211770eb1ee800a8105c",
+ "wall_evidence_hash": "9c8db1516771271dd25d4f4fb2cf128b978dcc9c2c378c3a7b94d08add1f23fd",
+ "parameter_regimes": [
+  {
+   "side": 600,
+   "k": 7,
+   "thick_threshold": 3,
+   "thick_over_k": 0.429,
+   "linear_threshold": 15
+  },
+  {
+   "side": 800,
+   "k": 9,
+   "thick_threshold": 3,
+   "thick_over_k": 0.333,
+   "linear_threshold": 19
+  },
+  {
+   "side": 1000,
+   "k": 11,
+   "thick_threshold": 3,
+   "thick_over_k": 0.273,
+   "linear_threshold": 23
+  },
+  {
+   "side": 1400,
+   "k": 15,
+   "thick_threshold": 3,
+   "thick_over_k": 0.2,
+   "linear_threshold": 31
+  },
+  {
+   "side": 1800,
+   "k": 19,
+   "thick_threshold": 5,
+   "thick_over_k": 0.263,
+   "linear_threshold": 39
+  },
+  {
+   "side": 2400,
+   "k": 25,
+   "thick_threshold": 7,
+   "thick_over_k": 0.28,
+   "linear_threshold": 51
+  }
+ ],
+ "baseline_e16_15": [
+  {
+   "side": 600,
+   "k": 7,
+   "wall_recall": 0.302,
+   "wall_precision": 1.0,
+   "fp_furniture": 0.0,
+   "fp_text": 0.0,
+   "fp_grid": 0.0
+  },
+  {
+   "side": 800,
+   "k": 9,
+   "wall_recall": 0.281,
+   "wall_precision": 0.861,
+   "fp_furniture": 0.878,
+   "fp_text": 0.0,
+   "fp_grid": 0.003
+  },
+  {
+   "side": 1000,
+   "k": 11,
+   "wall_recall": 1.0,
+   "wall_precision": 0.959,
+   "fp_furniture": 0.878,
+   "fp_text": 0.0,
+   "fp_grid": 0.002
+  },
+  {
+   "side": 1400,
+   "k": 15,
+   "wall_recall": 1.0,
+   "wall_precision": 0.794,
+   "fp_furniture": 1.0,
+   "fp_text": 0.168,
+   "fp_grid": 1.0
+  },
+  {
+   "side": 1800,
+   "k": 19,
+   "wall_recall": 1.0,
+   "wall_precision": 0.963,
+   "fp_furniture": 0.854,
+   "fp_text": 0.0,
+   "fp_grid": 0.002
+  },
+  {
+   "side": 2400,
+   "k": 25,
+   "wall_recall": 1.0,
+   "wall_precision": 0.958,
+   "fp_furniture": 0.845,
+   "fp_text": 0.0,
+   "fp_grid": 0.002
+  }
+ ],
+ "candidate_canonical_scale": [
+  {
+   "side": 600,
+   "wall_recall": 0.302,
+   "wall_precision": 0.701,
+   "fp_furniture": 0.492,
+   "fp_text": 0.152,
+   "fp_grid": 0.557
+  },
+  {
+   "side": 800,
+   "wall_recall": 0.753,
+   "wall_precision": 0.923,
+   "fp_furniture": 0.995,
+   "fp_text": 0.0,
+   "fp_grid": 0.004
+  },
+  {
+   "side": 1000,
+   "wall_recall": 1.0,
+   "wall_precision": 0.952,
+   "fp_furniture": 0.875,
+   "fp_text": 0.0,
+   "fp_grid": 0.003
+  },
+  {
+   "side": 1400,
+   "wall_recall": 0.987,
+   "wall_precision": 0.866,
+   "fp_furniture": 0.997,
+   "fp_text": 0.155,
+   "fp_grid": 0.348
+  },
+  {
+   "side": 1800,
+   "wall_recall": 0.977,
+   "wall_precision": 0.956,
+   "fp_furniture": 0.77,
+   "fp_text": 0.043,
+   "fp_grid": 0.026
+  },
+  {
+   "side": 2400,
+   "wall_recall": 0.986,
+   "wall_precision": 0.776,
+   "fp_furniture": 0.999,
+   "fp_text": 0.166,
+   "fp_grid": 1.0
+  }
+ ],
+ "candidate_distance_transform": [
+  {
+   "side": 600,
+   "wall_recall": 0.302,
+   "wall_precision": 1.0,
+   "fp_furniture": 0.0
+  },
+  {
+   "side": 800,
+   "wall_recall": 0.281,
+   "wall_precision": 0.861,
+   "fp_furniture": 0.878
+  },
+  {
+   "side": 1000,
+   "wall_recall": 0.999,
+   "wall_precision": 0.959,
+   "fp_furniture": 0.869
+  },
+  {
+   "side": 1400,
+   "wall_recall": 0.999,
+   "wall_precision": 0.795,
+   "fp_furniture": 0.99
+  },
+  {
+   "side": 1800,
+   "wall_recall": 0.867,
+   "wall_precision": 0.974,
+   "fp_furniture": 0.51
+  },
+  {
+   "side": 2400,
+   "wall_recall": 0.787,
+   "wall_precision": 0.977,
+   "fp_furniture": 0.361
+  }
+ ],
+ "candidate_dt_canonical": [
+  {
+   "side": 600,
+   "wall_recall": 0.269,
+   "wall_precision": 0.728,
+   "fp_furniture": 0.0
+  },
+  {
+   "side": 800,
+   "wall_recall": 0.718,
+   "wall_precision": 0.952,
+   "fp_furniture": 0.579
+  },
+  {
+   "side": 1000,
+   "wall_recall": 0.897,
+   "wall_precision": 0.971,
+   "fp_furniture": 0.581
+  },
+  {
+   "side": 1400,
+   "wall_recall": 0.913,
+   "wall_precision": 0.91,
+   "fp_furniture": 0.75
+  },
+  {
+   "side": 1800,
+   "wall_recall": 0.905,
+   "wall_precision": 0.967,
+   "fp_furniture": 0.681
+  },
+  {
+   "side": 2400,
+   "wall_recall": 0.92,
+   "wall_precision": 0.822,
+   "fp_furniture": 0.702
+  }
+ ],
+ "ink_width_response": {
+  "_doc": "ancho MEDIANO de tinta (2x transformada de distancia) frente al ancho DIBUJADO, misma escena",
+  "600": {
+   "drawn_furniture_wall": [
+    1,
+    3,
+    5
+   ],
+   "ink_furniture": 1.9,
+   "ink_wall": 3.8
+  },
+  "1400": {
+   "drawn_furniture_wall": [
+    3,
+    8,
+    12
+   ],
+   "ink_furniture": 3.8,
+   "ink_wall": 5.7
+  },
+  "2400": {
+   "drawn_furniture_wall": [
+    5,
+    13,
+    20
+   ],
+   "ink_furniture": 3.8,
+   "ink_wall": 9.6
+  }
+ },
+ "verdict": "D - REPRESENTATION LIMIT. La dependencia de resolucion queda demostrada, pero normalizar la escala de trazo NO la corrige: ninguna de las tres variantes logra simultaneamente invarianza y discriminacion. La respuesta de ancho de la capa de tinta se satura y se cuantiza, de modo que el grosor medido no sigue al grosor dibujado."
+}

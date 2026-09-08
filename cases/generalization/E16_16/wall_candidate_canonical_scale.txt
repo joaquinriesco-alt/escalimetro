@@ -1,0 +1,32 @@
+"""E16.16 — candidato: clasificar SIEMPRE en un espacio de escala de trazo canónica."""
+import sys, cv2, numpy as np
+sys.path.insert(0,"/home/claude/escalimetro/src")
+from escalimetro.segmentation.structural import stroke_scale_px, structural_ink
+
+CANONICAL_STROKE_SCALE = 20     # px; ver justificación en el informe
+
+def _canonical_factor(shape):
+    k = stroke_scale_px(shape)
+    return CANONICAL_STROKE_SCALE / float(k), k
+
+def wall_map_v2(image_bgr, canon=CANONICAL_STROKE_SCALE):
+    h, w = image_bgr.shape[:2]
+    k = stroke_scale_px((h, w))
+    s = canon / float(k)
+    if abs(s - 1.0) > 0.02:
+        interp = cv2.INTER_AREA if s < 1 else cv2.INTER_CUBIC
+        img = cv2.resize(image_bgr, (max(8, int(round(w * s))), max(8, int(round(h * s)))), interpolation=interp)
+    else:
+        img = image_bgr
+    ink = (structural_ink(img).ink > 0).astype(np.uint8) * 255
+    kn = stroke_scale_px(ink.shape[:2])
+    grosor = max(3, kn // 4) | 1
+    grueso = cv2.morphologyEx(ink, cv2.MORPH_OPEN,
+                              cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (grosor, grosor)))
+    largo = max(9, 2 * kn) | 1
+    hh = cv2.morphologyEx(grueso, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_RECT, (largo, 1)))
+    vv = cv2.morphologyEx(grueso, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_RECT, (1, largo)))
+    wall_n = ((hh | vv) > 0).astype(np.uint8) * 255
+    if wall_n.shape[:2] != (h, w):
+        wall_n = cv2.resize(wall_n, (w, h), interpolation=cv2.INTER_NEAREST)
+    return (wall_n > 0).astype(np.uint8) * 255

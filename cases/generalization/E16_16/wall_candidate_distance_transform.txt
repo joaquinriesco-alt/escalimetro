@@ -1,0 +1,28 @@
+"""Variantes de medición de grosor dentro de WALL_EVIDENCE (E16.16, diseño previo a casos reales)."""
+import sys, cv2, numpy as np
+sys.path.insert(0,"/home/claude/escalimetro/src")
+from escalimetro.segmentation.structural import stroke_scale_px, structural_ink
+
+def _linear(mask, kn):
+    largo = max(9, 2 * kn) | 1
+    h = cv2.morphologyEx(mask, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_RECT, (largo, 1)))
+    v = cv2.morphologyEx(mask, cv2.MORPH_OPEN, cv2.getStructuringElement(cv2.MORPH_RECT, (1, largo)))
+    return ((h | v) > 0).astype(np.uint8) * 255
+
+def wall_dt(image_bgr, frac=0.125):
+    """Grosor MEDIDO con transformada de distancia (semiancho ≥ frac·k), no por apertura."""
+    ink = (structural_ink(image_bgr).ink > 0).astype(np.uint8)
+    kn = stroke_scale_px(ink.shape[:2])
+    d = cv2.distanceTransform(ink, cv2.DIST_L2, 3)
+    grueso = ((d >= max(1.0, frac * kn)) * 255).astype(np.uint8)
+    grueso = cv2.dilate(grueso, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3)))
+    grueso = (grueso & (ink * 255))
+    return _linear(grueso, kn)
+
+def wall_dt_canon(image_bgr, frac=0.125, canon=20):
+    h, w = image_bgr.shape[:2]
+    k = stroke_scale_px((h, w)); s = canon / float(k)
+    img = cv2.resize(image_bgr, (max(8, int(round(w*s))), max(8, int(round(h*s)))),
+                     interpolation=cv2.INTER_AREA if s < 1 else cv2.INTER_CUBIC) if abs(s-1) > .02 else image_bgr
+    m = wall_dt(img, frac)
+    return cv2.resize(m, (w, h), interpolation=cv2.INTER_NEAREST) if m.shape[:2] != (h, w) else m
