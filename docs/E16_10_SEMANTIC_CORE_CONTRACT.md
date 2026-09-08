@@ -52,7 +52,7 @@ Nunca un núcleo inventado por una heurística de reemplazo silenciosa.
 |---|---|---|
 | evidencia estructural (contraste local) | E16.7 | base de todo |
 | **muro = trazo grueso Y lineal** | investigado en E16.8-CORE | separa muro de mobiliario y de texto |
-| celdas interiores cerradas | E16.8-CORE | anclas de circulación vertical |
+| celdas interiores cerradas | E16.8-CORE | anclas geométricas (E16.11 corrigió el nombre) |
 | conectividad y piso libre dominante | E16.6/E16.7 | medir invasión de espacio ocupable |
 
 Procedimiento: la pista define una zona de búsqueda (ensanchada un 3 % del lado mayor, porque una
@@ -80,8 +80,10 @@ prueba por los **dos** lados con fixtures.
 | `components` | = 1 | conectividad |
 | `open_floor_invasion` | ≤ 0.30 | no invadir el espacio ocupable: si la mayor parte del candidato es piso abierto dominante, es oficina con muros alrededor |
 
-`vertical_circulation_anchors` se **registra como evidencia y no veta**: hay dibujos que no dejan ver
-celdas cerradas, y su ausencia no prueba que no haya circulación vertical.
+`enclosed_cell_anchors_*` (renombrada en E16.11: lo que se mide son celdas cerradas, no ascensores)
+se **registra como evidencia y no veta la plausibilidad**: hay dibujos que no dejan ver celdas
+cerradas, y su ausencia no prueba nada. E16.11 las usa además para evaluar COMPLETITUD, que es una
+pregunta distinta y tiene su propio contrato — ver `docs/E16_11_CORE_COMPLETENESS_CONTRACT.md`.
 
 ## 6. Familia de fixtures
 

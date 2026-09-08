@@ -28,6 +28,7 @@ import cv2
 import numpy as np
 
 from ..segmentation.structural import stroke_scale_px, structural_ink
+from . import core_completeness as CC
 
 Point = Tuple[float, float]
 
@@ -55,6 +56,13 @@ class CoreCandidate:
     accepted: bool = False
     reasons: List[str] = field(default_factory=list)
     notes: str = ""
+    # E16.11 — dos preguntas distintas, dos estados distintos. `accepted` sigue significando lo que
+    # significaba en E16.10 (plausibilidad) y ya no es el veredicto: el veredicto es `status`.
+    plausibility_status: str = ""
+    completeness_status: str = ""
+    completeness_metrics: Dict = field(default_factory=dict)
+    completeness_reasons: List[str] = field(default_factory=list)
+    status: str = ""
 
 
 def wall_map(image_bgr: np.ndarray) -> np.ndarray:
@@ -77,13 +85,23 @@ def wall_map(image_bgr: np.ndarray) -> np.ndarray:
     return ((h | v) > 0).astype(np.uint8) * 255
 
 
-def enclosed_cells(image_bgr: np.ndarray, footprint: np.ndarray,
-                   max_frac: float = ANCHOR_MAX_FRAC) -> Tuple[np.ndarray, int]:
-    """Celdas interiores CERRADAS y pequeñas: cajas de ascensor, ductos, shafts.
+def enclosed_cell_anchors(image_bgr: np.ndarray, footprint: np.ndarray,
+                          max_frac: float = ANCHOR_MAX_FRAC) -> Tuple[np.ndarray, int]:
+    """Celdas interiores CERRADAS y pequeñas, dentro de la huella.
 
-    Son la huella gráfica de la circulación vertical: un recinto sin puerta dibujada al piso. E16.8
-    las midió y aislaron exactamente las cabinas de ascensor del plano de desarrollo. Se usan como
-    ANCLA, no como núcleo: un ancla dice "aquí hay infraestructura permanente"."""
+    NOMBRE CORREGIDO EN E16.11, Y EL CAMBIO IMPORTA. E16.10 llamaba a esto
+    `vertical_circulation_anchors` y su docstring decía "cajas de ascensor, ductos, shafts". Eso
+    afirmaba algo que el código no mide. Lo que el código mide es exactamente esto: componentes
+    conectadas de espacio libre, encerradas por muro dilatado, que no son la dominante y que no
+    superan `max_frac` de la huella. Una caja de ascensor produce una de estas celdas; una bodega,
+    un cuarto técnico, un baño individual y un hueco de dibujo también. En el plano de desarrollo
+    resultó que las mayores eran cabinas de ascensor, pero eso fue una OBSERVACIÓN sobre ese dibujo,
+    no una propiedad del detector.
+
+        LA VARIABLE DICE LO QUE SABEMOS, NO LO QUE INFERIMOS.
+
+    Se usan como ANCLA GEOMÉTRICA: dicen "aquí hay un recinto cerrado", que es evidencia de
+    construcción permanente, no de circulación vertical."""
     fp = footprint > 0
     walls = wall_map(image_bgr) > 0
     k = stroke_scale_px(footprint.shape[:2])
@@ -124,7 +142,7 @@ def build_core(image_bgr: np.ndarray, footprint: np.ndarray,
     fp = footprint > 0
     area_fp = float(fp.sum())
     walls = wall_map(image_bgr) > 0
-    anchors, n_anchors = enclosed_cells(image_bgr, footprint, p["anchor_max_frac"])
+    anchors, n_anchors = enclosed_cell_anchors(image_bgr, footprint, p["anchor_max_frac"])
 
     # 1. la pista REDUCE el espacio de búsqueda; no recorta el resultado
     m = int(max(h, w) * p["search_margin_frac"])
@@ -138,7 +156,7 @@ def build_core(image_bgr: np.ndarray, footprint: np.ndarray,
     if not seed.any():
         return CoreCandidate(np.zeros((h, w), np.uint8), [],
                              {"reason": "sin estructura en la zona de búsqueda",
-                              "vertical_circulation_anchors": n_anchors}, False,
+                              "enclosed_cell_anchors_in_drawing": n_anchors}, False,
                              ["sin estructura permanente donde la pista dice que hay núcleo"])
 
     # 3. enlazar piezas separadas por vanos y pasillos, y quedarse con el cluster mayor
@@ -147,7 +165,7 @@ def build_core(image_bgr: np.ndarray, footprint: np.ndarray,
     cluster = cv2.morphologyEx((seed * 255).astype(np.uint8), cv2.MORPH_CLOSE, ker)
     n, lab, st, _ = cv2.connectedComponentsWithStats((cluster > 0).astype(np.uint8), 8)
     if n <= 1:
-        return CoreCandidate(np.zeros((h, w), np.uint8), [], {"vertical_circulation_anchors": n_anchors},
+        return CoreCandidate(np.zeros((h, w), np.uint8), [], {"enclosed_cell_anchors_in_drawing": n_anchors},
                              False, ["la estructura no forma ningún cluster"])
     i = 1 + int(np.argmax(st[1:, cv2.CC_STAT_AREA]))
     cluster = (lab == i)
@@ -180,7 +198,7 @@ def build_core(image_bgr: np.ndarray, footprint: np.ndarray,
         j = 1 + int(np.argmax(sf[1:, cv2.CC_STAT_AREA]))
         filled = (lf == j)
     if not filled.any():
-        return CoreCandidate(np.zeros((h, w), np.uint8), [], {"vertical_circulation_anchors": n_anchors},
+        return CoreCandidate(np.zeros((h, w), np.uint8), [], {"enclosed_cell_anchors_in_drawing": n_anchors},
                              False, ["el candidato desaparece al descontar el enlace morfológico"])
 
     # 6. métricas medidas, no estimadas
@@ -208,11 +226,11 @@ def build_core(image_bgr: np.ndarray, footprint: np.ndarray,
         "open_floor_invasion": round(float((filled & piso).sum()) / area, 4),
         "components": int(n_cc),
         "discarded_pieces": int(piezas - 1) if piezas > 1 else 0,
-        # evidencia, no veto: se registra cuántas celdas cerradas quedaron dentro. Hay dibujos que
-        # no las hacen visibles, y su ausencia no prueba que no haya circulación vertical.
-        "vertical_circulation_anchors": int(cv2.connectedComponents(
+        # evidencia, no veto en esta capa: cuántas celdas cerradas quedaron dentro del candidato.
+        # E16.11 las usa además para evaluar COMPLETITUD, que es una pregunta distinta.
+        "enclosed_cell_anchors_inside": int(cv2.connectedComponents(
             (((anchors > 0) & filled) * 255).astype(np.uint8))[0] - 1),
-        "anchors_in_drawing": int(n_anchors),
+        "enclosed_cell_anchors_in_drawing": int(n_anchors),
     }
     eps = 0.004 * cv2.arcLength(big, True)
     ring = [(float(a[0][0]), float(a[0][1])) for a in cv2.approxPolyDP(big, eps, True)]
@@ -274,12 +292,30 @@ def accept_core(metrics: Dict, contract: Optional[Dict] = None) -> Tuple[bool, L
 def core_from_hint(image_bgr: np.ndarray, footprint: np.ndarray,
                    hint_region: Tuple[float, float, float, float],
                    params: Optional[Dict] = None,
-                   contract: Optional[Dict] = None) -> CoreCandidate:
+                   contract: Optional[Dict] = None,
+                   completeness_contract: Optional[Dict] = None) -> CoreCandidate:
+    """Produce el candidato y lo somete a las DOS preguntas: ¿parece un núcleo? ¿es el núcleo
+    completo? El estado global sale de `core_completeness.overall_status`, y no hay ningún camino
+    por el que "plausible" sola produzca CORE_ACCEPTED."""
     cand = build_core(image_bgr, footprint, hint_region, params)
     if not cand.metrics.get("core_px"):
+        cand.plausibility_status = CC.NOT_PLAUSIBLE
+        cand.completeness_status = CC.COMPLETENESS_NOT_EVALUATED
+        cand.status = CC.CORE_REJECTED_IMPLAUSIBLE
         return cand
     ok, fails = accept_core(cand.metrics, contract)
     cand.accepted = ok
     cand.reasons = fails
-    cand.notes = ("core aceptado" if ok else "core RECHAZADO: " + "; ".join(fails))
+    cand.plausibility_status = CC.PLAUSIBLE if ok else CC.NOT_PLAUSIBLE
+
+    anchors, _ = enclosed_cell_anchors(image_bgr, footprint,
+                                       (params or {}).get("anchor_max_frac", ANCHOR_MAX_FRAC))
+    ev = CC.evaluate_completeness(cand.mask, anchors, hint_region, completeness_contract)
+    cand.completeness_status = ev.status
+    cand.completeness_metrics = ev.metrics
+    cand.completeness_reasons = ev.reasons
+    cand.status = CC.overall_status(ok, ev.status)
+    cand.notes = f"{cand.status}: plausibilidad={cand.plausibility_status}, completitud={ev.status}"
+    if fails or ev.reasons:
+        cand.notes += " — " + "; ".join(fails + ev.reasons)
     return cand

@@ -198,13 +198,16 @@ def test_el_contrato_esta_declarado_como_dato_y_completo():
         assert k in CG.CORE_ACCEPTANCE
 
 
-def test_la_evidencia_de_circulacion_vertical_se_registra_pero_no_veta():
+def test_las_anclas_se_registran_pero_no_vetan_la_plausibilidad():
+    """E16.11 renombró la señal: `enclosed_cell_anchors_*`. Lo que el detector mide son celdas
+    cerradas, no ascensores, y el nombre dejó de afirmar lo segundo. En la capa de PLAUSIBILIDAD
+    siguen sin vetar; la completitud las usa aparte (ver tests de E16.11)."""
     c = _core("A_core_compacto")
-    assert c.metrics["vertical_circulation_anchors"] >= 1
-    assert not any("anchors" in r for r in c.reasons)
+    assert c.metrics["enclosed_cell_anchors_inside"] >= 1
+    assert not any("anchor" in r for r in c.reasons)
     src = _codigo(os.path.join(SRC, "geometry", "core_geometry.py"))
-    i = src.index("def accept_core")
-    assert "vertical_circulation_anchors" not in src[i:], "las anclas son evidencia, no veto"
+    i, j = src.index("def accept_core"), src.index("def core_from_hint")
+    assert "anchor" not in src[i:j], "las anclas no vetan la plausibilidad"
 
 
 # ---------------------------------------------------------------------------------------------------
