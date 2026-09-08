@@ -1,0 +1,179 @@
+{
+  "_doc": "E16.10 — corrida de desarrollo de RES con el motor congelado en el baseline E16.10, UNA vez. Sin tuning posterior.",
+  "frozen_before_run": {
+    "engine_baseline": "E16.10",
+    "engine_hash": "050d4beea8dc3e203b61294c376c1f64e1a3d1d69455fd37260188d4955566f1",
+    "engine_hash_after_run": "050d4beea8dc3e203b61294c376c1f64e1a3d1d69455fd37260188d4955566f1",
+    "commit_before_run": "49e4221",
+    "pre_run_suite": "618 passed, 2 skipped, 0 failed",
+    "acceptance_contract": {
+      "hint_iou_min": 0.15,
+      "require_centroid_in_hint": true,
+      "wall_fraction_min": 0.12,
+      "footprint_frac_min": 0.02,
+      "footprint_frac_max": 0.35,
+      "solidity_min": 0.55,
+      "components_max": 1,
+      "open_floor_invasion_max": 0.3
+    }
+  },
+  "semantic_hint": {
+    "kind": "core",
+    "approximate_region": [
+      645.0,
+      300.0,
+      1300.0,
+      835.0
+    ],
+    "confidence": "high",
+    "semantic_evidence": "Una franja central dibujada con muros achurados pesados, distinta de las particiones delgadas de la oficina abierta. Dentro: una escalera con peldaños numerados; bancos de ascensores dibujados como cajas con diagonales en cruz y rótulos de cabina; un grupo de baños a la derecha con rótulos de baño de hombres, mujeres y accesible; pequeños rectángulos cerrados que leen como ductos y clósets de servicio. La franja está libre de mobiliario mientras todo al este y al oeste está lleno de escritorios, mesas y sillas. Advertencia declarada por el propio intérprete: la marca de agua del corredor se sitúa sobre el centro y tapa parte del banco superior; precisión de borde ±15-20 px; es ambiguo si los recintos de servicio del extremo pertenecen al núcleo o son habilitación del arrendatario.",
+    "provenance": "VLM",
+    "provider": "UNKNOWN",
+    "model": "UNKNOWN",
+    "schema_version": "1.0.0",
+    "source_image_sha256": "9c5429109cc0073b71bb46780489d0061c9cf0e3726a84d54b90ade1c286c916",
+    "created_at": "2026-09-08T00:53:35+00:00",
+    "raw_response_sha256": "f523e8b1bca8a8581936cd860337f73af7ab94936abb721372e5b2d275aa0146",
+    "approximate_polygon": null,
+    "notes": "Pista de DESARROLLO. Producida en el spike E16.9 por el modelo general de visión del entorno de trabajo, ejecutado a ciegas (agente sin contexto del proyecto, sólo la imagen y una instrucción arquitectónica genérica). NO fue producida por el runtime productivo del motor: `vision/adapters.py` no tiene credenciales en este entorno. provider y model quedan en UNKNOWN a propósito: es preferible a una procedencia falsa. raw_response_sha256 es el hash del texto de evidencia guardado aquí, no de un payload de proveedor que nunca existió.",
+    "_warning": "approximate_region es una PISTA, no geometría aceptada. El polígono lo produce código determinista y lo aprueba el contrato de aceptación."
+  },
+  "result": "CORE_ACCEPTED",
+  "metrics": {
+    "core_px": 119286,
+    "footprint_frac": 0.098627,
+    "hint_iou": 0.3331,
+    "centroid_in_hint": true,
+    "outside_hint_frac": 0.0162,
+    "wall_fraction": 0.2317,
+    "solidity": 0.7379,
+    "open_floor_invasion": 0.001,
+    "components": 1,
+    "discarded_pieces": 0,
+    "vertical_circulation_anchors": 13,
+    "anchors_in_drawing": 20
+  },
+  "ring_vertices": 27,
+  "ring_px": [
+    [
+      531.0,
+      326.0
+    ],
+    [
+      631.0,
+      348.0
+    ],
+    [
+      658.0,
+      371.0
+    ],
+    [
+      662.0,
+      416.0
+    ],
+    [
+      650.0,
+      438.0
+    ],
+    [
+      661.0,
+      514.0
+    ],
+    [
+      630.0,
+      554.0
+    ],
+    [
+      644.0,
+      561.0
+    ],
+    [
+      666.0,
+      546.0
+    ],
+    [
+      711.0,
+      543.0
+    ],
+    [
+      737.0,
+      551.0
+    ],
+    [
+      754.0,
+      576.0
+    ],
+    [
+      805.0,
+      567.0
+    ],
+    [
+      1049.0,
+      575.0
+    ],
+    [
+      1086.0,
+      546.0
+    ],
+    [
+      1129.0,
+      546.0
+    ],
+    [
+      1129.0,
+      471.0
+    ],
+    [
+      1167.0,
+      431.0
+    ],
+    [
+      1237.0,
+      425.0
+    ],
+    [
+      1273.0,
+      448.0
+    ],
+    [
+      1273.0,
+      327.0
+    ],
+    [
+      1118.0,
+      321.0
+    ],
+    [
+      1100.0,
+      349.0
+    ],
+    [
+      1074.0,
+      357.0
+    ],
+    [
+      748.0,
+      357.0
+    ],
+    [
+      722.0,
+      349.0
+    ],
+    [
+      704.0,
+      322.0
+    ]
+  ],
+  "visual_architectural_qa": {
+    "verdict": "INCOMPLETO",
+    "measured": "13 de las 20 celdas cerradas del dibujo quedan dentro del nucleo aceptado; 7 quedan dentro de la pista y FUERA del nucleo, incluidas dos de 7.395 y 6.342 px centradas en y~746, que son el banco de ascensores. El nucleo aceptado llega hasta y=576.",
+    "consecuencia": "el contrato de aceptacion de E16.10 no contiene ningun criterio de COBERTURA DEL CLUSTER DE ANCLAS, y por eso acepta un nucleo parcial. Es la insuficiencia del contrato, no del productor, y es el primer fallo causal que debe corregir el ciclo siguiente. NO se corrige aqui."
+  },
+  "scale_consequence": "Existe por primera vez un poligono de nucleo deterministico para este dibujo, que es la pieza que faltaba para calcular una region util en pixeles. PERO el propio QA arquitectonico dice que esta incompleto, y una region util calculada restando un nucleo parcial subestimaria las exclusiones. El contrato E16.8 exige exclusiones EVALUADAS, no aproximadas: la escala sigue en SCALE_INCOMPATIBLE_REGION y este ciclo NO la toca.",
+  "human_intervention": {
+    "manual_hint": false,
+    "manual_polygon": false,
+    "tuning_post_result": false,
+    "runs": 1
+  }
+}

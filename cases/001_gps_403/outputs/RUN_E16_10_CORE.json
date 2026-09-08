@@ -1,0 +1,53 @@
+{
+  "_doc": "E16.10 — corrida de desarrollo de GPS con el motor congelado en el baseline E16.10. El nucleo historico de GPS (metodo por color) se usa para MEDIR, nunca para construir.",
+  "frozen_before_run": {
+    "engine_baseline": "E16.10",
+    "engine_hash": "050d4beea8dc3e203b61294c376c1f64e1a3d1d69455fd37260188d4955566f1",
+    "engine_hash_after_run": "050d4beea8dc3e203b61294c376c1f64e1a3d1d69455fd37260188d4955566f1",
+    "commit_before_run": "49e4221",
+    "pre_run_suite": "618 passed, 2 skipped, 0 failed",
+    "acceptance_contract": {
+      "hint_iou_min": 0.15,
+      "require_centroid_in_hint": true,
+      "wall_fraction_min": 0.12,
+      "footprint_frac_min": 0.02,
+      "footprint_frac_max": 0.35,
+      "solidity_min": 0.55,
+      "components_max": 1,
+      "open_floor_invasion_max": 0.3
+    }
+  },
+  "semantic_hint": {
+    "kind": "core",
+    "approximate_region": [
+      425.0,
+      199.0,
+      570.0,
+      333.0
+    ],
+    "confidence": "high",
+    "semantic_evidence": "El único bloque dibujado con muros achurados (poché), lo que indica construcción permanente. Es también la única región que las tintas de las unidades dejan sin pintar, es decir área común no asignada a ninguna unidad arrendable. Dentro: dos filas simétricas de cabinas pequeñas frente a un pasillo central (banco de ascensores con lobby), flanqueadas por dos cajas rectangulares con una diagonal larga y marcas de peldaños (escaleras), y recintos menores con aparatos sanitarios.",
+    "provenance": "VLM",
+    "provider": "UNKNOWN",
+    "model": "UNKNOWN",
+    "schema_version": "1.0.0",
+    "source_image_sha256": "89546a14dd941bd7c17e985bf316b43141583f51cf7cff74d4b45c4525cabb02",
+    "created_at": "2026-09-08T00:53:35+00:00",
+    "raw_response_sha256": "434cd70e5df809fd72edbc4634752fe720af2bcada6babec77d99f699d1e9f5a",
+    "approximate_polygon": null,
+    "notes": "Pista de DESARROLLO. Producida en el spike E16.9 por el modelo general de visión del entorno de trabajo, ejecutado a ciegas (agente sin contexto del proyecto, sólo la imagen y una instrucción arquitectónica genérica). NO fue producida por el runtime productivo del motor: `vision/adapters.py` no tiene credenciales en este entorno. provider y model quedan en UNKNOWN a propósito: es preferible a una procedencia falsa. raw_response_sha256 es el hash del texto de evidencia guardado aquí, no de un payload de proveedor que nunca existió.",
+    "_warning": "approximate_region es una PISTA, no geometría aceptada. El polígono lo produce código determinista y lo aprueba el contrato de aceptación."
+  },
+  "result": "CORE_REJECTED",
+  "metrics": {
+    "vertical_circulation_anchors": 1
+  },
+  "reasons": [
+    "el candidato desaparece al descontar el enlace morfológico"
+  ],
+  "first_causal_failure": "wall_map no encuentra estructura en esta lamina: los muros por grosor+linealidad cubren el 0,03% de la huella y 1 solo pixel cae en la zona de busqueda. La definicion de muro exige un trazo mas grueso que stroke_scale/4 y mas largo que 2*stroke_scale; en un raster de 800 px de ancho para una planta de decenas de metros, los tabiques del nucleo miden 1-2 px. NO es un limite del caso: es un limite de RESOLUCION del raster, y se puede enunciar en px/m.",
+  "historic_core_for_measurement": {
+    "px": 14948,
+    "note": "no participo en la construccion"
+  }
+}
