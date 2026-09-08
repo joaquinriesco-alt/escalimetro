@@ -1,0 +1,58 @@
+{
+ "S1_CLOSED_CELL_WITH_DOOR_GAP": {
+  "expected": 1,
+  "e16_14_selected": 4,
+  "candidate_selected": 4,
+  "anchors_in_scope": 8,
+  "status_e16_14": "CORE_REJECTED_IMPLAUSIBLE"
+ },
+ "S2_SAME_GEOMETRY_WITHOUT_ANCHOR": {
+  "expected": 0,
+  "e16_14_selected": 2,
+  "candidate_selected": 2,
+  "anchors_in_scope": 7,
+  "status_e16_14": "CORE_REJECTED_IMPLAUSIBLE"
+ },
+ "S3_FURNITURE_ENCLOSURE": {
+  "expected": 0,
+  "e16_14_selected": 5,
+  "candidate_selected": 5,
+  "anchors_in_scope": 8,
+  "status_e16_14": "CORE_ACCEPTED"
+ },
+ "S4_WATERMARK_OR_TEXT_CELL": {
+  "expected": 0,
+  "e16_14_selected": 4,
+  "candidate_selected": 4,
+  "anchors_in_scope": 12,
+  "status_e16_14": "CORE_REJECTED_IMPLAUSIBLE"
+ },
+ "S5_TWO_REAL_COMPONENTS_SEPARATED": {
+  "expected": 2,
+  "e16_14_selected": 3,
+  "candidate_selected": 3,
+  "anchors_in_scope": 14,
+  "status_e16_14": "CORE_ACCEPTED"
+ },
+ "S6_SMALL_VALID_ANCHOR": {
+  "expected": 2,
+  "e16_14_selected": 3,
+  "candidate_selected": 3,
+  "anchors_in_scope": 13,
+  "status_e16_14": "CORE_ACCEPTED"
+ },
+ "S7_LARGE_UNRELATED_ANCHOR": {
+  "expected": 1,
+  "e16_14_selected": 4,
+  "candidate_selected": 4,
+  "anchors_in_scope": 12,
+  "status_e16_14": "CORE_ACCEPTED"
+ },
+ "S8_AMBIGUOUS_STRUCTURAL_CLUSTERS": {
+  "expected": "AMBIGUO",
+  "e16_14_selected": 7,
+  "candidate_selected": 8,
+  "anchors_in_scope": 17,
+  "status_e16_14": "CORE_ACCEPTED"
+ }
+}

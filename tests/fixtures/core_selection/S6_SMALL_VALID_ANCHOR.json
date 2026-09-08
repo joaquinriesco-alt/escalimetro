@@ -1,0 +1,56 @@
+{
+ "hint_region": [
+  420,
+  210,
+  940,
+  480
+ ],
+ "footprint_ring": [
+  [
+   100,
+   100
+  ],
+  [
+   1300,
+   100
+  ],
+  [
+   1300,
+   580
+  ],
+  [
+   1120,
+   580
+  ],
+  [
+   1120,
+   800
+  ],
+  [
+   100,
+   800
+  ]
+ ],
+ "expected_selected": 2,
+ "spec": "la celda chica respalda pertenencia aunque el contrato de completitud la considere poco significativa: productor y completitud están desacoplados",
+ "truth_boxes": [
+  [
+   450,
+   240,
+   730,
+   440
+  ],
+  [
+   830,
+   300,
+   890,
+   390
+  ]
+ ],
+ "small_anchor_box": [
+  830,
+  300,
+  890,
+  390
+ ]
+}

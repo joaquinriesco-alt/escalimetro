@@ -1,0 +1,44 @@
+{
+ "hint_region": [
+  420,
+  210,
+  780,
+  480
+ ],
+ "footprint_ring": [
+  [
+   100,
+   100
+  ],
+  [
+   1300,
+   100
+  ],
+  [
+   1300,
+   580
+  ],
+  [
+   1120,
+   580
+  ],
+  [
+   1120,
+   800
+  ],
+  [
+   100,
+   800
+  ]
+ ],
+ "expected_selected": 1,
+ "spec": "el recinto tiene un vano de puerta menor que la escala de trazo: su celda sólo existe bajo la reparación canónica que usa el detector",
+ "truth_boxes": [
+  [
+   450,
+   240,
+   590,
+   370
+  ]
+ ]
+}

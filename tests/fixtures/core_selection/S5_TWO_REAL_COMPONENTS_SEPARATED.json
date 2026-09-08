@@ -1,0 +1,56 @@
+{
+ "hint_region": [
+  420,
+  210,
+  780,
+  780
+ ],
+ "footprint_ring": [
+  [
+   100,
+   100
+  ],
+  [
+   1300,
+   100
+  ],
+  [
+   1300,
+   580
+  ],
+  [
+   1120,
+   580
+  ],
+  [
+   1120,
+   800
+  ],
+  [
+   100,
+   800
+  ]
+ ],
+ "expected_selected": 2,
+ "spec": "dos piezas legítimas separadas por circulación; sin puente",
+ "truth_boxes": [
+  [
+   450,
+   240,
+   730,
+   440
+  ],
+  [
+   450,
+   560,
+   730,
+   740
+  ]
+ ],
+ "gap_box": [
+  460,
+  460,
+  720,
+  540
+ ]
+}

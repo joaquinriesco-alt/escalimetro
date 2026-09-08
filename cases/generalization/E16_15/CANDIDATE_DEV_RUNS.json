@@ -1,0 +1,106 @@
+{
+ "_doc": "E16.15 §11/§12 — mediciones del CANDIDATO v3 sobre los casos de desarrollo. El motor NO cambió en este ciclo: estas cifras describen un candidato registrado como artefacto, no el productor embarcado.",
+ "engine_unchanged": true,
+ "engine_hash": "779a1eee6d3d2f2ce4fcc185dbf08da8890768e49a64211770eb1ee800a8105c",
+ "producer_hash": "cacc3636ee14928d2eada9c63103081d305511b73b6716cc48ef2fe8fb38a5a3",
+ "scope_hashes": {
+  "CONTRACT": "031bea3d7b96c2bfa2990160c982a0a8f7448da12f53e0c137977b2e74e550ee",
+  "WALL_EVIDENCE": "9c8db1516771271dd25d4f4fb2cf128b978dcc9c2c378c3a7b94d08add1f23fd",
+  "SEMANTIC_HINT": "dc8547bc7ad0c3dd05bb926c37d53d2ee156383157be9f2a807799a21870fa13",
+  "DOWNSTREAM": "1d6b13664f9c71f79e581915fa24ac620d153541d427eafdc793762a0586507f"
+ },
+ "candidate": {
+  "RES": {
+   "discovered": 65,
+   "selected": 3,
+   "anchors_in_scope": 20,
+   "associations": [
+    {
+     "component_id": 2,
+     "anchors": [
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+     ]
+    },
+    {
+     "component_id": 30,
+     "anchors": [
+      16,
+      17,
+      18,
+      20
+     ]
+    },
+    {
+     "component_id": 34,
+     "anchors": [
+      19
+     ]
+    }
+   ],
+   "areas": [
+    67505,
+    23870,
+    4746
+   ],
+   "rejected_summary": {
+    "envolvente del piso: ya la representa el perímetro": 8,
+    "vive fuera del alcance que la semántica señaló": 39,
+    "no es responsable de ninguna celda cerrada del alcance: no hay evidencia de recinto permanente": 15
+   },
+   "footprint_px": 1209471
+  },
+  "GPS": {
+   "discovered": 25,
+   "selected": 2,
+   "anchors_in_scope": 4,
+   "associations": [
+    {
+     "component_id": 10,
+     "anchors": [
+      1
+     ]
+    },
+    {
+     "component_id": 15,
+     "anchors": [
+      3,
+      4
+     ]
+    }
+   ],
+   "areas": [
+    886,
+    2718
+   ],
+   "rejected_summary": {
+    "envolvente del piso: ya la representa el perímetro": 8,
+    "vive fuera del alcance que la semántica señaló": 7,
+    "no es responsable de ninguna celda cerrada del alcance: no hay evidencia de recinto permanente": 8
+   },
+   "footprint_px": 150120
+  }
+ },
+ "ink_width_measurement": {
+  "P2_bench_1600x1000": {
+   "threshold_px": 5,
+   "halfwidth_p50": 2.87,
+   "p75": 4.78,
+   "p90": 5.73
+  },
+  "RES_1788x1070": {
+   "threshold_px": 5,
+   "halfwidth_p50": 1.91,
+   "p75": 2.87,
+   "p90": 4.78
+  }
+ },
+ "conclusion": "La unificacion de la definicion de encerrado elimina la inconsistencia (RES 0 -> 3 piezas seleccionadas), pero por si sola no sostiene la pertenencia: sin la compuerta de significancia el banco sintetico pierde precision, y la causa medida esta aguas arriba, en el filtro de grosor del mapa de muros a estas resoluciones."
+}

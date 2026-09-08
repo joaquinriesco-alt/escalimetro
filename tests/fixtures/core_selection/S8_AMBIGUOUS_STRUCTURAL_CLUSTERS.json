@@ -1,0 +1,37 @@
+{
+ "hint_region": [
+  200,
+  220,
+  1080,
+  770
+ ],
+ "footprint_ring": [
+  [
+   100,
+   100
+  ],
+  [
+   1300,
+   100
+  ],
+  [
+   1300,
+   580
+  ],
+  [
+   1120,
+   580
+  ],
+  [
+   1120,
+   800
+  ],
+  [
+   100,
+   800
+  ]
+ ],
+ "expected_selected": "AMBIGUO",
+ "spec": "dos alternativas plausibles bajo una pista ambigua",
+ "truth_boxes": []
+}

@@ -1,0 +1,37 @@
+{
+ "hint_region": [
+  420,
+  210,
+  780,
+  480
+ ],
+ "footprint_ring": [
+  [
+   100,
+   100
+  ],
+  [
+   1300,
+   100
+  ],
+  [
+   1300,
+   580
+  ],
+  [
+   1120,
+   580
+  ],
+  [
+   1120,
+   800
+  ],
+  [
+   100,
+   800
+  ]
+ ],
+ "expected_selected": 0,
+ "spec": "mobiliario que aparenta cerrar una celda dentro de la pista",
+ "truth_boxes": []
+}
