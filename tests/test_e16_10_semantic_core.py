@@ -193,9 +193,14 @@ def test_cada_umbral_del_contrato_veta_cuando_se_endurece():
 
 
 def test_el_contrato_esta_declarado_como_dato_y_completo():
+    # E16.13.1: `components_max` desaparece —codificaba una propiedad falsada en E16.12— y entra
+    # `component_scope_overlap_min`, que es la relación de cada región con el alcance semántico.
+    # Ningún valor heredado cambió; el test de eso vive en test_e16_13_1_contract.py.
     for k in ("hint_iou_min", "require_centroid_in_hint", "wall_fraction_min", "footprint_frac_min",
-              "footprint_frac_max", "solidity_min", "components_max", "open_floor_invasion_max"):
+              "footprint_frac_max", "solidity_min", "open_floor_invasion_max",
+              "component_scope_overlap_min"):
         assert k in CG.CORE_ACCEPTANCE
+    assert "components_max" not in CG.CORE_ACCEPTANCE
 
 
 def test_las_anclas_se_registran_pero_no_vetan_la_plausibilidad():
@@ -206,7 +211,8 @@ def test_las_anclas_se_registran_pero_no_vetan_la_plausibilidad():
     assert c.metrics["enclosed_cell_anchors_inside"] >= 1
     assert not any("anchor" in r for r in c.reasons)
     src = _codigo(os.path.join(SRC, "geometry", "core_geometry.py"))
-    i, j = src.index("def accept_core"), src.index("def core_from_hint")
+    i = src.index("def accept_core")
+    j = src.index("\ndef ", i + 1)          # sólo el cuerpo del contrato
     assert "anchor" not in src[i:j], "las anclas no vetan la plausibilidad"
 
 

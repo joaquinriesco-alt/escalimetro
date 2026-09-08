@@ -29,6 +29,8 @@ import numpy as np
 
 from ..segmentation.structural import stroke_scale_px, structural_ink
 from . import core_completeness as CC
+from .core_components import (CONTRACT_VERSION, CoreComponentSet, InvalidCoreGeometry,
+                              MultiComponentCoreError, components_from_mask, normalize_components)
 
 Point = Tuple[float, float]
 
@@ -63,6 +65,29 @@ class CoreCandidate:
     completeness_metrics: Dict = field(default_factory=dict)
     completeness_reasons: List[str] = field(default_factory=list)
     status: str = ""
+    # E16.13.1 — la representación. `components` es la verdad geométrica del candidato; `ring` sólo
+    # existe cuando esa verdad es UNA región.
+    components: List[List[Point]] = field(default_factory=list)
+    component_metrics: List[Dict] = field(default_factory=list)
+    contract_version: str = CONTRACT_VERSION
+    geometry_notes: str = ""
+
+    def __post_init__(self):
+        # NO se puede construir un candidato de varias regiones que además cargue "el" anillo. Es la
+        # regla que impide la pérdida silenciosa que el intento anterior tenía: allí `.ring` devolvía
+        # calladamente la pieza mayor y un lector de la era single-ring creía tener el núcleo entero.
+        if len(self.components) > 1 and self.ring:
+            raise MultiComponentCoreError(
+                f"un candidato de {len(self.components)} regiones no tiene un anillo único; "
+                f"los consumidores deben leer `components` o pasar por `cores_from_candidate`")
+
+    def single_ring(self) -> List[Point]:
+        """El anillo del núcleo, y sólo si el núcleo es UNA región. Si son varias, falla en vez de
+        devolver una parte."""
+        if len(self.components) > 1:
+            raise MultiComponentCoreError(
+                f"este candidato ocupa {len(self.components)} regiones: no existe 'el' anillo")
+        return self.ring or (self.components[0] if self.components else [])
 
 
 def wall_map(image_bgr: np.ndarray) -> np.ndarray:
@@ -238,55 +263,191 @@ def build_core(image_bgr: np.ndarray, footprint: np.ndarray,
 
 
 # -----------------------------------------------------------------------------------------------
-# CONTRATO DE ACEPTACIÓN DEL NÚCLEO (E16.10 §8)
+# CONTRATO DE ACEPTACIÓN DEL NÚCLEO (E16.10 §8, ámbitos migrados en E16.13.1)
 #
-# Congelado ANTES de mirar ningún caso de desarrollo. Cada umbral nombra una propiedad general del
-# objeto "núcleo", y cada uno se prueba por los DOS lados con fixtures sintéticos.
+# Congelado ANTES de mirar ningún caso de desarrollo. NINGÚN VALOR CAMBIA en este ciclo: lo único
+# que cambia es DÓNDE se pregunta cada propiedad, y que `components_max` deja de existir.
+#
+#   MÉTRICA                 ÁMBITO            POR QUÉ
+#   wall_fraction           PER-COMPONENT     cada región tiene que estar construida; promediar deja
+#                                             que una región maciza tape una vacía
+#   solidity                PER-COMPONENT     un bloque es compacto. La envolvente convexa de la
+#                                             UNIÓN atraviesa la circulación entre regiones, así que
+#                                             a nivel de unión mide el reparto de la planta y no la
+#                                             forma del objeto  → OBSOLETA como métrica de unión
+#   open_floor_invasion     PER-COMPONENT     una región que es piso ocupable no es núcleo, aunque
+#                                             el promedio del conjunto la disimule
+#   scope_overlap           PER-COMPONENT     RELACIÓN de cada región con el alcance semántico.
+#                                             Sustituye a toda idea de "pertenencia por cercanía"
+#   footprint_frac          UNION             el tamaño del núcleo es el del conjunto
+#   hint_iou                UNION             la pista describe el conjunto
+#   centroid_in_hint        UNION             el centro de UNA región puede caer fuera sin que el
+#                                             conjunto esté mal
+#   components              OBSOLETA          la cantidad de regiones es una propiedad del DIBUJO,
+#                                             no del núcleo: se mide y se reporta, no veta
 # -----------------------------------------------------------------------------------------------
 CORE_ACCEPTANCE = {
+    # --- UNIÓN ---------------------------------------------------------------------------------
     # coherencia con la pista: si la geometría no se solapa con lo que la semántica señaló, o su
     # centro cae fuera, el productor encontró OTRA cosa. Umbral bajo a propósito: la pista es un
     # recuadro grueso y el núcleo es una figura flaca; exigir más obligaría a parecerse al recuadro.
     "hint_iou_min": 0.15,
     "require_centroid_in_hint": True,
-    # estructura permanente: un núcleo está CONSTRUIDO. Una porción equivalente de piso abierto tiene
-    # una fracción de muro cercana a cero.
-    "wall_fraction_min": 0.12,
     # tamaño plausible respecto de la huella: ni un armario ni media planta
     "footprint_frac_min": 0.02,
     "footprint_frac_max": 0.35,
-    # compacidad: un núcleo es un bloque, no una constelación de fragmentos
+    # --- POR COMPONENTE ------------------------------------------------------------------------
+    # estructura permanente: un núcleo está CONSTRUIDO. Una porción equivalente de piso abierto tiene
+    # una fracción de muro cercana a cero.
+    "wall_fraction_min": 0.12,
+    # compacidad: cada región es un bloque, no una constelación de fragmentos
     "solidity_min": 0.55,
-    "components_max": 1,
-    # invasión del espacio ocupable: si la mayor parte del candidato es piso abierto dominante,
-    # es oficina con muros alrededor, no núcleo
+    # invasión del espacio ocupable: si la mayor parte de una región es piso abierto dominante, es
+    # oficina con muros alrededor, no núcleo
     "open_floor_invasion_max": 0.30,
+    # relación de cada región con el alcance que la semántica señaló
+    "component_scope_overlap_min": 0.50,
 }
 
 
-def accept_core(metrics: Dict, contract: Optional[Dict] = None) -> Tuple[bool, List[str]]:
+def accept_core(metrics: Dict, contract: Optional[Dict] = None,
+                component_metrics: Optional[List[Dict]] = None) -> Tuple[bool, List[str]]:
+    """Evalúa el contrato en sus dos ámbitos.
+
+    Sin `component_metrics` —un lector histórico— las invariantes por componente se evalúan sobre la
+    UNIÓN, que es exactamente lo que hacía E16.10: nadie cambia de criterio en silencio."""
     c = dict(CORE_ACCEPTANCE, **(contract or {}))
     fails: List[str] = []
     if metrics.get("core_px", 0) <= 0:
         return False, ["candidato vacío"]
+
+    # --- unión ---
     if metrics["hint_iou"] < c["hint_iou_min"]:
         fails.append(f"hint_iou={metrics['hint_iou']:.3f} < {c['hint_iou_min']}")
     if c["require_centroid_in_hint"] and not metrics["centroid_in_hint"]:
         fails.append("el centro del candidato cae fuera de la región señalada")
-    if metrics["wall_fraction"] < c["wall_fraction_min"]:
-        fails.append(f"wall_fraction={metrics['wall_fraction']:.3f} < {c['wall_fraction_min']}: "
-                     f"no hay estructura permanente suficiente")
     f = metrics["footprint_frac"]
     if not (c["footprint_frac_min"] <= f <= c["footprint_frac_max"]):
         fails.append(f"footprint_frac={f:.3f} fuera de [{c['footprint_frac_min']}, {c['footprint_frac_max']}]")
-    if metrics["solidity"] < c["solidity_min"]:
-        fails.append(f"solidity={metrics['solidity']:.3f} < {c['solidity_min']}: candidato fragmentado")
-    if metrics["components"] > c["components_max"]:
-        fails.append(f"components={metrics['components']} > {c['components_max']}")
-    if metrics["open_floor_invasion"] > c["open_floor_invasion_max"]:
-        fails.append(f"open_floor_invasion={metrics['open_floor_invasion']:.3f} > "
-                     f"{c['open_floor_invasion_max']}: el candidato es mayormente piso ocupable")
+
+    # --- por componente ---
+    piezas = component_metrics if component_metrics else [metrics]
+    for i, m in enumerate(piezas):
+        et = f"componente {m.get('index', i)}"
+        if m["wall_fraction"] < c["wall_fraction_min"]:
+            fails.append(f"{et}: wall_fraction={m['wall_fraction']:.3f} < {c['wall_fraction_min']}: "
+                         f"no hay estructura permanente suficiente")
+        if m["solidity"] < c["solidity_min"]:
+            fails.append(f"{et}: solidity={m['solidity']:.3f} < {c['solidity_min']}: región fragmentada")
+        if m["open_floor_invasion"] > c["open_floor_invasion_max"]:
+            fails.append(f"{et}: open_floor_invasion={m['open_floor_invasion']:.3f} > "
+                         f"{c['open_floor_invasion_max']}: la región es mayormente piso ocupable")
+        if "scope_overlap" in m and m["scope_overlap"] < c["component_scope_overlap_min"]:
+            fails.append(f"{et}: scope_overlap={m['scope_overlap']:.3f} < "
+                         f"{c['component_scope_overlap_min']}: la región no está donde la semántica "
+                         f"señaló núcleo")
     return (not fails), fails
+
+
+# -----------------------------------------------------------------------------------------------
+# CAPA DE MEDICIÓN DEL CONTRATO
+#
+# Mide propiedades de UNA GEOMETRÍA DADA. No produce geometría: lee los mapas del productor
+# (`wall_map`, `open_floor`) sin modificarlos, y por eso puede evaluar tanto lo que produjo
+# `build_core` como una geometría declarada por un fixture, una anotación u otro productor.
+# -----------------------------------------------------------------------------------------------
+def _scope_mask(shape, footprint: np.ndarray, hint_region, margin_frac: float = SEARCH_MARGIN_FRAC):
+    """El alcance semántico con el mismo margen que usa el productor para BUSCAR. Se lee la constante
+    congelada; no se redefine."""
+    h, w = shape[:2]
+    x0, y0, x1, y1 = [int(v) for v in hint_region]
+    m = int(max(h, w) * margin_frac)
+    z = np.zeros((h, w), np.uint8)
+    z[max(0, y0 - m):min(h, y1 + m), max(0, x0 - m):min(w, x1 + m)] = 255
+    return (z > 0) & (footprint > 0)
+
+
+def _geometry_metrics(mask: np.ndarray, hint_box: np.ndarray, walls: np.ndarray, piso: np.ndarray,
+                      scope: np.ndarray, area_fp: float, hint) -> Dict:
+    x0, y0, x1, y1 = hint
+    area = float(mask.sum())
+    if area <= 0:
+        return {"core_px": 0}
+    inter = float((mask & hint_box).sum())
+    union = float((mask | hint_box).sum())
+    ys, xs = np.where(mask)
+    cy, cx = float(ys.mean()), float(xs.mean())
+    cnts, _ = cv2.findContours((mask * 255).astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    hull = np.zeros(mask.shape[:2], np.uint8)
+    cv2.fillPoly(hull, [cv2.convexHull(np.vstack(cnts))], 255)
+    # el casco se mide EN PÍXELES, igual que el área: mezclarlo con el área poligonal del casco daba
+    # solidez > 1 en piezas chicas
+    hull_area = float((hull > 0).sum()) or area
+    return {
+        "core_px": int(area),
+        "footprint_frac": round(area / area_fp, 6) if area_fp else 0.0,
+        "hint_iou": round(inter / union, 4) if union else 0.0,
+        "centroid_in_hint": bool(x0 <= cx <= x1 and y0 <= cy <= y1),
+        "outside_hint_frac": round(float((mask & ~hint_box).sum()) / area, 4),
+        "wall_fraction": round(float((mask & walls).sum()) / area, 4),
+        "solidity": round(area / hull_area, 4),
+        "open_floor_invasion": round(float((mask & piso).sum()) / area, 4),
+        "scope_overlap": round(float((mask & scope).sum()) / area, 4),
+    }
+
+
+def component_metrics(cs: CoreComponentSet, image_bgr: np.ndarray, footprint: np.ndarray,
+                      hint_region) -> Tuple[Dict, List[Dict]]:
+    """Métricas de la UNIÓN y de cada componente, con las mismas fórmulas."""
+    h, w = footprint.shape[:2]
+    fp = footprint > 0
+    area_fp = float(fp.sum())
+    x0, y0, x1, y1 = [int(v) for v in hint_region]
+    hint_box = np.zeros((h, w), bool)
+    hint_box[max(0, y0):min(h, y1), max(0, x0):min(w, x1)] = True
+    walls = wall_map(image_bgr) > 0
+    piso = open_floor(image_bgr, footprint) > 0
+    scope = _scope_mask((h, w), footprint, hint_region)
+    hint = (x0, y0, x1, y1)
+    union = _geometry_metrics(cs.mask > 0, hint_box, walls, piso, scope, area_fp, hint)
+    per = []
+    for i, ring in enumerate(cs.components):
+        m = np.zeros((h, w), np.uint8)
+        cv2.fillPoly(m, [np.array(ring, np.int32)], 255)
+        d = _geometry_metrics((m > 0) & (cs.mask > 0), hint_box, walls, piso, scope, area_fp, hint)
+        d["index"] = i
+        per.append(d)
+    return union, per
+
+
+def evaluate_candidate(image_bgr: np.ndarray, footprint: np.ndarray,
+                       hint_region: Tuple[float, float, float, float],
+                       rings, contract: Optional[Dict] = None,
+                       completeness_contract: Optional[Dict] = None,
+                       anchor_max_frac: float = ANCHOR_MAX_FRAC) -> CoreCandidate:
+    """Somete a las dos preguntas del contrato una geometría DECLARADA, sin pasar por el productor.
+
+    Es la puerta que hace auditable el contrato por sí solo: las clases que interesan en este ciclo
+    —dos y tres regiones legítimas, puente falso, región espuria, región diminuta, solape, región
+    fuera de la huella— son propiedades de UNA GEOMETRÍA. Hacerlas depender de que el productor las
+    genere fue exactamente el error del intento anterior."""
+    cs = normalize_components([[(float(x), float(y)) for x, y in r] for r in rings], footprint)
+    union, per = component_metrics(cs, image_bgr, footprint, hint_region)
+    union.update({"components": len(cs), "component_areas_px": list(cs.areas_px),
+                  "min_component_frac": round(min(cs.areas_px) / max(1.0, float((footprint > 0).sum())), 6),
+                  "contract_version": CONTRACT_VERSION, "provenance": "declared"})
+    cand = CoreCandidate(cs.mask, cs.components[0] if len(cs) == 1 else [], union,
+                         components=cs.components, component_metrics=per, geometry_notes=cs.notes)
+    ok, fails = accept_core(union, contract, per)
+    cand.accepted, cand.reasons = ok, fails
+    cand.plausibility_status = CC.PLAUSIBLE if ok else CC.NOT_PLAUSIBLE
+    anchors, _ = enclosed_cell_anchors(image_bgr, footprint, anchor_max_frac)
+    ev = CC.evaluate_completeness(cand.mask, anchors, hint_region, completeness_contract)
+    cand.completeness_status, cand.completeness_metrics = ev.status, ev.metrics
+    cand.completeness_reasons = ev.reasons
+    cand.status = CC.overall_status(ok, ev.status)
+    cand.notes = f"{cand.status} (geometría declarada, {len(cs)} región(es))"
+    return cand
 
 
 def core_from_hint(image_bgr: np.ndarray, footprint: np.ndarray,
@@ -303,7 +464,22 @@ def core_from_hint(image_bgr: np.ndarray, footprint: np.ndarray,
         cand.completeness_status = CC.COMPLETENESS_NOT_EVALUATED
         cand.status = CC.CORE_REJECTED_IMPLAUSIBLE
         return cand
-    ok, fails = accept_core(cand.metrics, contract)
+    # ADAPTADOR MECÁNICO (E16.13.1 §4): la máscara que el productor ya produjo se lleva a la
+    # representación canónica. No decide nada, no reagrupa nada y no puede cambiar la geometría: las
+    # regiones son las componentes conectadas que esa máscara YA tenía. El productor histórico
+    # devuelve una sola, y eso está bien: lo que este ciclo prueba es que el contrato sabe
+    # representar y juzgar 1..N, no que el productor sepa encontrarlas.
+    cs = components_from_mask(cand.mask, footprint)
+    cand.components = cs.components
+    cand.geometry_notes = cs.notes
+    if len(cs) > 1:
+        cand.ring = []          # ver CoreCandidate.__post_init__: sin anillo único, sin vista parcial
+    cand.metrics["component_areas_px"] = list(cs.areas_px)
+    cand.metrics["contract_version"] = CONTRACT_VERSION
+    cand.metrics["provenance"] = "producer"
+    _, per = component_metrics(cs, image_bgr, footprint, hint_region)
+    cand.component_metrics = per
+    ok, fails = accept_core(cand.metrics, contract, per)
     cand.accepted = ok
     cand.reasons = fails
     cand.plausibility_status = CC.PLAUSIBLE if ok else CC.NOT_PLAUSIBLE
@@ -319,3 +495,34 @@ def core_from_hint(image_bgr: np.ndarray, footprint: np.ndarray,
     if fails or ev.reasons:
         cand.notes += " — " + "; ".join(fails + ev.reasons)
     return cand
+
+
+# -----------------------------------------------------------------------------------------------
+# CONTRATO DE SALIDA: UNA entidad semántica → N entradas `Core`, con el vínculo LEGIBLE POR MÁQUINA
+# -----------------------------------------------------------------------------------------------
+def cores_from_candidate(cand: CoreCandidate, semantic_core_id: str = "") -> List:
+    """Convierte el candidato en entradas del esquema sin perder la identidad semántica.
+
+    El intento anterior escribía "core 2/3" en `meta.notes`. Eso es texto libre: un consumidor no
+    puede distinguir UN núcleo repartido en tres regiones de TRES núcleos independientes sin parsear
+    prosa. Aquí el vínculo va en un campo estructurado (`Core.group`), que sobrevive al `to_dict` y
+    al `from_dict` del esquema, y la afirmación arquitectónica —cuántos núcleos hay— la hace el
+    `semantic_core_id` compartido, no una nota."""
+    from ..schemas.floorplate import Core, CoreGroup, Meta, Provenance, Status
+    total = len(cand.components)
+    gid = semantic_core_id or f"core-{abs(hash(tuple(map(tuple, cand.components[0])))) % 10**8:08d}"
+    out = []
+    for i, ring in enumerate(cand.components):
+        m = cand.component_metrics[i] if i < len(cand.component_metrics) else {}
+        out.append(Core(ring=[(float(x), float(y)) for x, y in ring], kind="core",
+                        meta=Meta(confidence=0.0,
+                                  provenance=Provenance.CV_HEURISTIC.value,
+                                  status=(Status.INFERRED.value if cand.status == CC.CORE_ACCEPTED
+                                          else Status.NEEDS_CONFIRMATION.value),
+                                  notes=(f"{cand.status} · wall_fraction={m.get('wall_fraction')} · "
+                                         f"solidity={m.get('solidity')}")),
+                        group=CoreGroup(semantic_core_id=gid, component_index=i,
+                                        component_count=total,
+                                        contract_version=cand.contract_version,
+                                        candidate_status=cand.status)))
+    return out

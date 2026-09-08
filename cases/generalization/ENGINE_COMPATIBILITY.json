@@ -1,6 +1,6 @@
 {
   "_doc": "E15.2 §7-§9 — compatibilidad de evidencia entre versiones del motor. Una evidencia producida bajo el baseline X sigue vigente bajo Y SÓLO si existe una cadena explícita de transiciones declaradas NON_SEMANTIC entre X e Y. No hay comodín: un baseline que no esté en compatible_with_current vuelve STALE toda evidencia producida bajo él.",
-  "current_baseline": "E16.11",
+  "current_baseline": "E16.13.1",
   "baselines": {
     "E14": "5ce5f6a1f4e3dd17f5f4518fb8365bc24ed90d337dfc5aacb1c1b144b7877259",
     "E15": "d213b4294290247913011d50a15df03fd5ba51b380e905b4a74a7d44ba1201ff",
@@ -13,7 +13,8 @@
     "E16.7": "2de297f99507d0a27d4e68e56f2f13dbc2903389db8b7cd1bdcf0b6d731804d4",
     "E16.8": "29a9129867d3b770f1061e5b58c531e7c9e3958f3275583a5fc8e8fba0c5f1bf",
     "E16.10": "050d4beea8dc3e203b61294c376c1f64e1a3d1d69455fd37260188d4955566f1",
-    "E16.11": "f4ead85145f85a43567eefc994b1572e9e304b3754da905404c942c5b442b530"
+    "E16.11": "f4ead85145f85a43567eefc994b1572e9e304b3754da905404c942c5b442b530",
+    "E16.13.1": "43c22573449f74c0dc18f24636656d04cc676f3df59a9b65fdb37824e1a33f5c"
   },
   "semantic_surface": {
     "_doc": "Archivos cuyo contenido determina QUÉ COMPUTA el motor. Si una transición toca uno de éstos, no puede declararse NON_SEMANTIC sin mostrar el diff línea a línea, y ese diff queda escrito en semantic_surface_touched.",
@@ -23,6 +24,8 @@
       "src/escalimetro/area_semantics.py",
       "src/escalimetro/geometry/__init__.py",
       "src/escalimetro/geometry/core_completeness.py",
+      "src/escalimetro/geometry/core_components.py",
+      "src/escalimetro/geometry/core_fabrication.py",
       "src/escalimetro/geometry/core_geometry.py",
       "src/escalimetro/geometry/elements.py",
       "src/escalimetro/geometry/extractor.py",
@@ -63,7 +66,8 @@
     "_note_e16_7": "E16.7 incorpora segmentation/structural.py a la superficie semantica: define QUE cuenta como evidencia estructural en un dibujo, y de eso depende todo lo que el proveedor whole_shell computa despues.",
     "_note_e16_8": "E16.8 incorpora area_semantics.py a la superficie semantica: define que region del espacio mide cada cifra y cuando una superficie publicada puede fijar la escala. De eso depende si el motor computa metros y si el solver corre.",
     "_note_e16_10": "E16.10 incorpora semantic_hint.py y geometry/core_geometry.py a la superficie semantica: definen que puede proponer un interprete y como se convierte —o no— en geometria de nucleo aceptada.",
-    "_note_e16_11": "E16.11 incorpora geometry/core_completeness.py a la superficie semantica: define cuando un nucleo candidato puede llamarse completo, y de eso depende si el motor lo presenta como aceptado."
+    "_note_e16_11": "E16.11 incorpora geometry/core_completeness.py a la superficie semantica: define cuando un nucleo candidato puede llamarse completo, y de eso depende si el motor lo presenta como aceptado.",
+    "_note_e16_13_1": "E16.13.1 incorpora geometry/core_components.py (representacion canonica de un nucleo de 1..N regiones y su validacion) y geometry/core_fabrication.py (diagnostico experimental de fabricacion, fuera del contrato) a la superficie semantica."
   },
   "note_on_repo_hash": "El hash del repositorio NO se usa como criterio: E15, E15.1 y E15.2 cambian metadatos y presentación sin tocar la semántica del solver, y exigir igualdad de hash convertiría cada refactorización en una invalidación masiva. Tampoco vale lo contrario: 'legacy => compatible para siempre'. Por eso la unidad de decisión es la TRANSICIÓN declarada, con su diff calculado a la vista.",
   "transitions": [
@@ -374,6 +378,36 @@
         "Hashes de geometria A/B/C de la 403 sin cambios",
         "401: NO_FIT / ROBUST_NO_FIT / LEGACY_VERIFIED sin cambios"
       ]
+    },
+    {
+      "from": "E16.11",
+      "to": "E16.13.1",
+      "kind": "SEMANTIC",
+      "summary": "El nucleo puede ocupar 1..N regiones. Solo cambia el contrato: el productor esta congelado y verificado por hash.",
+      "changed_files": [
+        "src/escalimetro/geometry/core_geometry.py",
+        "src/escalimetro/schemas/floorplate.py"
+      ],
+      "added_files": [
+        "src/escalimetro/geometry/core_components.py",
+        "src/escalimetro/geometry/core_fabrication.py"
+      ],
+      "removed_files": [],
+      "semantic_surface_touched": {
+        "src/escalimetro/geometry/core_components.py": "modulo nuevo: representacion canonica de un candidato como 1..N anillos con mascara de union, con la distincion explicita entre canonicalizacion geometrica (orden, mascara) y reparacion semantica (descartar, fusionar, recortar), que NO se hace. Region diminuta se conserva y se reporta; solape y region fuera de la huella son InvalidCoreGeometry con tolerancia cero. No expone ningun alias que devuelva una region parcial en silencio.",
+        "src/escalimetro/geometry/core_fabrication.py": "modulo nuevo y EXPERIMENTAL: mide que fraccion de un candidato no es estructura ni esta encerrada por una misma pieza de estructura. No lo importa el contrato, no esta en CORE_ACCEPTANCE y su estado declarado es NOT_CALIBRATED: informa, no decide.",
+        "src/escalimetro/geometry/core_geometry.py": "cambios de CONTRATO unicamente, verificado por hash del texto de las funciones de productor: (1) CoreCandidate gana components/component_metrics/contract_version y prohibe construir un candidato multi-region con anillo unico; (2) CORE_ACCEPTANCE pierde components_max y separa invariantes POR COMPONENTE de invariantes de UNION, sin cambiar ningun valor heredado; (3) capa de medicion que evalua tambien geometrias declaradas (evaluate_candidate); (4) core_from_hint adapta mecanicamente la mascara del productor a la representacion; (5) cores_from_candidate emite N entradas Core con vinculo semantico estructurado. build_core, wall_map, enclosed_cell_anchors y open_floor quedan byte-identicos.",
+        "src/escalimetro/schemas/floorplate.py": "Core gana un bloque opcional CoreGroup (semantic_core_id, component_index, component_count, contract_version, candidate_status) para que la identidad de un nucleo repartido en varias regiones sea legible por maquina y no dependa de meta.notes. None en todo registro anterior: from_dict lo reconstruye solo si esta."
+      },
+      "semantic_change": "CORE GEOMETRIC CONTRACT MULTI-COMPONENTE, AISLADO. El contrato deja de contar piezas y pregunta propiedades en el ambito que corresponde a cada una. La representacion admite 1..N regiones y rechaza en vez de reparar la evidencia defectuosa. El productor NO cambia: sigue devolviendo una sola region, y eso esta bien, porque lo que este ciclo prueba es que el contrato sabe representar y juzgar 1..N.",
+      "evidence_compatibility": "COMPATIBLE: el productor de nucleo sigue sin estar conectado al pipeline, la 403 sigue usando detect_core_enclosed y ningun artefacto historico cambia. PRODUCER_HASH_BEFORE == PRODUCER_HASH_AFTER.",
+      "evidence": [
+        "PRODUCER_HASH_BEFORE == PRODUCER_HASH_AFTER = 685451135815252e342c4db9fad2328667cb204c2df1b06bf660f9e4a49d8a79",
+        "Suite completa: 670 passed, 2 skipped",
+        "Familia E16.10 completa vuelve a aceptarse con el productor congelado (B y D incluidas)",
+        "Lamina Standard 01 de la 403 BYTE-IDENTICA; hashes de geometria A/B/C sin cambios",
+        "401: NO_FIT / ROBUST_NO_FIT / LEGACY_VERIFIED sin cambios"
+      ]
     }
   ],
   "compatible_with_current": [
@@ -388,7 +422,17 @@
     "E16.7",
     "E16.8",
     "E16.10",
-    "E16.11"
+    "E16.11",
+    "E16.13.1"
   ],
-  "limitation": "El baseline más antiguo registrado es E14. Los artefactos de E06/E07 de la Oficina 403 y los de E14 de la 401 se produjeron ANTES de que existiera un baseline, así que su productor exacto no está registrado y se declara como E14, el estado más antiguo que sí lo está. Es una limitación declarada, no una prueba: lo que sí está verificado es que E15 regeneró los artefactos de E06 de la 403 con un motor posterior y salieron idénticos."
+  "limitation": "El baseline más antiguo registrado es E14. Los artefactos de E06/E07 de la Oficina 403 y los de E14 de la 401 se produjeron ANTES de que existiera un baseline, así que su productor exacto no está registrado y se declara como E14, el estado más antiguo que sí lo está. Es una limitación declarada, no una prueba: lo que sí está verificado es que E15 regeneró los artefactos de E06 de la 403 con un motor posterior y salieron idénticos.",
+  "invalid_experiments": [
+    {
+      "experiment": "E16.13",
+      "commit": "ee4334e0f3ca0928ff73c911e8dca1bc1365133a",
+      "branch": "e16_13_invalid_backup",
+      "status": "INVALID_EXPERIMENT_EVIDENCE",
+      "reason": "cambio el contrato geometrico Y el productor en el mismo ciclo, de modo que ningun efecto observado es atribuible. Se conserva como evidencia; NO es baseline y no esta en compatible_with_current."
+    }
+  ]
 }

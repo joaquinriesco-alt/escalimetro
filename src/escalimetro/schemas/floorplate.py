@@ -103,10 +103,27 @@ class Perimeter:
 
 
 @dataclass
+class CoreGroup:
+    """E16.13.1 — identidad semántica de un núcleo repartido en varias regiones.
+
+    Un núcleo puede ocupar N regiones separadas por circulación, y el esquema las guarda como N
+    entradas `Core`. Sin este bloque, un consumidor no puede distinguir UN núcleo de tres regiones de
+    TRES núcleos independientes: son dos afirmaciones arquitectónicas distintas. El vínculo va en
+    campos, no en `meta.notes`, para que sobreviva a la serialización y sea legible por máquina."""
+    semantic_core_id: str = ""        # mismo id ⇒ misma entidad semántica
+    component_index: int = 0
+    component_count: int = 1
+    contract_version: str = ""        # bajo qué representación se produjo
+    candidate_status: str = ""        # estado del CONJUNTO, no de esta región
+
+
+@dataclass
 class Core:
-    ring: Ring                        # polígono del núcleo (ascensores/escaleras/baños)
+    ring: Ring                        # polígono de UNA región del núcleo
     kind: str = "core"                # core | shaft | stairs | wc
     meta: Meta = field(default_factory=Meta)
+    #: None = registro anterior a E16.13.1, cuando un núcleo era necesariamente una sola región
+    group: Optional[CoreGroup] = None
 
 
 @dataclass
@@ -281,7 +298,9 @@ class Floorplate:
             perimeter=Perimeter(ring=tup(d["perimeter"]["ring"]), raw_ring=tup(d["perimeter"].get("raw_ring", [])),
                                 meta=m(d["perimeter"].get("meta"))),
             holes=[Polygon(ring=tup(h["ring"]), meta=m(h.get("meta"))) for h in d.get("holes", [])],
-            core=[Core(ring=tup(c["ring"]), kind=c.get("kind", "core"), meta=m(c.get("meta"))) for c in d.get("core", [])],
+            core=[Core(ring=tup(c["ring"]), kind=c.get("kind", "core"), meta=m(c.get("meta")),
+                       group=(CoreGroup(**c["group"]) if c.get("group") else None))
+                  for c in d.get("core", [])],
             columns=[Column(center=tuple(c["center"]), size_px=c["size_px"], shape=c.get("shape", "unknown"),
                             meta=m(c.get("meta"))) for c in d.get("columns", [])],
             entrances=[Entrance(point=tuple(e["point"]), width_px=e.get("width_px"), kind=e.get("kind", "main"),
