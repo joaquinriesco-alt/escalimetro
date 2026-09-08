@@ -1,0 +1,41 @@
+{
+  "_doc": "E16.11 — control de desarrollo. Se esperaba que GPS se detuviera ANTES del contrato de completitud porque el productor no genera candidato a esa resolucion. No se corrigio.",
+  "frozen_before_run": {
+    "engine_baseline": "E16.11",
+    "engine_hash": "f4ead85145f85a43567eefc994b1572e9e304b3754da905404c942c5b442b530",
+    "engine_hash_after_run": "f4ead85145f85a43567eefc994b1572e9e304b3754da905404c942c5b442b530",
+    "commit_before_run": "6071153",
+    "pre_run_suite": "638 passed, 2 skipped, 0 failed",
+    "plausibility_contract": {
+      "hint_iou_min": 0.15,
+      "require_centroid_in_hint": true,
+      "wall_fraction_min": 0.12,
+      "footprint_frac_min": 0.02,
+      "footprint_frac_max": 0.35,
+      "solidity_min": 0.55,
+      "components_max": 1,
+      "open_floor_invasion_max": 0.3
+    },
+    "completeness_contract": {
+      "significant_min_ratio": 0.1,
+      "dominant_min_ratio": 0.25,
+      "mass_coverage_min": 0.8,
+      "min_significant_anchors": 2
+    }
+  },
+  "semantic_hint_source": "cacheado de E16.10, sin nueva llamada",
+  "status": "CORE_REJECTED_IMPLAUSIBLE",
+  "plausibility_status": "NOT_PLAUSIBLE",
+  "completeness_status": "COMPLETENESS_NOT_EVALUATED",
+  "plausibility_metrics": {
+    "enclosed_cell_anchors_in_drawing": 1
+  },
+  "plausibility_reasons": [
+    "el candidato desaparece al descontar el enlace morfológico"
+  ],
+  "completeness_metrics": {},
+  "completeness_reasons": [],
+  "ring_vertices": 0,
+  "runs": 1,
+  "nota": "el fallo de GPS es de RESOLUCION en la deteccion de muros y es una rama distinta: no se toca en este ciclo"
+}

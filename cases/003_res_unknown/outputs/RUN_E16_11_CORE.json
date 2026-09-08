@@ -1,0 +1,66 @@
+{
+  "_doc": "E16.11 — reevaluacion del caso de desarrollo con el contrato congelado. MISMA imagen, MISMO SemanticHint cacheado de E16.10, MISMO productor geometrico. Sin nueva llamada VLM. Sin tuning posterior.",
+  "frozen_before_run": {
+    "engine_baseline": "E16.11",
+    "engine_hash": "f4ead85145f85a43567eefc994b1572e9e304b3754da905404c942c5b442b530",
+    "engine_hash_after_run": "f4ead85145f85a43567eefc994b1572e9e304b3754da905404c942c5b442b530",
+    "commit_before_run": "6071153",
+    "pre_run_suite": "638 passed, 2 skipped, 0 failed",
+    "plausibility_contract": {
+      "hint_iou_min": 0.15,
+      "require_centroid_in_hint": true,
+      "wall_fraction_min": 0.12,
+      "footprint_frac_min": 0.02,
+      "footprint_frac_max": 0.35,
+      "solidity_min": 0.55,
+      "components_max": 1,
+      "open_floor_invasion_max": 0.3
+    },
+    "completeness_contract": {
+      "significant_min_ratio": 0.1,
+      "dominant_min_ratio": 0.25,
+      "mass_coverage_min": 0.8,
+      "min_significant_anchors": 2
+    }
+  },
+  "semantic_hint_source": "cacheado de E16.10, sin nueva llamada",
+  "status": "CORE_REJECTED_INCOMPLETE",
+  "plausibility_status": "PLAUSIBLE",
+  "completeness_status": "INCOMPLETE",
+  "plausibility_metrics": {
+    "core_px": 119286,
+    "footprint_frac": 0.098627,
+    "hint_iou": 0.3331,
+    "centroid_in_hint": true,
+    "outside_hint_frac": 0.0162,
+    "wall_fraction": 0.2317,
+    "solidity": 0.7379,
+    "open_floor_invasion": 0.001,
+    "components": 1,
+    "discarded_pieces": 0,
+    "enclosed_cell_anchors_inside": 13,
+    "enclosed_cell_anchors_in_drawing": 20
+  },
+  "plausibility_reasons": [],
+  "completeness_metrics": {
+    "anchors_in_scope": 20,
+    "significant_anchors": 4,
+    "largest_anchor_px": 7395,
+    "significant_mass_px": 16049,
+    "covered_mass_px": 0,
+    "mass_coverage": 0.0,
+    "dominant_anchors_outside": 2,
+    "anchor_span_px": 600.6
+  },
+  "completeness_reasons": [
+    "mass_coverage=0.000 < 0.8: el candidato deja fuera masa de la evidencia estructural que la propia semántica señaló"
+  ],
+  "ring_vertices": 27,
+  "runs": 1,
+  "comparacion_con_e16_10": {
+    "e16_10_status": "CORE_ACCEPTED",
+    "e16_10_qa_arquitectonico": "INCOMPLETO — dejaba fuera el banco de ascensores",
+    "e16_11_status": "CORE_REJECTED_INCOMPLETE",
+    "lectura": "el candidato es EL MISMO —mismas metricas de plausibilidad, mismo anillo de 27 vertices— y el veredicto cambio porque el contrato aprendio a preguntar por completitud. Las cuatro anclas significativas del alcance, la mayor de 7.395 px, quedan todas fuera: mass_coverage 0.000"
+  }
+}
