@@ -1,0 +1,851 @@
+{
+ "_doc": "E16.14 §20/§22 — corrida ÚNICA de desarrollo con el motor congelado. RES y GPS son CASOS DE DESARROLLO, no evidencia de generalización. Sin llamadas nuevas al modelo de visión: la pista viene del caché de E16.9.",
+ "engine_hash_executed": "779a1eee6d3d2f2ce4fcc185dbf08da8890768e49a64211770eb1ee800a8105c",
+ "producer_hash_executed": "cacc3636ee14928d2eada9c63103081d305511b73b6716cc48ef2fe8fb38a5a3",
+ "scope_hashes_executed": {
+  "CONTRACT": "031bea3d7b96c2bfa2990160c982a0a8f7448da12f53e0c137977b2e74e550ee",
+  "WALL_EVIDENCE": "9c8db1516771271dd25d4f4fb2cf128b978dcc9c2c378c3a7b94d08add1f23fd",
+  "SEMANTIC_HINT": "dc8547bc7ad0c3dd05bb926c37d53d2ee156383157be9f2a807799a21870fa13",
+  "DOWNSTREAM": "1d6b13664f9c71f79e581915fa24ac620d153541d427eafdc793762a0586507f"
+ },
+ "runs": {
+  "RES": {
+   "image_shape": [
+    1070,
+    1788
+   ],
+   "footprint_px": 1209471,
+   "hint": [
+    645.0,
+    300.0,
+    1300.0,
+    835.0
+   ],
+   "metrics": {
+    "enclosed_cell_anchors_in_drawing": 20,
+    "producer_version": "core-producer/2.0.0",
+    "structural_components_discovered": 65,
+    "structural_components_selected": 0,
+    "rejected_components": [
+     {
+      "structural_px": 1641,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.0,
+      "enclosed_cells": 0,
+      "why": "envolvente del piso: ya la representa el perímetro"
+     },
+     {
+      "structural_px": 55465,
+      "scope_overlap": 0.901,
+      "interior_frac": 0.799,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 1001,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.0,
+      "enclosed_cells": 0,
+      "why": "envolvente del piso: ya la representa el perímetro"
+     },
+     {
+      "structural_px": 242,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.996,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 252,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.976,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 409,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.0,
+      "enclosed_cells": 0,
+      "why": "envolvente del piso: ya la representa el perímetro"
+     },
+     {
+      "structural_px": 237,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.0,
+      "enclosed_cells": 0,
+      "why": "envolvente del piso: ya la representa el perímetro"
+     },
+     {
+      "structural_px": 247,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 140,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 1545,
+      "scope_overlap": 1.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 1091,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 472,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 117,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 452,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 560,
+      "scope_overlap": 0.014,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 2226,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.978,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 1389,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 2645,
+      "scope_overlap": 1.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 47,
+      "scope_overlap": 1.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 2287,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.0,
+      "enclosed_cells": 0,
+      "why": "envolvente del piso: ya la representa el perímetro"
+     },
+     {
+      "structural_px": 39,
+      "scope_overlap": 1.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 129,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 1328,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 1201,
+      "scope_overlap": 1.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 1000,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 905,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 289,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 176,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 45,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 19239,
+      "scope_overlap": 0.893,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 458,
+      "scope_overlap": 1.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 557,
+      "scope_overlap": 1.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 458,
+      "scope_overlap": 1.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 4746,
+      "scope_overlap": 1.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 330,
+      "scope_overlap": 1.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 326,
+      "scope_overlap": 1.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 1061,
+      "scope_overlap": 1.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 346,
+      "scope_overlap": 1.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 149,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 450,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.942,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 90,
+      "scope_overlap": 1.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 147,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 1330,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 208,
+      "scope_overlap": 1.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 160,
+      "scope_overlap": 1.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 242,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 249,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.948,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 182,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 348,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 1045,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 362,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 239,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 1144,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.995,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 207,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 232,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 698,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.984,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 261,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 257,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 396,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 243,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.955,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 394,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.985,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 341,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 120,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.0,
+      "enclosed_cells": 0,
+      "why": "envolvente del piso: ya la representa el perímetro"
+     },
+     {
+      "structural_px": 1386,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.0,
+      "enclosed_cells": 0,
+      "why": "envolvente del piso: ya la representa el perímetro"
+     },
+     {
+      "structural_px": 141,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.0,
+      "enclosed_cells": 0,
+      "why": "envolvente del piso: ya la representa el perímetro"
+     }
+    ]
+   },
+   "reasons": [
+    "ninguna pieza estructural del alcance encierra un recinto cerrado propio: no hay evidencia para proponer un núcleo"
+   ],
+   "status": "CORE_REJECTED_IMPLAUSIBLE",
+   "plausibility": "NOT_PLAUSIBLE",
+   "completeness": "COMPLETENESS_NOT_EVALUATED",
+   "completeness_metrics": {},
+   "completeness_reasons": [],
+   "components": [],
+   "fabrication_diagnostic": {},
+   "notes": ""
+  },
+  "GPS": {
+   "image_shape": [
+    424,
+    800
+   ],
+   "footprint_px": 150120,
+   "hint": [
+    425.0,
+    199.0,
+    570.0,
+    333.0
+   ],
+   "metrics": {
+    "core_px": 869,
+    "footprint_frac": 0.005789,
+    "hint_iou": 0.0447,
+    "centroid_in_hint": true,
+    "outside_hint_frac": 0.0,
+    "wall_fraction": 0.298,
+    "solidity": 0.5848,
+    "open_floor_invasion": 0.0,
+    "scope_overlap": 1.0,
+    "enclosed_cell_anchors_in_drawing": 7,
+    "producer_version": "core-producer/2.0.0",
+    "structural_components_discovered": 25,
+    "structural_components_selected": 1,
+    "rejected_components": [
+     {
+      "structural_px": 19,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.0,
+      "enclosed_cells": 0,
+      "why": "envolvente del piso: ya la representa el perímetro"
+     },
+     {
+      "structural_px": 60,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 111,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 78,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 154,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 39,
+      "scope_overlap": 0.769,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 327,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.0,
+      "enclosed_cells": 0,
+      "why": "envolvente del piso: ya la representa el perímetro"
+     },
+     {
+      "structural_px": 94,
+      "scope_overlap": 1.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 26,
+      "scope_overlap": 1.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 19,
+      "scope_overlap": 1.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 193,
+      "scope_overlap": 1.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 22,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.0,
+      "enclosed_cells": 0,
+      "why": "envolvente del piso: ya la representa el perímetro"
+     },
+     {
+      "structural_px": 965,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.908,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 1766,
+      "scope_overlap": 1.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 67,
+      "scope_overlap": 1.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 403,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.0,
+      "enclosed_cells": 0,
+      "why": "envolvente del piso: ya la representa el perímetro"
+     },
+     {
+      "structural_px": 21,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 29,
+      "scope_overlap": 0.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "vive fuera del alcance que la semántica señaló"
+     },
+     {
+      "structural_px": 785,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.405,
+      "enclosed_cells": 0,
+      "why": "envolvente del piso: ya la representa el perímetro"
+     },
+     {
+      "structural_px": 41,
+      "scope_overlap": 1.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 140,
+      "scope_overlap": 1.0,
+      "interior_frac": 1.0,
+      "enclosed_cells": 0,
+      "why": "no encierra ninguna celda cerrada significativa: no hay evidencia de recinto permanente"
+     },
+     {
+      "structural_px": 110,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.0,
+      "enclosed_cells": 0,
+      "why": "envolvente del piso: ya la representa el perímetro"
+     },
+     {
+      "structural_px": 19,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.0,
+      "enclosed_cells": 0,
+      "why": "envolvente del piso: ya la representa el perímetro"
+     },
+     {
+      "structural_px": 170,
+      "scope_overlap": 0.0,
+      "interior_frac": 0.0,
+      "enclosed_cells": 0,
+      "why": "envolvente del piso: ya la representa el perímetro"
+     }
+    ],
+    "components": 1,
+    "component_areas_px": [
+     869
+    ],
+    "min_component_frac": 0.005789,
+    "enclosed_cell_anchors_inside": 1,
+    "contract_version": "core-geometry/2.0.0",
+    "provenance": "producer"
+   },
+   "reasons": [
+    "hint_iou=0.045 < 0.15",
+    "footprint_frac=0.006 fuera de [0.02, 0.35]"
+   ],
+   "status": "CORE_REJECTED_IMPLAUSIBLE",
+   "plausibility": "NOT_PLAUSIBLE",
+   "completeness": "INCOMPLETE",
+   "completeness_metrics": {
+    "anchors_in_scope": 4,
+    "significant_anchors": 2,
+    "largest_anchor_px": 83,
+    "significant_mass_px": 107,
+    "covered_mass_px": 83,
+    "mass_coverage": 0.7757,
+    "dominant_anchors_outside": 1,
+    "anchor_span_px": 113.5
+   },
+   "completeness_reasons": [
+    "mass_coverage=0.776 < 0.8: el candidato deja fuera masa de la evidencia estructural que la propia semántica señaló"
+   ],
+   "components": [
+    [
+     [
+      433.0,
+      264.0
+     ],
+     [
+      435.0,
+      262.0
+     ],
+     [
+      447.0,
+      262.0
+     ],
+     [
+      449.0,
+      264.0
+     ],
+     [
+      449.0,
+      269.0
+     ],
+     [
+      447.0,
+      271.0
+     ],
+     [
+      453.0,
+      271.0
+     ],
+     [
+      455.0,
+      273.0
+     ],
+     [
+      460.0,
+      271.0
+     ],
+     [
+      462.0,
+      274.0
+     ],
+     [
+      463.0,
+      271.0
+     ],
+     [
+      462.0,
+      250.0
+     ],
+     [
+      462.0,
+      256.0
+     ],
+     [
+      457.0,
+      258.0
+     ],
+     [
+      455.0,
+      256.0
+     ],
+     [
+      451.0,
+      258.0
+     ],
+     [
+      449.0,
+      256.0
+     ],
+     [
+      449.0,
+      242.0
+     ],
+     [
+      451.0,
+      240.0
+     ],
+     [
+      463.0,
+      240.0
+     ],
+     [
+      462.0,
+      216.0
+     ],
+     [
+      462.0,
+      234.0
+     ],
+     [
+      460.0,
+      236.0
+     ],
+     [
+      436.0,
+      235.0
+     ],
+     [
+      431.0,
+      237.0
+     ],
+     [
+      431.0,
+      260.0
+     ],
+     [
+      429.0,
+      262.0
+     ]
+    ]
+   ],
+   "fabrication_diagnostic": {
+    "bridge_validation": "NOT_CALIBRATED",
+    "fabricated_fraction": 0.5512,
+    "fabricated_fraction_per_component": [
+     0.5512
+    ],
+    "status": "EXPERIMENTAL_DIAGNOSTIC_NOT_IN_CONTRACT"
+   },
+   "notes": "CORE_REJECTED_IMPLAUSIBLE: plausibilidad=NOT_PLAUSIBLE, completitud=INCOMPLETE — hint_iou=0.045 < 0.15; footprint_frac=0.006 fuera de [0.02, 0.35]; mass_coverage=0.776 < 0.8: el candidato deja fuera masa de la evidencia estructural que la propia semántica señaló"
+  }
+ },
+ "diagnosis": {
+  "RES": "la pieza estructural mayor del alcance (55.465 px, scope_overlap 0,901) encierra 6 celdas cerradas y NINGUNA significativa: las dos mayores del alcance (7.395 y 6.342 px) pertenecen al banco de cabinas y no quedan encerradas por ninguna pieza bajo la definición del productor. Contraste medido: con la MISMA definición de encerramiento que usa enclosed_cell_anchors (muros dilatados a k=19), 3 piezas del alcance sí encierran un ancla significativa. El fallo es del productor, no de la evidencia de muro: el mapa de muros SÍ encontró la franja del núcleo.",
+  "GPS": "la pieza mayor del alcance mide 1.766 px sobre una huella de 150.120 px (1,2 %) y encierra 1 celda, ninguna significativa. A 800x424 la evidencia estructural del núcleo achurado llega fragmentada: el primer fallo causal de GPS sigue siendo la evidencia estructural a esa resolución."
+ }
+}
