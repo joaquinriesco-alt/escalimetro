@@ -1,0 +1,128 @@
+{
+  "_doc": "E16.12 — EVIDENCIA, NO IMPLEMENTACION. El ciclo termino en ARCHITECTURE_BLOCKED_MULTI_COMPONENT y por lo tanto NO se modifico el motor: el arbol quedo en b613790 y el engine hash de E16.11 intacto. Este directorio guarda el banco de diagnostico, sus mediciones y el prototipo de productor que se uso SOLO para medir (guardado como .txt para que no sea importable ni entre al engine hash).",
+  "verdict": "D — ARCHITECTURE_BLOCKED_MULTI_COMPONENT",
+  "engine_unchanged": {
+    "head": "b6137907f84603e317ceb847bf357397495541e6",
+    "engine_hash": "f4ead85145f85a43567eefc994b1572e9e304b3754da905404c942c5b442b530",
+    "note": "identico al de E16.11; ningun archivo de src/ fue modificado"
+  },
+  "blocker": {
+    "representacion_del_motor": "Floorplate.core es List[Core] (schemas/floorplate.py:223) y shell_adapter.py:33-34 hace unary_union(cores): el ESQUEMA soporta un nucleo multi-componente.",
+    "donde_esta_el_bloqueo": "CoreCandidate expone un unico `ring` (core_geometry.py:54) y el contrato de plausibilidad congelado en E16.11 exige components_max = 1 (core_geometry.py:260). Un nucleo dibujado como bloques separados por circulacion no puede satisfacer esa condicion sin fabricar una franja de union por espacio abierto, que el §7 del ciclo prohibe explicitamente.",
+    "medicion": "El productor de E16.10 satisface components==1 justamente fabricando esa franja: en el candidato registrado para el caso de desarrollo, el 68,08% de los pixeles no son estructura ni estan encerrados por estructura."
+  },
+  "bench_results": [
+    {
+      "fixture": "A_COMPLETE_CONNECTED_CLUSTER",
+      "v1_status": "CORE_ACCEPTED",
+      "v1_comps": 1,
+      "v1_frac": 0.061241,
+      "v1_masscov": 1.0,
+      "v1_fabricated": 0.0048,
+      "v2_status": "CORE_ACCEPTED",
+      "v2_comps": 1,
+      "v2_frac": 0.175777,
+      "v2_kept": 1,
+      "v2_disc": 22,
+      "v2_masscov": 1.0
+    },
+    {
+      "fixture": "B_PARTIAL_CLUSTER_TEMPTATION",
+      "v1_status": "CORE_ACCEPTED",
+      "v1_comps": 1,
+      "v1_frac": 0.061241,
+      "v1_masscov": 1.0,
+      "v1_fabricated": 0.0048,
+      "v2_status": "CORE_ACCEPTED",
+      "v2_comps": 1,
+      "v2_frac": 0.175777,
+      "v2_kept": 1,
+      "v2_disc": 22,
+      "v2_masscov": 1.0
+    },
+    {
+      "fixture": "C_NARROW_STRUCTURAL_CONNECTION",
+      "v1_status": "CORE_ACCEPTED",
+      "v1_comps": 1,
+      "v1_frac": 0.060609,
+      "v1_masscov": 1.0,
+      "v1_fabricated": 0.0076,
+      "v2_status": "CORE_ACCEPTED",
+      "v2_comps": 1,
+      "v2_frac": 0.130185,
+      "v2_kept": 1,
+      "v2_disc": 22,
+      "v2_masscov": 1.0
+    },
+    {
+      "fixture": "D_UNRELATED_CLOSED_ROOM",
+      "v1_status": "CORE_REJECTED_IMPLAUSIBLE",
+      "v1_comps": 1,
+      "v1_frac": 0.061336,
+      "v1_masscov": 0.6024,
+      "v1_fabricated": 0.0048,
+      "v2_status": "CORE_REJECTED_INCOMPLETE",
+      "v2_comps": 1,
+      "v2_frac": 0.175777,
+      "v2_kept": 1,
+      "v2_disc": 52,
+      "v2_masscov": 0.6024
+    },
+    {
+      "fixture": "E_DISTRIBUTED_SERVICE_COMPONENTS",
+      "v1_status": "CORE_REJECTED_IMPLAUSIBLE",
+      "v1_comps": 1,
+      "v1_frac": 0.060027,
+      "v1_masscov": 0.9047,
+      "v1_fabricated": 0.0676,
+      "v2_status": "CORE_REJECTED_IMPLAUSIBLE",
+      "v2_comps": 4,
+      "v2_frac": 0.164801,
+      "v2_kept": 8,
+      "v2_disc": 34,
+      "v2_masscov": 0.9047
+    },
+    {
+      "fixture": "F_OPEN_FLOOR_BRIDGE_NEGATIVE",
+      "v1_status": "CORE_REJECTED_IMPLAUSIBLE",
+      "v1_comps": 1,
+      "v1_frac": 0.057253,
+      "v1_masscov": 0.4732,
+      "v1_fabricated": 0.0992,
+      "v2_status": "CORE_REJECTED_IMPLAUSIBLE",
+      "v2_comps": 2,
+      "v2_frac": 0.166527,
+      "v2_kept": 3,
+      "v2_disc": 35,
+      "v2_masscov": 0.9394
+    },
+    {
+      "fixture": "G_COMPACT_FALSE_CORE",
+      "v1_status": "CORE_REJECTED_IMPLAUSIBLE",
+      "v1_comps": 1,
+      "v1_frac": 0.050802,
+      "v1_masscov": 1.0,
+      "v1_fabricated": 0.1227,
+      "v2_status": "CORE_REJECTED_IMPLAUSIBLE",
+      "v2_comps": 3,
+      "v2_frac": 0.089528,
+      "v2_kept": 6,
+      "v2_disc": 20,
+      "v2_masscov": 1.0
+    },
+    {
+      "fixture": "H_NO_RELIABLE_STRUCTURAL_EVIDENCE",
+      "v1_status": "CORE_REJECTED_IMPLAUSIBLE",
+      "v1_comps": 1,
+      "v1_frac": 0.002543,
+      "v1_masscov": 0.3866,
+      "v1_fabricated": 0.0,
+      "v2_status": "CORE_REJECTED_IMPLAUSIBLE",
+      "v2_comps": 15,
+      "v2_frac": 0.062873,
+      "v2_kept": 23,
+      "v2_disc": 14,
+      "v2_masscov": 1.0
+    }
+  ]
+}
