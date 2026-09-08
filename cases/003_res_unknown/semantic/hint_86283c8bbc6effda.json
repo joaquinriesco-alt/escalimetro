@@ -1,0 +1,21 @@
+{
+  "kind": "core",
+  "approximate_region": [
+    645.0,
+    300.0,
+    1300.0,
+    835.0
+  ],
+  "confidence": "high",
+  "semantic_evidence": "Una franja central dibujada con muros achurados pesados, distinta de las particiones delgadas de la oficina abierta. Dentro: una escalera con peldaños numerados; bancos de ascensores dibujados como cajas con diagonales en cruz y rótulos de cabina; un grupo de baños a la derecha con rótulos de baño de hombres, mujeres y accesible; pequeños rectángulos cerrados que leen como ductos y clósets de servicio. La franja está libre de mobiliario mientras todo al este y al oeste está lleno de escritorios, mesas y sillas. Advertencia declarada por el propio intérprete: la marca de agua del corredor se sitúa sobre el centro y tapa parte del banco superior; precisión de borde ±15-20 px; es ambiguo si los recintos de servicio del extremo pertenecen al núcleo o son habilitación del arrendatario.",
+  "provenance": "VLM",
+  "provider": "UNKNOWN",
+  "model": "UNKNOWN",
+  "schema_version": "1.0.0",
+  "source_image_sha256": "9c5429109cc0073b71bb46780489d0061c9cf0e3726a84d54b90ade1c286c916",
+  "created_at": "2026-09-08T00:53:35+00:00",
+  "raw_response_sha256": "f523e8b1bca8a8581936cd860337f73af7ab94936abb721372e5b2d275aa0146",
+  "approximate_polygon": null,
+  "notes": "Pista de DESARROLLO. Producida en el spike E16.9 por el modelo general de visión del entorno de trabajo, ejecutado a ciegas (agente sin contexto del proyecto, sólo la imagen y una instrucción arquitectónica genérica). NO fue producida por el runtime productivo del motor: `vision/adapters.py` no tiene credenciales en este entorno. provider y model quedan en UNKNOWN a propósito: es preferible a una procedencia falsa. raw_response_sha256 es el hash del texto de evidencia guardado aquí, no de un payload de proveedor que nunca existió.",
+  "_warning": "approximate_region es una PISTA, no geometría aceptada. El polígono lo produce código determinista y lo aprueba el contrato de aceptación."
+}

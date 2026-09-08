@@ -1,0 +1,21 @@
+{
+  "kind": "core",
+  "approximate_region": [
+    425.0,
+    199.0,
+    570.0,
+    333.0
+  ],
+  "confidence": "high",
+  "semantic_evidence": "El único bloque dibujado con muros achurados (poché), lo que indica construcción permanente. Es también la única región que las tintas de las unidades dejan sin pintar, es decir área común no asignada a ninguna unidad arrendable. Dentro: dos filas simétricas de cabinas pequeñas frente a un pasillo central (banco de ascensores con lobby), flanqueadas por dos cajas rectangulares con una diagonal larga y marcas de peldaños (escaleras), y recintos menores con aparatos sanitarios.",
+  "provenance": "VLM",
+  "provider": "UNKNOWN",
+  "model": "UNKNOWN",
+  "schema_version": "1.0.0",
+  "source_image_sha256": "89546a14dd941bd7c17e985bf316b43141583f51cf7cff74d4b45c4525cabb02",
+  "created_at": "2026-09-08T00:53:35+00:00",
+  "raw_response_sha256": "434cd70e5df809fd72edbc4634752fe720af2bcada6babec77d99f699d1e9f5a",
+  "approximate_polygon": null,
+  "notes": "Pista de DESARROLLO. Producida en el spike E16.9 por el modelo general de visión del entorno de trabajo, ejecutado a ciegas (agente sin contexto del proyecto, sólo la imagen y una instrucción arquitectónica genérica). NO fue producida por el runtime productivo del motor: `vision/adapters.py` no tiene credenciales en este entorno. provider y model quedan en UNKNOWN a propósito: es preferible a una procedencia falsa. raw_response_sha256 es el hash del texto de evidencia guardado aquí, no de un payload de proveedor que nunca existió.",
+  "_warning": "approximate_region es una PISTA, no geometría aceptada. El polígono lo produce código determinista y lo aprueba el contrato de aceptación."
+}
