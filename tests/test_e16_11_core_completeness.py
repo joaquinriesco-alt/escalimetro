@@ -176,17 +176,18 @@ def test_el_contrato_esta_declarado_como_dato():
 # 6 · el productor de E16.10 no se tocó, y no hay acoplamiento de caso
 # ---------------------------------------------------------------------------------------------------
 def test_el_productor_geometrico_sigue_produciendo_lo_mismo():
-    """La familia de E16.10 se conserva como regresión del productor: mismas máscaras, mismas
-    métricas de plausibilidad."""
+    """La familia de E16.10 se conserva como regresión del productor. E16.13 cambió el productor
+    —de enlace morfológico a conectividad estructural— y esta prueba lo acompaña: estas tres clases
+    siguen produciendo geometría y siguen siendo plausibles, ahora con 1..N piezas."""
     for n in ("A_core_compacto", "C_bloques_con_circulacion", "E_mobiliario_denso"):
         img = cv2.imread(os.path.join(FX10, n + ".png"))
         meta = json.load(open(os.path.join(FX10, n + ".json"), encoding="utf-8"))
         fp = np.zeros(img.shape[:2], np.uint8)
         cv2.fillPoly(fp, [np.array(meta["footprint_ring"], np.int32)], 255)
         c = CG.build_core(img, fp, tuple(meta["hint_region"]))
-        assert c.metrics["components"] == 1 and c.metrics["core_px"] > 0
-        ok, _ = CG.accept_core(c.metrics)
-        assert ok, n
+        assert c.metrics["components"] >= 1 and c.metrics["core_px"] > 0
+        ok, fails = CG.accept_core(c.metrics, None, c.component_metrics)
+        assert ok, (n, fails)
 
 
 def test_ninguna_constante_de_caso_en_el_contrato_de_completitud():

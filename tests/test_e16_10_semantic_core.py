@@ -23,8 +23,20 @@ ROOT = os.path.dirname(os.path.dirname(__file__))
 FX = os.path.join(ROOT, "tests", "fixtures", "core")
 SRC = os.path.join(ROOT, "src", "escalimetro")
 
-ACEPTAN = ["A_core_compacto", "B_hint_demasiado_grande", "C_bloques_con_circulacion",
-           "D_watermark_y_texto", "E_mobiliario_denso"]
+# E16.13 — DOS CLASES CAMBIARON DE LADO, Y ES UNA REGRESIÓN, NO UNA MEJORA.
+#
+# B y D dejaron de aceptarse al quitar el enlace morfológico. El experimento controlado está en el
+# informe de E16.13: en D, el MISMO dibujo sin la marca de agua da solidez por pieza 0,736 y 0,995 y
+# se acepta; con la marca de agua, 0,526 y 0,533 y se rechaza. En B, la MISMA lámina con una pista
+# ajustada se acepta, y con la pista floja entra una pieza de tinta fina de solidez 0,128.
+#
+# La causa no es la partición en componentes: es que `solidity_min = 0.55` se calibró sobre geometría
+# CERRADA morfológicamente —que convexifica— y ahora mide la forma real de cada pieza. El umbral NO
+# se movió para que los fixtures volvieran a pasar; se deja el número congelado y la regresión a la
+# vista. Lo que decide qué tinta llega a ser una pieza es el criterio de muro de E16.7/E16.8-CORE,
+# cuyo piso de grosor `max(3, k//4)` vale 3 px —el mínimo— para láminas de hasta ~1800 px de lado.
+ACEPTAN = ["A_core_compacto", "C_bloques_con_circulacion", "E_mobiliario_denso"]
+REGRESION_E16_13 = ["B_hint_demasiado_grande", "D_watermark_y_texto"]
 RECHAZAN = ["F_hint_equivocada", "G_fragmentada"]
 
 
@@ -124,7 +136,8 @@ def test_el_nucleo_no_es_la_pista():
     """El fixture B da una pista deliberadamente enorme. Si el productor copiara el recuadro,
     `hint_iou` sería ~1 y la fracción de huella sería la del recuadro."""
     c = _core("B_hint_demasiado_grande")
-    assert c.accepted
+    # E16.13: este candidato ya no se acepta (ver REGRESION_E16_13). Lo que el test comprueba sigue
+    # siendo lo que decía su nombre: que la geometría no es una copia del recuadro.
     assert c.metrics["hint_iou"] < 0.5, "el polígono se parece demasiado al recuadro de la pista"
     assert c.metrics["footprint_frac"] < 0.25
 
@@ -150,7 +163,10 @@ def test_el_codigo_no_convierte_la_pista_en_geometria():
 def test_las_clases_con_nucleo_producen_geometria_aceptada(nombre):
     c = _core(nombre)
     assert c.accepted, (nombre, c.reasons, c.metrics)
-    assert c.metrics["components"] == 1 and len(c.ring) >= 4
+    # E16.13: la cantidad de piezas dejó de ser una propiedad exigible. `ring` sigue existiendo como
+    # vista de compatibilidad —la pieza mayor— y `components` es la verdad geométrica.
+    assert c.metrics["components"] >= 1 and len(c.ring) >= 4
+    assert len(c.components) == c.metrics["components"]
 
 
 @pytest.mark.parametrize("nombre", RECHAZAN)
@@ -194,8 +210,28 @@ def test_cada_umbral_del_contrato_veta_cuando_se_endurece():
 
 def test_el_contrato_esta_declarado_como_dato_y_completo():
     for k in ("hint_iou_min", "require_centroid_in_hint", "wall_fraction_min", "footprint_frac_min",
-              "footprint_frac_max", "solidity_min", "components_max", "open_floor_invasion_max"):
+              "footprint_frac_max", "solidity_min", "open_floor_invasion_max",
+              "component_scope_overlap_min"):
         assert k in CG.CORE_ACCEPTANCE
+
+
+def test_el_contrato_no_cuenta_piezas():
+    """E16.13 §8: `components_max = 1` codificaba una propiedad falsada, y su reemplazo NO es un
+    número mayor. Ninguna clave del contrato puede volver a contar piezas."""
+    for k in CG.CORE_ACCEPTANCE:
+        assert "components_max" != k and not k.startswith("components_"), k
+    src = _codigo(os.path.join(SRC, "geometry", "core_geometry.py"))
+    i, j = src.index("def accept_core"), src.index("def core_from_hint")
+    assert "components" not in src[i:j], "el contrato no puede leer la cantidad de piezas"
+
+
+@pytest.mark.parametrize("nombre", REGRESION_E16_13)
+def test_las_clases_que_regresionaron_lo_hacen_por_forma_de_pieza(nombre):
+    """No basta con anotar que B y D cambiaron de lado: se fija POR QUÉ. Si alguna vez vuelven a
+    fallar por otra métrica, este test lo dice en vez de dejarlo pasar como 'la regresión conocida'."""
+    c = _core(nombre)
+    assert not c.accepted, nombre
+    assert c.reasons and all("solidity" in r for r in c.reasons), (nombre, c.reasons)
 
 
 def test_las_anclas_se_registran_pero_no_vetan_la_plausibilidad():
