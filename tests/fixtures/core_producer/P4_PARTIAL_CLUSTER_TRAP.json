@@ -1,0 +1,56 @@
+{
+ "hint_region": [
+  470,
+  220,
+  950,
+  820
+ ],
+ "footprint_ring": [
+  [
+   120,
+   120
+  ],
+  [
+   1480,
+   120
+  ],
+  [
+   1480,
+   640
+  ],
+  [
+   1300,
+   640
+  ],
+  [
+   1300,
+   900
+  ],
+  [
+   120,
+   900
+  ]
+ ],
+ "expected": 3,
+ "spec": "pieza dominante + dos piezas menores relacionadas: no basta con la mayor",
+ "truth_boxes": [
+  [
+   500,
+   250,
+   920,
+   580
+  ],
+  [
+   500,
+   660,
+   650,
+   790
+  ],
+  [
+   720,
+   660,
+   870,
+   790
+  ]
+ ]
+}

@@ -1,0 +1,50 @@
+{
+ "hint_region": [
+  490,
+  230,
+  1010,
+  540
+ ],
+ "footprint_ring": [
+  [
+   120,
+   120
+  ],
+  [
+   1480,
+   120
+  ],
+  [
+   1480,
+   640
+  ],
+  [
+   1300,
+   640
+  ],
+  [
+   1300,
+   900
+  ],
+  [
+   120,
+   900
+  ]
+ ],
+ "expected": 2,
+ "spec": "una pieza angosta con recinto cerrado es estructura: no se filtra por chica",
+ "truth_boxes": [
+  [
+   520,
+   260,
+   820,
+   480
+  ],
+  [
+   900,
+   300,
+   970,
+   490
+  ]
+ ]
+}

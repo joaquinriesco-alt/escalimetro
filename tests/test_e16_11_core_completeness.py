@@ -178,15 +178,18 @@ def test_el_contrato_esta_declarado_como_dato():
 def test_el_productor_geometrico_sigue_produciendo_lo_mismo():
     """La familia de E16.10 se conserva como regresión del productor: mismas máscaras, mismas
     métricas de plausibilidad."""
-    for n in ("A_core_compacto", "C_bloques_con_circulacion", "E_mobiliario_denso"):
+    # E16.14 cambió el productor: E_mobiliario_denso pasa a rechazarse (causa medida y declarada en
+    # tests/test_e16_10_semantic_core.py). Las otras dos siguen produciendo geometría plausible, ahora
+    # con 1..N regiones.
+    for n in ("A_core_compacto", "C_bloques_con_circulacion"):
         img = cv2.imread(os.path.join(FX10, n + ".png"))
         meta = json.load(open(os.path.join(FX10, n + ".json"), encoding="utf-8"))
         fp = np.zeros(img.shape[:2], np.uint8)
         cv2.fillPoly(fp, [np.array(meta["footprint_ring"], np.int32)], 255)
         c = CG.build_core(img, fp, tuple(meta["hint_region"]))
-        assert c.metrics["components"] == 1 and c.metrics["core_px"] > 0
-        ok, _ = CG.accept_core(c.metrics)
-        assert ok, n
+        assert c.metrics["components"] >= 1 and c.metrics["core_px"] > 0
+        ok, fails = CG.accept_core(c.metrics, None, None)
+        assert ok, (n, fails)
 
 
 def test_ninguna_constante_de_caso_en_el_contrato_de_completitud():

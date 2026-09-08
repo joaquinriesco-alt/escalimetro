@@ -55,13 +55,19 @@ def _hay_git():
 # 0 · LA FRONTERA DEL EXPERIMENTO — el test que E16.13 no tenía
 # ---------------------------------------------------------------------------------------------------
 @pytest.mark.skipif(not _hay_git(), reason="la base limpia no está en este clon")
-def test_el_productor_no_cambio_respecto_de_la_base_limpia():
-    """UNA VARIABLE: el contrato. Si alguien toca `build_core`, `wall_map`,
-    `enclosed_cell_anchors`, `open_floor`, sus constantes, la evidencia estructural o la pista
-    semántica, este test falla y dice cuál. No es una promesa en el informe: es el hash del texto."""
-    igual, cambios, antes, ahora = PF.compare(BASE_LIMPIA, ROOT)
-    assert igual, f"el productor cambió en: {cambios}"
-    assert antes == ahora
+def test_el_productor_no_cambio_entre_la_base_limpia_y_e16_13_1():
+    """UNA VARIABLE en E16.13.1: el contrato. La comprobación se hace entre las DOS revisiones
+    históricas —la base limpia y el commit de E16.13.1— y no contra el árbol de trabajo, porque
+    ciclos posteriores SÍ pueden mover el productor (E16.14 lo hace a propósito). Lo que este test
+    protege es el hecho histórico: cuando se migró el contrato, el productor no se tocó."""
+    if subprocess.run(["git", "-C", ROOT, "cat-file", "-e", "6c5142d^{commit}"],
+                      capture_output=True).returncode != 0:
+        pytest.skip("el commit de E16.13.1 no está en este clon")
+    a = PF.producer_segments(PF.read_git(BASE_LIMPIA, ROOT))
+    b = PF.producer_segments(PF.read_git("6c5142d", ROOT))
+    assert set(a) == set(b) and all(a[k] == b[k] for k in a), "E16.13.1 tocó el productor"
+    assert PF.producer_hash(PF.read_git(BASE_LIMPIA, ROOT)) == \
+        PF.producer_hash(PF.read_git("6c5142d", ROOT))
 
 
 def test_el_productor_del_experimento_invalido_no_pasaria_esta_frontera():

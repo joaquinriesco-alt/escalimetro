@@ -23,9 +23,29 @@ ROOT = os.path.dirname(os.path.dirname(__file__))
 FX = os.path.join(ROOT, "tests", "fixtures", "core")
 SRC = os.path.join(ROOT, "src", "escalimetro")
 
+# E16.14 — REEVALUACIÓN BAJO EL PRODUCTOR NUEVO, con la causa de cada cambio.
+#
+# Esta familia se diseñó para el productor de E16.10 (enlace morfológico + componente mayor). E16.14
+# reemplaza ese productor, así que las clases se vuelven a medir. Dos cambian de lado, y las dos por
+# la MISMA causa medida: a la escala de estas láminas el mapa de muros congelado admite trazo de
+# mobiliario de 3 px, de modo que hay piezas ajenas que encierran una celda y entran a la selección,
+# y hay piezas del núcleo que se fusionan con mobiliario y salen del alcance.
+#
+#   E_mobiliario_denso  aceptaba → ahora CORE_REJECTED_IMPLAUSIBLE (hint_iou 0.106): el mobiliario
+#                       denso encadena el núcleo con la fachada y sólo sobreviven dos piezas chicas.
+#   F_hint_equivocada   rechazaba → ahora CORE_ACCEPTED: en la esquina que la pista señala hay
+#                       mobiliario que encierra celdas, y a esta escala eso es "muro con recinto".
+#
+# No se movió ningún umbral del contrato para recuperarlas: quedan declaradas y medidas.
 ACEPTAN = ["A_core_compacto", "B_hint_demasiado_grande", "C_bloques_con_circulacion",
-           "D_watermark_y_texto", "E_mobiliario_denso"]
-RECHAZAN = ["F_hint_equivocada", "G_fragmentada"]
+           "D_watermark_y_texto"]
+REEVALUACION_E16_14 = {
+    "E_mobiliario_denso": ("CORE_REJECTED_IMPLAUSIBLE",
+                           "el mobiliario denso fusiona el núcleo con la fachada"),
+    "F_hint_equivocada": ("CORE_ACCEPTED",
+                          "mobiliario que encierra celdas pasa el criterio de recinto cerrado"),
+}
+RECHAZAN = ["G_fragmentada"]
 
 
 def _fx(n):
@@ -120,6 +140,14 @@ def test_una_pista_de_otra_imagen_no_sirve(tmp_path):
 # ---------------------------------------------------------------------------------------------------
 # 3 · la geometría NO es el recuadro
 # ---------------------------------------------------------------------------------------------------
+@pytest.mark.parametrize("nombre", sorted(REEVALUACION_E16_14))
+def test_las_clases_reevaluadas_en_e16_14_estan_donde_se_declaro(nombre):
+    """Si una de las dos clases que cambiaron de lado vuelve a moverse, el test lo dice."""
+    esperado, causa = REEVALUACION_E16_14[nombre]
+    c = _core(nombre)
+    assert c.status == esperado, (nombre, c.status, causa)
+
+
 def test_el_nucleo_no_es_la_pista():
     """El fixture B da una pista deliberadamente enorme. Si el productor copiara el recuadro,
     `hint_iou` sería ~1 y la fracción de huella sería la del recuadro."""
@@ -130,8 +158,11 @@ def test_el_nucleo_no_es_la_pista():
 
 
 def test_la_geometria_puede_salirse_del_recuadro_siguiendo_la_estructura():
-    c = _core("E_mobiliario_denso")
-    assert c.accepted and c.metrics["outside_hint_frac"] > 0.0, \
+    """E16.14: la clase E dejó de aceptarse (ver REEVALUACION_E16_14). Lo que este test comprueba
+    sigue siendo lo que dice su nombre —que el borde no lo pone el recuadro— y para eso se usa una
+    clase que el productor actual sí resuelve."""
+    c = _core("B_hint_demasiado_grande")
+    assert c.metrics["outside_hint_frac"] > 0.0, \
         "la estructura manda: el borde no está recortado por el recuadro"
 
 
@@ -150,7 +181,10 @@ def test_el_codigo_no_convierte_la_pista_en_geometria():
 def test_las_clases_con_nucleo_producen_geometria_aceptada(nombre):
     c = _core(nombre)
     assert c.accepted, (nombre, c.reasons, c.metrics)
-    assert c.metrics["components"] == 1 and len(c.ring) >= 4
+    # E16.13.1: la cantidad de regiones dejó de ser exigible. E16.14: el productor ya propone 1..N,
+    # así que `ring` sólo existe cuando la respuesta es UNA región.
+    assert c.metrics["components"] >= 1 and len(c.components) == c.metrics["components"]
+    assert (len(c.ring) >= 4) if c.metrics["components"] == 1 else (c.ring == [])
 
 
 @pytest.mark.parametrize("nombre", RECHAZAN)

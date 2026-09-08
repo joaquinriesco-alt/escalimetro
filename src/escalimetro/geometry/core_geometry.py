@@ -29,6 +29,7 @@ import numpy as np
 
 from ..segmentation.structural import stroke_scale_px, structural_ink
 from . import core_completeness as CC
+from . import core_producer as CP
 from .core_components import (CONTRACT_VERSION, CoreComponentSet, InvalidCoreGeometry,
                               MultiComponentCoreError, components_from_mask, normalize_components)
 
@@ -159,107 +160,75 @@ def open_floor(image_bgr: np.ndarray, footprint: np.ndarray) -> np.ndarray:
 def build_core(image_bgr: np.ndarray, footprint: np.ndarray,
                hint_region: Tuple[float, float, float, float],
                params: Optional[Dict] = None) -> CoreCandidate:
-    """Produce el candidato a núcleo. NO decide si es válido: eso lo hace el contrato."""
-    p = {"search_margin_frac": SEARCH_MARGIN_FRAC, "link_frac": LINK_FRAC,
-         "link_min_overlap": LINK_MIN_OVERLAP, "anchor_max_frac": ANCHOR_MAX_FRAC,
-         **(params or {})}
+    """Produce el candidato a núcleo. NO decide si es válido: eso lo hace el contrato.
+
+    E16.14 — el productor pasa a proponer 1..N regiones. Toda la lógica vive en `core_producer`; esta
+    función es el borde: prepara la evidencia CONGELADA (mapa de muros, celdas cerradas), llama a
+    DISCOVERY/SELECTION, y lleva las piezas a la representación canónica de E16.13.1 sin unirlas.
+
+    Lo que ya no ocurre aquí, y era donde se perdía la información:
+      * no hay cierre morfológico de enlace: no se fabrica una franja donde el dibujo tiene
+        circulación;
+      * no se elige la componente MAYOR: "el núcleo es la pieza más grande" era una regla de tamaño,
+        no de evidencia, y una pieza grande puede ser fachada, mobiliario o sólo una parte;
+      * no se rellena el contorno externo del conjunto: cada pieza aporta lo que ELLA encierra.
+
+    El candidato se propone UNA vez. Este productor no lee el veredicto del contrato ni vuelve a
+    intentar: no hay ningún lazo cerrado contra el juez."""
+    p = {"search_margin_frac": SEARCH_MARGIN_FRAC, "link_min_overlap": LINK_MIN_OVERLAP,
+         "anchor_max_frac": ANCHOR_MAX_FRAC, **(params or {})}
     h, w = footprint.shape[:2]
     fp = footprint > 0
     area_fp = float(fp.sum())
+    vacio = np.zeros((h, w), np.uint8)
     walls = wall_map(image_bgr) > 0
     anchors, n_anchors = enclosed_cell_anchors(image_bgr, footprint, p["anchor_max_frac"])
+    base = {"enclosed_cell_anchors_in_drawing": int(n_anchors),
+            "producer_version": CP.PRODUCER_VERSION}
 
-    # 1. la pista REDUCE el espacio de búsqueda; no recorta el resultado
-    m = int(max(h, w) * p["search_margin_frac"])
-    x0, y0, x1, y1 = [int(v) for v in hint_region]
-    search = np.zeros((h, w), np.uint8)
-    search[max(0, y0 - m):min(h, y1 + m), max(0, x0 - m):min(w, x1 + m)] = 255
-    search = (search > 0) & fp
+    piezas, tr = CP.produce(image_bgr, footprint, hint_region, walls, anchors,
+                            p["search_margin_frac"], p["link_min_overlap"], params)
+    base.update({"structural_components_discovered": tr.discovered,
+                 "structural_components_selected": tr.selected,
+                 "rejected_components": tr.rejected})
+    if not piezas:
+        # ABSTENCIÓN. No hay pieza que cumpla las tres condiciones: el productor no propone nada, en
+        # vez de entregar la mejor de las malas.
+        return CoreCandidate(vacio, [], base, False,
+                             ["ninguna pieza estructural del alcance encierra un recinto cerrado "
+                              "propio: no hay evidencia para proponer un núcleo"])
 
-    # 2. semilla: estructura y anclas dentro de la zona de búsqueda
-    seed = ((walls & search) | ((anchors > 0) & search))
-    if not seed.any():
-        return CoreCandidate(np.zeros((h, w), np.uint8), [],
-                             {"reason": "sin estructura en la zona de búsqueda",
-                              "enclosed_cell_anchors_in_drawing": n_anchors}, False,
-                             ["sin estructura permanente donde la pista dice que hay núcleo"])
+    mask = np.zeros((h, w), np.uint8)
+    for q in piezas:
+        mask[q] = 255
+    try:
+        cs = components_from_mask(mask, footprint)
+    except InvalidCoreGeometry as e:
+        return CoreCandidate(vacio, [], dict(base, invalid_geometry=str(e)), False,
+                             [f"geometría no representable: {e}"])
 
-    # 3. enlazar piezas separadas por vanos y pasillos, y quedarse con el cluster mayor
-    r = max(3, int(max(h, w) * p["link_frac"])) | 1
-    ker = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (r, r))
-    cluster = cv2.morphologyEx((seed * 255).astype(np.uint8), cv2.MORPH_CLOSE, ker)
-    n, lab, st, _ = cv2.connectedComponentsWithStats((cluster > 0).astype(np.uint8), 8)
-    if n <= 1:
-        return CoreCandidate(np.zeros((h, w), np.uint8), [], {"enclosed_cell_anchors_in_drawing": n_anchors},
-                             False, ["la estructura no forma ningún cluster"])
-    i = 1 + int(np.argmax(st[1:, cv2.CC_STAT_AREA]))
-    cluster = (lab == i)
-
-    # 4. la geometría SIGUE A LA ESTRUCTURA, no al recuadro: se incorporan enteras las componentes de
-    #    muro que el cluster toca Y que viven mayormente en la zona de búsqueda. Un muro de fachada
-    #    apenas roza esa zona y por eso no entra.
-    nw, lw, sw, _ = cv2.connectedComponentsWithStats((walls * 255).astype(np.uint8), 8)
-    add = []
-    for c in set(np.unique(lw[cluster & walls])) - {0}:
-        comp = (lw == c)
-        if comp.sum() and (comp & search).sum() / comp.sum() >= p["link_min_overlap"]:
-            add.append(c)
-    if add:
-        cluster = cluster | np.isin(lw, add)
-    cluster = cv2.morphologyEx((cluster * 255).astype(np.uint8), cv2.MORPH_CLOSE, ker) > 0
-
-    # 5. rellenar el contorno externo y devolver la franja que el cierre había engordado
-    cnts, _ = cv2.findContours((cluster * 255).astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-    filled = np.zeros((h, w), np.uint8)
-    cv2.drawContours(filled, [max(cnts, key=cv2.contourArea)], -1, 255, cv2.FILLED)
-    filled = cv2.erode(filled, ker)
-    filled = (filled > 0) & fp
-    # devolver la franja del enlace puede partir una región por su cintura más fina: el núcleo es UNA
-    # pieza, así que se conserva la mayor y el resto se descarta explícitamente (queda medido en
-    # `discarded_pieces`).
-    nf, lf, sf, _ = cv2.connectedComponentsWithStats((filled * 255).astype(np.uint8), 8)
-    piezas = max(0, nf - 1)
-    if piezas > 1:
-        j = 1 + int(np.argmax(sf[1:, cv2.CC_STAT_AREA]))
-        filled = (lf == j)
-    if not filled.any():
-        return CoreCandidate(np.zeros((h, w), np.uint8), [], {"enclosed_cell_anchors_in_drawing": n_anchors},
-                             False, ["el candidato desaparece al descontar el enlace morfológico"])
-
-    # 6. métricas medidas, no estimadas
+    filled = cs.mask > 0
     area = float(filled.sum())
+    x0, y0, x1, y1 = [int(v) for v in hint_region]
     hint_box = np.zeros((h, w), bool)
     hint_box[max(0, y0):min(h, y1), max(0, x0):min(w, x1)] = True
-    inter = float((filled & hint_box).sum())
-    union = float((filled | hint_box).sum())
-    ys, xs = np.where(filled)
-    cy, cx = float(ys.mean()), float(xs.mean())
-    cnts2, _ = cv2.findContours((filled * 255).astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-    big = max(cnts2, key=cv2.contourArea)
-    hull = cv2.convexHull(big)
-    hull_area = float(cv2.contourArea(hull)) or area
     piso = open_floor(image_bgr, footprint) > 0
-    n_cc = cv2.connectedComponentsWithStats((filled * 255).astype(np.uint8), 8)[0] - 1
-    metrics = {
-        "core_px": int(area),
-        "footprint_frac": round(area / area_fp, 6) if area_fp else 0.0,
-        "hint_iou": round(inter / union, 4) if union else 0.0,
-        "centroid_in_hint": bool(x0 <= cx <= x1 and y0 <= cy <= y1),
-        "outside_hint_frac": round(float((filled & ~hint_box).sum()) / area, 4),
-        "wall_fraction": round(float((filled & walls).sum()) / area, 4),
-        "solidity": round(area / hull_area, 4),
-        "open_floor_invasion": round(float((filled & piso).sum()) / area, 4),
-        "components": int(n_cc),
-        "discarded_pieces": int(piezas - 1) if piezas > 1 else 0,
-        # evidencia, no veto en esta capa: cuántas celdas cerradas quedaron dentro del candidato.
-        # E16.11 las usa además para evaluar COMPLETITUD, que es una pregunta distinta.
+    scope = _scope_mask((h, w), footprint, hint_region, p["search_margin_frac"])
+    metrics = _geometry_metrics(filled, hint_box, walls, piso, scope, area_fp, (x0, y0, x1, y1))
+    metrics.update(base)
+    metrics.update({
+        "components": len(cs),
+        "component_areas_px": list(cs.areas_px),
+        "min_component_frac": round(min(cs.areas_px) / area_fp, 6) if area_fp else 0.0,
         "enclosed_cell_anchors_inside": int(cv2.connectedComponents(
             (((anchors > 0) & filled) * 255).astype(np.uint8))[0] - 1),
-        "enclosed_cell_anchors_in_drawing": int(n_anchors),
-    }
-    eps = 0.004 * cv2.arcLength(big, True)
-    ring = [(float(a[0][0]), float(a[0][1])) for a in cv2.approxPolyDP(big, eps, True)]
-    return CoreCandidate((filled * 255).astype(np.uint8), ring, metrics)
+        "contract_version": CONTRACT_VERSION,
+        "provenance": "producer",
+    })
+    cand = CoreCandidate(cs.mask, cs.components[0] if len(cs) == 1 else [], metrics,
+                         components=cs.components, geometry_notes=cs.notes)
+    cand.notes = tr.notes
+    return cand
 
 
 # -----------------------------------------------------------------------------------------------
@@ -464,19 +433,10 @@ def core_from_hint(image_bgr: np.ndarray, footprint: np.ndarray,
         cand.completeness_status = CC.COMPLETENESS_NOT_EVALUATED
         cand.status = CC.CORE_REJECTED_IMPLAUSIBLE
         return cand
-    # ADAPTADOR MECÁNICO (E16.13.1 §4): la máscara que el productor ya produjo se lleva a la
-    # representación canónica. No decide nada, no reagrupa nada y no puede cambiar la geometría: las
-    # regiones son las componentes conectadas que esa máscara YA tenía. El productor histórico
-    # devuelve una sola, y eso está bien: lo que este ciclo prueba es que el contrato sabe
-    # representar y juzgar 1..N, no que el productor sepa encontrarlas.
-    cs = components_from_mask(cand.mask, footprint)
-    cand.components = cs.components
-    cand.geometry_notes = cs.notes
-    if len(cs) > 1:
-        cand.ring = []          # ver CoreCandidate.__post_init__: sin anillo único, sin vista parcial
-    cand.metrics["component_areas_px"] = list(cs.areas_px)
-    cand.metrics["contract_version"] = CONTRACT_VERSION
-    cand.metrics["provenance"] = "producer"
+    # El productor ya entrega la representación canónica (E16.14). Aquí sólo se miden las
+    # propiedades de cada región con las mismas fórmulas que usa una geometría declarada.
+    cs = CoreComponentSet(components=cand.components, mask=cand.mask,
+                          areas_px=cand.metrics.get("component_areas_px", []))
     _, per = component_metrics(cs, image_bgr, footprint, hint_region)
     cand.component_metrics = per
     ok, fails = accept_core(cand.metrics, contract, per)

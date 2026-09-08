@@ -1,0 +1,37 @@
+{
+ "hint_region": [
+  490,
+  230,
+  860,
+  830
+ ],
+ "footprint_ring": [
+  [
+   120,
+   120
+  ],
+  [
+   1480,
+   120
+  ],
+  [
+   1480,
+   640
+  ],
+  [
+   1300,
+   640
+  ],
+  [
+   1300,
+   900
+  ],
+  [
+   120,
+   900
+  ]
+ ],
+ "expected": "ABSTAIN",
+ "spec": "sin evidencia estructural suficiente donde la pista señala",
+ "truth_boxes": []
+}
