@@ -1,0 +1,40 @@
+"""E17 §10 — ¿el ancho SOLO separa clases? Se miden distribuciones, no se entrena nada."""
+import json, sys
+import numpy as np
+sys.path.insert(0,"/tmp/claude-0/-home-claude/b193d4db-92b4-58be-84f5-d337bcc70127/scratchpad/e17")
+import bench_scene as B, reps
+
+WALL_LIKE={"A_w1","B_w2","C_w3","D_w4","E_w6","F_w8","Q_w6_gris","Q2_w6_gris_osc","R_w2_negro",
+           "H_L","I_T","J_puerta","K_recinto","G_par","U_mixto"}
+NO_WALL={"L_mesa","M_escritorio","N_texto","O_grilla","P_hatch"}
+
+def corre(rep, sides=(600,800,1000,1400,1800,2400)):
+    w_like, w_no, detalle = [], [], {}
+    for side in sides:
+        img,gt=B.render(side)
+        w,m,_=reps.medir(img,reps.REPS[rep])
+        for pid,mask in gt.items():
+            if (mask>0).sum()==0: continue
+            est=reps.ancho_de(mask,w,m)/side*1000.0     # por mil del lado: comparable entre res
+            detalle.setdefault(pid,[]).append(round(est,2))
+            (w_like if pid in WALL_LIKE else w_no).append(est)
+    return np.array(w_like), np.array(w_no), detalle
+
+if __name__=="__main__":
+    out={}
+    for rep in reps.REPS:
+        a,b,det=corre(rep)
+        # banda ambigua: solape entre el rango de no-muro y el de muro
+        lo,hi=float(b.min()),float(b.max())
+        ambiguos=[p for p,v in det.items() if p in WALL_LIKE and np.median(v)<=hi]
+        umbral=hi
+        sep=float((a>umbral).mean())
+        out[rep]={"wall_like_per_mil":[round(float(a.min()),2),round(float(np.median(a)),2),round(float(a.max()),2)],
+                  "non_wall_per_mil":[round(lo,2),round(float(np.median(b)),2),round(hi,2)],
+                  "ambiguous_wall_primitives":sorted(ambiguos),
+                  "fraction_of_wall_like_above_non_wall_max":round(sep,3),
+                  "per_primitive_median":{p:round(float(np.median(v)),2) for p,v in sorted(det.items())}}
+        print(f"\n{rep}: muro {out[rep]['wall_like_per_mil']}  no-muro {out[rep]['non_wall_per_mil']}")
+        print(f"   primitivas de muro que caen DENTRO del rango de no-muro: {sorted(ambiguos)}")
+        print(f"   fracción de muestras muro por encima del máximo no-muro: {sep:.3f}")
+    json.dump(out,open("/tmp/claude-0/-home-claude/b193d4db-92b4-58be-84f5-d337bcc70127/scratchpad/e17/separabilidad.json","w"),indent=1)

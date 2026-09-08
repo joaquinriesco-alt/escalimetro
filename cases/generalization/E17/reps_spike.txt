@@ -1,0 +1,107 @@
+"""E17 §12 — cuatro representaciones de ANCHO, con sus parámetros DECLARADOS y congelados.
+
+Todas reciben la imagen ORIGINAL en gris y devuelven un mapa `width_px` por píxel, definido sólo
+donde hay estructura oscura. Ninguna decide si algo es muro: eso es el §7.
+"""
+import time
+
+import cv2
+import numpy as np
+from skimage.morphology import skeletonize
+
+# --- parámetros congelados ANTES de puntuar (E17 §20) --------------------------------------------
+PARAMS = {
+    "dt": {"block_frac": 0.02, "C": 5},
+    "ridge": {"scales_frac": [0.0006, 0.0009, 0.0014, 0.0021, 0.0032, 0.0048, 0.0072, 0.0108],
+              "alpha": 2.0},
+    "edge_pair": {"canny_lo": 40, "canny_hi": 120},
+    "morph": {"radii_frac": [0.0005, 0.0008, 0.0012, 0.0018, 0.0027, 0.0040, 0.0060, 0.0090, 0.0135],
+              "drop": 0.5},
+}
+
+
+def _gray(img):
+    return img if img.ndim == 2 else cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+
+def _dark_mask(g, p):
+    """Tinta oscura por umbral ADAPTATIVO local: la misma idea de 'más oscuro que su fondo' pero
+    conservando la geometría, sin morfología previa."""
+    b = int(round(p["block_frac"] * max(g.shape))) | 1
+    b = max(3, b)
+    return cv2.adaptiveThreshold(g, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, b, p["C"])
+
+
+def width_dt(img):
+    """A — transformada de distancia sobre trazo binarizado adaptativamente. width = 2·dist."""
+    g = _gray(img); p = PARAMS["dt"]
+    m = _dark_mask(g, p)
+    d = cv2.distanceTransform((m > 0).astype(np.uint8), cv2.DIST_L2, 5)
+    return 2.0 * d, (m > 0)
+
+
+def width_ridge(img):
+    """B — escala-espacio de cresta: respuesta a estructura lineal oscura por escalas; el ancho sale
+    de la escala que maximiza la respuesta."""
+    g = _gray(img).astype(np.float32) / 255.0
+    p = PARAMS["ridge"]; S = max(g.shape)
+    inv = 1.0 - g
+    mejor = np.zeros_like(inv); escala = np.zeros_like(inv)
+    for f in p["scales_frac"]:
+        s = max(0.6, f * S)
+        sm = cv2.GaussianBlur(inv, (0, 0), s)
+        resp = -cv2.Laplacian(sm, cv2.CV_32F) * (s ** 2)     # LoG normalizada en escala
+        mask = resp > mejor
+        mejor[mask] = resp[mask]; escala[mask] = s
+    m = _dark_mask(_gray(img), PARAMS["dt"]) > 0
+    return p["alpha"] * escala, m
+
+
+def width_edge_pair(img):
+    """C — par de bordes: el ancho es la distancia entre los dos bordes que limitan el trazo."""
+    g = _gray(img); p = PARAMS["edge_pair"]
+    e = cv2.Canny(g, p["canny_lo"], p["canny_hi"])
+    d = cv2.distanceTransform((e == 0).astype(np.uint8), cv2.DIST_L2, 5)
+    m = _dark_mask(g, PARAMS["dt"]) > 0
+    return 2.0 * d, m
+
+
+def width_morph(img):
+    """D — granulometría en gris: la escala a la que la estructura oscura desaparece bajo apertura."""
+    g = _gray(img).astype(np.float32); p = PARAMS["morph"]; S = max(g.shape)
+    inv = 255.0 - g
+    base = inv.copy()
+    w = np.zeros_like(inv)
+    vivo = base > 1.0
+    for f in p["radii_frac"]:
+        r = max(1, int(round(f * S)))
+        ker = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (2 * r + 1, 2 * r + 1))
+        op = cv2.morphologyEx(inv, cv2.MORPH_OPEN, ker)
+        muere = vivo & (op < p["drop"] * base)
+        w[muere] = 2.0 * r
+        vivo &= ~muere
+    w[vivo] = 2.0 * max(1, int(round(p["radii_frac"][-1] * S)))
+    m = _dark_mask(_gray(img), PARAMS["dt"]) > 0
+    return w, m
+
+
+REPS = {"distance_transform": width_dt, "ridge_scale_space": width_ridge,
+        "edge_pair": width_edge_pair, "morph_scale_space": width_morph}
+
+
+def medir(img, fn):
+    t0 = time.perf_counter()
+    w, m = fn(img)
+    return w, m, time.perf_counter() - t0
+
+
+def ancho_de(mask_gt, w, m):
+    """Ancho estimado de UNA primitiva: mediana sobre su esqueleto, que es donde el ancho local está
+    definido sin efecto de borde."""
+    sk = skeletonize((mask_gt > 0))
+    sel = sk & m
+    if sel.sum() < 5:
+        sel = sk
+    v = w[sel]
+    v = v[np.isfinite(v) & (v > 0)]
+    return float(np.median(v)) if v.size else 0.0

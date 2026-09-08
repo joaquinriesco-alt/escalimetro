@@ -1,0 +1,117 @@
+"""E17 §9 — scorecard. Métricas declaradas ANTES de comparar; ninguna se pondera a posteriori."""
+import itertools, json, sys
+import numpy as np
+sys.path.insert(0,"/tmp/claude-0/-home-claude/b193d4db-92b4-58be-84f5-d337bcc70127/scratchpad/e17")
+import bench_scene as B, run_bench, reps
+
+ESCALERA=["A_w1","B_w2","C_w3","D_w4","E_w6","F_w8"]
+RES=run_bench.RES
+
+def por(filas,**kw):
+    return [f for f in filas if all(f[k]==v for k,v in kw.items())]
+
+def err_rel(filas):
+    v=[abs(f["estimated"]-f["expected"])/max(1e-9,f["expected"]) for f in filas if f["expected"]>0]
+    return float(np.mean(v)) if v else float("nan")
+
+def orden(filas):
+    """§6 — pairwise ranking accuracy sobre la escalera, dentro de cada resolución."""
+    ok=tot=0
+    for side in RES:
+        f={x["pid"]:x for x in por(filas,side=side) if x["pid"] in ESCALERA}
+        for a,b in itertools.combinations(ESCALERA,2):
+            if a not in f or b not in f: continue
+            tot+=1
+            if (f[a]["expected"]<f[b]["expected"]) == (f[a]["estimated"]<f[b]["estimated"]): ok+=1
+    return ok/max(1,tot)
+
+def estabilidad(filas):
+    """§6 — el cociente estimado/esperado no debería depender de la resolución."""
+    cv=[]
+    for pid in ESCALERA:
+        r=[x["estimated"]/max(1e-9,x["expected"]) for x in filas if x["pid"]==pid and x["expected"]>0]
+        if len(r)>1 and np.mean(r)>0: cv.append(np.std(r)/np.mean(r))
+    return float(np.mean(cv))
+
+def duplicacion(filas):
+    """§6 — si el ancho raster se duplica, ¿la estimación lo refleja? (600→1200 equivalente: 1200 no
+    está en el banco, se usa el par 1200-equivalente 600 vs 1200? usamos 1000 vs 2000≈2400·0.83)"""
+    out=[]
+    for pid in ESCALERA:
+        a=[x for x in filas if x["pid"]==pid and x["side"]==1000]
+        b=[x for x in filas if x["pid"]==pid and x["side"]==2400]
+        if a and b and a[0]["estimated"]>0:
+            esperado=b[0]["expected"]/a[0]["expected"]
+            medido=b[0]["estimated"]/a[0]["estimated"]
+            out.append(abs(medido-esperado)/esperado)
+    return float(np.mean(out))
+
+def contraste(rep):
+    """§8 — misma geometría (6×), tres grises. Desviación relativa entre ellos."""
+    r=[]
+    for side in (800,1400,2400):
+        img,gt=B.render(side)
+        w,m,_=reps.medir(img,reps.REPS[rep])
+        e=reps.ancho_de(gt["E_w6"],w,m); q=reps.ancho_de(gt["Q_w6_gris"],w,m)
+        q2=reps.ancho_de(gt["Q2_w6_gris_osc"],w,m)
+        v=[x for x in (e,q,q2) if x>0]
+        if len(v)>1: r.append((max(v)-min(v))/np.mean(v))
+    return float(np.mean(r)) if r else float("nan")
+
+def degradacion(rep):
+    """§8 — blur y JPEG sobre la misma escena."""
+    out={}
+    for deg in ("none","blur","jpeg"):
+        d=[]
+        for side in (800,1400,2400):
+            img,gt=B.render(side,degrade=deg)
+            w,m,_=reps.medir(img,reps.REPS[rep])
+            for pid in ESCALERA:
+                u=B.clases()[pid][1]; esp=B.expected_width_px(u,side)
+                est=reps.ancho_de(gt[pid],w,m)
+                if esp>0: d.append(abs(est-esp)/esp)
+        out[deg]=float(np.mean(d))
+    return out
+
+def junturas(filas):
+    """§9 — esquina, T, vano y recinto: todos de 4× de ancho."""
+    out={}
+    for pid in ("H_L","I_T","J_puerta","K_recinto"):
+        v=[abs(x["estimated"]-x["expected"])/max(1e-9,x["expected"]) for x in filas if x["pid"]==pid and x["expected"]>0]
+        out[pid]=float(np.mean(v)) if v else float("nan")
+    return out
+
+def anchos_por_clase(rep):
+    """§10 — ¿el ancho, por sí solo, separa clases? Se reportan distribuciones, no un clasificador."""
+    acc={}
+    for side in (800,1400,2400):
+        img,gt=B.render(side)
+        w,m,_=reps.medir(img,reps.REPS[rep])
+        for pid,mask in gt.items():
+            if (mask>0).sum()==0: continue
+            clase=B.clases()[pid][0]
+            est=reps.ancho_de(mask,w,m)
+            k=max(gt["A_w1"].shape)      # normalizar por lado para comparar entre resoluciones
+            acc.setdefault(clase,[]).append(est/ side *1000.0)     # ancho por mil del lado
+    return {c:(round(float(np.median(v)),2), round(float(np.min(v)),2), round(float(np.max(v)),2)) for c,v in acc.items()}
+
+if __name__=="__main__":
+    raw=json.load(open("/tmp/claude-0/-home-claude/b193d4db-92b4-58be-84f5-d337bcc70127/scratchpad/e17/raw_normal.json"))
+    tabla={}
+    for rep,filas in raw.items():
+        esc=[f for f in filas if f["pid"] in ESCALERA]
+        t={"width_rel_error":round(err_rel(esc),3),
+           "order_preservation":round(orden(filas),3),
+           "resolution_stability_cv":round(estabilidad(esc),3),
+           "doubling_error":round(duplicacion(esc),3),
+           "contrast_spread":round(contraste(rep),3),
+           "junctions":{k:round(v,3) for k,v in junturas(filas).items()},
+           "cost_s_1400":[f["cost_s"] for f in filas if f["side"]==1400][0],
+           "cost_s_2400":[f["cost_s"] for f in filas if f["side"]==2400][0],
+           "cost_s_600":[f["cost_s"] for f in filas if f["side"]==600][0],
+           "degradation":degradacion(rep),
+           "width_per_mil_by_class":anchos_por_clase(rep)}
+        tabla[rep]=t
+        print(f"\n=== {rep} ===")
+        for k,v in t.items(): print(f"  {k}: {v}")
+    json.dump(tabla,open("/tmp/claude-0/-home-claude/b193d4db-92b4-58be-84f5-d337bcc70127/scratchpad/e17/scorecard.json","w"),indent=1)

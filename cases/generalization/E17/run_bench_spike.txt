@@ -1,0 +1,35 @@
+import json, sys, numpy as np
+sys.path.insert(0,"/tmp/claude-0/-home-claude/b193d4db-92b4-58be-84f5-d337bcc70127/scratchpad/e17")
+import bench_scene as B, reps
+
+RES=(600,800,1000,1400,1800,2400)
+ESCALERA=["A_w1","B_w2","C_w3","D_w4","E_w6","F_w8"]
+CL=B.clases()
+
+def corre(res=RES, contrast="normal", degrade="none"):
+    out={}
+    for side in res:
+        img,gt=B.render(side,contrast,degrade)
+        for nombre,fn in reps.REPS.items():
+            w,m,t=reps.medir(img,fn)
+            for pid,mask in gt.items():
+                if (mask>0).sum()==0: continue
+                clase,u,gris=CL[pid]
+                est=reps.ancho_de(mask,w,m)
+                esp=B.expected_width_px(u,side) if u else 0.0
+                out.setdefault(nombre,[]).append({"side":side,"pid":pid,"clase":clase,"u":u,
+                    "gris":gris,"expected":esp,"estimated":est,"cost_s":round(t,3),
+                    "contrast":contrast,"degrade":degrade})
+    return out
+
+if __name__=="__main__":
+    r=corre()
+    json.dump(r,open("/tmp/claude-0/-home-claude/b193d4db-92b4-58be-84f5-d337bcc70127/scratchpad/e17/raw_normal.json","w"))
+    for nombre,filas in r.items():
+        esc=[f for f in filas if f["pid"] in ESCALERA]
+        err=[abs(f["estimated"]-f["expected"])/max(1e-9,f["expected"]) for f in esc]
+        print(f"{nombre:20s} n={len(esc):3d} err.rel medio={np.mean(err):.3f} costo1400={[f['cost_s'] for f in filas if f['side']==1400][0]:.2f}s")
+        for side in RES:
+            fila=[f for f in esc if f["side"]==side]
+            fila.sort(key=lambda f:f["u"])
+            print(f"    {side:>5d}: esperado={[round(f['expected'],1) for f in fila]}  estimado={[round(f['estimated'],1) for f in fila]}")
