@@ -1,0 +1,59 @@
+"""E18 §13/§14/§15 — los tres casos críticos, medidos con la representación congelada."""
+import json, sys
+import numpy as np
+sys.path.insert(0,"/tmp/claude-0/-home-claude/b193d4db-92b4-58be-84f5-d337bcc70127/scratchpad/e18")
+import topo_scene as T, topo_reps as R
+import cv2
+
+SK=R.REPS["skeleton_graph"]
+SIDES=(800,1400,2400)
+
+def solo(objetos, side, **kw):
+    """Rasteriza una escena ad-hoc con los mismos primitivos y el mismo ancho único."""
+    T.ESCENAS.append(("_tmp","tmp",objetos,dict(endpoints=None,L=None,T=None,X=None,cycles=None,
+                                                closed=None,components=None,long_path=None)))
+    try:
+        img,meta=T.render("_tmp",side,**kw)
+    finally:
+        T.ESCENAS.pop()
+    return img,meta
+
+def firma(img):
+    d=R.medir(img,SK)
+    return {k:d[k] for k in ("components","endpoints","L","T","X","cycles","long_path_frac",
+                             "junction_density","endpoint_density","periodicity")}
+
+print("=== §13 · RECINTO vs MESA: mismo ancho, ambos cerrados ===")
+c13={}
+for nombre,obj in (("recinto_4.2x3.7", T.rect(0.20,0.22,0.42,0.37)),
+                   ("mesa_4.2x3.7",    T.rect(0.20,0.22,0.42,0.37)),   # geometría IDÉNTICA
+                   ("mesa_2.0x1.4",    T.rect(0.30,0.30,0.20,0.14))):
+    fs=[firma(solo([obj],s)[0]) for s in SIDES]
+    med={k:round(float(np.median([f[k] for f in fs])),3) for k in fs[0]}
+    c13[nombre]=med
+    print(f"  {nombre:18s} {med}")
+print("  -> un recinto y una mesa del MISMO tamaño y ancho son IDÉNTICOS en toda señal topológica")
+
+print("\n=== §14 · RED DE MUROS vs GRILLA ===")
+c14={}
+red=[T.rect(0.12,0.15,0.66,0.60), T.poly([(0.45,0.15),(0.45,0.75)]), T.poly([(0.12,0.45),(0.78,0.45)])]
+gri=[T.grilla([0.18,0.38,0.58,0.78],[0.22,0.50,0.78])]
+for nombre,objs in (("red_de_muros",red),("grilla",gri)):
+    fs=[firma(solo(objs,s)[0]) for s in SIDES]
+    med={k:round(float(np.median([f[k] for f in fs])),3) for k in fs[0]}
+    c14[nombre]=med
+    print(f"  {nombre:14s} {med}")
+
+print("\n=== §15 · MURO LIMPIO vs MURO CON TEXTO PEGADO ===")
+c15={}
+base=[T.rect(0.15,0.22,0.55,0.40)]
+con_texto=base+[T.texto("SALA 3",0.30,0.44,0.8)]
+tocando=base+[T.texto("SALA 3",0.30,0.225,0.8)]     # el texto TOCA la línea superior
+for nombre,objs in (("muro_limpio",base),("muro+texto_interior",con_texto),("muro+texto_TOCANDO",tocando)):
+    fs=[firma(solo(objs,s)[0]) for s in SIDES]
+    med={k:round(float(np.median([f[k] for f in fs])),3) for k in fs[0]}
+    c15[nombre]=med
+    print(f"  {nombre:22s} {med}")
+
+json.dump({"c13_recinto_vs_mesa":c13,"c14_red_vs_grilla":c14,"c15_texto":c15},
+          open("/tmp/claude-0/-home-claude/b193d4db-92b4-58be-84f5-d337bcc70127/scratchpad/e18/criticos.json","w"),indent=1)

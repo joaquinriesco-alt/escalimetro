@@ -1,0 +1,1242 @@
+{
+ "_doc": "E18 — spike de REPRESENTACION DE TOPOLOGIA. Ninguna representacion toca el motor; los scripts se guardan como .txt para no ser importables. El ancho NO participa en ninguna medicion (§1/§16).",
+ "provenance": {
+  "generator_version": "e18-topology-bench/1.0.0",
+  "frozen_hashes": {
+   "topology_bench_scene.py": "748cf88f107a044e6465f7a581553e86e090a327837c9d4ef94f6909e0a6ea6c",
+   "topology_reps_spike.txt": "04e86a98515f4c285234fc2fed68d8062468a9726129b63867aeb4a28fe53b68"
+  },
+  "raster_sizes": [
+   600,
+   800,
+   1000,
+   1400,
+   1800,
+   2400
+  ],
+  "degradations": [
+   "gris_osc",
+   "gris_med",
+   "blur",
+   "jpeg_q55",
+   "cortes_2px"
+  ],
+  "representation_params": {
+   "skeleton_graph": {
+    "block_frac": 0.02,
+    "C": 5,
+    "min_branch_frac": 0.004,
+    "corner_deg": 35.0
+   },
+   "line_segment_graph": {
+    "canny_lo": 40,
+    "canny_hi": 120,
+    "hough_thresh": 40,
+    "min_len_frac": 0.02,
+    "max_gap_frac": 0.004,
+    "merge_deg": 8.0,
+    "join_frac": 0.006
+   },
+   "contour_graph": {
+    "block_frac": 0.02,
+    "C": 5,
+    "approx_frac": 0.004,
+    "min_area_frac": 5e-05
+   }
+  },
+  "libraries": {
+   "python": "3.11.15",
+   "opencv": "4.13.0",
+   "numpy": "2.4.4",
+   "scipy": "1.17.1",
+   "scikit-image": "0.26.0"
+  },
+  "raw_sha256_16": "d26dba65c933ee80",
+  "score_sha256_16": "70a21f4482eff26a",
+  "critical_sha256_16": "e6b75ee42a6ae706"
+ },
+ "engine_unchanged": true,
+ "engine_hash": "779a1eee6d3d2f2ce4fcc185dbf08da8890768e49a64211770eb1ee800a8105c",
+ "producer_hash": "cacc3636ee14928d2eada9c63103081d305511b73b6716cc48ef2fe8fb38a5a3",
+ "scope_hashes": {
+  "CONTRACT": "031bea3d7b96c2bfa2990160c982a0a8f7448da12f53e0c137977b2e74e550ee",
+  "WALL_EVIDENCE": "9c8db1516771271dd25d4f4fb2cf128b978dcc9c2c378c3a7b94d08add1f23fd",
+  "SEMANTIC_HINT": "dc8547bc7ad0c3dd05bb926c37d53d2ee156383157be9f2a807799a21870fa13",
+  "DOWNSTREAM": "1d6b13664f9c71f79e581915fa24ac620d153541d427eafdc793762a0586507f"
+ },
+ "edge_pair_bounding": "NOT_EVALUATED_IN_E18",
+ "scorecard": {
+  "accuracy": {
+   "skeleton_graph": {
+    "accuracy_vs_gt": {
+     "components": {
+      "f1": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "mae": 0.0
+     },
+     "endpoints": {
+      "f1": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "mae": 0.0
+     },
+     "L": {
+      "f1": 0.776,
+      "precision": 0.634,
+      "recall": 1.0,
+      "mae": 2.04
+     },
+     "T": {
+      "f1": 0.891,
+      "precision": 0.987,
+      "recall": 0.812,
+      "mae": 0.26
+     },
+     "X": {
+      "f1": 0.884,
+      "precision": 0.792,
+      "recall": 1.0,
+      "mae": 0.15
+     },
+     "cycles": {
+      "f1": 0.988,
+      "precision": 1.0,
+      "recall": 0.976,
+      "mae": 0.04
+     }
+    },
+    "multires_cv": {
+     "components": 0.02,
+     "endpoints": 0.068,
+     "L": 0.075,
+     "T": 0.372,
+     "X": 0.312,
+     "cycles": 0.148,
+     "long_path_frac": 0.013,
+     "periodicity": 0.438
+    },
+    "cost_s": {
+     "600": 0.009,
+     "1400": 0.05,
+     "2400": 0.161
+    }
+   },
+   "line_segment_graph": {
+    "accuracy_vs_gt": {
+     "components": {
+      "f1": 0.154,
+      "precision": 0.084,
+      "recall": 1.0,
+      "mae": 15.06
+     },
+     "endpoints": {
+      "f1": 0.164,
+      "precision": 0.089,
+      "recall": 1.0,
+      "mae": 18.71
+     },
+     "L": {
+      "f1": 0.7,
+      "precision": 0.571,
+      "recall": 0.902,
+      "mae": 2.74
+     },
+     "T": {
+      "f1": 0.065,
+      "precision": 0.318,
+      "recall": 0.036,
+      "mae": 1.39
+     },
+     "X": {
+      "f1": 0.112,
+      "precision": 1.0,
+      "recall": 0.06,
+      "mae": 0.55
+     },
+     "cycles": {
+      "f1": 0.988,
+      "precision": 1.0,
+      "recall": 0.976,
+      "mae": 0.04
+     }
+    },
+    "multires_cv": {
+     "components": 0.244,
+     "endpoints": 0.507,
+     "L": 0.604,
+     "T": 1.099,
+     "X": 0.224,
+     "cycles": 0.148,
+     "long_path_frac": 0.045,
+     "periodicity": 0.438
+    },
+    "cost_s": {
+     "600": 0.004,
+     "1400": 0.013,
+     "2400": 0.046
+    }
+   },
+   "contour_graph": {
+    "accuracy_vs_gt": {
+     "components": {
+      "f1": 1.0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "mae": 0.0
+     },
+     "endpoints": {
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "mae": 1.83
+     },
+     "L": {
+      "f1": 0.393,
+      "precision": 0.244,
+      "recall": 1.0,
+      "mae": 10.94
+     },
+     "T": {
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "mae": 1.33
+     },
+     "X": {
+      "f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "mae": 0.58
+     },
+     "cycles": {
+      "f1": 0.988,
+      "precision": 1.0,
+      "recall": 0.976,
+      "mae": 0.04
+     }
+    },
+    "multires_cv": {
+     "components": 0.033,
+     "endpoints": null,
+     "L": 0.111,
+     "T": null,
+     "X": null,
+     "cycles": 0.023,
+     "long_path_frac": 0.022,
+     "periodicity": 0.438
+    },
+    "cost_s": {
+     "600": 0.001,
+     "1400": 0.006,
+     "2400": 0.016
+    }
+   }
+  },
+  "degradation": {
+   "skeleton_graph": {
+    "gris_osc": 0.001,
+    "gris_med": 0.001,
+    "blur": 0.043,
+    "jpeg": 0.816,
+    "cortes": 1.507
+   },
+   "line_segment_graph": {
+    "gris_osc": 0.0,
+    "gris_med": 0.0,
+    "blur": 0.159,
+    "jpeg": 0.188,
+    "cortes": 0.316
+   },
+   "contour_graph": {
+    "gris_osc": 0.0,
+    "gris_med": 0.0,
+    "blur": 0.016,
+    "jpeg": 0.003,
+    "cortes": 0.077
+   }
+  },
+  "ablation": {
+   "skeleton_graph": {
+    "long_path_frac": {
+     "ambiguous": [
+      0.624,
+      0.353,
+      0.753
+     ],
+     "annotation": [
+      0.514,
+      0.198,
+      0.749
+     ],
+     "critical": [
+      0.678,
+      0.453,
+      0.68
+     ],
+     "furniture": [
+      0.496,
+      0.2,
+      0.761
+     ],
+     "grid": [
+      0.983,
+      0.775,
+      1.191
+     ],
+     "mixed": [
+      1.191,
+      1.188,
+      1.193
+     ],
+     "text": [
+      0.068,
+      0.047,
+      0.102
+     ],
+     "wall_like": [
+      0.704,
+      0.319,
+      0.865
+     ]
+    },
+    "junction_density": {
+     "ambiguous": [
+      0.0,
+      0.0,
+      5.375
+     ],
+     "annotation": [
+      5.0,
+      1.0,
+      8.0
+     ],
+     "critical": [
+      2.309,
+      0.0,
+      2.989
+     ],
+     "furniture": [
+      0.828,
+      0.0,
+      2.281
+     ],
+     "grid": [
+      1.036,
+      0.0,
+      2.081
+     ],
+     "mixed": [
+      2.722,
+      2.419,
+      3.154
+     ],
+     "text": [
+      12.0,
+      10.0,
+      21.8
+     ],
+     "wall_like": [
+      0.0,
+      0.0,
+      0.938
+     ]
+    },
+    "endpoint_density": {
+     "ambiguous": [
+      0.0,
+      0.0,
+      2.0
+     ],
+     "annotation": [
+      7.0,
+      0.0,
+      13.4
+     ],
+     "critical": [
+      2.521,
+      0.0,
+      4.269
+     ],
+     "furniture": [
+      0.0,
+      0.0,
+      1.896
+     ],
+     "grid": [
+      4.174,
+      2.421,
+      5.942
+     ],
+     "mixed": [
+      2.622,
+      2.221,
+      3.341
+     ],
+     "text": [
+      14.0,
+      12.2,
+      25.9
+     ],
+     "wall_like": [
+      1.852,
+      0.0,
+      4.2
+     ]
+    },
+    "periodicity": {
+     "ambiguous": [
+      0.075,
+      -0.0,
+      0.562
+     ],
+     "annotation": [
+      0.373,
+      0.126,
+      0.501
+     ],
+     "critical": [
+      0.373,
+      0.204,
+      0.483
+     ],
+     "furniture": [
+      0.44,
+      -0.0,
+      0.569
+     ],
+     "grid": [
+      0.827,
+      0.701,
+      0.954
+     ],
+     "mixed": [
+      0.356,
+      0.346,
+      0.375
+     ],
+     "text": [
+      0.643,
+      0.607,
+      0.681
+     ],
+     "wall_like": [
+      0.356,
+      0.001,
+      0.577
+     ]
+    },
+    "cycles": {
+     "ambiguous": [
+      1.0,
+      0.0,
+      6.0
+     ],
+     "annotation": [
+      0.0,
+      0.0,
+      4.0
+     ],
+     "critical": [
+      2.0,
+      1.0,
+      6.0
+     ],
+     "furniture": [
+      1.0,
+      1.0,
+      6.0
+     ],
+     "grid": [
+      3.0,
+      0.0,
+      6.0
+     ],
+     "mixed": [
+      5.0,
+      3.0,
+      5.0
+     ],
+     "text": [
+      3.0,
+      3.0,
+      4.9
+     ],
+     "wall_like": [
+      0.0,
+      0.0,
+      2.2
+     ]
+    },
+    "components": {
+     "ambiguous": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "annotation": [
+      2.5,
+      1.0,
+      4.0
+     ],
+     "critical": [
+      2.0,
+      2.0,
+      3.0
+     ],
+     "furniture": [
+      1.0,
+      1.0,
+      6.0
+     ],
+     "grid": [
+      16.5,
+      1.0,
+      32.0
+     ],
+     "mixed": [
+      2.0,
+      2.0,
+      2.0
+     ],
+     "text": [
+      5.0,
+      3.1,
+      5.9
+     ],
+     "wall_like": [
+      1.0,
+      1.0,
+      2.1
+     ]
+    }
+   },
+   "line_segment_graph": {
+    "long_path_frac": {
+     "ambiguous": [
+      0.582,
+      0.252,
+      0.623
+     ],
+     "annotation": [
+      0.43,
+      0.188,
+      0.752
+     ],
+     "critical": [
+      0.402,
+      0.341,
+      0.553
+     ],
+     "furniture": [
+      0.43,
+      0.162,
+      0.749
+     ],
+     "grid": [
+      0.597,
+      0.273,
+      0.78
+     ],
+     "mixed": [
+      0.394,
+      0.391,
+      0.451
+     ],
+     "text": [
+      0.042,
+      0.026,
+      0.051
+     ],
+     "wall_like": [
+      0.577,
+      0.296,
+      0.7
+     ]
+    },
+    "junction_density": {
+     "ambiguous": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "annotation": [
+      0.0,
+      0.0,
+      0.17
+     ],
+     "critical": [
+      0.0,
+      0.0,
+      0.035
+     ],
+     "furniture": [
+      0.0,
+      0.0,
+      0.018
+     ],
+     "grid": [
+      0.099,
+      0.0,
+      0.194
+     ],
+     "mixed": [
+      0.013,
+      0.0,
+      0.024
+     ],
+     "text": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "wall_like": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "endpoint_density": {
+     "ambiguous": [
+      0.836,
+      0.0,
+      1.05
+     ],
+     "annotation": [
+      2.0,
+      0.4,
+      2.0
+     ],
+     "critical": [
+      0.823,
+      0.0,
+      1.394
+     ],
+     "furniture": [
+      0.75,
+      0.0,
+      1.394
+     ],
+     "grid": [
+      1.325,
+      1.129,
+      1.659
+     ],
+     "mixed": [
+      1.449,
+      1.407,
+      1.519
+     ],
+     "text": [
+      2.0,
+      1.338,
+      2.0
+     ],
+     "wall_like": [
+      1.402,
+      1.0,
+      2.0
+     ]
+    },
+    "periodicity": {
+     "ambiguous": [
+      0.075,
+      -0.0,
+      0.562
+     ],
+     "annotation": [
+      0.373,
+      0.126,
+      0.501
+     ],
+     "critical": [
+      0.373,
+      0.204,
+      0.483
+     ],
+     "furniture": [
+      0.44,
+      -0.0,
+      0.569
+     ],
+     "grid": [
+      0.827,
+      0.701,
+      0.954
+     ],
+     "mixed": [
+      0.356,
+      0.346,
+      0.375
+     ],
+     "text": [
+      0.643,
+      0.607,
+      0.681
+     ],
+     "wall_like": [
+      0.356,
+      0.001,
+      0.577
+     ]
+    },
+    "cycles": {
+     "ambiguous": [
+      1.0,
+      0.0,
+      6.0
+     ],
+     "annotation": [
+      0.0,
+      0.0,
+      4.0
+     ],
+     "critical": [
+      2.0,
+      1.0,
+      6.0
+     ],
+     "furniture": [
+      1.0,
+      1.0,
+      6.0
+     ],
+     "grid": [
+      3.0,
+      0.0,
+      6.0
+     ],
+     "mixed": [
+      5.0,
+      3.0,
+      5.0
+     ],
+     "text": [
+      3.0,
+      3.0,
+      4.9
+     ],
+     "wall_like": [
+      0.0,
+      0.0,
+      2.2
+     ]
+    },
+    "components": {
+     "ambiguous": [
+      6.0,
+      2.0,
+      23.4
+     ],
+     "annotation": [
+      3.0,
+      1.3,
+      10.0
+     ],
+     "critical": [
+      17.0,
+      6.0,
+      67.2
+     ],
+     "furniture": [
+      10.0,
+      6.0,
+      53.5
+     ],
+     "grid": [
+      53.0,
+      31.0,
+      108.8
+     ],
+     "mixed": [
+      65.0,
+      53.0,
+      79.0
+     ],
+     "text": [
+      4.0,
+      1.1,
+      12.9
+     ],
+     "wall_like": [
+      9.0,
+      2.0,
+      21.7
+     ]
+    }
+   },
+   "contour_graph": {
+    "long_path_frac": {
+     "ambiguous": [
+      0.697,
+      0.506,
+      1.067
+     ],
+     "annotation": [
+      0.596,
+      0.287,
+      0.757
+     ],
+     "critical": [
+      0.957,
+      0.647,
+      1.484
+     ],
+     "furniture": [
+      0.686,
+      0.288,
+      1.057
+     ],
+     "grid": [
+      1.831,
+      0.78,
+      2.904
+     ],
+     "mixed": [
+      2.729,
+      2.712,
+      2.748
+     ],
+     "text": [
+      0.14,
+      0.114,
+      0.168
+     ],
+     "wall_like": [
+      1.03,
+      0.328,
+      1.331
+     ]
+    },
+    "junction_density": {
+     "ambiguous": [
+      8.0,
+      4.0,
+      28.0
+     ],
+     "annotation": [
+      22.0,
+      16.0,
+      30.233
+     ],
+     "critical": [
+      27.0,
+      8.0,
+      30.0
+     ],
+     "furniture": [
+      10.0,
+      8.0,
+      16.0
+     ],
+     "grid": [
+      26.516,
+      2.4,
+      50.0
+     ],
+     "mixed": [
+      22.0,
+      22.0,
+      24.0
+     ],
+     "text": [
+      33.45,
+      28.44,
+      56.175
+     ],
+     "wall_like": [
+      5.5,
+      2.0,
+      12.8
+     ]
+    },
+    "endpoint_density": {
+     "ambiguous": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "annotation": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "critical": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "furniture": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "grid": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "mixed": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "text": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "wall_like": [
+      0.0,
+      0.0,
+      0.0
+     ]
+    },
+    "periodicity": {
+     "ambiguous": [
+      0.075,
+      -0.0,
+      0.562
+     ],
+     "annotation": [
+      0.373,
+      0.126,
+      0.501
+     ],
+     "critical": [
+      0.373,
+      0.204,
+      0.483
+     ],
+     "furniture": [
+      0.44,
+      -0.0,
+      0.569
+     ],
+     "grid": [
+      0.827,
+      0.701,
+      0.954
+     ],
+     "mixed": [
+      0.356,
+      0.346,
+      0.375
+     ],
+     "text": [
+      0.643,
+      0.607,
+      0.681
+     ],
+     "wall_like": [
+      0.356,
+      0.001,
+      0.577
+     ]
+    },
+    "cycles": {
+     "ambiguous": [
+      1.0,
+      0.0,
+      6.0
+     ],
+     "annotation": [
+      0.0,
+      0.0,
+      4.0
+     ],
+     "critical": [
+      2.0,
+      1.0,
+      6.0
+     ],
+     "furniture": [
+      1.0,
+      1.0,
+      6.0
+     ],
+     "grid": [
+      3.0,
+      0.0,
+      6.0
+     ],
+     "mixed": [
+      3.0,
+      3.0,
+      3.0
+     ],
+     "text": [
+      3.0,
+      3.0,
+      3.0
+     ],
+     "wall_like": [
+      0.0,
+      0.0,
+      2.2
+     ]
+    },
+    "components": {
+     "ambiguous": [
+      1.0,
+      1.0,
+      1.0
+     ],
+     "annotation": [
+      2.5,
+      1.0,
+      4.0
+     ],
+     "critical": [
+      2.0,
+      2.0,
+      3.0
+     ],
+     "furniture": [
+      1.0,
+      1.0,
+      6.0
+     ],
+     "grid": [
+      1.0,
+      1.0,
+      31.0
+     ],
+     "mixed": [
+      2.0,
+      2.0,
+      2.0
+     ],
+     "text": [
+      5.0,
+      3.1,
+      5.9
+     ],
+     "wall_like": [
+      1.0,
+      1.0,
+      2.1
+     ]
+    }
+   }
+  },
+  "separability_auc": {
+   "skeleton_graph": {
+    "furniture": {
+     "long_path_frac": 0.683,
+     "junction_density": 0.35,
+     "endpoint_density": 0.783,
+     "periodicity": 0.441,
+     "cycles": 0.183
+    },
+    "text": {
+     "long_path_frac": 1.0,
+     "junction_density": 0.0,
+     "endpoint_density": 0.0,
+     "periodicity": 0.067,
+     "cycles": 0.071
+    },
+    "grid": {
+     "long_path_frac": 0.15,
+     "junction_density": 0.35,
+     "endpoint_density": 0.192,
+     "periodicity": 0.0,
+     "cycles": 0.325
+    },
+    "annotation": {
+     "long_path_frac": 0.725,
+     "junction_density": 0.042,
+     "endpoint_density": 0.235,
+     "periodicity": 0.445,
+     "cycles": 0.417
+    },
+    "ambiguous": {
+     "long_path_frac": 0.7,
+     "junction_density": 0.56,
+     "endpoint_density": 0.7,
+     "periodicity": 0.611,
+     "cycles": 0.36
+    }
+   },
+   "line_segment_graph": {
+    "furniture": {
+     "long_path_frac": 0.632,
+     "junction_density": 0.433,
+     "endpoint_density": 0.825,
+     "periodicity": 0.441,
+     "cycles": 0.183
+    },
+    "text": {
+     "long_path_frac": 1.0,
+     "junction_density": 0.517,
+     "endpoint_density": 0.304,
+     "periodicity": 0.067,
+     "cycles": 0.071
+    },
+    "grid": {
+     "long_path_frac": 0.438,
+     "junction_density": 0.138,
+     "endpoint_density": 0.492,
+     "periodicity": 0.0,
+     "cycles": 0.325
+    },
+    "annotation": {
+     "long_path_frac": 0.613,
+     "junction_density": 0.388,
+     "endpoint_density": 0.339,
+     "periodicity": 0.445,
+     "cycles": 0.417
+    },
+    "ambiguous": {
+     "long_path_frac": 0.564,
+     "junction_density": 0.482,
+     "endpoint_density": 0.856,
+     "periodicity": 0.611,
+     "cycles": 0.36
+    }
+   },
+   "contour_graph": {
+    "furniture": {
+     "long_path_frac": 0.733,
+     "junction_density": 0.271,
+     "endpoint_density": 0.5,
+     "periodicity": 0.441,
+     "cycles": 0.183
+    },
+    "text": {
+     "long_path_frac": 1.0,
+     "junction_density": 0.0,
+     "endpoint_density": 0.5,
+     "periodicity": 0.067,
+     "cycles": 0.142
+    },
+    "grid": {
+     "long_path_frac": 0.375,
+     "junction_density": 0.438,
+     "endpoint_density": 0.5,
+     "periodicity": 0.0,
+     "cycles": 0.325
+    },
+    "annotation": {
+     "long_path_frac": 0.8,
+     "junction_density": 0.04,
+     "endpoint_density": 0.5,
+     "periodicity": 0.445,
+     "cycles": 0.5
+    },
+    "ambiguous": {
+     "long_path_frac": 0.72,
+     "junction_density": 0.424,
+     "endpoint_density": 0.5,
+     "periodicity": 0.611,
+     "cycles": 0.36
+    }
+   }
+  }
+ },
+ "critical_cases": {
+  "c13_recinto_vs_mesa": {
+   "recinto_4.2x3.7": {
+    "components": 1.0,
+    "endpoints": 0.0,
+    "L": 4.0,
+    "T": 0.0,
+    "X": 0.0,
+    "cycles": 1.0,
+    "long_path_frac": 0.56,
+    "junction_density": 0.0,
+    "endpoint_density": 0.0,
+    "periodicity": 0.482
+   },
+   "mesa_4.2x3.7": {
+    "components": 1.0,
+    "endpoints": 0.0,
+    "L": 4.0,
+    "T": 0.0,
+    "X": 0.0,
+    "cycles": 1.0,
+    "long_path_frac": 0.56,
+    "junction_density": 0.0,
+    "endpoint_density": 0.0,
+    "periodicity": 0.482
+   },
+   "mesa_2.0x1.4": {
+    "components": 1.0,
+    "endpoints": 0.0,
+    "L": 4.0,
+    "T": 0.0,
+    "X": 0.0,
+    "cycles": 1.0,
+    "long_path_frac": 0.244,
+    "junction_density": 0.0,
+    "endpoint_density": 0.0,
+    "periodicity": 0.434
+   }
+  },
+  "c14_red_vs_grilla": {
+   "red_de_muros": {
+    "components": 1.0,
+    "endpoints": 0.0,
+    "L": 10.0,
+    "T": 4.0,
+    "X": 1.0,
+    "cycles": 4.0,
+    "long_path_frac": 0.892,
+    "junction_density": 1.326,
+    "endpoint_density": 0.0,
+    "periodicity": 0.658
+   },
+   "grilla": {
+    "components": 1.0,
+    "endpoints": 14.0,
+    "L": 20.0,
+    "T": 0.0,
+    "X": 12.0,
+    "cycles": 6.0,
+    "long_path_frac": 1.19,
+    "junction_density": 2.076,
+    "endpoint_density": 2.422,
+    "periodicity": 0.702
+   }
+  },
+  "c15_texto": {
+   "muro_limpio": {
+    "components": 1.0,
+    "endpoints": 0.0,
+    "L": 4.0,
+    "T": 0.0,
+    "X": 0.0,
+    "cycles": 1.0,
+    "long_path_frac": 0.68,
+    "junction_density": 0.0,
+    "endpoint_density": 0.0,
+    "periodicity": 0.213
+   },
+   "muro+texto_interior": {
+    "components": 3.0,
+    "endpoints": 8.0,
+    "L": 12.0,
+    "T": 1.0,
+    "X": 3.0,
+    "cycles": 1.0,
+    "long_path_frac": 0.68,
+    "junction_density": 2.493,
+    "endpoint_density": 3.965,
+    "periodicity": 0.218
+   },
+   "muro+texto_TOCANDO": {
+    "components": 1.0,
+    "endpoints": 6.0,
+    "L": 4.0,
+    "T": 6.0,
+    "X": 1.0,
+    "cycles": 1.0,
+    "long_path_frac": 0.684,
+    "junction_density": 4.103,
+    "endpoint_density": 3.063,
+    "periodicity": 0.221
+   }
+  }
+ },
+ "verdict": "E - INFORMATION LIMIT. La topologia se reconstruye de forma estable (skeleton graph: F1 componentes 1.00, puntas 1.00, ciclos 0.988, T 0.891, X 0.884; CV multi-resolucion 0.02-0.07 en componentes y puntas) y separa limpiamente texto y grilla del resto. Pero un recinto y una mesa de la MISMA geometria y el MISMO ancho producen firmas topologicas IDENTICAS: comp=1, puntas=0, T=0, X=0, ciclos=1, densidades 0. Ni el ancho (E17) ni la topologia (E18) contienen esa distincion."
+}

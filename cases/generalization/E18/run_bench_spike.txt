@@ -1,0 +1,136 @@
+"""E18 — benchmark final. Se ejecuta UNA vez con generador, representaciones y parámetros congelados."""
+import json, sys, time
+import numpy as np
+sys.path.insert(0,"/tmp/claude-0/-home-claude/b193d4db-92b4-58be-84f5-d337bcc70127/scratchpad/e18")
+import topo_scene as T, topo_reps as R
+
+RES=(600,800,1000,1400,1800,2400)
+CLAVES=("components","endpoints","L","T","X","cycles")
+
+def corre_todo():
+    filas=[]
+    for eid,clase in T.escenas():
+        for side in RES:
+            img,meta=T.render(eid,side)
+            for rep,fn in R.REPS.items():
+                d=R.medir(img,fn)
+                filas.append({"escena":eid,"clase":clase,"side":side,"rep":rep,"cond":"normal",
+                              **{k:d[k] for k in d}, "gt":meta["gt"]})
+    return filas
+
+def corre_degradado():
+    filas=[]
+    condiciones=[("gris_osc",dict(gris=T.GRIS_OSC)),("gris_med",dict(gris=T.GRIS_MED)),
+                 ("blur",dict(degrade="blur")),("jpeg",dict(degrade="jpeg")),
+                 ("cortes",dict(corte_px=2))]
+    for eid,clase in T.escenas():
+        for side in (800,1400,2400):
+            for nombre,kw in condiciones:
+                img,meta=T.render(eid,side,**kw)
+                for rep,fn in R.REPS.items():
+                    d=R.medir(img,fn)
+                    filas.append({"escena":eid,"clase":clase,"side":side,"rep":rep,"cond":nombre,
+                                  **{k:d[k] for k in d}, "gt":meta["gt"]})
+    return filas
+
+def f1(tp,fp,fn):
+    p=tp/max(1e-9,tp+fp); r=tp/max(1e-9,tp+fn)
+    return 2*p*r/max(1e-9,p+r), p, r
+
+def evalua(filas):
+    out={}
+    for rep in R.REPS:
+        f=[x for x in filas if x["rep"]==rep and x["cond"]=="normal"]
+        # exactitud contra ground truth vectorial, sólo donde está declarado
+        acc={}
+        for k in CLAVES:
+            tp=fp=fn=0; err=[]
+            for x in f:
+                g=x["gt"].get(k if k!="cycles" else "cycles")
+                if g is None: continue
+                e=x[k]
+                tp+=min(g,e); fp+=max(0,e-g); fn+=max(0,g-e)
+                err.append(abs(e-g))
+            F,P,Rc=f1(tp,fp,fn)
+            acc[k]={"f1":round(F,3),"precision":round(P,3),"recall":round(Rc,3),
+                    "mae":round(float(np.mean(err)),2) if err else None}
+        # estabilidad multi-resolución: coeficiente de variación por escena
+        cv={}
+        for k in CLAVES+("long_path_frac","periodicity"):
+            vs=[]
+            for eid,_ in T.escenas():
+                v=[x[k] for x in f if x["escena"]==eid]
+                if len(v)>1 and np.mean(v)>1e-9: vs.append(np.std(v)/np.mean(v))
+            cv[k]=round(float(np.mean(vs)),3) if vs else None
+        costo={s:round(float(np.median([x["cost_s"] for x in f if x["side"]==s])),3) for s in (600,1400,2400)}
+        out[rep]={"accuracy_vs_gt":acc,"multires_cv":cv,"cost_s":costo}
+    return out
+
+def degradacion(filas_n, filas_d):
+    out={}
+    for rep in R.REPS:
+        base={(x["escena"],x["side"]):x for x in filas_n if x["rep"]==rep}
+        res={}
+        for cond in ("gris_osc","gris_med","blur","jpeg","cortes"):
+            difs=[]
+            for x in [y for y in filas_d if y["rep"]==rep and y["cond"]==cond]:
+                b=base.get((x["escena"],x["side"]))
+                if not b: continue
+                d=[abs(x[k]-b[k])/max(1.0,b[k]) for k in CLAVES]
+                difs.append(np.mean(d))
+            res[cond]=round(float(np.mean(difs)),3) if difs else None
+        out[rep]=res
+    return out
+
+def ablacion(filas):
+    """§12 — qué dice cada señal por clase, sin combinarlas."""
+    señales=("long_path_frac","junction_density","endpoint_density","periodicity","cycles","components")
+    out={}
+    for rep in R.REPS:
+        f=[x for x in filas if x["rep"]==rep and x["cond"]=="normal"]
+        tab={}
+        for s in señales:
+            por_clase={}
+            for cl in sorted(set(x["clase"] for x in f)):
+                v=[x[s] for x in f if x["clase"]==cl]
+                por_clase[cl]=[round(float(np.median(v)),3), round(float(np.percentile(v,10)),3),
+                               round(float(np.percentile(v,90)),3)]
+            tab[s]=por_clase
+        out[rep]=tab
+    return out
+
+def auc(a,b):
+    """AUC descriptiva (Mann-Whitney), §18: descriptiva, no umbral de despliegue."""
+    a=np.asarray(a,float); b=np.asarray(b,float)
+    if len(a)==0 or len(b)==0: return None
+    tot=0
+    for x in a: tot+=np.sum(x>b)+0.5*np.sum(x==b)
+    return round(float(tot/(len(a)*len(b))),3)
+
+def separabilidad(filas):
+    out={}
+    for rep in R.REPS:
+        f=[x for x in filas if x["rep"]==rep and x["cond"]=="normal"]
+        w=[x for x in f if x["clase"]=="wall_like"]
+        res={}
+        for otra in ("furniture","text","grid","annotation","ambiguous"):
+            o=[x for x in f if x["clase"]==otra]
+            res[otra]={s:auc([x[s] for x in w],[x[s] for x in o])
+                       for s in ("long_path_frac","junction_density","endpoint_density","periodicity","cycles")}
+        out[rep]=res
+    return out
+
+if __name__=="__main__":
+    t0=time.time()
+    fn_=corre_todo(); fd=corre_degradado()
+    r={"accuracy":evalua(fn_),"degradation":degradacion(fn_,fd),
+       "ablation":ablacion(fn_),"separability_auc":separabilidad(fn_)}
+    json.dump({"normal":fn_,"degradado":fd},open("/tmp/claude-0/-home-claude/b193d4db-92b4-58be-84f5-d337bcc70127/scratchpad/e18/raw18.json","w"))
+    json.dump(r,open("/tmp/claude-0/-home-claude/b193d4db-92b4-58be-84f5-d337bcc70127/scratchpad/e18/score18.json","w"),indent=1)
+    print(f"corrido en {time.time()-t0:.0f}s")
+    for rep,d in r["accuracy"].items():
+        print(f"\n=== {rep} ===")
+        print("  F1 vs ground truth:", {k:v["f1"] for k,v in d["accuracy_vs_gt"].items()})
+        print("  CV multi-resolución:", d["multires_cv"])
+        print("  costo:", d["cost_s"])
+        print("  degradación:", r["degradation"][rep])

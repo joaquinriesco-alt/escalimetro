@@ -1,0 +1,209 @@
+"""E18 §5 — tres representaciones de ESTRUCTURA, con parámetros declarados y congelados (§22).
+
+Ninguna usa ancho. Todas devuelven el mismo contrato:
+
+    {"components", "endpoints", "L", "T", "X", "cycles", "closed_regions",
+     "long_path_frac", "junction_density", "endpoint_density", "periodicity"}
+
+Los nombres dicen lo MEDIDO —punta, unión, ciclo, componente— y no lo que suponemos que representan
+(§3): aquí no hay "muro", ni "puerta", ni "columna".
+"""
+import time
+
+import cv2
+import numpy as np
+from skimage.morphology import skeletonize
+
+PARAMS = {
+    "skeleton_graph": {"block_frac": 0.02, "C": 5, "min_branch_frac": 0.004, "corner_deg": 35.0},
+    "line_segment_graph": {"canny_lo": 40, "canny_hi": 120, "hough_thresh": 40,
+                           "min_len_frac": 0.02, "max_gap_frac": 0.004, "merge_deg": 8.0,
+                           "join_frac": 0.006},
+    "contour_graph": {"block_frac": 0.02, "C": 5, "approx_frac": 0.004, "min_area_frac": 0.00005},
+}
+
+
+def _gray(img):
+    return img if img.ndim == 2 else cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+
+def _dark(g, p):
+    b = max(3, int(round(p["block_frac"] * max(g.shape))) | 1)
+    return cv2.adaptiveThreshold(g, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, b, p["C"]) > 0
+
+
+# ---------------------------------------------------------------------------------------------------
+# A · SKELETON GRAPH
+# ---------------------------------------------------------------------------------------------------
+def _vecinos(sk):
+    k = np.ones((3, 3), np.uint8); k[1, 1] = 0
+    return cv2.filter2D(sk.astype(np.uint8), -1, k)
+
+
+def skeleton_graph(img):
+    p = PARAMS["skeleton_graph"]; g = _gray(img); S = max(g.shape)
+    m = _dark(g, p)
+    sk = skeletonize(m)
+    n = _vecinos(sk)
+    endpoints = int(((n == 1) & sk).sum())
+    nodos = (n >= 3) & sk
+    nlab, lab = cv2.connectedComponents(nodos.astype(np.uint8), 8)
+    junc = nlab - 1
+    grados = []
+    for i in range(1, nlab):
+        y, x = np.where(lab == i)
+        cy, cx = int(y.mean()), int(x.mean())
+        r = 3
+        ventana = sk[max(0, cy - r):cy + r + 1, max(0, cx - r):cx + r + 1].copy()
+        borde = np.concatenate([ventana[0], ventana[-1], ventana[:, 0], ventana[:, -1]])
+        grados.append(int(cv2.connectedComponents(borde.reshape(-1, 1).astype(np.uint8))[0] - 1))
+    T = sum(1 for d in grados if d == 3)
+    X = sum(1 for d in grados if d >= 4)
+    # esquinas L: cambios de dirección fuertes en el esqueleto sin nodo de grado ≥3
+    cont, _ = cv2.findContours(m.astype(np.uint8), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    L = 0
+    for c in cont:
+        ap = cv2.approxPolyDP(c, 0.02 * cv2.arcLength(c, True), True)
+        if len(ap) < 3:
+            continue
+        for i in range(len(ap)):
+            a, b, cpt = ap[i - 2][0], ap[i - 1][0], ap[i][0]
+            v1 = a - b; v2 = cpt - b
+            na, nb = np.linalg.norm(v1), np.linalg.norm(v2)
+            if na < 4 or nb < 4:
+                continue
+            ang = abs(np.degrees(np.arccos(np.clip(np.dot(v1, v2) / (na * nb), -1, 1))))
+            if 90 - p["corner_deg"] < ang < 90 + p["corner_deg"]:
+                L += 1
+    L = int(round(L / 2))                              # cada esquina aparece en interior y exterior
+    ncomp = int(cv2.connectedComponents(sk.astype(np.uint8), 8)[0] - 1)
+    ciclos = max(0, _euler_cycles(m))
+    return dict(components=ncomp, endpoints=endpoints, L=L, T=T, X=X, cycles=ciclos,
+                closed_regions=ciclos, long_path_frac=_long_path(sk) / S,
+                junction_density=(T + X) / max(1.0, sk.sum() / S),
+                endpoint_density=endpoints / max(1.0, sk.sum() / S),
+                periodicity=_periodicidad(m), skeleton_px=int(sk.sum()))
+
+
+def _euler_cycles(m):
+    """Número de agujeros = componentes de fondo interiores. Es la forma estable de contar ciclos."""
+    inv = (~m).astype(np.uint8)
+    n, lab = cv2.connectedComponents(inv, 4)
+    bordes = set(lab[0].tolist()) | set(lab[-1].tolist()) | set(lab[:, 0].tolist()) | set(lab[:, -1].tolist())
+    return sum(1 for i in range(1, n) if i not in bordes and (lab == i).sum() > 9)
+
+
+def _long_path(sk):
+    """Camino largo aproximado: diagonal del componente esquelético mayor (proxy determinista y
+    barato del alcance de la estructura)."""
+    n, lab, st, _ = cv2.connectedComponentsWithStats(sk.astype(np.uint8), 8)
+    if n <= 1:
+        return 0.0
+    i = 1 + int(np.argmax(st[1:, cv2.CC_STAT_AREA]))
+    ys, xs = np.where(lab == i)
+    return float(np.hypot(xs.max() - xs.min(), ys.max() - ys.min()))
+
+
+def _periodicidad(m):
+    """Regularidad de la estructura: pico de AUTOCORRELACIÓN de las proyecciones, fuera del origen.
+
+    Una grilla o un hatch repiten su patrón a un paso fijo y producen un pico alto; una red de muros
+    irregular, no. Se mide sobre las proyecciones horizontal y vertical de la máscara oscura, sin
+    usar ancho ni umbral de grosor."""
+    out = []
+    for proj in (m.sum(0).astype(float), m.sum(1).astype(float)):
+        v = proj - proj.mean()
+        if v.std() < 1e-6 or len(v) < 32:
+            out.append(0.0); continue
+        ac = np.correlate(v, v, mode="full")[len(v) - 1:]
+        ac = ac / (ac[0] + 1e-9)
+        lag0 = max(4, len(v) // 100)
+        out.append(float(np.max(ac[lag0:len(v) // 2])) if len(ac) > lag0 + 4 else 0.0)
+    return float(np.mean(out))
+
+
+# ---------------------------------------------------------------------------------------------------
+# B · LINE SEGMENT GRAPH
+# ---------------------------------------------------------------------------------------------------
+def line_segment_graph(img):
+    p = PARAMS["line_segment_graph"]; g = _gray(img); S = max(g.shape)
+    e = cv2.Canny(g, p["canny_lo"], p["canny_hi"])
+    segs = cv2.HoughLinesP(e, 1, np.pi / 180, p["hough_thresh"],
+                           minLineLength=int(p["min_len_frac"] * S),
+                           maxLineGap=int(p["max_gap_frac"] * S))
+    segs = [] if segs is None else [s[0] for s in segs]
+    # fusión de colineales próximos
+    usados = [False] * len(segs); fus = []
+    for i, s in enumerate(segs):
+        if usados[i]:
+            continue
+        x1, y1, x2, y2 = s; ang = np.degrees(np.arctan2(y2 - y1, x2 - x1)) % 180
+        pts = [(x1, y1), (x2, y2)]; usados[i] = True
+        for j in range(i + 1, len(segs)):
+            if usados[j]:
+                continue
+            a1, b1, a2, b2 = segs[j]; ang2 = np.degrees(np.arctan2(b2 - b1, a2 - a1)) % 180
+            if min(abs(ang - ang2), 180 - abs(ang - ang2)) > p["merge_deg"]:
+                continue
+            d = min(np.hypot(a1 - x2, b1 - y2), np.hypot(a2 - x1, b2 - y1),
+                    np.hypot(a1 - x1, b1 - y1), np.hypot(a2 - x2, b2 - y2))
+            if d < p["join_frac"] * S:
+                pts += [(a1, b1), (a2, b2)]; usados[j] = True
+        xs = [q[0] for q in pts]; ys = [q[1] for q in pts]
+        fus.append((min(xs), min(ys), max(xs), max(ys), np.hypot(max(xs) - min(xs), max(ys) - min(ys))))
+    # uniones: extremos de segmentos próximos entre sí
+    ext = []
+    for (x1, y1, x2, y2, L) in fus:
+        ext += [(x1, y1), (x2, y2)]
+    tol = p["join_frac"] * S
+    grados = []
+    for i, a in enumerate(ext):
+        d = sum(1 for j, b in enumerate(ext) if i != j and np.hypot(a[0] - b[0], a[1] - b[1]) < tol)
+        grados.append(d)
+    endpoints = sum(1 for d in grados if d == 0)
+    L_ = sum(1 for d in grados if d == 1) // 2
+    T_ = sum(1 for d in grados if d == 2) // 3
+    X_ = sum(1 for d in grados if d >= 3) // 4
+    m = _dark(g, PARAMS["contour_graph"])
+    ciclos = _euler_cycles(m)
+    largo = max([s[4] for s in fus], default=0.0)
+    return dict(components=max(1, len(fus)), endpoints=endpoints, L=L_, T=T_, X=X_, cycles=ciclos,
+                closed_regions=ciclos, long_path_frac=largo / S,
+                junction_density=(T_ + X_) / max(1, len(fus)),
+                endpoint_density=endpoints / max(1, len(fus)),
+                periodicity=_periodicidad(m), segments=len(fus))
+
+
+# ---------------------------------------------------------------------------------------------------
+# C · CONTOUR / ENCLOSURE GRAPH
+# ---------------------------------------------------------------------------------------------------
+def contour_graph(img):
+    p = PARAMS["contour_graph"]; g = _gray(img); S = max(g.shape)
+    m = _dark(g, p)
+    cont, jer = cv2.findContours(m.astype(np.uint8), cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
+    area_min = p["min_area_frac"] * m.size
+    externos = internos = 0; verts = 0; perim = 0.0
+    for i, c in enumerate(cont):
+        if cv2.contourArea(c) < area_min:
+            continue
+        ap = cv2.approxPolyDP(c, p["approx_frac"] * cv2.arcLength(c, True), True)
+        verts += len(ap); perim = max(perim, cv2.arcLength(c, True))
+        if jer[0][i][3] == -1:
+            externos += 1
+        else:
+            internos += 1
+    return dict(components=externos, endpoints=0, L=verts, T=0, X=0,
+                cycles=internos, closed_regions=internos, long_path_frac=perim / (2 * S),
+                junction_density=verts / max(1, externos), endpoint_density=0.0,
+                periodicity=_periodicidad(m), contours=externos + internos)
+
+
+REPS = {"skeleton_graph": skeleton_graph, "line_segment_graph": line_segment_graph,
+        "contour_graph": contour_graph}
+
+
+def medir(img, fn):
+    t0 = time.perf_counter()
+    d = fn(img)
+    d["cost_s"] = round(time.perf_counter() - t0, 3)
+    return d
