@@ -1,0 +1,12 @@
+CALL_ID=CRMQAT_T
+INTENTO_1 = INSUFFICIENT_EVIDENCE (el subagente reporto no poder leer el archivo)
+TECHNICAL_RETRY = TRUE  (pre-registro PREREGISTRO.md linea 48-49: una sola repeticion,
+                         misma imagen, misma assertion, mismo prompt)
+INTENTO_2 = INSUFFICIENT_EVIDENCE (el subagente reporto una ruta distinta a la entregada:
+                         /home/claude/E21/eval/CRMQAT.png en vez de /home/claude/E19/eval/CRMQAT.png)
+INTEGRIDAD DEL ARCHIVO: /home/claude/E19/eval/CRMQAT.png existe, 19843 bytes,
+  sha256 = e28fe9ff69e57178207ae1e87dbc3bb0969643c2ac3c5165fbc6e3ff3f949929
+  == sha_img del manifest para CRMQAT_T. El archivo NO esta corrupto ni ausente.
+REGISTRO FINAL: INSUFFICIENT_EVIDENCE, marcado TECHNICAL_FAILURE = TRUE.
+NOTA: esta abstencion NO es evaluativa: la imagen nunca fue observada por el critic.
+      Se reporta separada en el informe. No se hizo un tercer intento.

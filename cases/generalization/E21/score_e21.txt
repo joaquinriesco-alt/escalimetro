@@ -1,0 +1,62 @@
+E21 - SCORECARD (metricas congeladas, umbrales sin mover)
+respuestas_e21.txt sha256 = 312ee30c106711c7aa845181fdb176a0cf4409e994d72463993e752853f17f5f
+N = 144  (72 TRUE, 72 FALSE)   orden == pre-registro: OK
+
+-- S13 --
+ERROR_CATCH_RATE                   0.5694
+ERROR_CATCH_RATE_falsa_ARCH        0.6944
+ERROR_CATCH_RATE_falsa_FURN        0.4444
+CORRECT_PASS_RATE                  0.7639
+CORRECT_PASS_RATE_true_ARCH        0.5556
+CORRECT_PASS_RATE_true_FURN        0.9722
+TRUE_ASSERTION_REVIEW_RATE         0.2222
+FALSE_ASSERTION_CONSISTENT_RATE    0.4167
+INSUFFICIENT_RATE_true             0.0139
+INSUFFICIENT_RATE_false            0.0139
+INSUFFICIENT_RATE_total            0.0139
+BALANCED_QA_ACCURACY               0.6667
+
+-- conteos crudos --
+FALSE total  n= 72  CONSISTENT= 30  REVIEW= 41  INSUFFICIENT=  1
+FALSE-ARCH   n= 36  CONSISTENT= 10  REVIEW= 25  INSUFFICIENT=  1
+FALSE-FURN   n= 36  CONSISTENT= 20  REVIEW= 16  INSUFFICIENT=  0
+TRUE  total  n= 72  CONSISTENT= 55  REVIEW= 16  INSUFFICIENT=  1
+TRUE-ARCH    n= 36  CONSISTENT= 20  REVIEW= 15  INSUFFICIENT=  1
+TRUE-FURN    n= 36  CONSISTENT= 35  REVIEW=  1  INSUFFICIENT=  0
+
+-- S14 carga de revision --
+P(REVIEW | assertion correcta)   = 0.2222
+P(REVIEW | assertion incorrecta) = 0.5694
+tasa_error  EXPECTED_REVIEW_RATE  EXPECTED_REVIEW_PRECISION
+     1%        0.2257                0.0252
+     5%        0.2396                0.1188
+    10%        0.2569                0.2216
+    20%        0.2917                0.3905
+    50%        0.3958                0.7193
+
+-- S17 pares (unidad = imagen, n=72) --
+IDEAL_PAIR_RATE (T=CONSISTENT y F=REVIEW) = 0.5417  (39/72)
+distribucion 3x3   filas = brazo TRUE, columnas = brazo FALSE
+                        CONSIS  REVIEW  INSUFF
+CONSISTENT                  15      39       1
+REVIEW                      14       2       0
+INSUFFICIENT_EVIDENCE        1       0       0
+
+-- S16 bootstrap, 10.000 remuestreos, unidad = image target --
+ERROR_CATCH_RATE         0.5694   IC95 [0.4583, 0.6806]
+CORRECT_PASS_RATE        0.7639   IC95 [0.6667, 0.8611]
+BALANCED_QA_ACCURACY     0.6667   IC95 [0.5694, 0.7569]
+
+-- S15 gates E21-A --
+[FAIL] ERROR_CATCH_RATE overall        >= 0.80 obtenido 0.5694
+[FAIL] ERROR_CATCH_RATE falsa-ARCH     >= 0.70 obtenido 0.6944
+[FAIL] ERROR_CATCH_RATE falsa-FURN     >= 0.70 obtenido 0.4444
+[PASS] CORRECT_PASS_RATE overall       >= 0.75 obtenido 0.7639
+[FAIL] CORRECT_PASS_RATE true-ARCH     >= 0.65 obtenido 0.5556
+[PASS] CORRECT_PASS_RATE true-FURN     >= 0.65 obtenido 0.9722
+[FAIL] FALSE_ASSERTION_CONSISTENT_RATE <= 0.15 obtenido 0.4167
+[PASS] TRUE_ASSERTION_REVIEW_RATE      <= 0.25 obtenido 0.2222
+[PASS] INSUFFICIENT overall            <= 0.15 obtenido 0.0139
+[FAIL] BALANCED_QA_ACCURACY            >= 0.775 obtenido 0.6667
+
+E21-A = FAIL

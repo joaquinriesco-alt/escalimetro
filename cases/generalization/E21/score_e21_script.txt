@@ -1,0 +1,158 @@
+#!/usr/bin/env python3
+"""E21 - scoring contra las metricas congeladas en PREREGISTRO.md (SS13/14/16/17).
+No define ninguna metrica nueva. No mueve ningun umbral."""
+import json, hashlib, numpy as np
+
+MAN = json.load(open('manifest.json'))
+man = {a['call_id']: a for a in MAN['manifest']}
+
+resp = {}
+orden = []
+for L in open('respuestas_e21.txt'):
+    L = L.strip()
+    if not L: continue
+    ola, cid, v = L.split()
+    assert cid in man, cid
+    assert v in ('CONSISTENT','REVIEW','INSUFFICIENT_EVIDENCE'), v
+    resp[cid] = v
+    orden.append(cid)
+
+# integridad: el orden ejecutado == el orden pre-registrado
+pre = [c for ola in MAN['olas'] for c in ola]
+assert orden == pre, "ORDEN NO COINCIDE CON EL PRE-REGISTRO"
+assert len(resp) == 144
+
+def sel(arm=None, asserted=None):
+    out = []
+    for cid, a in man.items():
+        if arm and a['arm'] != arm: continue
+        if asserted and a['asserted'] != asserted: continue
+        out.append(cid)
+    return sorted(out)
+
+def frac(cids, veredicto):
+    if not cids: return float('nan')
+    return sum(1 for c in cids if resp[c] == veredicto) / len(cids)
+
+F      = sel(arm='FALSE')
+F_ARCH = sel(arm='FALSE', asserted='ARCHITECTURAL_ENCLOSURE')   # se afirma ARCH sobre mueble
+F_FURN = sel(arm='FALSE', asserted='FURNITURE_OBJECT')          # se afirma FURN sobre recinto
+T      = sel(arm='TRUE')
+T_ARCH = sel(arm='TRUE',  asserted='ARCHITECTURAL_ENCLOSURE')
+T_FURN = sel(arm='TRUE',  asserted='FURNITURE_OBJECT')
+
+M = {}
+M['ERROR_CATCH_RATE']            = frac(F, 'REVIEW')
+M['ERROR_CATCH_RATE_falsa_ARCH'] = frac(F_ARCH, 'REVIEW')
+M['ERROR_CATCH_RATE_falsa_FURN'] = frac(F_FURN, 'REVIEW')
+M['CORRECT_PASS_RATE']            = frac(T, 'CONSISTENT')
+M['CORRECT_PASS_RATE_true_ARCH']  = frac(T_ARCH, 'CONSISTENT')
+M['CORRECT_PASS_RATE_true_FURN']  = frac(T_FURN, 'CONSISTENT')
+M['TRUE_ASSERTION_REVIEW_RATE']   = frac(T, 'REVIEW')
+M['FALSE_ASSERTION_CONSISTENT_RATE'] = frac(F, 'CONSISTENT')
+M['INSUFFICIENT_RATE_true']  = frac(T, 'INSUFFICIENT_EVIDENCE')
+M['INSUFFICIENT_RATE_false'] = frac(F, 'INSUFFICIENT_EVIDENCE')
+M['INSUFFICIENT_RATE_total'] = frac(sorted(man), 'INSUFFICIENT_EVIDENCE')
+M['BALANCED_QA_ACCURACY'] = (M['ERROR_CATCH_RATE'] + M['CORRECT_PASS_RATE']) / 2
+
+# S14 carga de revision
+p_rev_correct   = M['TRUE_ASSERTION_REVIEW_RATE']
+p_rev_incorrect = M['ERROR_CATCH_RATE']
+carga = []
+for e in (0.01, 0.05, 0.10, 0.20, 0.50):
+    exp_rate = e*p_rev_incorrect + (1-e)*p_rev_correct
+    prec = (e*p_rev_incorrect/exp_rate) if exp_rate > 0 else float('nan')
+    carga.append((e, exp_rate, prec))
+
+# S17 pares 3x3 por imagen
+V = ['CONSISTENT','REVIEW','INSUFFICIENT_EVIDENCE']
+imgs = sorted({a['img'] for a in man.values()})
+dist = {(x,y):0 for x in V for y in V}
+ideal = 0
+for im in imgs:
+    t = resp[im+'_T']; f = resp[im+'_F']
+    dist[(t,f)] += 1
+    if t == 'CONSISTENT' and f == 'REVIEW': ideal += 1
+M['IDEAL_PAIR_RATE'] = ideal/len(imgs)
+
+# S16 bootstrap: unidad = IMAGE TARGET, los dos brazos juntos
+rng = np.random.default_rng(2101)
+gt = {im: man[im+'_T']['gt'] for im in imgs}
+def metrics_from(sample):
+    fr = [im+'_F' for im in sample]; tr = [im+'_T' for im in sample]
+    ecr = sum(1 for c in fr if resp[c]=='REVIEW')/len(fr)
+    cpr = sum(1 for c in tr if resp[c]=='CONSISTENT')/len(tr)
+    return ecr, cpr, (ecr+cpr)/2
+B = 10000
+boot = np.empty((B,3))
+n = len(imgs)
+for b in range(B):
+    s = [imgs[i] for i in rng.integers(0, n, n)]
+    boot[b] = metrics_from(s)
+def ic(col): return float(np.percentile(boot[:,col],2.5)), float(np.percentile(boot[:,col],97.5))
+IC = {'ERROR_CATCH_RATE': ic(0), 'CORRECT_PASS_RATE': ic(1), 'BALANCED_QA_ACCURACY': ic(2)}
+
+# S15 gates - umbrales exactamente como estan en PREREGISTRO.md
+GATES = [
+ ('ERROR_CATCH_RATE overall        >= 0.80',  M['ERROR_CATCH_RATE']            >= 0.80,  M['ERROR_CATCH_RATE']),
+ ('ERROR_CATCH_RATE falsa-ARCH     >= 0.70',  M['ERROR_CATCH_RATE_falsa_ARCH'] >= 0.70,  M['ERROR_CATCH_RATE_falsa_ARCH']),
+ ('ERROR_CATCH_RATE falsa-FURN     >= 0.70',  M['ERROR_CATCH_RATE_falsa_FURN'] >= 0.70,  M['ERROR_CATCH_RATE_falsa_FURN']),
+ ('CORRECT_PASS_RATE overall       >= 0.75',  M['CORRECT_PASS_RATE']           >= 0.75,  M['CORRECT_PASS_RATE']),
+ ('CORRECT_PASS_RATE true-ARCH     >= 0.65',  M['CORRECT_PASS_RATE_true_ARCH'] >= 0.65,  M['CORRECT_PASS_RATE_true_ARCH']),
+ ('CORRECT_PASS_RATE true-FURN     >= 0.65',  M['CORRECT_PASS_RATE_true_FURN'] >= 0.65,  M['CORRECT_PASS_RATE_true_FURN']),
+ ('FALSE_ASSERTION_CONSISTENT_RATE <= 0.15',  M['FALSE_ASSERTION_CONSISTENT_RATE'] <= 0.15, M['FALSE_ASSERTION_CONSISTENT_RATE']),
+ ('TRUE_ASSERTION_REVIEW_RATE      <= 0.25',  M['TRUE_ASSERTION_REVIEW_RATE']  <= 0.25,  M['TRUE_ASSERTION_REVIEW_RATE']),
+ ('INSUFFICIENT overall            <= 0.15',  M['INSUFFICIENT_RATE_total']     <= 0.15,  M['INSUFFICIENT_RATE_total']),
+ ('BALANCED_QA_ACCURACY            >= 0.775', M['BALANCED_QA_ACCURACY']        >= 0.775, M['BALANCED_QA_ACCURACY']),
+]
+
+out = []
+w = out.append
+w("E21 - SCORECARD (metricas congeladas, umbrales sin mover)")
+w("respuestas_e21.txt sha256 = " + hashlib.sha256(open('respuestas_e21.txt','rb').read()).hexdigest())
+w("N = 144  (72 TRUE, 72 FALSE)   orden == pre-registro: OK")
+w("")
+w("-- S13 --")
+for k in ['ERROR_CATCH_RATE','ERROR_CATCH_RATE_falsa_ARCH','ERROR_CATCH_RATE_falsa_FURN',
+          'CORRECT_PASS_RATE','CORRECT_PASS_RATE_true_ARCH','CORRECT_PASS_RATE_true_FURN',
+          'TRUE_ASSERTION_REVIEW_RATE','FALSE_ASSERTION_CONSISTENT_RATE',
+          'INSUFFICIENT_RATE_true','INSUFFICIENT_RATE_false','INSUFFICIENT_RATE_total',
+          'BALANCED_QA_ACCURACY']:
+    w(f"{k:34s} {M[k]:.4f}")
+w("")
+w("-- conteos crudos --")
+for nm, cids in [('FALSE total',F),('FALSE-ARCH',F_ARCH),('FALSE-FURN',F_FURN),
+                 ('TRUE  total',T),('TRUE-ARCH',T_ARCH),('TRUE-FURN',T_FURN)]:
+    c = sum(1 for x in cids if resp[x]=='CONSISTENT')
+    r = sum(1 for x in cids if resp[x]=='REVIEW')
+    i = sum(1 for x in cids if resp[x]=='INSUFFICIENT_EVIDENCE')
+    w(f"{nm:12s} n={len(cids):3d}  CONSISTENT={c:3d}  REVIEW={r:3d}  INSUFFICIENT={i:3d}")
+w("")
+w("-- S14 carga de revision --")
+w(f"P(REVIEW | assertion correcta)   = {p_rev_correct:.4f}")
+w(f"P(REVIEW | assertion incorrecta) = {p_rev_incorrect:.4f}")
+w("tasa_error  EXPECTED_REVIEW_RATE  EXPECTED_REVIEW_PRECISION")
+for e, r, p in carga:
+    w(f"  {e:5.0%}        {r:.4f}                {p:.4f}")
+w("")
+w("-- S17 pares (unidad = imagen, n=72) --")
+w(f"IDEAL_PAIR_RATE (T=CONSISTENT y F=REVIEW) = {M['IDEAL_PAIR_RATE']:.4f}  ({ideal}/72)")
+w("distribucion 3x3   filas = brazo TRUE, columnas = brazo FALSE")
+w(f"{'':22s}" + "".join(f"{v[:6]:>8s}" for v in V))
+for x in V:
+    w(f"{x:22s}" + "".join(f"{dist[(x,y)]:8d}" for y in V))
+w("")
+w("-- S16 bootstrap, 10.000 remuestreos, unidad = image target --")
+for k,(lo,hi) in IC.items():
+    w(f"{k:24s} {M[k]:.4f}   IC95 [{lo:.4f}, {hi:.4f}]")
+w("")
+w("-- S15 gates E21-A --")
+allp = True
+for txt, ok, val in GATES:
+    allp &= ok
+    w(f"[{'PASS' if ok else 'FAIL'}] {txt:36s} obtenido {val:.4f}")
+w("")
+w(f"E21-A = {'PASS' if allp else 'FAIL'}")
+txt = "\n".join(out)
+open('score_e21.txt','w').write(txt+"\n")
+print(txt)

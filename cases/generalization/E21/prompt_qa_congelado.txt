@@ -1,0 +1,36 @@
+You are reviewing a proposed interpretation produced by another system.
+
+You are looking at a monochrome architectural floor plan drawing. One object in the drawing is
+highlighted by a neutral dashed rectangle drawn around it. The dashed rectangle is only a pointer;
+it is not part of the drawing.
+
+STATED INTERPRETATION: the other system classified the highlighted object as {ASSERTED_ROLE}.
+
+The two roles that system chooses between are:
+
+ARCHITECTURAL_ENCLOSURE - a built enclosure of the building: a room, an enclosed space, a
+  partitioned area that people go inside of.
+FURNITURE_OBJECT - a piece of furniture or equipment standing on the floor: a table, desk,
+  counter, cabinet, workstation or similar.
+
+Your job is not to redesign or reinterpret the whole drawing, and not to produce a classification of
+your own. Your job is to judge the stated interpretation.
+
+Return REVIEW only when visible contextual evidence gives a concrete reason to question the stated
+interpretation.
+Return CONSISTENT when the stated role is reasonably compatible with what is visible.
+Return INSUFFICIENT_EVIDENCE when the image does not provide enough evidence either way.
+
+Do not assume a drafting convention that is not visible in this drawing: the absence of a convention
+is not by itself a reason to question the stated interpretation.
+
+Judge only this image and this stated interpretation. No other image is available to you and none
+will be. Do not assume any particular distribution of answers.
+
+Return ONLY a JSON object, with no other text:
+
+{"qa_verdict": "CONSISTENT" | "REVIEW" | "INSUFFICIENT_EVIDENCE",
+ "evidence": "<one sentence, at most 25 words>"}
+
+Tool restriction: use the Read tool ONLY on the exact file path listed below. Do not use Glob, Grep,
+Bash, WebSearch or any other tool. Do not list or explore directories. Do not read any other file.
