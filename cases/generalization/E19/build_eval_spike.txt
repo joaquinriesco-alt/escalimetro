@@ -1,0 +1,63 @@
+"""E19 §8/§9 — construye el set de evaluacion CIEGO. IDs neutrales, orden aleatorizado."""
+import hashlib, json, os, sys
+import cv2, numpy as np
+sys.path.insert(0, "/home/claude/escalimetro/tests/fixtures/semantic_context")
+import context_bench_scene as B
+
+OUT = "/home/claude/E19/eval"
+MAPA = "/home/claude/E19/mapa_privado.json"
+ALF = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+rng = np.random.default_rng(190019)
+
+def nid(usados):
+    while True:
+        s = "".join(ALF[i] for i in rng.integers(0, len(ALF), 6))
+        if s not in usados:
+            usados.add(s); return s
+
+os.makedirs(OUT, exist_ok=True)
+for f in os.listdir(OUT):
+    os.remove(os.path.join(OUT, f))
+
+usados, items, crops = set(), [], {}
+for pid, t, ie, if_ in B.pares():
+    ims = {}
+    for cl in B.CLASES:
+        img, caja, leak = B.render(pid, cl)
+        assert leak == 0, (pid, cl, leak)
+        ims[cl] = (img, caja)
+        i = nid(usados)
+        cv2.imwrite(f"{OUT}/{i}.png", img)
+        items.append({"id": i, "pid": pid, "brazo": "FULL_CONTEXT", "verdad": cl,
+                      "receta": B.receta_nombre(pid, cl),
+                      "sha_img": hashlib.sha256(open(f"{OUT}/{i}.png","rb").read()).hexdigest()})
+    ca = B.crop(*[ims["ARCHITECTURAL_ENCLOSURE"][0], ims["ARCHITECTURAL_ENCLOSURE"][1]])
+    cb = B.crop(*[ims["FURNITURE_OBJECT"][0], ims["FURNITURE_OBJECT"][1]])
+    ha = hashlib.sha256(ca.tobytes()).hexdigest(); hb = hashlib.sha256(cb.tobytes()).hexdigest()
+    assert ha == hb, pid
+    crops[pid] = ha
+    i = nid(usados)
+    cv2.imwrite(f"{OUT}/{i}.png", ca)
+    items.append({"id": i, "pid": pid, "brazo": "TARGET_ONLY", "verdad": "PAR",
+                  "receta": "-", "sha_crop_raw": ha,
+                  "sha_img": hashlib.sha256(open(f"{OUT}/{i}.png","rb").read()).hexdigest()})
+
+# --- lotes: 6 imagenes, nunca dos del mismo par en el mismo lote -------------------------------
+orden = list(rng.permutation(len(items)))
+lotes, pend = [], [items[k] for k in orden]
+while pend:
+    lote, resto = [], []
+    for it in pend:
+        if len(lote) < 6 and all(x["pid"] != it["pid"] for x in lote):
+            lote.append(it)
+        else:
+            resto.append(it)
+    lotes.append(lote); pend = resto
+
+json.dump({"items": items, "lotes": [[x["id"] for x in L] for L in lotes],
+           "crops_sha": crops}, open(MAPA, "w"), indent=1)
+print("imagenes:", len(items), " lotes:", len(lotes),
+      " tamanos:", sorted(set(len(L) for L in lotes)))
+print("FULL_CONTEXT:", sum(1 for i in items if i["brazo"]=="FULL_CONTEXT"),
+      " TARGET_ONLY:", sum(1 for i in items if i["brazo"]=="TARGET_ONLY"))
+print("crops distintos:", len(set(crops.values())), "de", len(crops))

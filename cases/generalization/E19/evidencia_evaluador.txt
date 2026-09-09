@@ -1,0 +1,147 @@
+E19 §10 — evidencia textual devuelta por el evaluador ciego, una linea por inferencia.
+Se guarda para auditoria. NO participa en la puntuacion: solo puntua el campo classification.
+Formato: ID  CLASE  conf  |  evidencia
+
+LOTE 1
+NTKXNX ENCLOSURE 0.72 | Two identical room-sized cells abut along a shared edge on a wall run; the twin shows a door-gap in its outline.
+AM5HU5 ENCLOSURE 0.60 | Closed rectangle roughly 3x5 desk-modules, set against the wall run; far too deep for any table, chairs sit outside it.
+ZDZZCJ FURNITURE 0.85 | Small unit embedded in a contiguous cluster of identical desk rectangles with chair squares along the wall below.
+93WLRB ENCLOSURE 0.65 | Room-scale closed rectangle with a run of desk-and-chair modules lined up against its lower edge.
+EQXGJ8 AMBIGUOUS 0.85 | Image is cropped to the highlight itself: a bare rectangle with no walls, neighbours, or scale reference to judge.
+8Z22F3 AMBIGUOUS 0.50 | Isolated closed rectangle floating clear of walls, no door gap, no chairs; size sits between small room and large table.
+
+LOTE 2
+B4QL6S ENCLOSURE 0.70 | Rectangle sits on a wall beside door-gapped cubicles and is far larger than the desk-and-chair furniture drawn elsewhere.
+SMAZVG ENCLOSURE 0.70 | Wall-mounted rectangle exceeds the size of the doored rooms below, which themselves contain much smaller furniture rectangles.
+4PP8GK ENCLOSURE 0.78 | Hangs from the same wall as an identically sized neighbor that has a door opening; both are room-scale, not furniture-scale.
+YG9BMT AMBIGUOUS 0.88 | Crop shows only a bare rectangle with no walls, scale, doors or surrounding context to decide.
+MWY59T AMBIGUOUS 0.88 | Isolated closed rectangle with no wall connection, scale reference or adjacent elements; could equally be a room or a table.
+U3H5ER AMBIGUOUS 0.88 | Single outlined rectangle in an empty crop; no topology, thickness or scale evidence is available.
+
+LOTE 3
+5JAR67 ENCLOSURE 0.58 | Large rectangle forms an aligned identical pair with a neighbouring shape whose bottom wall carries a centred door gap.
+M5WG4L FURNITURE 0.64 | Closed shallow rectangle floating in open floor, no door gap, unlike the gapped rooms below.
+4F7KD6 AMBIGUOUS 0.82 | Crop shows only a bare rectangle: no walls, doors, scale ticks or neighbouring objects to judge against.
+QUXZB9 ENCLOSURE 0.60 | Identical twin of the adjacent rectangle that has a centred doorway gap; both sit against the same corridor wall.
+EW2GUE FURNITURE 0.57 | Closed rectangle flush-chained with a run of desk-sized units and a desk-and-chair row, no doorway or wall attachment.
+U2GQ4K AMBIGUOUS 0.85 | Image contains only the outlined rectangle itself; no context, scale or wall evidence is present.
+
+LOTE 4
+EVRWE2 AMBIGUOUS 0.72 | Tight crop shows only a bare closed rectangle; no walls, door gap, scale or neighbouring objects.
+J6R5XA AMBIGUOUS 0.72 | Isolated closed rectangle with no surrounding plan context: no wall thickness, opening, or adjacent elements.
+H7JE5J FURNITURE 0.58 | Closed single-line rectangle floating in open floor, no door gap or wall junction, unlike the doored enclosures at bottom left.
+DNEHHD FURNITURE 0.78 | Rectangle with a row of small blocks abutting one edge reads as table plus chairs, matching the desk clusters below.
+KU7UZK FURNITURE 0.57 | Small closed rectangle isolated mid-floor with no opening or wall contact; this plan's enclosures sit against walls with door gaps.
+CRMQAT ENCLOSURE 0.58 | Rectangle is bracketed top and bottom by parallel double-line walls it nearly touches, reading as a partitioned space.
+
+LOTE 5
+W9ETAD ENCLOSURE 0.60 | Two large identical rectangles in a band along the corridor wall, far larger than the desk-scale units below.
+WMF4H5 AMBIGUOUS 0.85 | Only a bare vertical rectangle fills the crop; no walls, doors, scale cues or neighbours to judge against.
+MY5JC5 ENCLOSURE 0.65 | Large rectangle sits flush on a long corridor wall line, several times the size of the workstation units elsewhere.
+LMBY9G AMBIGUOUS 0.85 | Isolated wide rectangle with no surrounding context, wall connection, door or dimension.
+79MGLH AMBIGUOUS 0.85 | A single empty rectangle occupying the whole crop; nothing distinguishes a room outline from a table or counter.
+2MCPQL AMBIGUOUS 0.85 | Bare tall rectangle alone in frame; no scale, adjacency, openings or hatching available.
+
+LOTE 6
+FMHXQ8 FURNITURE 0.93 | Small rectangle ringed by four evenly spaced chair squares, the standard table-with-seating symbol, free-standing in open floor.
+HMWMUJ ENCLOSURE 0.82 | Room-scale rectangle seated on a long wall line, sharing a partition with an adjacent cell whose edge has a door gap.
+TL3PFB ENCLOSURE 0.74 | Large cell in a row of wall-bounded rooms hung off the main corridor wall; neighbouring identical cell shows a door opening.
+P4SASR AMBIGUOUS 0.85 | Isolated plain rectangle with no walls, doors, seating or surrounding context to indicate scale or function.
+BLZ3CH AMBIGUOUS 0.85 | Bare rectangle alone in frame; no adjoining walls, openings or furniture cues.
+TEDHTM AMBIGUOUS 0.85 | Single uniform-stroke rectangle without context, openings or accompanying symbols; scale and role undeterminable.
+
+LOTE 7
+PBS9KY AMBIGUOUS 0.50 | Tight crop of a bare rectangle with no walls, doors, chairs or scale context to judge by.
+3N2H7X FURNITURE 0.93 | Rectangle ringed by four small squares reading as chairs, free-standing in open floor with no walls or doors.
+BHG268 FURNITURE 0.55 | Small free-standing single-line rectangle, no door opening, no wall attachment or thickness; same weight as plan furniture.
+V6SP6C ENCLOSURE 0.85 | Shares a wall with the room above, gaps in that wall read as door openings, and it abuts a corridor wall.
+K62P6V AMBIGUOUS 0.50 | Isolated crop showing only an outlined rectangle; no doors, walls, fixtures or surroundings.
+3HMVRJ FURNITURE 0.50 | Isolated thin-line rectangle floating in open floor with no door opening or wall junction, though no chairs confirm it.
+
+LOTE 8
+RHRCQ5 AMBIGUOUS 0.82 | Tight crop shows only a bare closed rectangle: no walls, doors, chairs or scale cues.
+JC38HK FURNITURE 0.95 | Free-standing rectangle flanked by four small chair squares above and below: a conference table.
+PZCFRP ENCLOSURE 0.68 | Large room-sized square seated flush on a wall line and abutting a partitioned three-cell block, with no chairs.
+VBHY3R AMBIGUOUS 0.82 | Isolated heavy-stroke rectangle with no surrounding plan context, openings or adjacent objects.
+YAJ5GC ENCLOSURE 0.86 | Middle cell in a row of wall-hung room bays whose neighbours show door openings with jambs.
+SUWEZN ENCLOSURE 0.74 | Cell sitting on a wall line, paired with an identical adjacent cell that has a clear door opening.
+
+LOTE 9
+599X3B FURNITURE 0.65 | Free-standing closed rectangle, no door gap, one of an identical repeated pair floating inside the open plan area.
+U6PCG8 AMBIGUOUS 0.85 | Crop shows only an empty single-line rectangle; no walls, doors, scale or context.
+96X6GG FURNITURE 0.60 | Isolated closed rectangle in open floor area with no door opening or wall connection, unlike the doored enclosures below.
+2GN95P AMBIGUOUS 0.85 | Isolated empty rectangle with no surrounding drawing, no openings, no thickness cues.
+DZSQWG AMBIGUOUS 0.85 | Bare square outline filling the crop, no doors, walls or adjacent geometry.
+5CLLKW AMBIGUOUS 0.85 | Single empty rectangle in isolation; no wall poche, openings or context supports either reading.
+
+LOTE 10
+TPV78V AMBIGUOUS 0.50 | Plain closed rectangle beside a three-cell block, no door opening, no chairs, no wall attachment to decide.
+VJJAL2 FURNITURE 0.93 | Rectangle ringed by six small squares reading as chairs, a classic table-with-seating symbol standing free of any wall.
+2A59NC ENCLOSURE 0.62 | Large rectangle spanning the gap between two parallel wall lines, bounded above and below like a partitioned space.
+9YWQEF FURNITURE 0.90 | Rectangle flanked by four small squares above and below, the drawing's chair symbol, free-standing away from walls.
+6HKL8D FURNITURE 0.52 | One of three small closed boxes in a row under a wall, no door gap and too small to be a room.
+YFZS7T ENCLOSURE 0.75 | Cell outline broken by a doorway gap facing the corridor wall, one of three such units in a row.
+
+LOTE 11
+P6JS4B FURNITURE 0.76 | Small closed rectangle floating with uniform clearance inside a larger walled room that has its own door opening.
+NJSWX6 AMBIGUOUS 0.70 | Isolated crop of a single closed rectangle with no walls, door, scale or surrounding context.
+MJK6F2 ENCLOSURE 0.62 | Wall-scale rectangle flush-aligned with the adjacent doored room, bounded by floor wall lines and a corridor partition.
+QKUVTL AMBIGUOUS 0.70 | Bare rectangle shown alone; no openings, adjacent walls or scale cues.
+Y2FQC4 AMBIGUOUS 0.70 | Context-free single rectangle; nothing indicates wall thickness, doorway or floor-standing object.
+SFCZE6 FURNITURE 0.76 | Closed inner rectangle centered with even clearance inside an enclosing room whose bottom wall carries a door gap.
+
+LOTE 12
+HRZBJC AMBIGUOUS 0.82 | Image shows only a bare closed rectangle: no walls, door gaps, scale, or neighbouring elements.
+AUYUM6 AMBIGUOUS 0.82 | Isolated thin rectangle with no surrounding context, no openings, no wall junctions and no scale reference.
+DLJ65J FURNITURE 0.62 | One of three identical freestanding closed rectangles in a row with narrow slivers between them, unattached to any wall.
+8838ZL FURNITURE 0.50 | Closed rectangle floating inside a wall band, touching neither bounding line and lacking any opening.
+JLWZHQ AMBIGUOUS 0.82 | Only a single empty square outline is visible; no walls, doors, scale or adjacent objects.
+UY64MT FURNITURE 0.62 | Large closed rectangle centred in open floor with a row of smaller desk-like rectangles and seat-sized squares directly beneath.
+
+LOTE 13
+MA6FDN FURNITURE 0.55 | Lone closed rectangle floating in open floor area, no wall contact, no door opening, no partition adjacency.
+VSGPP7 FURNITURE 0.65 | Box flanked by two small squares matching the chair glyphs used with the desk row, and it does not join the wall line below.
+2RAMBU ENCLOSURE 0.60 | Room-scale square paired as a repeated module with an identical neighbour, drawn at wall line weight.
+E4KE7E FURNITURE 0.65 | Rectangle with two chair-sized squares set against one side, standing clear of the wall band below.
+6N6A2Z AMBIGUOUS 0.85 | Image is cropped to the rectangle alone; no walls, scale, adjacent objects or openings remain.
+QCRAJH FURNITURE 0.55 | Small box standing free of the corridor wall with no opening; table-scale, not room-scale.
+
+LOTE 14
+HGVWJ9 ENCLOSURE 0.55 | Closed box sits on a wall line, exactly aligned in the same row and size as adjacent bracket rooms with door gaps.
+HAVC3F ENCLOSURE 0.68 | Large wall-weight rectangle resting on a wall line, sharing its full height with an adjoining stack of partitioned cells.
+3Y29N4 ENCLOSURE 0.72 | Stacked directly under a same-width room whose lower edge has door gaps, bounded right by a vertical wall and below by a wall.
+FH348N AMBIGUOUS 0.90 | Crop shows only an empty rectangle with no walls, doors, scale reference or surrounding plan context.
+QG66RK ENCLOSURE 0.70 | Large box on a wall line spanning exactly the height of two adjacent stacked rooms that show door openings.
+KFLLQ2 ENCLOSURE 0.55 | Room-scale box fills the band between two parallel wall lines, far larger than the desks drawn elsewhere.
+
+LOTE 15
+LLQAQP FURNITURE 0.72 | Free-standing closed square with three small equal squares aligned along one side, reading as seats around a table.
+BHDKRL FURNITURE 0.60 | One of three identical closed rectangles evenly spaced below a wall line, detached from it, with no door openings.
+JNGVFA ENCLOSURE 0.85 | Cell in a row of three seated on the corridor wall, each with a gap in its lower edge reading as a doorway.
+85RMFQ AMBIGUOUS 0.55 | Solitary closed rectangle abutting a wall line, with no doorway, no fixtures, no companions and no scale reference.
+ACN4C8 AMBIGUOUS 0.55 | Single closed box resting on a wall run above a corridor, but showing no opening, seating or other disambiguating detail.
+JDLP7K ENCLOSURE 0.68 | Paired with an identical adjacent cell that has a clear door gap, both bounded by the same corridor wall line.
+
+LOTE 16
+9YCP4W FURNITURE 0.60 | Closed rectangle floating free of all walls, paired with an identical twin, no door opening unlike the plan's rooms.
+TC3Q8S AMBIGUOUS 0.85 | Crop shows a single bare rectangle with no walls, doors, scale or surrounding context.
+ZZFV5B FURNITURE 0.85 | Highlighted rectangle sits nested inside a larger enclosure that has a door gap, so it is contents, not the room.
+WBA9Q9 FURNITURE 0.92 | Small square ringed by four tiny squares reads unmistakably as a table with four chairs around it.
+ECPB4S FURNITURE 0.60 | Elongated closed rectangle set against a wall line with no door opening, matching a counter or table rather than a room.
+VJ4JSJ AMBIGUOUS 0.85 | Isolated rectangle with no adjacent walls, openings, fixtures or scale cues.
+
+LOTE 17
+8Z6HPD AMBIGUOUS 0.85 | Crop shows only a bare closed rectangle with no walls, doors, chairs or scale context.
+Q9BSHR ENCLOSURE 0.60 | Square is room-scale (about 3x the desk modules), drawn at wall line weight, paired like adjacent partitioned cells; no chairs.
+5H56SK FURNITURE 0.92 | Rectangle is ringed by four small squares reading as chairs, free-standing in open floor with no walls attached.
+WLCDKW ENCLOSURE 0.72 | Cell sits on a continuous wall line beside an identical cell with door gaps, forming a partitioned room band.
+88SK85 ENCLOSURE 0.72 | Rests on a shared corridor wall next to a same-size cell with door openings; reads as one of two partitioned rooms.
+UZYXD6 FURNITURE 0.90 | Rectangle lies wholly inside a larger walled room with a door gap, centred like a table within that enclosure.
+
+LOTE 18
+2V4XSX AMBIGUOUS 0.50 | Tightly cropped view shows only a plain heavy rectangle with no walls, doors, chairs or surrounding plan context.
+8XF2MZ FURNITURE 0.92 | Free-standing rectangle ringed by four small detached squares reading as chairs, typical table-and-seating symbol.
+9D4J9M AMBIGUOUS 0.50 | Isolated heavy rectangle with no adjacent walls, openings, fixtures or scale cues.
+BJPS9A ENCLOSURE 0.55 | Room-scale heavy closed rectangle with smaller desk-like units abutting two faces, lacking the chair-ringed table motif.
+JQ6ZTY ENCLOSURE 0.62 | Matches size and heavy outline of the adjacent cell whose bottom edge is broken by a door opening; desks with chairs sit outside it.
+E3M2GB ENCLOSURE 0.72 | Middle of three identical wall-hung cells off a corridor line, flanking cells showing door gaps.

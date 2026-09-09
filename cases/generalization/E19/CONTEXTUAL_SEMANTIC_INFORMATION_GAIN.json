@@ -1,0 +1,732 @@
+{
+ "_doc": "E19 - spike de GANANCIA DE INFORMACION POR CONTEXTO. Banco pareado contrafactual: el target es byte-identico entre las dos clases del par. Ninguna representacion de E17/E18 participa. El motor no cambia.",
+ "provenance": {
+  "generator_version": "e19-context-bench/1.0.0",
+  "frozen_hashes": {
+   "context_bench_scene.py": "2b3e2eb06248f3897b4bf663ce39930fc111b59560ccffd7cac8478141be6f81",
+   "preregistro.txt": "ca8df2be79ac8d539fbce73a21067112c4748d292e45e1a0eced7dc2c341e24f",
+   "prompt_congelado.txt": "2ac0dac653c8755fde3548ba2831a18908bb9db8c2588d731c4e48549cc0656d",
+   "build_eval_spike.txt": "f1ca98fb816e40ae44551827570c7c2e345750479e9936d03c11b2686231132f",
+   "score_spike.txt": "58f0a61462c16ed41b128ec822c0c5af32ddc10f96ad64de454e3c2e33b11491",
+   "respuestas_crudas_spike.txt": "f7a86a85a25b196fe5f73a4b4df0274e7ca08fb3ed368fccc55703dbf9e40dd6"
+  },
+  "side_px": 1200,
+  "w_unico": 0.0035,
+  "margen_crop": 0.008,
+  "clearance": 0.018,
+  "lejania": 0.055,
+  "libraries": {
+   "python": "3.11.15",
+   "opencv": "4.13.0",
+   "numpy": "2.4.4",
+   "scipy": "1.17.1",
+   "scikit-image": "0.26.0"
+  }
+ },
+ "provider": {
+  "PROVIDER_IDENTITY": "UNKNOWN",
+  "PRODUCTION_REPRODUCIBILITY": "NOT_PROVEN",
+  "detalle": "No hay credencial de proveedor en el contenedor (ANTHROPIC_API_KEY / OPENAI_API_KEY / GOOGLE_API_KEY ausentes; las llaves viven en Railway y no salen de ahi). La evaluacion se ejecuto con subagentes ciegos del propio entorno, parametro de modelo 'opus', sesion configurada como claude-opus-5; el modelo servido puede diferir y no es verificable desde aqui. Este resultado NO valida el adaptador productivo.",
+  "modelo_parametro": "opus",
+  "sesion_configurada": "claude-opus-5",
+  "temperatura": "no expuesta",
+  "semilla": "no expuesta",
+  "lotes": 18,
+  "imagenes_por_lote": 6,
+  "BATCHED_EVALUATION": 6
+ },
+ "engine_unchanged": true,
+ "engine_hash": "779a1eee6d3d2f2ce4fcc185dbf08da8890768e49a64211770eb1ee800a8105c",
+ "producer_hash": "cacc3636ee14928d2eada9c63103081d305511b73b6716cc48ef2fe8fb38a5a3",
+ "scope_hashes": {
+  "CONTRACT": "031bea3d7b96c2bfa2990160c982a0a8f7448da12f53e0c137977b2e74e550ee",
+  "WALL_EVIDENCE": "9c8db1516771271dd25d4f4fb2cf128b978dcc9c2c378c3a7b94d08add1f23fd",
+  "SEMANTIC_HINT": "dc8547bc7ad0c3dd05bb926c37d53d2ee156383157be9f2a807799a21870fa13",
+  "DOWNSTREAM": "1d6b13664f9c71f79e581915fa24ac620d153541d427eafdc793762a0586507f"
+ },
+ "no_input_de_e17_e18": {
+  "edge_pair": "NOT_USED_IN_E19",
+  "stroke_width": "NOT_USED_IN_E19",
+  "skeleton_graph": "NOT_USED_IN_E19",
+  "cycles": "NOT_USED_IN_E19",
+  "junction_density": "NOT_USED_IN_E19",
+  "periodicity": "NOT_USED_IN_E19"
+ },
+ "casos_reales": {
+  "GPS": "NOT_OPENED_IN_E19",
+  "RES": "NOT_OPENED_IN_E19",
+  "tercer_plano": "CLOSED"
+ },
+ "banco": {
+  "pares": 36,
+  "escenas": 72,
+  "inferencias": 108,
+  "target_crops_byte_identicos": "36/36",
+  "leakage_px_total": 0,
+  "crops_distintos": 12,
+  "acuerdo_intra_imagen": 1.0,
+  "clases": {
+   "ARCHITECTURAL_ENCLOSURE": 36,
+   "FURNITURE_OBJECT": 36
+  },
+  "recetas_enclosure": [
+   "banda_de_recintos",
+   "corredor_en_L",
+   "pod_aislado",
+   "junto_al_nucleo",
+   "bateria_de_recintos",
+   "recinto_con_puestos_afuera",
+   "recinto_contra_fachada",
+   "entre_corredores"
+  ],
+  "recetas_furniture": [
+   "mesa_con_sillas",
+   "mesa_entre_mesas",
+   "junto_a_puestos",
+   "contra_particion",
+   "dentro_de_una_sala",
+   "junto_a_circulacion",
+   "mueble_contra_fachada",
+   "mueble_aislado"
+  ],
+  "crops_sha256": {
+   "PAR01": "501c7ffeb8ae6312c7154c45e3ae16b4bdde8feef6d6783bca1b5aac96c46738",
+   "PAR02": "98afcf21caf9be39b36840c1e44090a3f4bf78e293e9bc2071f3cc2a12218d6c",
+   "PAR03": "09caefd5842c7281f235b0c3e8ffc16f29a94487a183df16f0502f63f3d322d1",
+   "PAR04": "81e1cac035c547d3616b9dee213bf6b90f3361515c59bc0cad6a4f2dc47a24cf",
+   "PAR05": "83b2d849be713d69d2ab459b49a64b037ba26f38cda3ec1376cb1d75b666615c",
+   "PAR06": "a25362867717c593eeb4ef9b4811b40cf4017b5c7273807da2c8d7a2db255116",
+   "PAR07": "2b9fcb58f267815cf05891657431b7a65b63795a0a4589f207b2ddc26cb4c22a",
+   "PAR08": "06e759ccce5e3d3191143f237d3ac8c2c0fe2055eb126cab941cc2f423185bd5",
+   "PAR09": "a38c4ebb0eec3009ecb75ef7c9c2bca66c5cdd83c4373169db68f7f18309bb05",
+   "PAR10": "6b5b463a529074e00d1f556c84f9b7573687871096781d9c9ad8af950c6d6103",
+   "PAR11": "cc3e0e6baae29b83f9f4aba3d616af3ae22c00543c75cfb0edd314fdab086f22",
+   "PAR12": "50da677a0a8cc11c3629abc2d1cbcc70878036a4b2e8c5cd19ec4f667fd68690",
+   "PAR13": "501c7ffeb8ae6312c7154c45e3ae16b4bdde8feef6d6783bca1b5aac96c46738",
+   "PAR14": "98afcf21caf9be39b36840c1e44090a3f4bf78e293e9bc2071f3cc2a12218d6c",
+   "PAR15": "09caefd5842c7281f235b0c3e8ffc16f29a94487a183df16f0502f63f3d322d1",
+   "PAR16": "81e1cac035c547d3616b9dee213bf6b90f3361515c59bc0cad6a4f2dc47a24cf",
+   "PAR17": "83b2d849be713d69d2ab459b49a64b037ba26f38cda3ec1376cb1d75b666615c",
+   "PAR18": "a25362867717c593eeb4ef9b4811b40cf4017b5c7273807da2c8d7a2db255116",
+   "PAR19": "2b9fcb58f267815cf05891657431b7a65b63795a0a4589f207b2ddc26cb4c22a",
+   "PAR20": "06e759ccce5e3d3191143f237d3ac8c2c0fe2055eb126cab941cc2f423185bd5",
+   "PAR21": "a38c4ebb0eec3009ecb75ef7c9c2bca66c5cdd83c4373169db68f7f18309bb05",
+   "PAR22": "6b5b463a529074e00d1f556c84f9b7573687871096781d9c9ad8af950c6d6103",
+   "PAR23": "cc3e0e6baae29b83f9f4aba3d616af3ae22c00543c75cfb0edd314fdab086f22",
+   "PAR24": "50da677a0a8cc11c3629abc2d1cbcc70878036a4b2e8c5cd19ec4f667fd68690",
+   "PAR25": "501c7ffeb8ae6312c7154c45e3ae16b4bdde8feef6d6783bca1b5aac96c46738",
+   "PAR26": "98afcf21caf9be39b36840c1e44090a3f4bf78e293e9bc2071f3cc2a12218d6c",
+   "PAR27": "09caefd5842c7281f235b0c3e8ffc16f29a94487a183df16f0502f63f3d322d1",
+   "PAR28": "81e1cac035c547d3616b9dee213bf6b90f3361515c59bc0cad6a4f2dc47a24cf",
+   "PAR29": "83b2d849be713d69d2ab459b49a64b037ba26f38cda3ec1376cb1d75b666615c",
+   "PAR30": "a25362867717c593eeb4ef9b4811b40cf4017b5c7273807da2c8d7a2db255116",
+   "PAR31": "2b9fcb58f267815cf05891657431b7a65b63795a0a4589f207b2ddc26cb4c22a",
+   "PAR32": "06e759ccce5e3d3191143f237d3ac8c2c0fe2055eb126cab941cc2f423185bd5",
+   "PAR33": "a38c4ebb0eec3009ecb75ef7c9c2bca66c5cdd83c4373169db68f7f18309bb05",
+   "PAR34": "6b5b463a529074e00d1f556c84f9b7573687871096781d9c9ad8af950c6d6103",
+   "PAR35": "cc3e0e6baae29b83f9f4aba3d616af3ae22c00543c75cfb0edd314fdab086f22",
+   "PAR36": "50da677a0a8cc11c3629abc2d1cbcc70878036a4b2e8c5cd19ec4f667fd68690"
+  }
+ },
+ "resultados": {
+  "por_brazo": {
+   "TARGET_ONLY": {
+    "balanced_accuracy": 0.0,
+    "recall": {
+     "ARCHITECTURAL_ENCLOSURE": 0.0,
+     "FURNITURE_OBJECT": 0.0
+    },
+    "abstencion": 1.0,
+    "confusion": {
+     "ARCHITECTURAL_ENCLOSURE": {
+      "ARCHITECTURAL_ENCLOSURE": 0,
+      "FURNITURE_OBJECT": 0,
+      "AMBIGUOUS": 36
+     },
+     "FURNITURE_OBJECT": {
+      "ARCHITECTURAL_ENCLOSURE": 0,
+      "FURNITURE_OBJECT": 0,
+      "AMBIGUOUS": 36
+     }
+    },
+    "n_observaciones": 72
+   },
+   "FULL_CONTEXT": {
+    "balanced_accuracy": 0.7639,
+    "recall": {
+     "ARCHITECTURAL_ENCLOSURE": 0.75,
+     "FURNITURE_OBJECT": 0.7778
+    },
+    "abstencion": 0.0556,
+    "confusion": {
+     "ARCHITECTURAL_ENCLOSURE": {
+      "ARCHITECTURAL_ENCLOSURE": 27,
+      "FURNITURE_OBJECT": 6,
+      "AMBIGUOUS": 3
+     },
+     "FURNITURE_OBJECT": {
+      "ARCHITECTURAL_ENCLOSURE": 7,
+      "FURNITURE_OBJECT": 28,
+      "AMBIGUOUS": 1
+     }
+    },
+    "n_observaciones": 72
+   }
+  },
+  "mejora_pareada": 0.7639,
+  "ic95_bootstrap": [
+   0.6528,
+   0.8611
+  ],
+  "n_bootstrap": 10000,
+  "confianza": {
+   "aciertos": 0.716,
+   "errores": 0.603,
+   "abstenciones": 0.525,
+   "n_errores": 13,
+   "n_abstenciones": 4
+  },
+  "por_receta": {
+   "banda_de_recintos": {
+    "n": 8,
+    "ok": 8,
+    "abst": 0,
+    "acierto": 1.0
+   },
+   "bateria_de_recintos": {
+    "n": 4,
+    "ok": 3,
+    "abst": 1,
+    "acierto": 0.75
+   },
+   "contra_particion": {
+    "n": 4,
+    "ok": 2,
+    "abst": 1,
+    "acierto": 0.5
+   },
+   "corredor_en_L": {
+    "n": 4,
+    "ok": 4,
+    "abst": 0,
+    "acierto": 1.0
+   },
+   "dentro_de_una_sala": {
+    "n": 4,
+    "ok": 4,
+    "abst": 0,
+    "acierto": 1.0
+   },
+   "entre_corredores": {
+    "n": 4,
+    "ok": 3,
+    "abst": 0,
+    "acierto": 0.75
+   },
+   "junto_a_circulacion": {
+    "n": 4,
+    "ok": 3,
+    "abst": 0,
+    "acierto": 0.75
+   },
+   "junto_a_puestos": {
+    "n": 4,
+    "ok": 2,
+    "abst": 0,
+    "acierto": 0.5
+   },
+   "junto_al_nucleo": {
+    "n": 4,
+    "ok": 3,
+    "abst": 1,
+    "acierto": 0.75
+   },
+   "mesa_con_sillas": {
+    "n": 8,
+    "ok": 8,
+    "abst": 0,
+    "acierto": 1.0
+   },
+   "mesa_entre_mesas": {
+    "n": 4,
+    "ok": 2,
+    "abst": 0,
+    "acierto": 0.5
+   },
+   "mueble_aislado": {
+    "n": 4,
+    "ok": 4,
+    "abst": 0,
+    "acierto": 1.0
+   },
+   "mueble_contra_fachada": {
+    "n": 4,
+    "ok": 3,
+    "abst": 0,
+    "acierto": 0.75
+   },
+   "pod_aislado": {
+    "n": 4,
+    "ok": 0,
+    "abst": 1,
+    "acierto": 0.0
+   },
+   "recinto_con_puestos_afuera": {
+    "n": 4,
+    "ok": 2,
+    "abst": 0,
+    "acierto": 0.5
+   },
+   "recinto_contra_fachada": {
+    "n": 4,
+    "ok": 4,
+    "abst": 0,
+    "acierto": 1.0
+   }
+  },
+  "crops_distintos": 12,
+  "acuerdo_intra_imagen": 1.0
+ },
+ "gates": {
+  "G1 BA(TARGET_ONLY) <= 0.65": true,
+  "G2 BA(FULL_CONTEXT) >= 0.80": false,
+  "G3 mejora >= 0.20": true,
+  "G4 IC95 inferior > 0.10": true,
+  "G5 recall por clase >= 0.70": true
+ },
+ "respuestas": {
+  "2A59NC": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.62
+  },
+  "2GN95P": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.85
+  },
+  "2MCPQL": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.85
+  },
+  "2RAMBU": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.6
+  },
+  "2V4XSX": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.5
+  },
+  "3HMVRJ": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.5
+  },
+  "3N2H7X": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.93
+  },
+  "3Y29N4": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.72
+  },
+  "4F7KD6": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.82
+  },
+  "4PP8GK": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.78
+  },
+  "599X3B": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.65
+  },
+  "5CLLKW": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.85
+  },
+  "5H56SK": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.92
+  },
+  "5JAR67": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.58
+  },
+  "6HKL8D": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.52
+  },
+  "6N6A2Z": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.85
+  },
+  "79MGLH": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.85
+  },
+  "85RMFQ": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.55
+  },
+  "8838ZL": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.5
+  },
+  "88SK85": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.72
+  },
+  "8XF2MZ": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.92
+  },
+  "8Z22F3": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.5
+  },
+  "8Z6HPD": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.85
+  },
+  "93WLRB": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.65
+  },
+  "96X6GG": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.6
+  },
+  "9D4J9M": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.5
+  },
+  "9YCP4W": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.6
+  },
+  "9YWQEF": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.9
+  },
+  "ACN4C8": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.55
+  },
+  "AM5HU5": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.6
+  },
+  "AUYUM6": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.82
+  },
+  "B4QL6S": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.7
+  },
+  "BHDKRL": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.6
+  },
+  "BHG268": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.55
+  },
+  "BJPS9A": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.55
+  },
+  "BLZ3CH": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.85
+  },
+  "CRMQAT": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.58
+  },
+  "DLJ65J": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.62
+  },
+  "DNEHHD": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.78
+  },
+  "DZSQWG": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.85
+  },
+  "E3M2GB": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.72
+  },
+  "E4KE7E": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.65
+  },
+  "ECPB4S": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.6
+  },
+  "EQXGJ8": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.85
+  },
+  "EVRWE2": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.72
+  },
+  "EW2GUE": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.57
+  },
+  "FH348N": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.9
+  },
+  "FMHXQ8": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.93
+  },
+  "H7JE5J": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.58
+  },
+  "HAVC3F": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.68
+  },
+  "HGVWJ9": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.55
+  },
+  "HMWMUJ": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.82
+  },
+  "HRZBJC": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.82
+  },
+  "J6R5XA": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.72
+  },
+  "JC38HK": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.95
+  },
+  "JDLP7K": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.68
+  },
+  "JLWZHQ": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.82
+  },
+  "JNGVFA": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.85
+  },
+  "JQ6ZTY": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.62
+  },
+  "K62P6V": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.5
+  },
+  "KFLLQ2": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.55
+  },
+  "KU7UZK": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.57
+  },
+  "LLQAQP": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.72
+  },
+  "LMBY9G": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.85
+  },
+  "M5WG4L": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.64
+  },
+  "MA6FDN": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.55
+  },
+  "MJK6F2": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.62
+  },
+  "MWY59T": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.88
+  },
+  "MY5JC5": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.65
+  },
+  "NJSWX6": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.7
+  },
+  "NTKXNX": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.72
+  },
+  "P4SASR": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.85
+  },
+  "P6JS4B": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.76
+  },
+  "PBS9KY": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.5
+  },
+  "PZCFRP": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.68
+  },
+  "Q9BSHR": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.6
+  },
+  "QCRAJH": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.55
+  },
+  "QG66RK": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.7
+  },
+  "QKUVTL": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.7
+  },
+  "QUXZB9": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.6
+  },
+  "RHRCQ5": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.82
+  },
+  "SFCZE6": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.76
+  },
+  "SMAZVG": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.7
+  },
+  "SUWEZN": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.74
+  },
+  "TC3Q8S": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.85
+  },
+  "TEDHTM": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.85
+  },
+  "TL3PFB": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.74
+  },
+  "TPV78V": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.5
+  },
+  "U2GQ4K": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.85
+  },
+  "U3H5ER": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.88
+  },
+  "U6PCG8": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.85
+  },
+  "UY64MT": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.62
+  },
+  "UZYXD6": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.9
+  },
+  "V6SP6C": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.85
+  },
+  "VBHY3R": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.82
+  },
+  "VJ4JSJ": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.85
+  },
+  "VJJAL2": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.93
+  },
+  "VSGPP7": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.65
+  },
+  "W9ETAD": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.6
+  },
+  "WBA9Q9": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.92
+  },
+  "WLCDKW": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.72
+  },
+  "WMF4H5": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.85
+  },
+  "Y2FQC4": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.7
+  },
+  "YAJ5GC": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.86
+  },
+  "YFZS7T": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.75
+  },
+  "YG9BMT": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.88
+  },
+  "ZDZZCJ": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.85
+  },
+  "ZZFV5B": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.85
+  }
+ },
+ "verdict": "B - CONTEXT PROVIDES PARTIAL INFORMATION. Con el target local byte-identico, el evaluador se abstuvo en el 100% de los recortes aislados (balanced accuracy 0.000) y alcanzo 0.764 de balanced accuracy con la escena completa: mejora pareada de 0.764, IC95 bootstrap [0.653, 0.861], abstencion 5.6%, recall 0.750 recinto / 0.778 mueble. Se cumplen G1, G3, G4 y G5; NO se cumple G2 (0.764 < 0.80). El contexto aporta informacion semantica real y medible, pero por debajo del umbral operativo pre-registrado."
+}

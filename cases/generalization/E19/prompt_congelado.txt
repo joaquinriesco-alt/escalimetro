@@ -1,0 +1,26 @@
+You are reading a monochrome architectural floor plan drawing.
+
+In each image, exactly one object is highlighted by a neutral dashed rectangle drawn around it.
+The dashed rectangle is only a pointer; it is not part of the drawing.
+
+For each image, decide what the highlighted object most likely represents:
+
+ARCHITECTURAL_ENCLOSURE - a built enclosure of the building: a room, an enclosed space, a
+  partitioned area that people go inside of.
+FURNITURE_OBJECT - a piece of furniture or equipment standing on the floor: a table, desk,
+  counter, cabinet, workstation or similar.
+AMBIGUOUS - the drawing does not give you enough to decide.
+
+Judge each image on its own. Do not assume any particular distribution of answers across the
+images, and do not let one image influence another.
+
+Return ONLY a JSON array, one object per image, in the same order as the file list:
+
+[{"id": "<file id without extension>",
+  "classification": "ARCHITECTURAL_ENCLOSURE" | "FURNITURE_OBJECT" | "AMBIGUOUS",
+  "confidence": <number between 0 and 1>,
+  "evidence": "<one sentence, at most 25 words>"}]
+
+Tool restriction: use the Read tool ONLY on the exact file paths listed below. Do not use Glob,
+Grep, Bash, WebSearch or any other tool. Do not list or explore directories. Do not read any
+other file.

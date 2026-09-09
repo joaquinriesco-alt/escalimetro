@@ -1,0 +1,55 @@
+# E19 — PRE-REGISTRO DE METRICAS Y GATES
+# Escrito y hasheado ANTES de la primera inferencia. No se modifica despues.
+
+## Banco
+36 pares. Cada par: una escena ARCHITECTURAL_ENCLOSURE y una escena FURNITURE_OBJECT.
+El crop del target es byte-identico dentro del par (sha256 sobre los bytes del recorte).
+Un solo ancho, un solo gris, sin texto.
+
+## Brazos
+TARGET_ONLY   : el recorte del recuadro objetivo, con marcador identico al del otro brazo.
+                Como el recorte es LITERALMENTE el mismo archivo para las dos escenas del par,
+                se evalua UNA vez por par y esa unica respuesta se puntua contra las dos
+                verdades del par. Equivale exactamente a preguntar dos veces con un evaluador
+                determinista, y evita gastar una inferencia en la imagen identica.
+FULL_CONTEXT  : la escena completa, con el mismo marcador sobre el mismo target.
+
+Inferencias: 36 (TARGET_ONLY) + 72 (FULL_CONTEXT) = 108.
+
+## Metricas (§13)
+- balanced accuracy TARGET_ONLY
+- balanced accuracy FULL_CONTEXT
+- tasa de abstencion (AMBIGUOUS) por brazo
+- matriz de confusion por brazo (3 columnas: ENCLOSURE / FURNITURE / AMBIGUOUS)
+- paired improvement = BA(FULL_CONTEXT) - BA(TARGET_ONLY)
+- IC 95% bootstrap del improvement, 10.000 remuestreos POR PAR (unidad de remuestreo = el par)
+- confianza media en aciertos vs errores
+AMBIGUOUS cuenta como abstencion: nunca como acierto.
+No se entrena ningun clasificador. No se optimiza ningun umbral.
+
+## Gates (§14), congelados
+BENCH VALID:
+  G0.1  100% de los crops byte-identicos dentro de cada par
+  G0.2  clases 50/50 +-1
+  G0.3  sin texto en ninguna escena
+  G0.4  posicion, tamano, orientacion y gris del target NO correlacionados con la clase
+CONTEXT INFORMATION GAIN = PASS solo si:
+  G1  BA(TARGET_ONLY)  <= 0.65
+  G2  BA(FULL_CONTEXT) >= 0.80
+  G3  BA(FULL_CONTEXT) - BA(TARGET_ONLY) >= 0.20
+  G4  limite inferior del IC 95% del improvement > 0.10
+  G5  ninguna clase con recall < 0.70 en FULL_CONTEXT
+
+## Nota metodologica declarada ANTES de correr
+G1 queda satisfecho POR CONSTRUCCION: si el crop es identico dentro del par, ningun evaluador
+puede superar 0.50 de balanced accuracy en TARGET_ONLY. Se ejecuta igual porque mide otra cosa
+util: el SESGO a priori del evaluador y su tasa de abstencion sin contexto. El peso probatorio
+del ciclo descansa integramente en G2, G3 y G4.
+
+## Veredictos
+A CONTEXT PROVIDES STRONG INFORMATION   — todos los gates
+B CONTEXT PROVIDES PARTIAL INFORMATION  — mejora clara sin cumplir el gate operativo
+C NO MATERIAL CONTEXT INFORMATION       — sin mejora relevante
+D EXPERIMENT INVALID                    — leakage / target no identico / fixture sesgado
+E EXECUTION ENVIRONMENT LIMIT           — no se puede correr una evaluacion valida
+F BLOCKED_BY_BACKUP                     — E18 no preservado durablemente

@@ -1,0 +1,134 @@
+"""E19 §13 — puntuacion con las metricas PRE-REGISTRADAS. Sin entrenar nada, sin mover umbrales."""
+import json, sys
+import numpy as np
+sys.path.insert(0, "/home/claude/E19")
+sys.path.insert(0, "/home/claude/escalimetro/tests/fixtures/semantic_context")
+from respuestas_crudas import R
+import context_bench_scene as B
+
+E, F, A = "ARCHITECTURAL_ENCLOSURE", "FURNITURE_OBJECT", "AMBIGUOUS"
+m = json.load(open("/home/claude/E19/mapa_privado.json"))
+items = m["items"]
+por_pid = {}
+for it in items:
+    por_pid.setdefault(it["pid"], {})[it["brazo"] + ("_" + it["verdad"] if it["brazo"] == "FULL_CONTEXT" else "")] = it
+
+PIDS = sorted(por_pid)
+
+
+def obs(pid, brazo, verdad):
+    """(prediccion, verdad, confianza, receta) de una observacion."""
+    if brazo == "TARGET_ONLY":
+        it = por_pid[pid]["TARGET_ONLY"]
+        p, c = R[it["id"]]
+        return p, verdad, c, "-"
+    it = por_pid[pid]["FULL_CONTEXT_" + verdad]
+    p, c = R[it["id"]]
+    return p, verdad, c, it["receta"]
+
+
+def observaciones(brazo, pids=None):
+    out = []
+    for pid in (pids if pids is not None else PIDS):
+        for v in (E, F):
+            out.append(obs(pid, brazo, v))
+    return out
+
+
+def recalls(o):
+    r = {}
+    for v in (E, F):
+        sub = [x for x in o if x[1] == v]
+        r[v] = sum(1 for x in sub if x[0] == v) / max(1, len(sub))
+    return r
+
+
+def ba(o):
+    r = recalls(o)
+    return (r[E] + r[F]) / 2
+
+
+def confusion(o):
+    M = {v: {E: 0, F: 0, A: 0} for v in (E, F)}
+    for p, v, c, _ in o:
+        M[v][p] += 1
+    return M
+
+
+def abst(o):
+    return sum(1 for x in o if x[0] == A) / len(o)
+
+
+res = {}
+for brazo in ("TARGET_ONLY", "FULL_CONTEXT"):
+    o = observaciones(brazo)
+    res[brazo] = {"balanced_accuracy": round(ba(o), 4),
+                  "recall": {k: round(v, 4) for k, v in recalls(o).items()},
+                  "abstencion": round(abst(o), 4),
+                  "confusion": confusion(o),
+                  "n_observaciones": len(o)}
+
+mejora = res["FULL_CONTEXT"]["balanced_accuracy"] - res["TARGET_ONLY"]["balanced_accuracy"]
+
+rng = np.random.default_rng(1900)
+boot = []
+for _ in range(10000):
+    s = list(rng.choice(PIDS, size=len(PIDS), replace=True))
+    boot.append(ba(observaciones("FULL_CONTEXT", s)) - ba(observaciones("TARGET_ONLY", s)))
+boot = np.array(boot)
+ic = (float(np.percentile(boot, 2.5)), float(np.percentile(boot, 97.5)))
+
+# confianza en aciertos vs errores (FULL_CONTEXT)
+o = observaciones("FULL_CONTEXT")
+conf_ok = [c for p, v, c, _ in o if p == v]
+conf_mal = [c for p, v, c, _ in o if p != v and p != A]
+conf_abs = [c for p, v, c, _ in o if p == A]
+
+# desglose por receta de contexto
+por_receta = {}
+for p, v, c, rec in o:
+    d = por_receta.setdefault(rec, {"n": 0, "ok": 0, "abst": 0})
+    d["n"] += 1; d["ok"] += int(p == v); d["abst"] += int(p == A)
+for k in por_receta:
+    por_receta[k]["acierto"] = round(por_receta[k]["ok"] / por_receta[k]["n"], 3)
+
+# estabilidad del evaluador: los 36 crops son solo 12 imagenes distintas
+crops = {}
+for pid in PIDS:
+    it = por_pid[pid]["TARGET_ONLY"]
+    crops.setdefault(m["crops_sha"][pid], []).append(R[it["id"]][0])
+acuerdo = sum(1 for v in crops.values() if len(set(v)) == 1) / len(crops)
+
+gates = {
+    "G1 BA(TARGET_ONLY) <= 0.65": res["TARGET_ONLY"]["balanced_accuracy"] <= 0.65,
+    "G2 BA(FULL_CONTEXT) >= 0.80": res["FULL_CONTEXT"]["balanced_accuracy"] >= 0.80,
+    "G3 mejora >= 0.20": mejora >= 0.20,
+    "G4 IC95 inferior > 0.10": ic[0] > 0.10,
+    "G5 recall por clase >= 0.70": min(res["FULL_CONTEXT"]["recall"].values()) >= 0.70,
+}
+
+salida = {"por_brazo": res, "mejora_pareada": round(mejora, 4),
+          "ic95_bootstrap": [round(ic[0], 4), round(ic[1], 4)], "n_bootstrap": 10000,
+          "confianza": {"aciertos": round(float(np.mean(conf_ok)), 3),
+                        "errores": round(float(np.mean(conf_mal)), 3) if conf_mal else None,
+                        "abstenciones": round(float(np.mean(conf_abs)), 3) if conf_abs else None,
+                        "n_errores": len(conf_mal), "n_abstenciones": len(conf_abs)},
+          "por_receta": dict(sorted(por_receta.items())),
+          "crops_distintos": len(crops),
+          "acuerdo_intra_imagen": round(acuerdo, 3),
+          "gates": gates}
+json.dump(salida, open("/home/claude/E19/score19.json", "w"), indent=1)
+
+print("TARGET_ONLY   BA", res["TARGET_ONLY"]["balanced_accuracy"],
+      " abst", res["TARGET_ONLY"]["abstencion"], " recalls", res["TARGET_ONLY"]["recall"])
+print("FULL_CONTEXT  BA", res["FULL_CONTEXT"]["balanced_accuracy"],
+      " abst", res["FULL_CONTEXT"]["abstencion"], " recalls", res["FULL_CONTEXT"]["recall"])
+print("mejora", round(mejora, 4), " IC95", [round(x, 4) for x in ic])
+print("confusion TARGET_ONLY", res["TARGET_ONLY"]["confusion"])
+print("confusion FULL_CONTEXT", res["FULL_CONTEXT"]["confusion"])
+print("acuerdo intra-imagen (12 crops distintos):", acuerdo)
+for k, v in gates.items():
+    print(("PASS " if v else "FAIL ") + k)
+print("\npor receta:")
+for k, v in sorted(por_receta.items(), key=lambda z: z[1]["acierto"]):
+    print(f"  {k:28s} n={v['n']:2d}  acierto={v['acierto']:.2f}  abst={v['abst']}")
