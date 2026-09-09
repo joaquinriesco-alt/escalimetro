@@ -1,0 +1,123 @@
+"""E20 — puntuacion con las metricas PRE-REGISTRADAS. Sin tuning, sin mover umbrales."""
+import json, sys
+import numpy as np
+sys.path.insert(0, "/home/claude/E20"); sys.path.insert(0, "/home/claude/E19_1")
+sys.path.insert(0, "/home/claude/escalimetro/tests/fixtures/semantic_context")
+from respuestas_e20 import R, A, F
+from respuestas_single import R as R191            # E19.1, decision forzada
+import context_bench_scene as B
+
+man = json.load(open("/home/claude/escalimetro/cases/generalization/E19_1/eval_manifest.json"))
+FC = [i for i in man["items"] if i["brazo"] == "FULL_CONTEXT"]
+por_id = {i["id"]: i for i in FC}
+PIDS = sorted({i["pid"] for i in FC})
+
+
+def filas(ids=None):
+    out = []
+    for it in (FC if ids is None else [por_id[x] for x in ids]):
+        s = R[it["id"]]
+        gt = it["verdad"]
+        otro = F if gt == A else A
+        out.append({"id": it["id"], "pid": it["pid"], "gt": gt, "set": s,
+                    "receta": it["receta"], "size": len(s),
+                    "true_in": gt in s, "false_in": otro in s})
+    return out
+
+
+def metricas(f):
+    n = len(f)
+    def cov(cl=None):
+        sub = [x for x in f if cl is None or x["gt"] == cl]
+        return sum(x["true_in"] for x in sub) / max(1, len(sub))
+    sing = [x for x in f if x["size"] == 1]
+    return {
+        "TRUE_ROLE_COVERAGE_overall": round(cov(), 4),
+        "TRUE_ROLE_COVERAGE_ARCH": round(cov(A), 4),
+        "TRUE_ROLE_COVERAGE_FURN": round(cov(F), 4),
+        "SINGLETON_RATE": round(len(sing) / n, 4),
+        "BOTH_RATE": round(sum(1 for x in f if x["size"] == 2) / n, 4),
+        "EMPTY_RATE": round(sum(1 for x in f if x["size"] == 0) / n, 4),
+        "SINGLETON_PRECISION": round(sum(x["true_in"] for x in sing) / len(sing), 4) if sing else None,
+        "DANGEROUS_OMISSION_overall": round(sum(not x["true_in"] for x in f) / n, 4),
+        "DANGEROUS_OMISSION_ARCH": round(sum(not x["true_in"] for x in f if x["gt"] == A) /
+                                          max(1, sum(1 for x in f if x["gt"] == A)), 4),
+        "DANGEROUS_OMISSION_FURN": round(sum(not x["true_in"] for x in f if x["gt"] == F) /
+                                          max(1, sum(1 for x in f if x["gt"] == F)), 4),
+        "MEAN_SET_SIZE": round(float(np.mean([x["size"] for x in f])), 4),
+        "n": n,
+    }
+
+
+f = filas()
+M = metricas(f)
+
+# matriz ground truth x output-set
+def etiqueta(s):
+    if len(s) == 0: return "EMPTY"
+    if len(s) == 2: return "BOTH"
+    return "ARCH_only" if s[0] == A else "FURN_only"
+
+matriz = {g: {k: 0 for k in ("ARCH_only", "FURN_only", "BOTH", "EMPTY")} for g in (A, F)}
+for x in f:
+    matriz[x["gt"]][etiqueta(x["set"])] += 1
+
+# por receta
+por_receta = {}
+for x in f:
+    d = por_receta.setdefault(x["receta"], {"n": 0, "cov": 0, "sing": 0, "both": 0, "empty": 0})
+    d["n"] += 1; d["cov"] += int(x["true_in"])
+    d["sing"] += int(x["size"] == 1); d["both"] += int(x["size"] == 2); d["empty"] += int(x["size"] == 0)
+for k, d in por_receta.items():
+    d["cobertura"] = round(d["cov"] / d["n"], 3); d["both_rate"] = round(d["both"] / d["n"], 3)
+
+# bootstrap por par
+rng = np.random.default_rng(2001)
+bs = {k: [] for k in ("TRUE_ROLE_COVERAGE_overall", "TRUE_ROLE_COVERAGE_ARCH",
+                      "TRUE_ROLE_COVERAGE_FURN", "SINGLETON_RATE", "BOTH_RATE",
+                      "SINGLETON_PRECISION", "DANGEROUS_OMISSION_overall")}
+por_pid = {}
+for it in FC:
+    por_pid.setdefault(it["pid"], []).append(it["id"])
+for _ in range(10000):
+    s = list(rng.choice(PIDS, size=len(PIDS), replace=True))
+    ids = [x for p in s for x in por_pid[p]]
+    m = metricas(filas(ids))
+    for k in bs:
+        if m[k] is not None: bs[k].append(m[k])
+def ic(v):
+    v = np.array(v); return [round(float(np.percentile(v, 2.5)), 4), round(float(np.percentile(v, 97.5)), 4)]
+IC = {k: ic(v) for k, v in bs.items()}
+
+# comparacion descriptiva con E19.1 (sin convertir E19.1 a set-valued)
+r191 = {"recall_ARCH": 0.4722, "recall_FURN": 0.8889, "BA": 0.6806, "abstencion": 0.0}
+
+gates = {
+ "TRUE_ROLE_COVERAGE overall >= 0.95": M["TRUE_ROLE_COVERAGE_overall"] >= 0.95,
+ "TRUE_ROLE_COVERAGE ARCH >= 0.90": M["TRUE_ROLE_COVERAGE_ARCH"] >= 0.90,
+ "TRUE_ROLE_COVERAGE FURN >= 0.90": M["TRUE_ROLE_COVERAGE_FURN"] >= 0.90,
+ "DANGEROUS_OMISSION overall <= 0.05": M["DANGEROUS_OMISSION_overall"] <= 0.05,
+ "SINGLETON_RATE >= 0.60": M["SINGLETON_RATE"] >= 0.60,
+ "SINGLETON_PRECISION >= 0.80": (M["SINGLETON_PRECISION"] or 0) >= 0.80,
+ "BOTH_RATE <= 0.40": M["BOTH_RATE"] <= 0.40,
+ "EMPTY_RATE <= 0.10": M["EMPTY_RATE"] <= 0.10,
+}
+
+out = {"metricas": M, "matriz_gt_x_set": matriz, "por_receta": dict(sorted(por_receta.items())),
+       "ic95_bootstrap_por_par": IC, "n_bootstrap": 10000,
+       "comparacion_descriptiva_e19_1": r191, "gates": gates,
+       "detalle": [{"id": x["id"], "par": x["pid"], "gt": x["gt"], "set": x["set"],
+                    "receta": x["receta"], "true_in": x["true_in"]} for x in f]}
+json.dump(out, open("/home/claude/E20/score20.json", "w"), indent=1)
+
+for k, v in M.items(): print(f"{k:32s} {v}")
+print("\nmatriz GT x output-set:")
+for g in (A, F):
+    print(f"  {g:24s} {matriz[g]}")
+print("\nIC95 bootstrap por par:")
+for k, v in IC.items(): print(f"  {k:32s} {v}")
+print("\nGATES:")
+for k, v in gates.items(): print(("  PASS " if v else "  FAIL ") + k)
+print("\npor receta (cobertura / both_rate):")
+for k, d in sorted(por_receta.items(), key=lambda z: -z[1]["both_rate"]):
+    print(f"  {k:28s} n={d['n']:2d} cob={d['cobertura']:.2f} both={d['both_rate']:.2f} sing={d['sing']}")

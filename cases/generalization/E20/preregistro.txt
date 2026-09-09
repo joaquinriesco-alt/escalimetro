@@ -1,0 +1,93 @@
+# E20 — PRE-REGISTRO
+# Escrito y hasheado ANTES de la primera inferencia. PROMPT_FROZEN = TRUE desde ese momento.
+
+## Base
+HEAD            ed55053d59ac9d31cf12db7c00d25279a247ec8a   (e19_1)
+rama de trabajo e20, creada desde ed55053
+BACKUP_GATE     PASS  (origin/e19_1 == ed55053d59ac9d31cf12db7c00d25279a247ec8a, verificado
+                       con git fetch + git ls-remote en la maquina del usuario)
+main            c6de3f9646047eeba209c5d3d4ef5e6ccb85c26f  (sin mover)
+
+## Variable unica
+OUTPUT DECISION CONTRACT.
+E19.1 = forced single classification.  E20 = set-valued proposal.
+Todo lo demas congelado: banco, 72 imagenes FULL_CONTEXT, generador, objetos, ground truth,
+una imagen por evaluador, aislamiento, parametro de modelo, marcadores, rendering, clases.
+
+## Banco
+tests/fixtures/semantic_context/context_bench_scene.py
+SHA256 2b3e2eb06248f3897b4bf663ce39930fc111b59560ccffd7cac8478141be6f81   (== E19/E19.1)
+72 imagenes FULL_CONTEXT, 36 ARCHITECTURAL_ENCLOSURE y 36 FURNITURE_OBJECT.
+Manifiesto de imagenes, SHA e ID -> ground truth: cases/generalization/E19_1/eval_manifest.json
+(mismo archivo que E19.1; los 72 SHA verificados uno a uno antes de este pre-registro).
+TARGET_ONLY NO se usa en E20: ni en el gate principal ni como control.
+
+## Prompt
+cases/generalization/E20/prompt_e20_congelado.txt
+SHA256 80e77c48498a1462653e2c27da565ecff6c5900b6c066ae37be305b0ca25bf30
+Congelado. No se cambia una palabra despues del primer resultado.
+
+Nota declarada AHORA, antes de correr: el prompt pide tambien un campo `evidence` de una frase.
+`evidence` se guarda para auditoria y NUNCA puntua. El contrato de decision es exactamente
+`possible_roles`, con los cuatro valores permitidos del §7. Se conserva `evidence` porque E19 y
+E19.1 tambien lo pedian: quitarlo introduciria una segunda variable (la verbalizacion del
+razonamiento) y este ciclo cambia UNA sola cosa.
+
+## Protocolo
+72 evaluaciones. UNA imagen por evaluador. Evaluador nuevo cada vez, sin memoria, sin conversacion
+persistente, sin respuestas previas, sin ground truth, sin repo, sin documentos de ciclos
+anteriores, sin GPS/RES, sin tercer plano.
+Tool restriction: Read solo sobre la ruta explicita. Sin Glob, Grep, Bash, WebSearch ni listado de
+directorios.
+Parametro de modelo: opus. Sesion configurada: claude-opus-5.
+PROVIDER_IDENTITY = UNKNOWN.  PRODUCTION_REPRODUCIBILITY = NOT_PROVEN.
+
+## Orden
+SEMILLA = 2001, numpy default_rng. Define UNICAMENTE el orden de ejecucion.
+
+## Metricas (§11), congeladas
+Por imagen: TRUE_ROLE_INCLUDED, FALSE_ROLE_INCLUDED, SET_SIZE (0/1/2).
+Agregadas:
+  1  TRUE_ROLE_COVERAGE overall
+  2  TRUE_ROLE_COVERAGE ARCH
+  3  TRUE_ROLE_COVERAGE FURN
+  4  SINGLETON_RATE          = fraccion de imagenes con SET_SIZE == 1
+  5  BOTH_RATE               = fraccion con SET_SIZE == 2
+  6  EMPTY_RATE              = fraccion con SET_SIZE == 0
+  7  SINGLETON_PRECISION     = entre los outputs singleton, fraccion cuyo unico rol es el verdadero
+  8  DANGEROUS_OMISSION_RATE overall = fraccion donde el rol verdadero NO esta en possible_roles
+  9  DANGEROUS_OMISSION_RATE ARCH
+ 10  DANGEROUS_OMISSION_RATE FURN
+ 11  MEAN_SET_SIZE
+Ademas: matriz ground truth x output-set, analisis por receta, bootstrap por par (10.000
+remuestreos, unidad = el par) sobre las metricas principales, y ejemplos descriptivos de failures.
+El caso EMPTY cuenta como omision peligrosa: el rol verdadero no esta incluido.
+
+## Gates (§12), congelados
+E20-A PASS solo si TODOS:
+  TRUE_ROLE_COVERAGE overall  >= 0.95
+  TRUE_ROLE_COVERAGE ARCH     >= 0.90
+  TRUE_ROLE_COVERAGE FURN     >= 0.90
+  DANGEROUS_OMISSION overall  <= 0.05
+  SINGLETON_RATE              >= 0.60
+  SINGLETON_PRECISION         >= 0.80
+  BOTH_RATE                   <= 0.40
+  EMPTY_RATE                  <= 0.10
+E20-B HIGH COVERAGE / LOW SELECTIVITY
+E20-C SELECTIVE BUT UNSAFE
+E20-D NO USEFUL PROPOSAL SIGNAL
+E20-E INVALID
+E20-F EXECUTION ENVIRONMENT LIMIT
+
+## Stop rules
+Solo E20-A autoriza E21. Cualquier otro resultado: STOP, sin E20.2, sin atacar errores observados,
+sin modificar el banco, sin abrir GPS/RES ni el tercer plano.
+Prohibido tras ver resultados: mover thresholds, reinterpretar gates, excluir errores, reruns
+selectivos, elegir la mejor de varias corridas, cambiar modelo, ensemble o cambiar semilla.
+Un fallo tecnico de llamada puede repetirse UNA vez con la misma imagen y el mismo prompt,
+registrando TECHNICAL_RETRY = TRUE; la respuesta fallida no se selecciona por calidad.
+
+## Interpretacion permitida si E20-A
+"En un banco contrafactual controlado, el contrato set-valued preserva el rol verdadero con alta
+cobertura y conserva selectividad util." Nada sobre planos reales, deteccion de muros,
+generalizacion ni validacion de produccion.

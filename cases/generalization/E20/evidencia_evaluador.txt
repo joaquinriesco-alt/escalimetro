@@ -1,0 +1,76 @@
+E20 §39 — evidencia textual devuelta por el evaluador ciego, una linea por inferencia (72).
+Se guarda para auditoria. NO participa en la puntuacion: solo puntua `possible_roles`.
+Formato: ID  SET  |  evidencia
+
+MY5JC5 BOTH | Large plain closed rectangle abutting a long wall line; room-scale but drawn like the other free-standing single-line blocks, with no openings.
+TPV78V FURN | Freestanding thin-lined closed rectangle detached from all walls, no opening, matching the drawing's other desk-like blocks rather than its thick walls.
+599X3B BOTH | Large closed rectangle floating free of walls, paired with an identical twin; no door gap, but room-scale like the enclosures below.
+WLCDKW BOTH | Closed rectangle with no opening, but sized and placed like the adjacent gapped enclosure and like other freestanding rectangles.
+SUWEZN BOTH | Closed rectangle sits on a long wall line beside a same-size figure with door-like gaps, so enclosure and freestanding furniture both remain plausible.
+W9ETAD BOTH | Freestanding closed rectangle detached from walls, paired with an identical neighbor; no opening, fill or scale cue settles room versus furniture.
+3HMVRJ BOTH | Freestanding single-line rectangle in open floor area, same line weight as other blocks; no walls, doors or fill distinguish enclosure from furniture.
+96X6GG BOTH | Free-standing closed rectangle in open floor area, single-line outline, no door gap or wall attachment, so both readings remain possible.
+8Z22F3 BOTH | Freestanding closed rectangle, no wall contact or opening, but sized like the doorway-bearing enclosures at lower right.
+WBA9Q9 FURN | Small free-standing square detached from all walls, flanked by four symmetric seat-sized squares, drawn in thin furniture-weight lines.
+M5WG4L BOTH | Free-standing closed thin-lined rectangle detached from all walls, no opening; size and isolation fit either a small room or a table.
+TL3PFB BOTH | Closed rectangle sits in a wall-bounded band beside a similar shape with doorway gaps; no door or fixture marks resolve enclosure versus furniture.
+HGVWJ9 BOTH | Small closed square detached from walls, matching thin furniture rectangles below yet sized like the adjacent partition-like C-shaped enclosures beside it.
+AM5HU5 BOTH | Closed rectangle abutting a wall line, thinner than perimeter walls yet larger than nearby furniture blocks; no door, hatch or label decides.
+PZCFRP BOTH | Plain single-line closed rectangle abutting a wall line, no door gap or interior detail, sized between nearby room-like and furniture-like blocks.
+ACN4C8 BOTH | Plain closed single-line rectangle abutting a wall line, with no door gap or wall thickness distinguishing it from nearby furniture blocks.
+UY64MT BOTH | Free-standing single-line rectangle, wall-like stroke yet furniture-like scale beside smaller similar rectangles; no opening or attachment settles either role.
+E4KE7E FURN | Freestanding thin-line rectangle with two small seat-like squares alongside, matching other furniture groups; walls here are drawn much heavier.
+JQ6ZTY ARCH | Drawn with double-line wall thickness at room scale, matching the adjacent enclosure that has a door gap, unlike the single-line furniture rectangles below.
+2A59NC BOTH | Closed wall-weight rectangle spanning between two parallel long lines, detached from them, with no door or opening shown.
+SMAZVG BOTH | Closed thin-line rectangle abutting a wall, no door or wall thickness shown; size and grouping fit either a small room or furniture.
+ECPB4S BOTH | Plain closed rectangle abutting a long wall line, with no door, wall thickness or fixture detail to decide either way.
+QUXZB9 BOTH | Large closed rectangle on a wall line, same size as an adjacent rectangle with door-like gaps, but itself lacks any opening.
+UZYXD6 FURN | Fully closed single-line rectangle floating free inside a larger walled room that itself has door gaps; no access opening.
+DNEHHD BOTH | Freestanding closed rectangle, same thin line weight as nearby furniture-like boxes, but room-scale and detached from any wall.
+YAJ5GC BOTH | Closed rectangle sized and aligned with neighbors that show door-like gaps, yet itself sealed like a standalone furniture block.
+9YWQEF FURN | Small free-standing closed rectangle flanked symmetrically by four small squares reading as chairs, furniture-scaled like other floor objects, detached from walls.
+2RAMBU BOTH | Large heavy-lined closed rectangle, wall-weight like the building outline but with no door opening; paired twin allows either room or furniture reading.
+93WLRB BOTH | Freestanding closed single-line rectangle, no door gap or wall thickness, flush against a row of smaller furniture-like blocks; size suits either.
+Q9BSHR BOTH | Large closed single-line square, room-sized and paired like adjacent rooms, but doorless and free-standing like a block of furniture.
+4PP8GK BOTH | Plain single-line closed rectangle, no wall thickness or door swing, but abuts similar shapes with door-like gaps below a long wall.
+LLQAQP BOTH | Plain closed rectangle with uniform single-line outline, no door, hatch or thickness; adjacent wall lines are also single, so both readings survive.
+QG66RK BOTH | Closed rectangle at same weight and scale as adjacent gapped rooms, but lacks any opening, like other plain blocks.
+5JAR67 BOTH | Large closed rectangle drawn at wall weight beside a similar room with a door gap, but no opening of its own.
+ZDZZCJ FURN | Small square in a repeating row of identical free-standing boxes with adjacent chair-sized squares, detached from all walls.
+NTKXNX BOTH | Large closed rectangle abutting a heavy wall line with a neighbor showing boundary gaps, yet drawn in plain single lines like the furniture blocks.
+BHDKRL FURN | One of three identical freestanding closed rectangles in a repeated row, detached from walls and lacking the door gaps other enclosures here show.
+HMWMUJ BOTH | Large closed rectangle with wall-weight lines abutting a partitioned room above and a long wall below; no door gap or interior fixtures visible.
+JC38HK FURN | Freestanding single-line rectangle ringed by eight small chair-sized squares on both long sides, unattached to walls and lacking any door opening.
+KU7UZK BOTH | Small free-standing closed single-line rectangle detached from walls; other similar closed rectangles here read both as rooms and as furniture.
+E3M2GB BOTH | Closed rectangle in a row whose flanking twins show gap-like openings, yet detached from the wall line like the furniture blocks below.
+H7JE5J BOTH | Large freestanding closed rectangle inside the outer wall, detached from walls, no door or thickness shown; size fits either a room or a table.
+9YCP4W BOTH | Large closed single-line rectangle floating free of the wall lines, paired with a twin; no door, thickness, or fixtures visible.
+CRMQAT BOTH | Free-standing closed rectangle floating between wall lines, touching nothing, with no door, opening or fixture to settle enclosure versus furniture.
+JDLP7K BOTH | Plain closed rectangle sitting flush on a long wall line, matching a neighboring rectangle whose bottom edge has a door-like gap.
+8XF2MZ FURN | Closed single-line rectangle flanked by four small satellite squares in a seating pattern, unlike the gapped, opening-bearing enclosures elsewhere.
+5H56SK FURN | Freestanding closed rectangle detached from all walls, symmetrically flanked by four small seat-sized squares, reading as a table with chairs.
+P6JS4B BOTH | Closed single-line rectangle sitting wholly inside a larger walled room with a door gap; reads equally as inner partition or large table.
+VSGPP7 BOTH | Closed room-scale rectangle abutting a wall line, drawn at wall-like weight but with no interior detail, opening, or connection distinguishing enclosure from freestanding furniture.
+QCRAJH BOTH | Plain closed rectangle abutting a wall line in open space; no door gap or fixtures to settle enclosure versus freestanding furniture.
+BHG268 BOTH | Isolated single-line closed rectangle in open floor area; no wall connection, door, or poche distinguishing it from nearby furniture-like rectangles.
+6HKL8D BOTH | Free-standing closed rectangle in a row of three below a wall; no door, hatch, thickness or scale cue distinguishes booth from furniture.
+KFLLQ2 BOTH | Free-standing closed rectangle in open space between wall lines, same line weight; no door, hatching or scale cue decides either way.
+YFZS7T BOTH | Boxed unit sits in a repeated row on a wall line, drawn with jamb-like stubs and an opening, but no thickness or labels confirm either reading.
+88SK85 BOTH | Closed wall-weight rectangle beside a matching one with door-like gaps, but itself unbroken like other freestanding rectangles elsewhere.
+HAVC3F BOTH | Large closed single-line rectangle abutting a subdivided block, free-floating inside the outer boundary with no visible opening or wall thickness.
+EW2GUE FURN | Closed box detached from all wall lines, flanked by rows of same-weight small blocks reading as chairs around a table.
+8838ZL BOTH | Closed single-line rectangle standing free between two wall lines, no door gap or wall thickness; size and detachment fit either an enclosure or furniture.
+3N2H7X FURN | Free-standing single-line rectangle detached from all walls, flanked by four small squares reading as chairs, matching furniture clusters below.
+VJJAL2 FURN | Free-standing closed rectangle detached from all walls, no door opening, flanked symmetrically by six small squares reading as chairs around a table.
+MA6FDN BOTH | Freestanding single-outline rectangle detached from all walls, large enough to be an isolated enclosed room yet drawn like the other floor-standing furniture blocks.
+V6SP6C BOTH | Large closed rectangle matching the adjacent room-like box above (which shows a door gap), yet plain enough to read as furniture.
+FMHXQ8 FURN | Closed thin rectangle flanked symmetrically by four small seat-like squares, unlike the doorway-gapped enclosures drawn elsewhere in the plan.
+ZZFV5B BOTH | Closed heavy-line rectangle centered inside a larger doored enclosure; it has no opening itself, so an inner room or freestanding table both fit.
+B4QL6S BOTH | Large closed double-line rectangle sits freestanding beside walled rooms with door gaps, touching no wall and showing no opening itself.
+JNGVFA BOTH | Closed rectangle matching two flanking wall-bounded rooms with door gaps along a corridor, but itself shows no opening or interior detail.
+3Y29N4 BOTH | Closed rectangle of room-like size abutting a wall, paired with a similar rectangle whose edge has a door-like gap; also readable as a floor-standing unit.
+BJPS9A FURN | Closed single-line rectangle abutting a row of identical desk-sized shapes with chair-like squares, freestanding in open floor, no door or wall connection.
+DLJ65J FURN | One of three identical free-standing closed boxes floating in open floor, detached from walls and lacking the door gaps other enclosures here show.
+MJK6F2 BOTH | Closed unbroken rectangle standing against a long wall line, but sized and aligned like the adjacent room whose wall shows a door gap.
+SFCZE6 FURN | Closed rectangle with no opening, nested inside a room whose walls do show a door gap, like other freestanding objects.
+85RMFQ BOTH | Large plain single-line rectangle abutting a wall, no door gap unlike nearby enclosures, so room or large table both remain visually possible.

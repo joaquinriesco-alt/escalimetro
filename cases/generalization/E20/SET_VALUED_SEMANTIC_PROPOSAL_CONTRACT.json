@@ -1,0 +1,1405 @@
+{
+ "_doc": "E20 - SET-VALUED SEMANTIC PROPOSAL CONTRACT. Variable unica: OUTPUT DECISION CONTRACT (forced single -> set-valued). Banco, imagenes, IDs y ground truth byte-identicos a E19/E19.1. Una imagen por evaluador. El motor no cambia.",
+ "variable_unica": "OUTPUT_DECISION_CONTRACT",
+ "contrato": {
+  "E19_1": "forced single classification",
+  "E20": "set-valued proposal (possible_roles)"
+ },
+ "identidad_con_e19": {
+  "bench_sha256": "2b3e2eb06248f3897b4bf663ce39930fc111b59560ccffd7cac8478141be6f81",
+  "bench_sha256_esperado": "2b3e2eb06248f3897b4bf663ce39930fc111b59560ccffd7cac8478141be6f81",
+  "imagenes_full_context": 72,
+  "imagenes_con_sha_identico": "72/72",
+  "mapping_id_a_ground_truth": "identico (manifiesto de E19.1, sin tocar)",
+  "target_only": "NOT_USED_IN_E20"
+ },
+ "prompt": {
+  "archivo": "cases/generalization/E20/prompt_e20_congelado.txt",
+  "sha256": "80e77c48498a1462653e2c27da565ecff6c5900b6c066ae37be305b0ca25bf30",
+  "PROMPT_FROZEN": true,
+  "nota": "pide tambien un campo `evidence` de una frase, declarado en el pre-registro ANTES de correr: se guarda para auditoria y nunca puntua. Se conserva porque E19 y E19.1 tambien lo pedian; quitarlo habria introducido una segunda variable."
+ },
+ "preregistro_sha256": "cb89c2ca77afddc62c47b80ca35236c7c5e05f7905d0eb5324a79cd4353a9402",
+ "semilla_orden": 2001,
+ "orden_ejecucion": [
+  "MY5JC5",
+  "TPV78V",
+  "599X3B",
+  "WLCDKW",
+  "SUWEZN",
+  "W9ETAD",
+  "3HMVRJ",
+  "96X6GG",
+  "8Z22F3",
+  "WBA9Q9",
+  "M5WG4L",
+  "TL3PFB",
+  "HGVWJ9",
+  "AM5HU5",
+  "PZCFRP",
+  "ACN4C8",
+  "UY64MT",
+  "E4KE7E",
+  "JQ6ZTY",
+  "2A59NC",
+  "SMAZVG",
+  "ECPB4S",
+  "QUXZB9",
+  "UZYXD6",
+  "DNEHHD",
+  "YAJ5GC",
+  "9YWQEF",
+  "2RAMBU",
+  "93WLRB",
+  "Q9BSHR",
+  "4PP8GK",
+  "LLQAQP",
+  "QG66RK",
+  "5JAR67",
+  "ZDZZCJ",
+  "NTKXNX",
+  "BHDKRL",
+  "HMWMUJ",
+  "JC38HK",
+  "KU7UZK",
+  "E3M2GB",
+  "H7JE5J",
+  "9YCP4W",
+  "CRMQAT",
+  "JDLP7K",
+  "8XF2MZ",
+  "5H56SK",
+  "P6JS4B",
+  "VSGPP7",
+  "QCRAJH",
+  "BHG268",
+  "6HKL8D",
+  "KFLLQ2",
+  "YFZS7T",
+  "88SK85",
+  "HAVC3F",
+  "EW2GUE",
+  "8838ZL",
+  "3N2H7X",
+  "VJJAL2",
+  "MA6FDN",
+  "V6SP6C",
+  "FMHXQ8",
+  "ZZFV5B",
+  "B4QL6S",
+  "JNGVFA",
+  "3Y29N4",
+  "BJPS9A",
+  "DLJ65J",
+  "MJK6F2",
+  "SFCZE6",
+  "85RMFQ"
+ ],
+ "protocolo": {
+  "evaluaciones_independientes": 72,
+  "una_imagen_por_evaluador": true,
+  "memoria_entre_llamadas": false,
+  "batching": "NONE",
+  "tool_restriction": "Read solo sobre la ruta explicita; sin Glob, Grep, Bash, WebSearch ni listado de directorios",
+  "TECHNICAL_RETRY": false
+ },
+ "provider": {
+  "PROVIDER_IDENTITY": "UNKNOWN",
+  "PRODUCTION_REPRODUCIBILITY": "NOT_PROVEN",
+  "modelo_parametro": "opus",
+  "sesion_configurada": "claude-opus-5",
+  "libraries": {
+   "python": "3.11.15",
+   "opencv": "4.13.0",
+   "numpy": "2.4.4",
+   "scipy": "1.17.1",
+   "scikit-image": "0.26.0"
+  }
+ },
+ "engine_unchanged": true,
+ "engine_hash": "779a1eee6d3d2f2ce4fcc185dbf08da8890768e49a64211770eb1ee800a8105c",
+ "producer_hash": "cacc3636ee14928d2eada9c63103081d305511b73b6716cc48ef2fe8fb38a5a3",
+ "scope_hashes": {
+  "CONTRACT": "031bea3d7b96c2bfa2990160c982a0a8f7448da12f53e0c137977b2e74e550ee",
+  "WALL_EVIDENCE": "9c8db1516771271dd25d4f4fb2cf128b978dcc9c2c378c3a7b94d08add1f23fd",
+  "SEMANTIC_HINT": "dc8547bc7ad0c3dd05bb926c37d53d2ee156383157be9f2a807799a21870fa13",
+  "DOWNSTREAM": "1d6b13664f9c71f79e581915fa24ac620d153541d427eafdc793762a0586507f"
+ },
+ "casos_reales": {
+  "GPS": "NOT_OPENED",
+  "RES": "NOT_OPENED",
+  "tercer_plano": "CLOSED"
+ },
+ "resultados": {
+  "metricas": {
+   "TRUE_ROLE_COVERAGE_overall": 0.9861,
+   "TRUE_ROLE_COVERAGE_ARCH": 0.9722,
+   "TRUE_ROLE_COVERAGE_FURN": 1.0,
+   "SINGLETON_RATE": 0.25,
+   "BOTH_RATE": 0.75,
+   "EMPTY_RATE": 0.0,
+   "SINGLETON_PRECISION": 0.9444,
+   "DANGEROUS_OMISSION_overall": 0.0139,
+   "DANGEROUS_OMISSION_ARCH": 0.0278,
+   "DANGEROUS_OMISSION_FURN": 0.0,
+   "MEAN_SET_SIZE": 1.75,
+   "n": 72
+  },
+  "matriz_gt_x_set": {
+   "ARCHITECTURAL_ENCLOSURE": {
+    "ARCH_only": 1,
+    "FURN_only": 1,
+    "BOTH": 34,
+    "EMPTY": 0
+   },
+   "FURNITURE_OBJECT": {
+    "ARCH_only": 0,
+    "FURN_only": 16,
+    "BOTH": 20,
+    "EMPTY": 0
+   }
+  },
+  "por_receta": {
+   "banda_de_recintos": {
+    "n": 8,
+    "cov": 8,
+    "sing": 0,
+    "both": 8,
+    "empty": 0,
+    "cobertura": 1.0,
+    "both_rate": 1.0
+   },
+   "bateria_de_recintos": {
+    "n": 4,
+    "cov": 4,
+    "sing": 0,
+    "both": 4,
+    "empty": 0,
+    "cobertura": 1.0,
+    "both_rate": 1.0
+   },
+   "contra_particion": {
+    "n": 4,
+    "cov": 4,
+    "sing": 0,
+    "both": 4,
+    "empty": 0,
+    "cobertura": 1.0,
+    "both_rate": 1.0
+   },
+   "corredor_en_L": {
+    "n": 4,
+    "cov": 4,
+    "sing": 0,
+    "both": 4,
+    "empty": 0,
+    "cobertura": 1.0,
+    "both_rate": 1.0
+   },
+   "dentro_de_una_sala": {
+    "n": 4,
+    "cov": 4,
+    "sing": 2,
+    "both": 2,
+    "empty": 0,
+    "cobertura": 1.0,
+    "both_rate": 0.5
+   },
+   "entre_corredores": {
+    "n": 4,
+    "cov": 4,
+    "sing": 0,
+    "both": 4,
+    "empty": 0,
+    "cobertura": 1.0,
+    "both_rate": 1.0
+   },
+   "junto_a_circulacion": {
+    "n": 4,
+    "cov": 4,
+    "sing": 1,
+    "both": 3,
+    "empty": 0,
+    "cobertura": 1.0,
+    "both_rate": 0.75
+   },
+   "junto_a_puestos": {
+    "n": 4,
+    "cov": 4,
+    "sing": 3,
+    "both": 1,
+    "empty": 0,
+    "cobertura": 1.0,
+    "both_rate": 0.25
+   },
+   "junto_al_nucleo": {
+    "n": 4,
+    "cov": 3,
+    "sing": 1,
+    "both": 3,
+    "empty": 0,
+    "cobertura": 0.75,
+    "both_rate": 0.75
+   },
+   "mesa_con_sillas": {
+    "n": 8,
+    "cov": 8,
+    "sing": 8,
+    "both": 0,
+    "empty": 0,
+    "cobertura": 1.0,
+    "both_rate": 0.0
+   },
+   "mesa_entre_mesas": {
+    "n": 4,
+    "cov": 4,
+    "sing": 1,
+    "both": 3,
+    "empty": 0,
+    "cobertura": 1.0,
+    "both_rate": 0.75
+   },
+   "mueble_aislado": {
+    "n": 4,
+    "cov": 4,
+    "sing": 0,
+    "both": 4,
+    "empty": 0,
+    "cobertura": 1.0,
+    "both_rate": 1.0
+   },
+   "mueble_contra_fachada": {
+    "n": 4,
+    "cov": 4,
+    "sing": 1,
+    "both": 3,
+    "empty": 0,
+    "cobertura": 1.0,
+    "both_rate": 0.75
+   },
+   "pod_aislado": {
+    "n": 4,
+    "cov": 4,
+    "sing": 0,
+    "both": 4,
+    "empty": 0,
+    "cobertura": 1.0,
+    "both_rate": 1.0
+   },
+   "recinto_con_puestos_afuera": {
+    "n": 4,
+    "cov": 4,
+    "sing": 1,
+    "both": 3,
+    "empty": 0,
+    "cobertura": 1.0,
+    "both_rate": 0.75
+   },
+   "recinto_contra_fachada": {
+    "n": 4,
+    "cov": 4,
+    "sing": 0,
+    "both": 4,
+    "empty": 0,
+    "cobertura": 1.0,
+    "both_rate": 1.0
+   }
+  },
+  "ic95_bootstrap_por_par": {
+   "TRUE_ROLE_COVERAGE_overall": [
+    0.9583,
+    1.0
+   ],
+   "TRUE_ROLE_COVERAGE_ARCH": [
+    0.9167,
+    1.0
+   ],
+   "TRUE_ROLE_COVERAGE_FURN": [
+    1.0,
+    1.0
+   ],
+   "SINGLETON_RATE": [
+    0.1667,
+    0.3333
+   ],
+   "BOTH_RATE": [
+    0.6667,
+    0.8333
+   ],
+   "SINGLETON_PRECISION": [
+    0.8125,
+    1.0
+   ],
+   "DANGEROUS_OMISSION_overall": [
+    0.0,
+    0.0417
+   ]
+  },
+  "n_bootstrap": 10000,
+  "comparacion_descriptiva_e19_1": {
+   "recall_ARCH": 0.4722,
+   "recall_FURN": 0.8889,
+   "BA": 0.6806,
+   "abstencion": 0.0
+  },
+  "detalle": [
+   {
+    "id": "2A59NC",
+    "par": "PAR32",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "entre_corredores",
+    "true_in": true
+   },
+   {
+    "id": "2RAMBU",
+    "par": "PAR36",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "mesa_entre_mesas",
+    "true_in": true
+   },
+   {
+    "id": "3HMVRJ",
+    "par": "PAR35",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "pod_aislado",
+    "true_in": true
+   },
+   {
+    "id": "3N2H7X",
+    "par": "PAR15",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "mesa_con_sillas",
+    "true_in": true
+   },
+   {
+    "id": "3Y29N4",
+    "par": "PAR26",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "corredor_en_L",
+    "true_in": true
+   },
+   {
+    "id": "4PP8GK",
+    "par": "PAR07",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "recinto_contra_fachada",
+    "true_in": true
+   },
+   {
+    "id": "599X3B",
+    "par": "PAR28",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "mesa_entre_mesas",
+    "true_in": true
+   },
+   {
+    "id": "5H56SK",
+    "par": "PAR07",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "mesa_con_sillas",
+    "true_in": true
+   },
+   {
+    "id": "5JAR67",
+    "par": "PAR30",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "recinto_con_puestos_afuera",
+    "true_in": true
+   },
+   {
+    "id": "6HKL8D",
+    "par": "PAR13",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "mueble_contra_fachada",
+    "true_in": true
+   },
+   {
+    "id": "85RMFQ",
+    "par": "PAR06",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "contra_particion",
+    "true_in": true
+   },
+   {
+    "id": "8838ZL",
+    "par": "PAR08",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "entre_corredores",
+    "true_in": true
+   },
+   {
+    "id": "88SK85",
+    "par": "PAR03",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "banda_de_recintos",
+    "true_in": true
+   },
+   {
+    "id": "8XF2MZ",
+    "par": "PAR03",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "mesa_con_sillas",
+    "true_in": true
+   },
+   {
+    "id": "8Z22F3",
+    "par": "PAR27",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "pod_aislado",
+    "true_in": true
+   },
+   {
+    "id": "93WLRB",
+    "par": "PAR09",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "junto_a_puestos",
+    "true_in": true
+   },
+   {
+    "id": "96X6GG",
+    "par": "PAR18",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "mueble_aislado",
+    "true_in": true
+   },
+   {
+    "id": "9YCP4W",
+    "par": "PAR05",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "mueble_contra_fachada",
+    "true_in": true
+   },
+   {
+    "id": "9YWQEF",
+    "par": "PAR31",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "mesa_con_sillas",
+    "true_in": true
+   },
+   {
+    "id": "ACN4C8",
+    "par": "PAR29",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "bateria_de_recintos",
+    "true_in": true
+   },
+   {
+    "id": "AM5HU5",
+    "par": "PAR08",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "junto_a_circulacion",
+    "true_in": true
+   },
+   {
+    "id": "B4QL6S",
+    "par": "PAR05",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "bateria_de_recintos",
+    "true_in": true
+   },
+   {
+    "id": "BHDKRL",
+    "par": "PAR21",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "mueble_contra_fachada",
+    "true_in": true
+   },
+   {
+    "id": "BHG268",
+    "par": "PAR19",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "pod_aislado",
+    "true_in": true
+   },
+   {
+    "id": "BJPS9A",
+    "par": "PAR33",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "junto_a_puestos",
+    "true_in": true
+   },
+   {
+    "id": "CRMQAT",
+    "par": "PAR24",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "entre_corredores",
+    "true_in": true
+   },
+   {
+    "id": "DLJ65J",
+    "par": "PAR20",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "mesa_entre_mesas",
+    "true_in": true
+   },
+   {
+    "id": "DNEHHD",
+    "par": "PAR06",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "recinto_con_puestos_afuera",
+    "true_in": true
+   },
+   {
+    "id": "E3M2GB",
+    "par": "PAR15",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "recinto_contra_fachada",
+    "true_in": true
+   },
+   {
+    "id": "E4KE7E",
+    "par": "PAR16",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "junto_a_circulacion",
+    "true_in": true
+   },
+   {
+    "id": "ECPB4S",
+    "par": "PAR22",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "contra_particion",
+    "true_in": true
+   },
+   {
+    "id": "EW2GUE",
+    "par": "PAR17",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "junto_a_puestos",
+    "true_in": true
+   },
+   {
+    "id": "FMHXQ8",
+    "par": "PAR02",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "mesa_con_sillas",
+    "true_in": true
+   },
+   {
+    "id": "H7JE5J",
+    "par": "PAR10",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "mueble_aislado",
+    "true_in": true
+   },
+   {
+    "id": "HAVC3F",
+    "par": "PAR36",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "junto_al_nucleo",
+    "true_in": true
+   },
+   {
+    "id": "HGVWJ9",
+    "par": "PAR13",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "bateria_de_recintos",
+    "true_in": true
+   },
+   {
+    "id": "HMWMUJ",
+    "par": "PAR10",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "corredor_en_L",
+    "true_in": true
+   },
+   {
+    "id": "JC38HK",
+    "par": "PAR23",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "mesa_con_sillas",
+    "true_in": true
+   },
+   {
+    "id": "JDLP7K",
+    "par": "PAR09",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "banda_de_recintos",
+    "true_in": true
+   },
+   {
+    "id": "JNGVFA",
+    "par": "PAR17",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "banda_de_recintos",
+    "true_in": true
+   },
+   {
+    "id": "JQ6ZTY",
+    "par": "PAR14",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE"
+    ],
+    "receta": "recinto_con_puestos_afuera",
+    "true_in": true
+   },
+   {
+    "id": "KFLLQ2",
+    "par": "PAR16",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "entre_corredores",
+    "true_in": true
+   },
+   {
+    "id": "KU7UZK",
+    "par": "PAR26",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "mueble_aislado",
+    "true_in": true
+   },
+   {
+    "id": "LLQAQP",
+    "par": "PAR24",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "junto_a_circulacion",
+    "true_in": true
+   },
+   {
+    "id": "M5WG4L",
+    "par": "PAR11",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "pod_aislado",
+    "true_in": true
+   },
+   {
+    "id": "MA6FDN",
+    "par": "PAR34",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "mueble_aislado",
+    "true_in": true
+   },
+   {
+    "id": "MJK6F2",
+    "par": "PAR18",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "corredor_en_L",
+    "true_in": true
+   },
+   {
+    "id": "MY5JC5",
+    "par": "PAR30",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "contra_particion",
+    "true_in": true
+   },
+   {
+    "id": "NTKXNX",
+    "par": "PAR33",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "banda_de_recintos",
+    "true_in": true
+   },
+   {
+    "id": "P6JS4B",
+    "par": "PAR11",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "dentro_de_una_sala",
+    "true_in": true
+   },
+   {
+    "id": "PZCFRP",
+    "par": "PAR12",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "junto_al_nucleo",
+    "true_in": true
+   },
+   {
+    "id": "Q9BSHR",
+    "par": "PAR12",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "mesa_entre_mesas",
+    "true_in": true
+   },
+   {
+    "id": "QCRAJH",
+    "par": "PAR14",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "contra_particion",
+    "true_in": true
+   },
+   {
+    "id": "QG66RK",
+    "par": "PAR21",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "bateria_de_recintos",
+    "true_in": true
+   },
+   {
+    "id": "QUXZB9",
+    "par": "PAR04",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "banda_de_recintos",
+    "true_in": true
+   },
+   {
+    "id": "SFCZE6",
+    "par": "PAR27",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "dentro_de_una_sala",
+    "true_in": true
+   },
+   {
+    "id": "SMAZVG",
+    "par": "PAR20",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "junto_al_nucleo",
+    "true_in": true
+   },
+   {
+    "id": "SUWEZN",
+    "par": "PAR01",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "banda_de_recintos",
+    "true_in": true
+   },
+   {
+    "id": "TL3PFB",
+    "par": "PAR23",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "recinto_contra_fachada",
+    "true_in": true
+   },
+   {
+    "id": "TPV78V",
+    "par": "PAR28",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "junto_al_nucleo",
+    "true_in": false
+   },
+   {
+    "id": "UY64MT",
+    "par": "PAR22",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "recinto_con_puestos_afuera",
+    "true_in": true
+   },
+   {
+    "id": "UZYXD6",
+    "par": "PAR35",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "dentro_de_una_sala",
+    "true_in": true
+   },
+   {
+    "id": "V6SP6C",
+    "par": "PAR34",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "corredor_en_L",
+    "true_in": true
+   },
+   {
+    "id": "VJJAL2",
+    "par": "PAR04",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "mesa_con_sillas",
+    "true_in": true
+   },
+   {
+    "id": "VSGPP7",
+    "par": "PAR32",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "junto_a_circulacion",
+    "true_in": true
+   },
+   {
+    "id": "W9ETAD",
+    "par": "PAR29",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "mueble_contra_fachada",
+    "true_in": true
+   },
+   {
+    "id": "WBA9Q9",
+    "par": "PAR01",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "mesa_con_sillas",
+    "true_in": true
+   },
+   {
+    "id": "WLCDKW",
+    "par": "PAR02",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "banda_de_recintos",
+    "true_in": true
+   },
+   {
+    "id": "YAJ5GC",
+    "par": "PAR31",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "recinto_contra_fachada",
+    "true_in": true
+   },
+   {
+    "id": "YFZS7T",
+    "par": "PAR25",
+    "gt": "ARCHITECTURAL_ENCLOSURE",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "banda_de_recintos",
+    "true_in": true
+   },
+   {
+    "id": "ZDZZCJ",
+    "par": "PAR25",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "junto_a_puestos",
+    "true_in": true
+   },
+   {
+    "id": "ZZFV5B",
+    "par": "PAR19",
+    "gt": "FURNITURE_OBJECT",
+    "set": [
+     "ARCHITECTURAL_ENCLOSURE",
+     "FURNITURE_OBJECT"
+    ],
+    "receta": "dentro_de_una_sala",
+    "true_in": true
+   }
+  ]
+ },
+ "gates": {
+  "TRUE_ROLE_COVERAGE overall >= 0.95": true,
+  "TRUE_ROLE_COVERAGE ARCH >= 0.90": true,
+  "TRUE_ROLE_COVERAGE FURN >= 0.90": true,
+  "DANGEROUS_OMISSION overall <= 0.05": true,
+  "SINGLETON_RATE >= 0.60": false,
+  "SINGLETON_PRECISION >= 0.80": true,
+  "BOTH_RATE <= 0.40": false,
+  "EMPTY_RATE <= 0.10": true
+ },
+ "respuestas": {
+  "2A59NC": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "2RAMBU": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "3HMVRJ": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "3N2H7X": [
+   "FURNITURE_OBJECT"
+  ],
+  "3Y29N4": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "4PP8GK": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "599X3B": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "5H56SK": [
+   "FURNITURE_OBJECT"
+  ],
+  "5JAR67": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "6HKL8D": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "85RMFQ": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "8838ZL": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "88SK85": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "8XF2MZ": [
+   "FURNITURE_OBJECT"
+  ],
+  "8Z22F3": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "93WLRB": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "96X6GG": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "9YCP4W": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "9YWQEF": [
+   "FURNITURE_OBJECT"
+  ],
+  "ACN4C8": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "AM5HU5": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "B4QL6S": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "BHDKRL": [
+   "FURNITURE_OBJECT"
+  ],
+  "BHG268": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "BJPS9A": [
+   "FURNITURE_OBJECT"
+  ],
+  "CRMQAT": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "DLJ65J": [
+   "FURNITURE_OBJECT"
+  ],
+  "DNEHHD": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "E3M2GB": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "E4KE7E": [
+   "FURNITURE_OBJECT"
+  ],
+  "ECPB4S": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "EW2GUE": [
+   "FURNITURE_OBJECT"
+  ],
+  "FMHXQ8": [
+   "FURNITURE_OBJECT"
+  ],
+  "H7JE5J": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "HAVC3F": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "HGVWJ9": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "HMWMUJ": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "JC38HK": [
+   "FURNITURE_OBJECT"
+  ],
+  "JDLP7K": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "JNGVFA": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "JQ6ZTY": [
+   "ARCHITECTURAL_ENCLOSURE"
+  ],
+  "KFLLQ2": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "KU7UZK": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "LLQAQP": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "M5WG4L": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "MA6FDN": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "MJK6F2": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "MY5JC5": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "NTKXNX": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "P6JS4B": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "PZCFRP": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "Q9BSHR": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "QCRAJH": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "QG66RK": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "QUXZB9": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "SFCZE6": [
+   "FURNITURE_OBJECT"
+  ],
+  "SMAZVG": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "SUWEZN": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "TL3PFB": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "TPV78V": [
+   "FURNITURE_OBJECT"
+  ],
+  "UY64MT": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "UZYXD6": [
+   "FURNITURE_OBJECT"
+  ],
+  "V6SP6C": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "VJJAL2": [
+   "FURNITURE_OBJECT"
+  ],
+  "VSGPP7": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "W9ETAD": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "WBA9Q9": [
+   "FURNITURE_OBJECT"
+  ],
+  "WLCDKW": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "YAJ5GC": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "YFZS7T": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ],
+  "ZDZZCJ": [
+   "FURNITURE_OBJECT"
+  ],
+  "ZZFV5B": [
+   "ARCHITECTURAL_ENCLOSURE",
+   "FURNITURE_OBJECT"
+  ]
+ },
+ "verdict": "E20-B - HIGH COVERAGE / LOW SELECTIVITY. Con el contrato set-valued la cobertura del rol verdadero es 0.986 (ARCH 0.972, FURN 1.000) y la omision peligrosa 0.014: seis de los ocho gates pasan. Fallan los dos de selectividad: BOTH_RATE 0.750 (limite 0.40) y SINGLETON_RATE 0.250 (limite 0.60). El evaluador conserva casi siempre el rol correcto porque casi siempre responde 'ambas': 34 de 36 recintos y 20 de 36 muebles reciben el conjunto completo. De los 18 singletons, 16 son FURNITURE y solo 2 son ARCHITECTURAL_ENCLOSURE (uno de ellos equivocado). STOP PRODUCT PATH: no se abren GPS ni RES."
+}

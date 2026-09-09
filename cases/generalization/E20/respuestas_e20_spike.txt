@@ -1,0 +1,17 @@
+# E20 - respuestas set-valued del evaluador ciego, UNA imagen por evaluador.
+# A = ARCHITECTURAL_ENCLOSURE, F = FURNITURE_OBJECT.  Transcritas literalmente.
+A, F = "ARCHITECTURAL_ENCLOSURE", "FURNITURE_OBJECT"
+R = {
+"MY5JC5":[A,F],"TPV78V":[F],"599X3B":[A,F],"WLCDKW":[A,F],"SUWEZN":[A,F],"W9ETAD":[A,F],
+"3HMVRJ":[A,F],"96X6GG":[A,F],"8Z22F3":[A,F],"WBA9Q9":[F],"M5WG4L":[A,F],"TL3PFB":[A,F],
+"HGVWJ9":[A,F],"AM5HU5":[A,F],"PZCFRP":[A,F],"ACN4C8":[A,F],"UY64MT":[A,F],"E4KE7E":[F],
+"JQ6ZTY":[A],"2A59NC":[A,F],"SMAZVG":[A,F],"ECPB4S":[A,F],"QUXZB9":[A,F],"UZYXD6":[F],
+"DNEHHD":[A,F],"YAJ5GC":[A,F],"9YWQEF":[F],"2RAMBU":[A,F],"93WLRB":[A,F],"Q9BSHR":[A,F],
+"4PP8GK":[A,F],"LLQAQP":[A,F],"QG66RK":[A,F],"5JAR67":[A,F],"ZDZZCJ":[F],"NTKXNX":[A,F],
+"BHDKRL":[F],"HMWMUJ":[A,F],"JC38HK":[F],"KU7UZK":[A,F],"E3M2GB":[A,F],"H7JE5J":[A,F],
+"9YCP4W":[A,F],"CRMQAT":[A,F],"JDLP7K":[A,F],"8XF2MZ":[F],"5H56SK":[F],"P6JS4B":[A,F],
+"VSGPP7":[A,F],"QCRAJH":[A,F],"BHG268":[A,F],"6HKL8D":[A,F],"KFLLQ2":[A,F],"YFZS7T":[A,F],
+"88SK85":[A,F],"HAVC3F":[A,F],"EW2GUE":[F],"8838ZL":[A,F],"3N2H7X":[F],"VJJAL2":[F],
+"MA6FDN":[A,F],"V6SP6C":[A,F],"FMHXQ8":[F],"ZZFV5B":[A,F],"B4QL6S":[A,F],"JNGVFA":[A,F],
+"3Y29N4":[A,F],"BJPS9A":[F],"DLJ65J":[F],"MJK6F2":[A,F],"SFCZE6":[F],"85RMFQ":[A,F],
+}

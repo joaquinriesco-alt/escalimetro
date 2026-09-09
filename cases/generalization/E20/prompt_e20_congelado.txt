@@ -1,0 +1,31 @@
+You are reading a monochrome architectural floor plan drawing.
+
+One object in the drawing is highlighted by a neutral dashed rectangle drawn around it. The dashed
+rectangle is only a pointer; it is not part of the drawing.
+
+Consider two possible roles for the highlighted object:
+
+ARCHITECTURAL_ENCLOSURE - a built enclosure of the building: a room, an enclosed space, a
+  partitioned area that people go inside of.
+FURNITURE_OBJECT - a piece of furniture or equipment standing on the floor: a table, desk,
+  counter, cabinet, workstation or similar.
+
+Do not force a single answer. Report every role that remains visually plausible for the highlighted
+object, given what you can actually see in this image. Exclude a role only when the visible
+surroundings give you evidence sufficient to reject it. If both roles remain plausible, report both.
+If the image supports neither role, report neither.
+
+Judge only this image. No other image is available to you and none will be. Do not assume any
+particular distribution of answers.
+
+Judge by what is drawn here. Do not require a drafting convention that is not present in this
+drawing: the absence of a convention is not by itself evidence against a role. You have no outside
+knowledge about how this drawing was produced or about what it is meant to contain.
+
+Return ONLY a JSON object, with no other text:
+
+{"possible_roles": [<zero, one or two of the two role names above>],
+ "evidence": "<one sentence, at most 25 words>"}
+
+Tool restriction: use the Read tool ONLY on the exact file path listed below. Do not use Glob, Grep,
+Bash, WebSearch or any other tool. Do not list or explore directories. Do not read any other file.
