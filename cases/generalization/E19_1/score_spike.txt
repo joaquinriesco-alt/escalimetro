@@ -1,0 +1,118 @@
+"""E19.1 — puntuacion con las metricas PRE-REGISTRADAS de E19.1, identicas a las de E19."""
+import json, sys
+import numpy as np
+sys.path.insert(0, "/home/claude/E19_1"); sys.path.insert(0, "/home/claude/E19")
+from respuestas_single import R as RS
+from respuestas_crudas import R as RB          # E19, batch = 6
+
+E, F, A = "ARCHITECTURAL_ENCLOSURE", "FURNITURE_OBJECT", "AMBIGUOUS"
+m = json.load(open("/home/claude/E19/mapa_privado.json"))
+pp = {}
+for it in m["items"]:
+    pp.setdefault(it["pid"], {})[it["brazo"] + ("_" + it["verdad"] if it["brazo"] == "FULL_CONTEXT" else "")] = it
+PIDS = sorted(pp)
+
+
+def obs(R, brazo, pids):
+    out = []
+    for pid in pids:
+        for v in (E, F):
+            it = pp[pid]["TARGET_ONLY"] if brazo == "TARGET_ONLY" else pp[pid]["FULL_CONTEXT_" + v]
+            p, c = R[it["id"]]
+            out.append((p, v, c, it.get("receta", "-"), pid))
+    return out
+
+
+def recalls(o):
+    return {v: sum(1 for x in o if x[1] == v and x[0] == v) / max(1, sum(1 for x in o if x[1] == v)) for v in (E, F)}
+
+def ba(o):
+    r = recalls(o); return (r[E] + r[F]) / 2
+
+def conf(o):
+    M = {v: {E: 0, F: 0, A: 0} for v in (E, F)}
+    for p, v, *_ in o: M[v][p] += 1
+    return M
+
+def abst(o):
+    return sum(1 for x in o if x[0] == A) / len(o)
+
+
+res = {}
+for brazo in ("TARGET_ONLY", "FULL_CONTEXT"):
+    o = obs(RS, brazo, PIDS)
+    res[brazo] = {"balanced_accuracy": round(ba(o), 4),
+                  "recall": {k: round(v, 4) for k, v in recalls(o).items()},
+                  "abstencion": round(abst(o), 4), "confusion": conf(o), "n": len(o)}
+
+BA_S = res["FULL_CONTEXT"]["balanced_accuracy"]
+BA_TO = res["TARGET_ONLY"]["balanced_accuracy"]
+BA_E19 = 0.7639                                   # E19 batch = 6, declarado
+DELTA = BA_S - BA_E19
+
+rng = np.random.default_rng(1901)
+b_full, b_impr, b_delta = [], [], []
+for _ in range(10000):
+    s = list(rng.choice(PIDS, size=len(PIDS), replace=True))
+    x = ba(obs(RS, "FULL_CONTEXT", s)); y = ba(obs(RS, "TARGET_ONLY", s))
+    z = ba(obs(RB, "FULL_CONTEXT", s))
+    b_full.append(x); b_impr.append(x - y); b_delta.append(x - z)
+def ic(v):
+    v = np.array(v); return [round(float(np.percentile(v, 2.5)), 4), round(float(np.percentile(v, 97.5)), 4)]
+
+o = obs(RS, "FULL_CONTEXT", PIDS)
+ok = [c for p, v, c, *_ in o if p == v]
+bad = [c for p, v, c, *_ in o if p != v and p != A]
+amb = [c for p, v, c, *_ in o if p == A]
+
+por_receta = {}
+for p, v, c, rec, pid in o:
+    d = por_receta.setdefault(rec, {"n": 0, "ok": 0, "abst": 0})
+    d["n"] += 1; d["ok"] += int(p == v); d["abst"] += int(p == A)
+for k in por_receta: por_receta[k]["acierto"] = round(por_receta[k]["ok"] / por_receta[k]["n"], 3)
+
+# cambios respecto de E19, item por item
+ob = obs(RB, "FULL_CONTEXT", PIDS)
+cambios = [(x[4], x[1], x[3], yb[0], x[0]) for x, yb in zip(o, ob) if x[0] != yb[0]]
+
+# estabilidad intra-imagen en TARGET_ONLY (los 36 crops son 12 imagenes distintas)
+crops = {}
+for pid in PIDS:
+    crops.setdefault(m["crops_sha"][pid], []).append(RS[pp[pid]["TARGET_ONLY"]["id"]][0])
+acuerdo = sum(1 for v in crops.values() if len(set(v)) == 1) / len(crops)
+
+gates = {
+ "A1 BA_FULL >= 0.80": BA_S >= 0.80,
+ "A2 recall enclosure >= 0.70": res["FULL_CONTEXT"]["recall"][E] >= 0.70,
+ "A3 recall furniture >= 0.70": res["FULL_CONTEXT"]["recall"][F] >= 0.70,
+ "A4 abstencion <= 0.10": res["FULL_CONTEXT"]["abstencion"] <= 0.10,
+ "A5 IC95 inferior de BA >= 0.70": ic(b_full)[0] >= 0.70,
+ "C  |DELTA_BA| >= 0.10 (efecto material)": abs(DELTA) >= 0.10,
+}
+
+out = {"por_brazo": res, "BA_E19_batch6": BA_E19, "DELTA_BA": round(DELTA, 4),
+       "ic95_BA_full": ic(b_full), "ic95_improvement_vs_target_only": ic(b_impr),
+       "ic95_delta_vs_e19": ic(b_delta), "n_bootstrap": 10000,
+       "confianza": {"aciertos": round(float(np.mean(ok)), 3),
+                     "errores": round(float(np.mean(bad)), 3) if bad else None,
+                     "abstenciones": round(float(np.mean(amb)), 3) if amb else None,
+                     "n_errores": len(bad), "n_abstenciones": len(amb)},
+       "por_receta": dict(sorted(por_receta.items())),
+       "cambios_vs_e19": [{"par": a, "verdad": b, "receta": c, "e19": d, "e19_1": e} for a, b, c, d, e in cambios],
+       "n_cambios": len(cambios),
+       "acuerdo_intra_imagen_target_only": round(acuerdo, 3),
+       "gates": gates}
+json.dump(out, open("/home/claude/E19_1/score19_1.json", "w"), indent=1)
+
+print("TARGET_ONLY   BA", BA_TO, " abst", res["TARGET_ONLY"]["abstencion"], " recalls", res["TARGET_ONLY"]["recall"])
+print("FULL_CONTEXT  BA", BA_S, " abst", res["FULL_CONTEXT"]["abstencion"], " recalls", res["FULL_CONTEXT"]["recall"])
+print("E19 batch=6   BA", BA_E19, "  DELTA_BA", round(DELTA, 4))
+print("IC95 BA_full", ic(b_full), " IC95 improvement", ic(b_impr), " IC95 delta", ic(b_delta))
+print("confusion TARGET_ONLY ", res["TARGET_ONLY"]["confusion"])
+print("confusion FULL_CONTEXT", res["FULL_CONTEXT"]["confusion"])
+print("cambios de respuesta vs E19 (FULL_CONTEXT):", len(cambios), "de 72")
+print("acuerdo intra-imagen TARGET_ONLY:", acuerdo)
+for k, v in gates.items(): print(("PASS " if v else "FAIL ") + k)
+print("\npor receta:")
+for k, v in sorted(por_receta.items(), key=lambda z: z[1]["acierto"]):
+    print(f"  {k:28s} n={v['n']:2d} acierto={v['acierto']:.2f} abst={v['abst']}")

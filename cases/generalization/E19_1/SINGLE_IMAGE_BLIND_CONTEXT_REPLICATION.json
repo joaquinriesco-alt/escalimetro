@@ -1,0 +1,940 @@
+{
+ "_doc": "E19.1 - REPLICACION del spike de contexto con UNA imagen por evaluador. Variable unica: BATCH SIZE (6 -> 1). Banco, imagenes, IDs, ground truth, prompt y scoring byte-identicos a E19. El motor no cambia.",
+ "variable_unica": "BATCH_SIZE",
+ "batch_size": {
+  "E19": 6,
+  "E19_1": 1
+ },
+ "identidad_con_e19": {
+  "bench_sha256": "2b3e2eb06248f3897b4bf663ce39930fc111b59560ccffd7cac8478141be6f81",
+  "bench_sha256_esperado": "2b3e2eb06248f3897b4bf663ce39930fc111b59560ccffd7cac8478141be6f81",
+  "prompt_sha256": "2ac0dac653c8755fde3548ba2831a18908bb9db8c2588d731c4e48549cc0656d",
+  "prompt_sha256_esperado": "2ac0dac653c8755fde3548ba2831a18908bb9db8c2588d731c4e48549cc0656d",
+  "imagenes_con_sha_identico": "108/108",
+  "crops_byte_identicos_dentro_del_par": "36/36",
+  "leakage_px": 0,
+  "mapping_id_a_ground_truth": "identico (108 entradas)"
+ },
+ "preregistro_sha256": "810e908332c214da8b4eaa60a1508a708d62bc015d4e88758387bf361e468f63",
+ "semilla_orden": 1901,
+ "orden_ejecucion": [
+  "MWY59T",
+  "AM5HU5",
+  "V6SP6C",
+  "U2GQ4K",
+  "E4KE7E",
+  "WLCDKW",
+  "VJ4JSJ",
+  "YAJ5GC",
+  "EW2GUE",
+  "HAVC3F",
+  "85RMFQ",
+  "QKUVTL",
+  "ACN4C8",
+  "B4QL6S",
+  "3Y29N4",
+  "QCRAJH",
+  "9YCP4W",
+  "VBHY3R",
+  "9D4J9M",
+  "SFCZE6",
+  "96X6GG",
+  "5JAR67",
+  "JC38HK",
+  "6N6A2Z",
+  "5CLLKW",
+  "2RAMBU",
+  "KU7UZK",
+  "PZCFRP",
+  "HRZBJC",
+  "EQXGJ8",
+  "4F7KD6",
+  "3HMVRJ",
+  "CRMQAT",
+  "MA6FDN",
+  "2V4XSX",
+  "DLJ65J",
+  "Q9BSHR",
+  "8Z6HPD",
+  "JLWZHQ",
+  "UY64MT",
+  "KFLLQ2",
+  "H7JE5J",
+  "HMWMUJ",
+  "E3M2GB",
+  "93WLRB",
+  "DNEHHD",
+  "DZSQWG",
+  "AUYUM6",
+  "2A59NC",
+  "U3H5ER",
+  "EVRWE2",
+  "9YWQEF",
+  "JNGVFA",
+  "ECPB4S",
+  "Y2FQC4",
+  "599X3B",
+  "YFZS7T",
+  "TC3Q8S",
+  "RHRCQ5",
+  "NJSWX6",
+  "BJPS9A",
+  "3N2H7X",
+  "8838ZL",
+  "U6PCG8",
+  "BHG268",
+  "LMBY9G",
+  "YG9BMT",
+  "NTKXNX",
+  "MJK6F2",
+  "FH348N",
+  "J6R5XA",
+  "VJJAL2",
+  "QG66RK",
+  "ZZFV5B",
+  "W9ETAD",
+  "6HKL8D",
+  "P4SASR",
+  "8XF2MZ",
+  "WMF4H5",
+  "LLQAQP",
+  "JDLP7K",
+  "2MCPQL",
+  "2GN95P",
+  "8Z22F3",
+  "MY5JC5",
+  "TPV78V",
+  "TL3PFB",
+  "TEDHTM",
+  "SUWEZN",
+  "FMHXQ8",
+  "4PP8GK",
+  "QUXZB9",
+  "UZYXD6",
+  "BLZ3CH",
+  "PBS9KY",
+  "M5WG4L",
+  "WBA9Q9",
+  "5H56SK",
+  "ZDZZCJ",
+  "SMAZVG",
+  "88SK85",
+  "HGVWJ9",
+  "VSGPP7",
+  "BHDKRL",
+  "P6JS4B",
+  "79MGLH",
+  "K62P6V",
+  "JQ6ZTY"
+ ],
+ "protocolo": {
+  "evaluaciones_independientes": 108,
+  "FULL_CONTEXT": 72,
+  "TARGET_ONLY": 36,
+  "una_imagen_por_evaluador": true,
+  "memoria_entre_llamadas": false,
+  "tool_restriction": "Read solo sobre la ruta explicita; sin Glob, Grep, Bash, WebSearch ni listado de directorios"
+ },
+ "provider": {
+  "PROVIDER_IDENTITY": "UNKNOWN",
+  "PRODUCTION_REPRODUCIBILITY": "NOT_PROVEN",
+  "modelo_parametro": "opus",
+  "sesion_configurada": "claude-opus-5",
+  "detalle": "Misma capacidad experimental que E19: subagentes ciegos del entorno, sin credencial de proveedor en el contenedor. El modelo servido puede diferir del configurado y no es verificable desde aqui. No valida el adaptador productivo.",
+  "libraries": {
+   "python": "3.11.15",
+   "opencv": "4.13.0",
+   "numpy": "2.4.4",
+   "scipy": "1.17.1",
+   "scikit-image": "0.26.0"
+  }
+ },
+ "engine_unchanged": true,
+ "engine_hash": "779a1eee6d3d2f2ce4fcc185dbf08da8890768e49a64211770eb1ee800a8105c",
+ "producer_hash": "cacc3636ee14928d2eada9c63103081d305511b73b6716cc48ef2fe8fb38a5a3",
+ "scope_hashes": {
+  "CONTRACT": "031bea3d7b96c2bfa2990160c982a0a8f7448da12f53e0c137977b2e74e550ee",
+  "WALL_EVIDENCE": "9c8db1516771271dd25d4f4fb2cf128b978dcc9c2c378c3a7b94d08add1f23fd",
+  "SEMANTIC_HINT": "dc8547bc7ad0c3dd05bb926c37d53d2ee156383157be9f2a807799a21870fa13",
+  "DOWNSTREAM": "1d6b13664f9c71f79e581915fa24ac620d153541d427eafdc793762a0586507f"
+ },
+ "casos_reales": {
+  "GPS": "NOT_OPENED",
+  "RES": "NOT_OPENED",
+  "tercer_plano": "CLOSED"
+ },
+ "resultados": {
+  "por_brazo": {
+   "TARGET_ONLY": {
+    "balanced_accuracy": 0.0556,
+    "recall": {
+     "ARCHITECTURAL_ENCLOSURE": 0.0,
+     "FURNITURE_OBJECT": 0.1111
+    },
+    "abstencion": 0.8889,
+    "confusion": {
+     "ARCHITECTURAL_ENCLOSURE": {
+      "ARCHITECTURAL_ENCLOSURE": 0,
+      "FURNITURE_OBJECT": 4,
+      "AMBIGUOUS": 32
+     },
+     "FURNITURE_OBJECT": {
+      "ARCHITECTURAL_ENCLOSURE": 0,
+      "FURNITURE_OBJECT": 4,
+      "AMBIGUOUS": 32
+     }
+    },
+    "n": 72
+   },
+   "FULL_CONTEXT": {
+    "balanced_accuracy": 0.6806,
+    "recall": {
+     "ARCHITECTURAL_ENCLOSURE": 0.4722,
+     "FURNITURE_OBJECT": 0.8889
+    },
+    "abstencion": 0.0,
+    "confusion": {
+     "ARCHITECTURAL_ENCLOSURE": {
+      "ARCHITECTURAL_ENCLOSURE": 17,
+      "FURNITURE_OBJECT": 19,
+      "AMBIGUOUS": 0
+     },
+     "FURNITURE_OBJECT": {
+      "ARCHITECTURAL_ENCLOSURE": 4,
+      "FURNITURE_OBJECT": 32,
+      "AMBIGUOUS": 0
+     }
+    },
+    "n": 72
+   }
+  },
+  "BA_E19_batch6": 0.7639,
+  "DELTA_BA": -0.0833,
+  "ic95_BA_full": [
+   0.5694,
+   0.7917
+  ],
+  "ic95_improvement_vs_target_only": [
+   0.5,
+   0.75
+  ],
+  "ic95_delta_vs_e19": [
+   -0.2083,
+   0.0417
+  ],
+  "n_bootstrap": 10000,
+  "confianza": {
+   "aciertos": 0.744,
+   "errores": 0.664,
+   "abstenciones": null,
+   "n_errores": 23,
+   "n_abstenciones": 0
+  },
+  "por_receta": {
+   "banda_de_recintos": {
+    "n": 8,
+    "ok": 6,
+    "abst": 0,
+    "acierto": 0.75
+   },
+   "bateria_de_recintos": {
+    "n": 4,
+    "ok": 1,
+    "abst": 0,
+    "acierto": 0.25
+   },
+   "contra_particion": {
+    "n": 4,
+    "ok": 4,
+    "abst": 0,
+    "acierto": 1.0
+   },
+   "corredor_en_L": {
+    "n": 4,
+    "ok": 3,
+    "abst": 0,
+    "acierto": 0.75
+   },
+   "dentro_de_una_sala": {
+    "n": 4,
+    "ok": 2,
+    "abst": 0,
+    "acierto": 0.5
+   },
+   "entre_corredores": {
+    "n": 4,
+    "ok": 1,
+    "abst": 0,
+    "acierto": 0.25
+   },
+   "junto_a_circulacion": {
+    "n": 4,
+    "ok": 4,
+    "abst": 0,
+    "acierto": 1.0
+   },
+   "junto_a_puestos": {
+    "n": 4,
+    "ok": 4,
+    "abst": 0,
+    "acierto": 1.0
+   },
+   "junto_al_nucleo": {
+    "n": 4,
+    "ok": 0,
+    "abst": 0,
+    "acierto": 0.0
+   },
+   "mesa_con_sillas": {
+    "n": 8,
+    "ok": 8,
+    "abst": 0,
+    "acierto": 1.0
+   },
+   "mesa_entre_mesas": {
+    "n": 4,
+    "ok": 2,
+    "abst": 0,
+    "acierto": 0.5
+   },
+   "mueble_aislado": {
+    "n": 4,
+    "ok": 4,
+    "abst": 0,
+    "acierto": 1.0
+   },
+   "mueble_contra_fachada": {
+    "n": 4,
+    "ok": 4,
+    "abst": 0,
+    "acierto": 1.0
+   },
+   "pod_aislado": {
+    "n": 4,
+    "ok": 0,
+    "abst": 0,
+    "acierto": 0.0
+   },
+   "recinto_con_puestos_afuera": {
+    "n": 4,
+    "ok": 2,
+    "abst": 0,
+    "acierto": 0.5
+   },
+   "recinto_contra_fachada": {
+    "n": 4,
+    "ok": 4,
+    "abst": 0,
+    "acierto": 1.0
+   }
+  },
+  "cambios_vs_e19": [
+   {
+    "par": "PAR01",
+    "verdad": "ARCHITECTURAL_ENCLOSURE",
+    "receta": "banda_de_recintos",
+    "e19": "ARCHITECTURAL_ENCLOSURE",
+    "e19_1": "FURNITURE_OBJECT"
+   },
+   {
+    "par": "PAR02",
+    "verdad": "ARCHITECTURAL_ENCLOSURE",
+    "receta": "banda_de_recintos",
+    "e19": "ARCHITECTURAL_ENCLOSURE",
+    "e19_1": "FURNITURE_OBJECT"
+   },
+   {
+    "par": "PAR06",
+    "verdad": "FURNITURE_OBJECT",
+    "receta": "contra_particion",
+    "e19": "AMBIGUOUS",
+    "e19_1": "FURNITURE_OBJECT"
+   },
+   {
+    "par": "PAR08",
+    "verdad": "ARCHITECTURAL_ENCLOSURE",
+    "receta": "entre_corredores",
+    "e19": "FURNITURE_OBJECT",
+    "e19_1": "ARCHITECTURAL_ENCLOSURE"
+   },
+   {
+    "par": "PAR08",
+    "verdad": "FURNITURE_OBJECT",
+    "receta": "junto_a_circulacion",
+    "e19": "ARCHITECTURAL_ENCLOSURE",
+    "e19_1": "FURNITURE_OBJECT"
+   },
+   {
+    "par": "PAR09",
+    "verdad": "FURNITURE_OBJECT",
+    "receta": "junto_a_puestos",
+    "e19": "ARCHITECTURAL_ENCLOSURE",
+    "e19_1": "FURNITURE_OBJECT"
+   },
+   {
+    "par": "PAR12",
+    "verdad": "ARCHITECTURAL_ENCLOSURE",
+    "receta": "junto_al_nucleo",
+    "e19": "ARCHITECTURAL_ENCLOSURE",
+    "e19_1": "FURNITURE_OBJECT"
+   },
+   {
+    "par": "PAR13",
+    "verdad": "ARCHITECTURAL_ENCLOSURE",
+    "receta": "bateria_de_recintos",
+    "e19": "ARCHITECTURAL_ENCLOSURE",
+    "e19_1": "FURNITURE_OBJECT"
+   },
+   {
+    "par": "PAR16",
+    "verdad": "ARCHITECTURAL_ENCLOSURE",
+    "receta": "entre_corredores",
+    "e19": "ARCHITECTURAL_ENCLOSURE",
+    "e19_1": "FURNITURE_OBJECT"
+   },
+   {
+    "par": "PAR19",
+    "verdad": "FURNITURE_OBJECT",
+    "receta": "dentro_de_una_sala",
+    "e19": "FURNITURE_OBJECT",
+    "e19_1": "ARCHITECTURAL_ENCLOSURE"
+   },
+   {
+    "par": "PAR20",
+    "verdad": "ARCHITECTURAL_ENCLOSURE",
+    "receta": "junto_al_nucleo",
+    "e19": "ARCHITECTURAL_ENCLOSURE",
+    "e19_1": "FURNITURE_OBJECT"
+   },
+   {
+    "par": "PAR21",
+    "verdad": "ARCHITECTURAL_ENCLOSURE",
+    "receta": "bateria_de_recintos",
+    "e19": "ARCHITECTURAL_ENCLOSURE",
+    "e19_1": "FURNITURE_OBJECT"
+   },
+   {
+    "par": "PAR24",
+    "verdad": "ARCHITECTURAL_ENCLOSURE",
+    "receta": "entre_corredores",
+    "e19": "ARCHITECTURAL_ENCLOSURE",
+    "e19_1": "FURNITURE_OBJECT"
+   },
+   {
+    "par": "PAR26",
+    "verdad": "ARCHITECTURAL_ENCLOSURE",
+    "receta": "corredor_en_L",
+    "e19": "ARCHITECTURAL_ENCLOSURE",
+    "e19_1": "FURNITURE_OBJECT"
+   },
+   {
+    "par": "PAR27",
+    "verdad": "ARCHITECTURAL_ENCLOSURE",
+    "receta": "pod_aislado",
+    "e19": "AMBIGUOUS",
+    "e19_1": "FURNITURE_OBJECT"
+   },
+   {
+    "par": "PAR28",
+    "verdad": "ARCHITECTURAL_ENCLOSURE",
+    "receta": "junto_al_nucleo",
+    "e19": "AMBIGUOUS",
+    "e19_1": "FURNITURE_OBJECT"
+   },
+   {
+    "par": "PAR29",
+    "verdad": "ARCHITECTURAL_ENCLOSURE",
+    "receta": "bateria_de_recintos",
+    "e19": "AMBIGUOUS",
+    "e19_1": "FURNITURE_OBJECT"
+   },
+   {
+    "par": "PAR29",
+    "verdad": "FURNITURE_OBJECT",
+    "receta": "mueble_contra_fachada",
+    "e19": "ARCHITECTURAL_ENCLOSURE",
+    "e19_1": "FURNITURE_OBJECT"
+   },
+   {
+    "par": "PAR30",
+    "verdad": "FURNITURE_OBJECT",
+    "receta": "contra_particion",
+    "e19": "ARCHITECTURAL_ENCLOSURE",
+    "e19_1": "FURNITURE_OBJECT"
+   },
+   {
+    "par": "PAR32",
+    "verdad": "ARCHITECTURAL_ENCLOSURE",
+    "receta": "entre_corredores",
+    "e19": "ARCHITECTURAL_ENCLOSURE",
+    "e19_1": "FURNITURE_OBJECT"
+   },
+   {
+    "par": "PAR33",
+    "verdad": "FURNITURE_OBJECT",
+    "receta": "junto_a_puestos",
+    "e19": "ARCHITECTURAL_ENCLOSURE",
+    "e19_1": "FURNITURE_OBJECT"
+   },
+   {
+    "par": "PAR35",
+    "verdad": "FURNITURE_OBJECT",
+    "receta": "dentro_de_una_sala",
+    "e19": "FURNITURE_OBJECT",
+    "e19_1": "ARCHITECTURAL_ENCLOSURE"
+   },
+   {
+    "par": "PAR36",
+    "verdad": "ARCHITECTURAL_ENCLOSURE",
+    "receta": "junto_al_nucleo",
+    "e19": "ARCHITECTURAL_ENCLOSURE",
+    "e19_1": "FURNITURE_OBJECT"
+   }
+  ],
+  "n_cambios": 23,
+  "acuerdo_intra_imagen_target_only": 0.667
+ },
+ "gates": {
+  "A1 BA_FULL >= 0.80": false,
+  "A2 recall enclosure >= 0.70": false,
+  "A3 recall furniture >= 0.70": true,
+  "A4 abstencion <= 0.10": true,
+  "A5 IC95 inferior de BA >= 0.70": false,
+  "C  |DELTA_BA| >= 0.10 (efecto material)": false
+ },
+ "respuestas": {
+  "2A59NC": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.62
+  },
+  "2GN95P": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.55
+  },
+  "2MCPQL": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.58
+  },
+  "2RAMBU": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.55
+  },
+  "2V4XSX": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.6
+  },
+  "3HMVRJ": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.72
+  },
+  "3N2H7X": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.93
+  },
+  "3Y29N4": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.62
+  },
+  "4F7KD6": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.55
+  },
+  "4PP8GK": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.6
+  },
+  "599X3B": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.76
+  },
+  "5CLLKW": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.55
+  },
+  "5H56SK": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.94
+  },
+  "5JAR67": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.74
+  },
+  "6HKL8D": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.74
+  },
+  "6N6A2Z": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.82
+  },
+  "79MGLH": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.6
+  },
+  "85RMFQ": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.62
+  },
+  "8838ZL": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.72
+  },
+  "88SK85": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.6
+  },
+  "8XF2MZ": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.95
+  },
+  "8Z22F3": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.72
+  },
+  "8Z6HPD": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.58
+  },
+  "93WLRB": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.68
+  },
+  "96X6GG": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.62
+  },
+  "9D4J9M": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.52
+  },
+  "9YCP4W": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.6
+  },
+  "9YWQEF": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.92
+  },
+  "ACN4C8": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.6
+  },
+  "AM5HU5": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.72
+  },
+  "AUYUM6": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.5
+  },
+  "B4QL6S": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.74
+  },
+  "BHDKRL": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.74
+  },
+  "BHG268": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.62
+  },
+  "BJPS9A": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.76
+  },
+  "BLZ3CH": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.62
+  },
+  "CRMQAT": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.68
+  },
+  "DLJ65J": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.74
+  },
+  "DNEHHD": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.72
+  },
+  "DZSQWG": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.72
+  },
+  "E3M2GB": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.8
+  },
+  "E4KE7E": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.82
+  },
+  "ECPB4S": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.62
+  },
+  "EQXGJ8": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.55
+  },
+  "EVRWE2": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.5
+  },
+  "EW2GUE": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.75
+  },
+  "FH348N": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.62
+  },
+  "FMHXQ8": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.94
+  },
+  "H7JE5J": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.72
+  },
+  "HAVC3F": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.72
+  },
+  "HGVWJ9": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.55
+  },
+  "HMWMUJ": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.79
+  },
+  "HRZBJC": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.72
+  },
+  "J6R5XA": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.6
+  },
+  "JC38HK": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.96
+  },
+  "JDLP7K": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.72
+  },
+  "JLWZHQ": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.62
+  },
+  "JNGVFA": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.78
+  },
+  "JQ6ZTY": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.76
+  },
+  "K62P6V": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.55
+  },
+  "KFLLQ2": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.62
+  },
+  "KU7UZK": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.74
+  },
+  "LLQAQP": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.68
+  },
+  "LMBY9G": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.6
+  },
+  "M5WG4L": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.7
+  },
+  "MA6FDN": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.6
+  },
+  "MJK6F2": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.72
+  },
+  "MWY59T": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.55
+  },
+  "MY5JC5": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.62
+  },
+  "NJSWX6": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.5
+  },
+  "NTKXNX": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.62
+  },
+  "P4SASR": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.72
+  },
+  "P6JS4B": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.78
+  },
+  "PBS9KY": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.6
+  },
+  "PZCFRP": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.62
+  },
+  "Q9BSHR": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.6
+  },
+  "QCRAJH": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.74
+  },
+  "QG66RK": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.62
+  },
+  "QKUVTL": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.66
+  },
+  "QUXZB9": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.68
+  },
+  "RHRCQ5": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.6
+  },
+  "SFCZE6": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.82
+  },
+  "SMAZVG": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.72
+  },
+  "SUWEZN": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.72
+  },
+  "TC3Q8S": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.62
+  },
+  "TEDHTM": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.62
+  },
+  "TL3PFB": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.72
+  },
+  "TPV78V": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.68
+  },
+  "U2GQ4K": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.6
+  },
+  "U3H5ER": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.62
+  },
+  "U6PCG8": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.62
+  },
+  "UY64MT": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.66
+  },
+  "UZYXD6": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.72
+  },
+  "V6SP6C": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.7
+  },
+  "VBHY3R": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.62
+  },
+  "VJ4JSJ": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.5
+  },
+  "VJJAL2": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.93
+  },
+  "VSGPP7": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.62
+  },
+  "W9ETAD": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.6
+  },
+  "WBA9Q9": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.93
+  },
+  "WLCDKW": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.68
+  },
+  "WMF4H5": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.62
+  },
+  "Y2FQC4": {
+   "clasificacion": "AMBIGUOUS",
+   "confianza": 0.72
+  },
+  "YAJ5GC": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.6
+  },
+  "YFZS7T": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.76
+  },
+  "YG9BMT": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.58
+  },
+  "ZDZZCJ": {
+   "clasificacion": "FURNITURE_OBJECT",
+   "confianza": 0.82
+  },
+  "ZZFV5B": {
+   "clasificacion": "ARCHITECTURAL_ENCLOSURE",
+   "confianza": 0.82
+  }
+ },
+ "verdict": "B - SINGLE-IMAGE CONTEXT REPLICATION PARTIAL. Con una imagen por evaluador la senal contextual se replica en direccion y magnitud (mejora sobre TARGET_ONLY 0.625, IC95 [0.500, 0.750]) pero el clasificador se desbalancea: BA 0.6806 (E19: 0.7639), recall recinto 0.472 (E19: 0.750), recall mueble 0.889 (E19: 0.778), abstencion 0.0 (E19: 0.056). Fallan A1, A2 y A5. DELTA_BA = -0.0833, por debajo del umbral pre-registrado de materialidad (0.10) y con IC95 [-0.208, +0.042] que incluye el cero: NO se declara C. El batching no inflaba la BA agregada de forma material, pero si sostenia la CALIBRACION: sin lote el evaluador deja de abstenerse y desplaza su a priori hacia FURNITURE (16 de 23 cambios son ARCH->FURN)."
+}

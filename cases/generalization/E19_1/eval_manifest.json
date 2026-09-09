@@ -1,0 +1,945 @@
+{
+ "_doc": "E19.1 - manifiesto CONGELADO del set de evaluacion de E19. Las 108 imagenes se regeneran byte-exactas desde el generador congelado; aqui van sus SHA256.",
+ "bench_sha256": "2b3e2eb06248f3897b4bf663ce39930fc111b59560ccffd7cac8478141be6f81",
+ "prompt_sha256": "2ac0dac653c8755fde3548ba2831a18908bb9db8c2588d731c4e48549cc0656d",
+ "items": [
+  {
+   "id": "2A59NC",
+   "pid": "PAR32",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "entre_corredores",
+   "sha_img": "1ff238ad3eafcc01386d6bf8de645a68629a474bd1802b9ac87f8a59afd9c863"
+  },
+  {
+   "id": "2GN95P",
+   "pid": "PAR14",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "98afcf21caf9be39b36840c1e44090a3f4bf78e293e9bc2071f3cc2a12218d6c",
+   "sha_img": "c0a1cf3d4819ea523e60d02f2ca69bd9cd0e9ea714084e36407eb6861aa3f46b"
+  },
+  {
+   "id": "2MCPQL",
+   "pid": "PAR32",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "06e759ccce5e3d3191143f237d3ac8c2c0fe2055eb126cab941cc2f423185bd5",
+   "sha_img": "5fb3eae3884030df6754d605b7c580f2f7ba6d23e52bfd284d96924a3457565b"
+  },
+  {
+   "id": "2RAMBU",
+   "pid": "PAR36",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "mesa_entre_mesas",
+   "sha_img": "6178e962bec308e79ffb2534ec647dfdecfa432c00f8cd2b5cd0b429cc654053"
+  },
+  {
+   "id": "2V4XSX",
+   "pid": "PAR04",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "81e1cac035c547d3616b9dee213bf6b90f3361515c59bc0cad6a4f2dc47a24cf",
+   "sha_img": "d825b4dcf9fbbf01f9db99075bfa783a3f49e2355d06eb109f68f44213b57a24"
+  },
+  {
+   "id": "3HMVRJ",
+   "pid": "PAR35",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "pod_aislado",
+   "sha_img": "9008566c6ca318d271ca13ba4ce7ffec065d5f1318016e155c0882d59817692a"
+  },
+  {
+   "id": "3N2H7X",
+   "pid": "PAR15",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "mesa_con_sillas",
+   "sha_img": "13f44508763d922c70947957c5da02a833f9d5e701cd26e5bbc1801b5342389b"
+  },
+  {
+   "id": "3Y29N4",
+   "pid": "PAR26",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "corredor_en_L",
+   "sha_img": "930b57189d23fe5791349bd3c7aa301f369a198f2161587e9a336798b17f5715"
+  },
+  {
+   "id": "4F7KD6",
+   "pid": "PAR19",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "2b9fcb58f267815cf05891657431b7a65b63795a0a4589f207b2ddc26cb4c22a",
+   "sha_img": "ecafe45c2b7364964b5a361237ea4ed43656517c3b7e373f1e2dc90a6f87a3be"
+  },
+  {
+   "id": "4PP8GK",
+   "pid": "PAR07",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "recinto_contra_fachada",
+   "sha_img": "e33d19fb05b26a29284930759c38fa61d6ab6a39ff5c7f02dee8ec3f2e712776"
+  },
+  {
+   "id": "599X3B",
+   "pid": "PAR28",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "mesa_entre_mesas",
+   "sha_img": "08e62583d53127a9b3aa6396fd664343e67fc72d034b3a14e54e0c152f48789a"
+  },
+  {
+   "id": "5CLLKW",
+   "pid": "PAR16",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "81e1cac035c547d3616b9dee213bf6b90f3361515c59bc0cad6a4f2dc47a24cf",
+   "sha_img": "d825b4dcf9fbbf01f9db99075bfa783a3f49e2355d06eb109f68f44213b57a24"
+  },
+  {
+   "id": "5H56SK",
+   "pid": "PAR07",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "mesa_con_sillas",
+   "sha_img": "4675899ad2dd1c0772b5ed012315c13469c23781028876fd7ae6fbe487bec048"
+  },
+  {
+   "id": "5JAR67",
+   "pid": "PAR30",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "recinto_con_puestos_afuera",
+   "sha_img": "aeb3005cace70743414dc1c22a98e8765602b2ce599b789ff97226aa7762d781"
+  },
+  {
+   "id": "6HKL8D",
+   "pid": "PAR13",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "mueble_contra_fachada",
+   "sha_img": "76e8d45bc0e18d950bca25947a22a050012bf456d0eaac77251139cc74b489b1"
+  },
+  {
+   "id": "6N6A2Z",
+   "pid": "PAR33",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "a38c4ebb0eec3009ecb75ef7c9c2bca66c5cdd83c4373169db68f7f18309bb05",
+   "sha_img": "036920f822c89dcaa0b58e8a82f084c124ec70435aab76663436a245b71cbc32"
+  },
+  {
+   "id": "79MGLH",
+   "pid": "PAR05",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "83b2d849be713d69d2ab459b49a64b037ba26f38cda3ec1376cb1d75b666615c",
+   "sha_img": "ead38f7f962482da1ce5a81d8146c92305e1dcd904157858f6b57c1eec3a4db9"
+  },
+  {
+   "id": "85RMFQ",
+   "pid": "PAR06",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "contra_particion",
+   "sha_img": "1ee70411209e80a5f3db130d668fa72fcac11d05a41175b22a4fea824e3fdbbd"
+  },
+  {
+   "id": "8838ZL",
+   "pid": "PAR08",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "entre_corredores",
+   "sha_img": "83859aa7dc459564d08be3d42df2a0b63c55ad88238a01e4c485a02f626f999b"
+  },
+  {
+   "id": "88SK85",
+   "pid": "PAR03",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "banda_de_recintos",
+   "sha_img": "b87691bb960d680bfbb7a69c89a86d91b921eaade1031814859fd66260f9e66b"
+  },
+  {
+   "id": "8XF2MZ",
+   "pid": "PAR03",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "mesa_con_sillas",
+   "sha_img": "eed99c954ce97e32bfce9a1dccf132f249c7f96c18e26dacde63e52337fe2923"
+  },
+  {
+   "id": "8Z22F3",
+   "pid": "PAR27",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "pod_aislado",
+   "sha_img": "3bd4ce9298fc5d7cc3c21b44dc5818944da512c4f4c8fa5cfb25156e98d14cc2"
+  },
+  {
+   "id": "8Z6HPD",
+   "pid": "PAR13",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "501c7ffeb8ae6312c7154c45e3ae16b4bdde8feef6d6783bca1b5aac96c46738",
+   "sha_img": "a5cfef3bafa2839535ce14c77a3e8769e23a34e5c43427ab6391e2c024e580f0"
+  },
+  {
+   "id": "93WLRB",
+   "pid": "PAR09",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "junto_a_puestos",
+   "sha_img": "0bd5d1ecaa3c64c40c0f0bff032d8bfbce5c78f54d9f7f95e28917843afedf65"
+  },
+  {
+   "id": "96X6GG",
+   "pid": "PAR18",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "mueble_aislado",
+   "sha_img": "29f7295059059ee3db4990ed3538ef9a178f7d0d0bf392b0b01898ae05a1d634"
+  },
+  {
+   "id": "9D4J9M",
+   "pid": "PAR28",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "81e1cac035c547d3616b9dee213bf6b90f3361515c59bc0cad6a4f2dc47a24cf",
+   "sha_img": "d825b4dcf9fbbf01f9db99075bfa783a3f49e2355d06eb109f68f44213b57a24"
+  },
+  {
+   "id": "9YCP4W",
+   "pid": "PAR05",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "mueble_contra_fachada",
+   "sha_img": "513df3c02e46bc2bc9297109f5b43be97ab0029c955292aacc354ccd25cdc8dd"
+  },
+  {
+   "id": "9YWQEF",
+   "pid": "PAR31",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "mesa_con_sillas",
+   "sha_img": "fba886e33760e0196c7a3e59516287801704b0b0a92e4ba6693d8dbdf6e83bd1"
+  },
+  {
+   "id": "ACN4C8",
+   "pid": "PAR29",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "bateria_de_recintos",
+   "sha_img": "7a0cbc8c509a3dffb408b7ba8cf555847cfbd62851fe13d4f2d6f4864751bf30"
+  },
+  {
+   "id": "AM5HU5",
+   "pid": "PAR08",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "junto_a_circulacion",
+   "sha_img": "12ed33a9e71fb0b86d43b46a90d5980990590be91067b17a51c00c7720f9a747"
+  },
+  {
+   "id": "AUYUM6",
+   "pid": "PAR11",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "cc3e0e6baae29b83f9f4aba3d616af3ae22c00543c75cfb0edd314fdab086f22",
+   "sha_img": "28d2648be2fc926b80acde35421e81b42c01ba9349db89b473ad15e5d376fa29"
+  },
+  {
+   "id": "B4QL6S",
+   "pid": "PAR05",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "bateria_de_recintos",
+   "sha_img": "93c614de960c630b4bf8792c802e68b2c936de839ae380ea72739ced3d36f3f4"
+  },
+  {
+   "id": "BHDKRL",
+   "pid": "PAR21",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "mueble_contra_fachada",
+   "sha_img": "0668d51aa5fda18908d1f322a29fe17473dc19b101d9a1bdfc643de474fb2a42"
+  },
+  {
+   "id": "BHG268",
+   "pid": "PAR19",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "pod_aislado",
+   "sha_img": "66fa3700a74cc301ab57f4fc9674987c6f7afb91e3368b23eecb2765084418de"
+  },
+  {
+   "id": "BJPS9A",
+   "pid": "PAR33",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "junto_a_puestos",
+   "sha_img": "8ae379dea0e6d704eee7264d81ea044d02571de414fcc3b9d3e90b7e04632512"
+  },
+  {
+   "id": "BLZ3CH",
+   "pid": "PAR17",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "83b2d849be713d69d2ab459b49a64b037ba26f38cda3ec1376cb1d75b666615c",
+   "sha_img": "ead38f7f962482da1ce5a81d8146c92305e1dcd904157858f6b57c1eec3a4db9"
+  },
+  {
+   "id": "CRMQAT",
+   "pid": "PAR24",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "entre_corredores",
+   "sha_img": "e28fe9ff69e57178207ae1e87dbc3bb0969643c2ac3c5165fbc6e3ff3f949929"
+  },
+  {
+   "id": "DLJ65J",
+   "pid": "PAR20",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "mesa_entre_mesas",
+   "sha_img": "0f8fb7be064b7cb9817b208ab8b9d716f3fe41372a269d50d2c162faecc0fa01"
+  },
+  {
+   "id": "DNEHHD",
+   "pid": "PAR06",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "recinto_con_puestos_afuera",
+   "sha_img": "04e8e74268b2aa004bc2b9bca090898eedc853833103b987dd1404947841e8f3"
+  },
+  {
+   "id": "DZSQWG",
+   "pid": "PAR12",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "50da677a0a8cc11c3629abc2d1cbcc70878036a4b2e8c5cd19ec4f667fd68690",
+   "sha_img": "44942edf2c2c4f66ef2e53375482b17828d3ba1966986d94484f24b7a219fa3d"
+  },
+  {
+   "id": "E3M2GB",
+   "pid": "PAR15",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "recinto_contra_fachada",
+   "sha_img": "462e67394f525ddacc15ce6471f42d10644c192dc7d3fcd527eae500f8023a65"
+  },
+  {
+   "id": "E4KE7E",
+   "pid": "PAR16",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "junto_a_circulacion",
+   "sha_img": "896acbbf76e65a522891451cff2dae472367109680fa9b23c78b7c8499b979ad"
+  },
+  {
+   "id": "ECPB4S",
+   "pid": "PAR22",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "contra_particion",
+   "sha_img": "c32b4d79e3999efbb5e360718736ad38aaf8e3192a19233372325324adaf5790"
+  },
+  {
+   "id": "EQXGJ8",
+   "pid": "PAR07",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "2b9fcb58f267815cf05891657431b7a65b63795a0a4589f207b2ddc26cb4c22a",
+   "sha_img": "ecafe45c2b7364964b5a361237ea4ed43656517c3b7e373f1e2dc90a6f87a3be"
+  },
+  {
+   "id": "EVRWE2",
+   "pid": "PAR20",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "06e759ccce5e3d3191143f237d3ac8c2c0fe2055eb126cab941cc2f423185bd5",
+   "sha_img": "5fb3eae3884030df6754d605b7c580f2f7ba6d23e52bfd284d96924a3457565b"
+  },
+  {
+   "id": "EW2GUE",
+   "pid": "PAR17",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "junto_a_puestos",
+   "sha_img": "b4aa6046957ab5deb8fa843ac36534a791cddac4f1e078c50bf71ca3b20d72ab"
+  },
+  {
+   "id": "FH348N",
+   "pid": "PAR24",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "50da677a0a8cc11c3629abc2d1cbcc70878036a4b2e8c5cd19ec4f667fd68690",
+   "sha_img": "44942edf2c2c4f66ef2e53375482b17828d3ba1966986d94484f24b7a219fa3d"
+  },
+  {
+   "id": "FMHXQ8",
+   "pid": "PAR02",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "mesa_con_sillas",
+   "sha_img": "8c9a6b898749f26b3895e347ea3ab82988e5c14d6177a50561dde1e47a20030f"
+  },
+  {
+   "id": "H7JE5J",
+   "pid": "PAR10",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "mueble_aislado",
+   "sha_img": "5035023b4f381863f4d4836285a474cabb8a100bd06e1ba9358cf9dbcfb4a878"
+  },
+  {
+   "id": "HAVC3F",
+   "pid": "PAR36",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "junto_al_nucleo",
+   "sha_img": "a69bf27b8169122d7ecff3982ef67ab46a3490a0ad01c9b5a6ef7b7d4f1c005f"
+  },
+  {
+   "id": "HGVWJ9",
+   "pid": "PAR13",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "bateria_de_recintos",
+   "sha_img": "a1aa77a2a2a13b45b203a911dfe6c02699531e8bf179bdd51f0e5f15ec966c12"
+  },
+  {
+   "id": "HMWMUJ",
+   "pid": "PAR10",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "corredor_en_L",
+   "sha_img": "fd09683f56bb057ed97b1d01a61133c653edc55398b29b09052f73307f24c556"
+  },
+  {
+   "id": "HRZBJC",
+   "pid": "PAR06",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "a25362867717c593eeb4ef9b4811b40cf4017b5c7273807da2c8d7a2db255116",
+   "sha_img": "d9905b55e8612e98395d58f67f9c7c5714ba8d4fe5615abc7581fd41bff677ab"
+  },
+  {
+   "id": "J6R5XA",
+   "pid": "PAR29",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "83b2d849be713d69d2ab459b49a64b037ba26f38cda3ec1376cb1d75b666615c",
+   "sha_img": "ead38f7f962482da1ce5a81d8146c92305e1dcd904157858f6b57c1eec3a4db9"
+  },
+  {
+   "id": "JC38HK",
+   "pid": "PAR23",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "mesa_con_sillas",
+   "sha_img": "b101f0fe0220a4be396d30bdcab423f605ba2fbfb8cdcbd4e0ab7fd252554092"
+  },
+  {
+   "id": "JDLP7K",
+   "pid": "PAR09",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "banda_de_recintos",
+   "sha_img": "bbc4188259d56d5086ff730b1db1c732fe202ed45afa376f376cfbcd13f99176"
+  },
+  {
+   "id": "JLWZHQ",
+   "pid": "PAR36",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "50da677a0a8cc11c3629abc2d1cbcc70878036a4b2e8c5cd19ec4f667fd68690",
+   "sha_img": "44942edf2c2c4f66ef2e53375482b17828d3ba1966986d94484f24b7a219fa3d"
+  },
+  {
+   "id": "JNGVFA",
+   "pid": "PAR17",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "banda_de_recintos",
+   "sha_img": "b30cb32de7127830547097800608138f68fd6e1a54d24649549a0580f6eeb8cd"
+  },
+  {
+   "id": "JQ6ZTY",
+   "pid": "PAR14",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "recinto_con_puestos_afuera",
+   "sha_img": "460cfdd3b1628bfc8d54db63f22ff81932634284e62e380b10cb31afa2806e50"
+  },
+  {
+   "id": "K62P6V",
+   "pid": "PAR10",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "6b5b463a529074e00d1f556c84f9b7573687871096781d9c9ad8af950c6d6103",
+   "sha_img": "d6f31eed6827c67e5826de1b019df39544d3f14f813c0bbb7ca0603fb600b978"
+  },
+  {
+   "id": "KFLLQ2",
+   "pid": "PAR16",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "entre_corredores",
+   "sha_img": "5545fde3e8983605cc0c6e2ec649d4ca3af3c238f1d4e6c3e3f9c8b6179862d3"
+  },
+  {
+   "id": "KU7UZK",
+   "pid": "PAR26",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "mueble_aislado",
+   "sha_img": "0de7c96b1bc8e431a8b75608d91aecbdcf33e3d92fa65f88bcfc736f4008864c"
+  },
+  {
+   "id": "LLQAQP",
+   "pid": "PAR24",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "junto_a_circulacion",
+   "sha_img": "be566bbd10f4e5fbaf6ad345f52ab0a5faa2e9624ce7dbd04de8b1b87414233c"
+  },
+  {
+   "id": "LMBY9G",
+   "pid": "PAR35",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "cc3e0e6baae29b83f9f4aba3d616af3ae22c00543c75cfb0edd314fdab086f22",
+   "sha_img": "28d2648be2fc926b80acde35421e81b42c01ba9349db89b473ad15e5d376fa29"
+  },
+  {
+   "id": "M5WG4L",
+   "pid": "PAR11",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "pod_aislado",
+   "sha_img": "3dffc6cbc8bdcb1f8c48f2c1127b81cb9d75fb2f6060d99be841e2e5ae0fc485"
+  },
+  {
+   "id": "MA6FDN",
+   "pid": "PAR34",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "mueble_aislado",
+   "sha_img": "6a4e5e4c5ae1a1bc0f3ac2cd0d240b94981e43fd8eab6bbc5ee4592c958c6346"
+  },
+  {
+   "id": "MJK6F2",
+   "pid": "PAR18",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "corredor_en_L",
+   "sha_img": "9c4d18a8925d6cbeee626f04eacf5a6a623e49bb369d9ec595dc735690bf08f6"
+  },
+  {
+   "id": "MWY59T",
+   "pid": "PAR22",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "6b5b463a529074e00d1f556c84f9b7573687871096781d9c9ad8af950c6d6103",
+   "sha_img": "d6f31eed6827c67e5826de1b019df39544d3f14f813c0bbb7ca0603fb600b978"
+  },
+  {
+   "id": "MY5JC5",
+   "pid": "PAR30",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "contra_particion",
+   "sha_img": "88f5cdf717545ad75aa2582bc5f54a39c9034e4fce87e3d1e16d501aa5223534"
+  },
+  {
+   "id": "NJSWX6",
+   "pid": "PAR01",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "501c7ffeb8ae6312c7154c45e3ae16b4bdde8feef6d6783bca1b5aac96c46738",
+   "sha_img": "a5cfef3bafa2839535ce14c77a3e8769e23a34e5c43427ab6391e2c024e580f0"
+  },
+  {
+   "id": "NTKXNX",
+   "pid": "PAR33",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "banda_de_recintos",
+   "sha_img": "9ff26b301b49f91b93da0a071b29ecad6fa2fcfe261160c81123c15d085f7441"
+  },
+  {
+   "id": "P4SASR",
+   "pid": "PAR18",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "a25362867717c593eeb4ef9b4811b40cf4017b5c7273807da2c8d7a2db255116",
+   "sha_img": "d9905b55e8612e98395d58f67f9c7c5714ba8d4fe5615abc7581fd41bff677ab"
+  },
+  {
+   "id": "P6JS4B",
+   "pid": "PAR11",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "dentro_de_una_sala",
+   "sha_img": "cf82240684b0a9a8bd915c8142593f29db8b74948bcc786f03f3ef97bd25406f"
+  },
+  {
+   "id": "PBS9KY",
+   "pid": "PAR08",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "06e759ccce5e3d3191143f237d3ac8c2c0fe2055eb126cab941cc2f423185bd5",
+   "sha_img": "5fb3eae3884030df6754d605b7c580f2f7ba6d23e52bfd284d96924a3457565b"
+  },
+  {
+   "id": "PZCFRP",
+   "pid": "PAR12",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "junto_al_nucleo",
+   "sha_img": "389bd755f9e18d0a2faf310419e43bc7186d239c1899d43c71748999c580844c"
+  },
+  {
+   "id": "Q9BSHR",
+   "pid": "PAR12",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "mesa_entre_mesas",
+   "sha_img": "57dc61cb91819a5067145bd82eda3aba670522fa926f21840a3a56f1fe3a5698"
+  },
+  {
+   "id": "QCRAJH",
+   "pid": "PAR14",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "contra_particion",
+   "sha_img": "1f9238c2d10bafbfd8c8e21be993a2949b091937bcd7a3d3674091c21a729e44"
+  },
+  {
+   "id": "QG66RK",
+   "pid": "PAR21",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "bateria_de_recintos",
+   "sha_img": "264c20f6d6e9ecea1f7ce609aa65ed804a19af16c4d5c37282aef38b20fc63a0"
+  },
+  {
+   "id": "QKUVTL",
+   "pid": "PAR15",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "09caefd5842c7281f235b0c3e8ffc16f29a94487a183df16f0502f63f3d322d1",
+   "sha_img": "09c1ffd73e4e42f14dcdb31074f5e492e2e841e8c2f6df5f9a8712b24b7dc237"
+  },
+  {
+   "id": "QUXZB9",
+   "pid": "PAR04",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "banda_de_recintos",
+   "sha_img": "623922fb3c171a13750a8c9a410d27bfd1a1b38cd1a7392ccf5785e358a2c626"
+  },
+  {
+   "id": "RHRCQ5",
+   "pid": "PAR25",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "501c7ffeb8ae6312c7154c45e3ae16b4bdde8feef6d6783bca1b5aac96c46738",
+   "sha_img": "a5cfef3bafa2839535ce14c77a3e8769e23a34e5c43427ab6391e2c024e580f0"
+  },
+  {
+   "id": "SFCZE6",
+   "pid": "PAR27",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "dentro_de_una_sala",
+   "sha_img": "ad0fe24fc275a46ac140e583d0c57e33e13828be139ade32d128a8d6b10329bb"
+  },
+  {
+   "id": "SMAZVG",
+   "pid": "PAR20",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "junto_al_nucleo",
+   "sha_img": "9aaef3d1908deb5ae78cdd5cbb1deae8e63cd023d4c6d3db4b3e96f1df421ad9"
+  },
+  {
+   "id": "SUWEZN",
+   "pid": "PAR01",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "banda_de_recintos",
+   "sha_img": "7951ed59d1637fe68aab62fc63a6f0d8d945611a8d5d2d8c4126bcaa52f57087"
+  },
+  {
+   "id": "TC3Q8S",
+   "pid": "PAR30",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "a25362867717c593eeb4ef9b4811b40cf4017b5c7273807da2c8d7a2db255116",
+   "sha_img": "d9905b55e8612e98395d58f67f9c7c5714ba8d4fe5615abc7581fd41bff677ab"
+  },
+  {
+   "id": "TEDHTM",
+   "pid": "PAR21",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "a38c4ebb0eec3009ecb75ef7c9c2bca66c5cdd83c4373169db68f7f18309bb05",
+   "sha_img": "036920f822c89dcaa0b58e8a82f084c124ec70435aab76663436a245b71cbc32"
+  },
+  {
+   "id": "TL3PFB",
+   "pid": "PAR23",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "recinto_contra_fachada",
+   "sha_img": "329ffc0964d928fb321c0b62fe6c0e4e1c723ba7760e85916fa70bed9ecce68a"
+  },
+  {
+   "id": "TPV78V",
+   "pid": "PAR28",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "junto_al_nucleo",
+   "sha_img": "471d5224f167aa0ea9f952d14dde5db80b98a1e3a08f12a7b58415a733533dc9"
+  },
+  {
+   "id": "U2GQ4K",
+   "pid": "PAR34",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "6b5b463a529074e00d1f556c84f9b7573687871096781d9c9ad8af950c6d6103",
+   "sha_img": "d6f31eed6827c67e5826de1b019df39544d3f14f813c0bbb7ca0603fb600b978"
+  },
+  {
+   "id": "U3H5ER",
+   "pid": "PAR09",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "a38c4ebb0eec3009ecb75ef7c9c2bca66c5cdd83c4373169db68f7f18309bb05",
+   "sha_img": "036920f822c89dcaa0b58e8a82f084c124ec70435aab76663436a245b71cbc32"
+  },
+  {
+   "id": "U6PCG8",
+   "pid": "PAR26",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "98afcf21caf9be39b36840c1e44090a3f4bf78e293e9bc2071f3cc2a12218d6c",
+   "sha_img": "c0a1cf3d4819ea523e60d02f2ca69bd9cd0e9ea714084e36407eb6861aa3f46b"
+  },
+  {
+   "id": "UY64MT",
+   "pid": "PAR22",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "recinto_con_puestos_afuera",
+   "sha_img": "3523181ab73aa7647c92acba456432e80a444cd49ccc5eae7f754a3f00e34cf3"
+  },
+  {
+   "id": "UZYXD6",
+   "pid": "PAR35",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "dentro_de_una_sala",
+   "sha_img": "974dbf7b03d7c7efd93a8159084d0dcb35c92040baaaacf7a49ce36c7eb82a03"
+  },
+  {
+   "id": "V6SP6C",
+   "pid": "PAR34",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "corredor_en_L",
+   "sha_img": "c4b09015d180ac15f31b69ed89a60c30c4c30713cb0799c5e6498f7c72e0e096"
+  },
+  {
+   "id": "VBHY3R",
+   "pid": "PAR02",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "98afcf21caf9be39b36840c1e44090a3f4bf78e293e9bc2071f3cc2a12218d6c",
+   "sha_img": "c0a1cf3d4819ea523e60d02f2ca69bd9cd0e9ea714084e36407eb6861aa3f46b"
+  },
+  {
+   "id": "VJ4JSJ",
+   "pid": "PAR27",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "09caefd5842c7281f235b0c3e8ffc16f29a94487a183df16f0502f63f3d322d1",
+   "sha_img": "09c1ffd73e4e42f14dcdb31074f5e492e2e841e8c2f6df5f9a8712b24b7dc237"
+  },
+  {
+   "id": "VJJAL2",
+   "pid": "PAR04",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "mesa_con_sillas",
+   "sha_img": "904181187fc5e6408e993034fa68e4d986a84802813e6b255eb4d5fb405cd983"
+  },
+  {
+   "id": "VSGPP7",
+   "pid": "PAR32",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "junto_a_circulacion",
+   "sha_img": "c52f4c9c7164fe686d1c675ff5f5160bd1abbdc14632722ac80357d3585fa4f7"
+  },
+  {
+   "id": "W9ETAD",
+   "pid": "PAR29",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "mueble_contra_fachada",
+   "sha_img": "dd5ffbafd271b445936a1a1b40a60708dd629a281f69617b511a36877c26eabc"
+  },
+  {
+   "id": "WBA9Q9",
+   "pid": "PAR01",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "mesa_con_sillas",
+   "sha_img": "349c28d877db21c2cf8b55ee3593d4bc14e6c8346f63109ed004896ca3032757"
+  },
+  {
+   "id": "WLCDKW",
+   "pid": "PAR02",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "banda_de_recintos",
+   "sha_img": "4da587cedb6552c92b9a25958179c48e892ae9a7b5c22ef2f35d10e8caaa4935"
+  },
+  {
+   "id": "WMF4H5",
+   "pid": "PAR31",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "2b9fcb58f267815cf05891657431b7a65b63795a0a4589f207b2ddc26cb4c22a",
+   "sha_img": "ecafe45c2b7364964b5a361237ea4ed43656517c3b7e373f1e2dc90a6f87a3be"
+  },
+  {
+   "id": "Y2FQC4",
+   "pid": "PAR03",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "09caefd5842c7281f235b0c3e8ffc16f29a94487a183df16f0502f63f3d322d1",
+   "sha_img": "09c1ffd73e4e42f14dcdb31074f5e492e2e841e8c2f6df5f9a8712b24b7dc237"
+  },
+  {
+   "id": "YAJ5GC",
+   "pid": "PAR31",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "recinto_contra_fachada",
+   "sha_img": "6c8a06440bceec113251422c06a1b5505026aadbe2f79142bf8b9e22b2576baf"
+  },
+  {
+   "id": "YFZS7T",
+   "pid": "PAR25",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "ARCHITECTURAL_ENCLOSURE",
+   "receta": "banda_de_recintos",
+   "sha_img": "768c74f16c8a8650bcb02735e16ff07472f7efc5bba691799e396e8bbe645bbf"
+  },
+  {
+   "id": "YG9BMT",
+   "pid": "PAR23",
+   "brazo": "TARGET_ONLY",
+   "verdad": "PAR",
+   "receta": "-",
+   "sha_crop_raw": "cc3e0e6baae29b83f9f4aba3d616af3ae22c00543c75cfb0edd314fdab086f22",
+   "sha_img": "28d2648be2fc926b80acde35421e81b42c01ba9349db89b473ad15e5d376fa29"
+  },
+  {
+   "id": "ZDZZCJ",
+   "pid": "PAR25",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "junto_a_puestos",
+   "sha_img": "31688a8f2e565bd5e3c81e15d4559d8fbd0cc4259bf9ae97be470194722ac230"
+  },
+  {
+   "id": "ZZFV5B",
+   "pid": "PAR19",
+   "brazo": "FULL_CONTEXT",
+   "verdad": "FURNITURE_OBJECT",
+   "receta": "dentro_de_una_sala",
+   "sha_img": "6472202bf8fc5772f0024416038696bcd8a110bedb5dc5233e7b7169039f4c8a"
+  }
+ ],
+ "crops_sha256": {
+  "PAR01": "501c7ffeb8ae6312c7154c45e3ae16b4bdde8feef6d6783bca1b5aac96c46738",
+  "PAR02": "98afcf21caf9be39b36840c1e44090a3f4bf78e293e9bc2071f3cc2a12218d6c",
+  "PAR03": "09caefd5842c7281f235b0c3e8ffc16f29a94487a183df16f0502f63f3d322d1",
+  "PAR04": "81e1cac035c547d3616b9dee213bf6b90f3361515c59bc0cad6a4f2dc47a24cf",
+  "PAR05": "83b2d849be713d69d2ab459b49a64b037ba26f38cda3ec1376cb1d75b666615c",
+  "PAR06": "a25362867717c593eeb4ef9b4811b40cf4017b5c7273807da2c8d7a2db255116",
+  "PAR07": "2b9fcb58f267815cf05891657431b7a65b63795a0a4589f207b2ddc26cb4c22a",
+  "PAR08": "06e759ccce5e3d3191143f237d3ac8c2c0fe2055eb126cab941cc2f423185bd5",
+  "PAR09": "a38c4ebb0eec3009ecb75ef7c9c2bca66c5cdd83c4373169db68f7f18309bb05",
+  "PAR10": "6b5b463a529074e00d1f556c84f9b7573687871096781d9c9ad8af950c6d6103",
+  "PAR11": "cc3e0e6baae29b83f9f4aba3d616af3ae22c00543c75cfb0edd314fdab086f22",
+  "PAR12": "50da677a0a8cc11c3629abc2d1cbcc70878036a4b2e8c5cd19ec4f667fd68690",
+  "PAR13": "501c7ffeb8ae6312c7154c45e3ae16b4bdde8feef6d6783bca1b5aac96c46738",
+  "PAR14": "98afcf21caf9be39b36840c1e44090a3f4bf78e293e9bc2071f3cc2a12218d6c",
+  "PAR15": "09caefd5842c7281f235b0c3e8ffc16f29a94487a183df16f0502f63f3d322d1",
+  "PAR16": "81e1cac035c547d3616b9dee213bf6b90f3361515c59bc0cad6a4f2dc47a24cf",
+  "PAR17": "83b2d849be713d69d2ab459b49a64b037ba26f38cda3ec1376cb1d75b666615c",
+  "PAR18": "a25362867717c593eeb4ef9b4811b40cf4017b5c7273807da2c8d7a2db255116",
+  "PAR19": "2b9fcb58f267815cf05891657431b7a65b63795a0a4589f207b2ddc26cb4c22a",
+  "PAR20": "06e759ccce5e3d3191143f237d3ac8c2c0fe2055eb126cab941cc2f423185bd5",
+  "PAR21": "a38c4ebb0eec3009ecb75ef7c9c2bca66c5cdd83c4373169db68f7f18309bb05",
+  "PAR22": "6b5b463a529074e00d1f556c84f9b7573687871096781d9c9ad8af950c6d6103",
+  "PAR23": "cc3e0e6baae29b83f9f4aba3d616af3ae22c00543c75cfb0edd314fdab086f22",
+  "PAR24": "50da677a0a8cc11c3629abc2d1cbcc70878036a4b2e8c5cd19ec4f667fd68690",
+  "PAR25": "501c7ffeb8ae6312c7154c45e3ae16b4bdde8feef6d6783bca1b5aac96c46738",
+  "PAR26": "98afcf21caf9be39b36840c1e44090a3f4bf78e293e9bc2071f3cc2a12218d6c",
+  "PAR27": "09caefd5842c7281f235b0c3e8ffc16f29a94487a183df16f0502f63f3d322d1",
+  "PAR28": "81e1cac035c547d3616b9dee213bf6b90f3361515c59bc0cad6a4f2dc47a24cf",
+  "PAR29": "83b2d849be713d69d2ab459b49a64b037ba26f38cda3ec1376cb1d75b666615c",
+  "PAR30": "a25362867717c593eeb4ef9b4811b40cf4017b5c7273807da2c8d7a2db255116",
+  "PAR31": "2b9fcb58f267815cf05891657431b7a65b63795a0a4589f207b2ddc26cb4c22a",
+  "PAR32": "06e759ccce5e3d3191143f237d3ac8c2c0fe2055eb126cab941cc2f423185bd5",
+  "PAR33": "a38c4ebb0eec3009ecb75ef7c9c2bca66c5cdd83c4373169db68f7f18309bb05",
+  "PAR34": "6b5b463a529074e00d1f556c84f9b7573687871096781d9c9ad8af950c6d6103",
+  "PAR35": "cc3e0e6baae29b83f9f4aba3d616af3ae22c00543c75cfb0edd314fdab086f22",
+  "PAR36": "50da677a0a8cc11c3629abc2d1cbcc70878036a4b2e8c5cd19ec4f667fd68690"
+ }
+}

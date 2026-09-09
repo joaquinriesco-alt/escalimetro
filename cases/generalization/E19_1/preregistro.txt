@@ -1,0 +1,46 @@
+# E19.1 — PRE-REGISTRO
+# Escrito y hasheado ANTES de la primera llamada. No se modifica despues.
+
+## Variable unica
+BATCH SIZE.  E19 = 6 imagenes por evaluador.  E19.1 = 1 imagen por evaluador.
+Todo lo demas es byte-identico a E19: banco, imagenes, IDs, ground truth, prompt, scoring.
+
+## Protocolo
+108 evaluadores independientes. Cada uno recibe UNA ruta y el prompt congelado
+(SHA256 2ac0dac653c8755fde3548ba2831a18908bb9db8c2588d731c4e48549cc0656d), sin memoria
+entre llamadas, sin acceso a directorios, ground truth, generador, codigo, resultados de E19,
+E17/E18, GPS, RES ni esta conversacion. Read solo sobre la ruta explicita.
+
+FULL_CONTEXT   72 evaluaciones
+TARGET_ONLY    36 evaluaciones
+TOTAL         108
+
+## Orden
+SEMILLA = 1901, numpy default_rng. Define UNICAMENTE el orden de ejecucion.
+No modifica ninguna imagen.
+
+## Metricas congeladas
+TARGET_ONLY   : balanced accuracy, abstention rate.
+FULL_CONTEXT  : balanced accuracy, recall enclosure, recall furniture, abstention rate,
+                confusion matrix 2x3.
+Comparacion   : DELTA_BA = BA_SINGLE - 0.764 ; cambio por clase ; cambio de abstencion.
+Bootstrap     : 10.000 remuestreos, unidad = EL PAR. IC95 de BA_FULL_CONTEXT, del improvement
+                SINGLE vs TARGET_ONLY, y del DELTA SINGLE vs E19 batch=6.
+AMBIGUOUS cuenta como abstencion, nunca como acierto.
+No se calibra confidence. No se crean thresholds post-hoc.
+El scoring de TARGET_ONLY conserva la regla de E19: una respuesta por par, puntuada contra las
+dos verdades del par.
+
+## Gates congelados
+A  SINGLE-IMAGE CONTEXT REPLICATION STRONG
+   BA_FULL_CONTEXT >= 0.80  AND recall enclosure >= 0.70 AND recall furniture >= 0.70
+   AND abstencion FULL_CONTEXT <= 0.10 AND limite inferior IC95 de BA_FULL_CONTEXT >= 0.70
+   AND sin evidencia de contaminacion.
+B  SINGLE-IMAGE CONTEXT REPLICATION PARTIAL — senal fuerte y consistente, falla al menos un
+   gate de A.
+C  BATCH EFFECT MATERIAL — |DELTA_BA| >= 0.10.
+D  EXPERIMENT INVALID.
+E  EXECUTION ENVIRONMENT LIMIT.
+
+Nota: A y C no son excluyentes por construccion; si ambos se cumplieran, el informe declara
+ambos y explica la direccion del efecto de batching.
