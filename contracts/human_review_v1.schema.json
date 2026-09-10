@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "escalimetro/contracts/human_review_v1.schema.json",
+  "title": "HumanLayoutReviewV1 — captura de revisión arquitectónica de un layout generado",
+  "description": "Esquema para capturar el juicio de un arquitecto sobre UN layout. E23 sólo define el formato: no hay modelo, no hay aprendizaje, no hay puntaje automático derivado de esto.",
+  "type": "object",
+  "required": ["contract_version", "case_id", "brief_id", "alternative", "grade", "reviewer", "reviewed_at"],
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {"const": "human_layout_review_v1"},
+    "case_id": {"type": "string", "minLength": 1},
+    "brief_id": {"type": "string", "minLength": 1},
+    "alternative": {"type": "string", "enum": ["A", "B", "C"]},
+    "layout_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "grade": {
+      "type": "string",
+      "enum": ["A_GOOD", "B_CORRECTABLE", "C_BAD"],
+      "description": "A_GOOD: lo mandaría a un cliente. B_CORRECTABLE: la idea sirve, hay que corregir. C_BAD: no sirve, hay que rehacer."
+    },
+    "reason_tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["circulacion", "acceso", "luz_natural", "salas_mal_ubicadas",
+                 "privados_mal_ubicados", "espacio_desperdiciado", "densidad_excesiva",
+                 "geometria_imposible", "conflicto_nucleo", "conflicto_pilar",
+                 "programa_incompleto", "mala_adyacencia", "falta_privacidad",
+                 "mala_proporcion", "sin_espesor_de_tabique", "sin_pasillo_legible", "otro"]
+      }
+    },
+    "free_note": {"type": "string", "maxLength": 2000},
+    "reviewer": {"type": "string", "minLength": 1},
+    "reviewed_at": {"type": "string", "format": "date-time"},
+    "minutes_spent": {"type": "number", "minimum": 0}
+  }
+}

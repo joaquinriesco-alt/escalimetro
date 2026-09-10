@@ -1,0 +1,66 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "escalimetro/contracts/shell_input_v1.schema.json",
+  "title": "ShellInputV1 — veredicto de aceptación de entrada para ESCALÍMETRO V1",
+  "description": "Decide si una planta tiene geometría suficiente para INTENTAR un layout. NO limpia el plano. NO interpreta mobiliario. Se evalúa sobre un Floorplate ya normalizado (schema floorplate 0.2.0) más los hechos declarados del caso. E23 especifica; E24 implementa.",
+  "type": "object",
+  "required": ["contract_version", "case_id", "verdict", "checks", "evidence"],
+  "additionalProperties": false,
+  "properties": {
+    "contract_version": {"const": "shell_input_v1"},
+    "case_id": {"type": "string", "minLength": 1},
+    "verdict": {
+      "type": "string",
+      "enum": ["SHELL_ACCEPTED", "INPUT_NOT_READY", "INVALID_INPUT", "SCALE_UNRESOLVED"],
+      "description": "SHELL_ACCEPTED: hay geometría suficiente para intentar layout. INPUT_NOT_READY: el dibujo es legible pero le falta confirmación o está dominado por un layout previo. INVALID_INPUT: no se pudo recuperar geometría utilizable. SCALE_UNRESOLVED: geometría OK pero no hay escala consumible y nadie la confirmó."
+    },
+    "hitl_required": {
+      "type": "array",
+      "description": "Confirmaciones humanas de UNA pregunta cada una. V1 nunca pide dibujar.",
+      "items": {"type": "string", "enum": ["perimeter", "scale", "entrance", "fixed_elements"]}
+    },
+    "checks": {
+      "type": "object",
+      "required": ["perimeter_recoverable", "scale_consumable", "area_consistent",
+                   "obstacles_representable", "entrance_identifiable", "not_layout_dominated",
+                   "geometry_unambiguous"],
+      "additionalProperties": false,
+      "properties": {
+        "perimeter_recoverable":  {"$ref": "#/definitions/check"},
+        "scale_consumable":       {"$ref": "#/definitions/check"},
+        "area_consistent":        {"$ref": "#/definitions/check"},
+        "obstacles_representable":{"$ref": "#/definitions/check"},
+        "entrance_identifiable":  {"$ref": "#/definitions/check"},
+        "not_layout_dominated":   {"$ref": "#/definitions/check"},
+        "geometry_unambiguous":   {"$ref": "#/definitions/check"}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["floorplate_sha256", "scale_semantic_validity", "px_per_m", "usable_area_m2"],
+      "properties": {
+        "floorplate_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "scale_semantic_validity": {
+          "type": ["string", "null"],
+          "enum": ["SCALE_CONFIRMED", "SCALE_INFERRED_MATCHED_REGION", "SCALE_UNCONFIRMED_REGION",
+                   "SCALE_INCOMPATIBLE_REGION", "SCALE_NOT_EVALUATED", null]
+        },
+        "px_per_m": {"type": ["number", "null"]},
+        "usable_area_m2": {"type": ["number", "null"]},
+        "obstacle_count": {"type": "integer"},
+        "notes": {"type": "string"}
+      }
+    }
+  },
+  "definitions": {
+    "check": {
+      "type": "object",
+      "required": ["status", "why"],
+      "additionalProperties": false,
+      "properties": {
+        "status": {"type": "string", "enum": ["PASS", "NEEDS_HITL", "FAIL", "NOT_EVALUATED"]},
+        "why": {"type": "string", "minLength": 1}
+      }
+    }
+  }
+}
