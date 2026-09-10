@@ -28,6 +28,8 @@ from shapely.prepared import prep
 
 from scipy import ndimage
 
+from .program_access import open_workstations
+
 from .circulation import analyze
 from .grid import Grid
 from .model import Layout, Module, Placement, ShellM
@@ -61,7 +63,7 @@ class Solver:
         # RESERVA DE FACHADA para puestos: celdas a ≤ cluster_depth de fachada con luz probable.
         # Los puestos tienen la primera opción sobre la fachada; los recintos sólo usan el excedente.
         self.cluster_depth = 3.2
-        need = int(program.get("open_workstations_exact", 40))
+        need = open_workstations(program)
         self.desk_demand_m2 = need / 6 * (4.8 * 3.2) * 1.25           # clusters + 25 % de holgura de posición
         self.reserve = self.grid.free_base & (self.grid.d_daylight <= self.cluster_depth) & (self.grid.daylight_w >= 0.75)
         self.reserve_area = float(self.reserve.sum()) * self.grid.cell ** 2
@@ -260,7 +262,7 @@ class Solver:
         # 1. recepción (ancla el acceso) y recintos grandes primero (se empaquetan en las zonas sin luz premium)
         place_rooms(["reception"] + ([n for n in ROOM_ORDER if n != "reception"] if self.rooms_first else []))
         # 2. clusters de puestos: necesitan la fachada y espacio continuo
-        need = int(self.program.get("open_workstations_exact", 40))
+        need = open_workstations(self.program)
         got = 0; k = 0
         while got < need:
             remaining = need - got
@@ -418,7 +420,7 @@ class Solver:
         rng = random.Random(seed)
         notes: List[str] = []
         counts = {p["module"]: p["count"] for p in self.program["program"]}
-        need = int(self.program.get("open_workstations_exact", 40))
+        need = open_workstations(self.program)
         # 1. elegir una sección por bahía. Se muestrea hasta que la capacidad cubra el programa.
         rooms_items = []
         for name in ROOM_ORDER:
@@ -722,7 +724,7 @@ class Solver:
             if have != n:
                 v.append(f"programa incompleto: {name} {have}/{n}")
         seats = sum(p.seats for p in layout.placements if p.module in ("workstation_cluster", "workstation_row"))
-        need = int(self.program.get("open_workstations_exact", 40))
+        need = open_workstations(self.program)
         if seats != need:
             v.append(f"puestos open {seats} ≠ {need}")
         usable = self.shell.usable.buffer(0.01)

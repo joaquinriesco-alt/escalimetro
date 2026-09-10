@@ -7,12 +7,15 @@ space planning, expresada en tres capas encadenadas:
   2. spine          — qué estrategia de circulación de E05 instancia la espina (patrón por región).
   3. solver_extra   — cómo el grafo se convierte en restricciones duras adicionales y pesos del objetivo.
 
-Ninguna alternativa toca el brief: 40 puestos exactos y los 16 recintos en las tres."""
+Ninguna alternativa toca el brief: las tres resuelven EXACTAMENTE el mismo programa del cliente.
+E24 §7: la partición del open space en barrios ya no es una tabla escrita a mano por alternativa; es
+una PROPORCIÓN declarada en DesignPolicyV1 y repartida en enteros exactos sobre `open_workstations`."""
 from __future__ import annotations
 
 from dataclasses import dataclass, field, asdict
 from typing import Dict, List
 
+from ...brief import DEFAULT_POLICY, DesignPolicyV1, apportion
 from .graph import GraphEdge, SpatialGraph, program_nodes
 
 
@@ -56,16 +59,27 @@ def _common_edges() -> List[GraphEdge]:
     ]
 
 
-def build_alternatives(program: Dict) -> List[AlternativeSpec]:
+def neighborhood_split(program: Dict, alt: str, policy: DesignPolicyV1 = DEFAULT_POLICY) -> List[int]:
+    """§7 — puestos por barrio de trabajo de UNA alternativa, derivados del brief.
+
+    Sin tablas por tamaño: proporción declarada × open_workstations, reparto por mayor resto, suma
+    exacta. Con 40 puestos reproduce la intención histórica (A [24,16] · B [16,14,10] · C [12,10,10,8]).
+    Los barrios que quedarían en 0 puestos no se instancian."""
+    need = int(program["open_workstations_exact"])
+    return [s for s in apportion(need, policy.proportions_for(alt)) if s > 0]
+
+
+def build_alternatives(program: Dict, policy: DesignPolicyV1 = DEFAULT_POLICY) -> List[AlternativeSpec]:
     """Determinista: mismas entradas → mismas tres especificaciones."""
     common = _common_edges()
+    sp = {alt: neighborhood_split(program, alt, policy) for alt in ("A", "B", "C")}
 
     # ---------- A — EFICIENTE ----------------------------------------------------------------------
     gA = SpatialGraph(
         "A_EFICIENTE",
         "Máxima eficiencia espacial: recintos agrupados en pocos bloques, circulación mínima y legible, "
         "open office compacto en pocos barrios grandes.",
-        program_nodes(program, 2, [24, 16]),
+        program_nodes(program, len(sp["A"]), sp["A"]),
         _edges(common, [
             GraphEdge("boardroom_12", "meeting_8", "prefer_near", 1.0, note="salas agrupadas en un solo bloque"),
             GraphEdge("meeting_8", "meeting_4", "prefer_near", 1.0),
@@ -101,7 +115,7 @@ def build_alternatives(program: Dict) -> List[AlternativeSpec]:
         "B_BALANCEADO",
         "Equilibrio entre llegada, salas, trabajo y luz: frente de cliente completo junto al acceso, "
         "puestos en la mejor fachada y soporte al fondo.",
-        program_nodes(program, 3, [16, 14, 10]),
+        program_nodes(program, len(sp["B"]), sp["B"]),
         _edges(common, [
             GraphEdge("boardroom_12", "entrance", "client_route", 1.0, hard=True,
                       note="corrige E06: el directorio quedaba a 31 m del acceso"),
@@ -139,7 +153,7 @@ def build_alternatives(program: Dict) -> List[AlternativeSpec]:
         "C_COLABORATIVO",
         "Interacción: hub de salas y lounge en el centro de la planta, cuatro barrios de trabajo pequeños "
         "alrededor y circulación que los cose.",
-        program_nodes(program, 4, [12, 10, 10, 8]),
+        program_nodes(program, len(sp["C"]), sp["C"]),
         _edges(common, [
             GraphEdge("lounge", "circulation", "prefer_near", 1.0, note="el lounge es parte del recorrido, no un rincón"),
             GraphEdge("lounge", "open_work_neighborhood_1", "prefer_near", 1.0),

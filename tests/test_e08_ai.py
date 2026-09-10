@@ -539,7 +539,9 @@ def test_el_renderer_de_lamina_no_toca_la_geometria(art):
              "metrics": json.load(open(os.path.join(E07, "alternatives", a, "metrics.json"), encoding="utf-8")),
              "critique": {}} for a in ALTS]
     before = {a: geometry_hash(art[a]) for a in ALTS}
-    svg = build_board02(alts, shell, spec, ctx, evidence)
+    from escalimetro.layout.model import load_program as _lp
+    svg = build_board02(alts, shell, spec, ctx, evidence,
+                        program=_lp(os.path.join(ROOT, "program_templates", "office_balanced_48.json")))
     assert svg.startswith("<svg") and "STANDARD 02" in svg
     assert {a: geometry_hash(art[a]) for a in ALTS} == before
 

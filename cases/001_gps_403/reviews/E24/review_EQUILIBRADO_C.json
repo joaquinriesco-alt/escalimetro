@@ -1,0 +1,19 @@
+{
+  "contract_version": "human_layout_review_v1",
+  "case_id": "001_gps_403",
+  "brief_id": "BRIEF_EQUILIBRADO",
+  "alternative": "C",
+  "layout_sha256": "4c2273265d2d8036cfa68bd3ba393c6bd21dac3adaa2c151f309f0edcea9f01f",
+  "grade": "B_CORRECTABLE",
+  "reason_tags": [
+    "sin_espesor_de_tabique",
+    "sin_pasillo_legible",
+    "espacio_desperdiciado",
+    "conflicto_nucleo",
+    "privados_mal_ubicados"
+  ],
+  "free_note": "C es la que mejor resuelve el frente de cliente: las tres salas de 4, la sala de 8 y la recepción quedan alineadas en la franja inferior derecha y el directorio junto al acceso. A cambio, los cuatro privados quedan repartidos en el ala izquierda ocupando fachada, que es lo que la propia estrategia pedía evitar, y el bloque comedor+kitchenette come el rincón inferior izquierdo entero. Sigue sin haber espesor de tabique ni pasillo dibujado.",
+  "reviewer": "E24 (revisión de ciclo, NO un arquitecto humano externo)",
+  "reviewed_at": "2026-09-10T02:32:49+00:00",
+  "minutes_spent": 0
+}

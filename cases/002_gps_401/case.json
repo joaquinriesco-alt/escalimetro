@@ -11,5 +11,7 @@
   "simplify_eps_frac": 0.004,
   "mask_open_px": 5,
   "source_name": "GPS Property",
-  "_contract": "E15.1 — case.json contiene SÓLO HECHOS DE ENTRADA. Ningún resultado de ejecución."
+  "_contract": "E15.1 — case.json contiene SÓLO HECHOS DE ENTRADA. Ningún resultado de ejecución.",
+  "shell_declared_clean": "unknown",
+  "_shell_declared_clean_note": "E24 §12 — no hay declaración de intake sobre si esta planta viene libre. 'unknown' es la respuesta honesta: dispara UNA confirmación humana, no un supuesto. Mirar la imagen para decidirlo está prohibido en V1."
 }

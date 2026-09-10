@@ -1,0 +1,157 @@
+{
+  "001_gps_403": {
+    "contract_version": "shell_input_v1",
+    "case_id": "001_gps_403",
+    "verdict": "SHELL_ACCEPTED",
+    "hitl_required": [
+      "scale",
+      "fixed_elements"
+    ],
+    "checks": {
+      "perimeter_recoverable": {
+        "status": "PASS",
+        "why": "perímetro de 19 vértices, 37918 px², estado confirmed"
+      },
+      "scale_consumable": {
+        "status": "NEEDS_HITL",
+        "why": "escala inferida por 'published_area_inferred' sin validación semántica (None): 8.3565 px/m. Se puede intentar layout, pero el número es un supuesto."
+      },
+      "area_consistent": {
+        "status": "PASS",
+        "why": "área del modelo 543.0 m² vs publicada 543.0 m² (desvío 0.0 % ≤ 10 %)"
+      },
+      "obstacles_representable": {
+        "status": "PASS",
+        "why": "1 núcleo(s) y 10 pilar(es) representables como polígonos"
+      },
+      "entrance_identifiable": {
+        "status": "PASS",
+        "why": "acceso principal confirmado en [570.0, 300.5] (confianza 0.95)"
+      },
+      "not_layout_dominated": {
+        "status": "NEEDS_HITL",
+        "why": "el caso no declara shell_declared_clean: una confirmación simple ('¿esta planta viene libre?'). No se infiere del dibujo."
+      },
+      "geometry_unambiguous": {
+        "status": "PASS",
+        "why": "polígono simple de 19 vértices, sin huecos ni aristas degeneradas; incógnitas declaradas: ['scale.area_kind', 'windows.exact']"
+      }
+    },
+    "evidence": {
+      "floorplate_sha256": "117c66cacdb95962f6c53d836b80743b8ff86d7eefd58307c25d3929de077823",
+      "floorplate_path": "cases/001_gps_403/outputs/floorplate.json",
+      "scale_semantic_validity": null,
+      "px_per_m": 8.35652390128259,
+      "usable_area_m2": 543.0,
+      "obstacle_count": 11,
+      "shell_declared_clean": "unknown",
+      "scale_provenance": "published_area_inferred",
+      "scale_confirmation": null,
+      "notes": "5/7 checks en PASS"
+    }
+  },
+  "002_gps_401": {
+    "contract_version": "shell_input_v1",
+    "case_id": "002_gps_401",
+    "verdict": "SHELL_ACCEPTED",
+    "hitl_required": [
+      "scale",
+      "fixed_elements"
+    ],
+    "checks": {
+      "perimeter_recoverable": {
+        "status": "PASS",
+        "why": "perímetro de 28 vértices, 17908 px², estado confirmed"
+      },
+      "scale_consumable": {
+        "status": "NEEDS_HITL",
+        "why": "escala inferida por 'published_area_inferred' sin validación semántica (None): 8.4300 px/m. Se puede intentar layout, pero el número es un supuesto."
+      },
+      "area_consistent": {
+        "status": "PASS",
+        "why": "área del modelo 252.0 m² vs publicada 252.0 m² (desvío 0.0 % ≤ 10 %)"
+      },
+      "obstacles_representable": {
+        "status": "PASS",
+        "why": "1 núcleo(s) y 2 pilar(es) representables como polígonos"
+      },
+      "entrance_identifiable": {
+        "status": "PASS",
+        "why": "acceso principal confirmado en [507, 207] (confianza 1.0)"
+      },
+      "not_layout_dominated": {
+        "status": "NEEDS_HITL",
+        "why": "el caso no declara shell_declared_clean: una confirmación simple ('¿esta planta viene libre?'). No se infiere del dibujo."
+      },
+      "geometry_unambiguous": {
+        "status": "PASS",
+        "why": "polígono simple de 28 vértices, sin huecos ni aristas degeneradas; incógnitas declaradas: ['scale.area_kind', 'windows.exact']"
+      }
+    },
+    "evidence": {
+      "floorplate_sha256": "687b0fdb8dacd5aaff00b9d17a8387ae4146fee9db8c690a421ce02b05ae0856",
+      "floorplate_path": "cases/002_gps_401/outputs/floorplate.json",
+      "scale_semantic_validity": null,
+      "px_per_m": 8.430034174929316,
+      "usable_area_m2": 252.0,
+      "obstacle_count": 3,
+      "shell_declared_clean": "unknown",
+      "scale_provenance": "published_area_inferred",
+      "scale_confirmation": null,
+      "notes": "5/7 checks en PASS"
+    }
+  },
+  "003_res_unknown": {
+    "contract_version": "shell_input_v1",
+    "case_id": "003_res_unknown",
+    "verdict": "INPUT_NOT_READY",
+    "hitl_required": [
+      "perimeter",
+      "scale",
+      "entrance",
+      "fixed_elements"
+    ],
+    "checks": {
+      "perimeter_recoverable": {
+        "status": "NEEDS_HITL",
+        "why": "perímetro de 10 vértices recuperado, estado 'needs_confirmation': pedir confirmación de una sola pregunta"
+      },
+      "scale_consumable": {
+        "status": "FAIL",
+        "why": "no hay escala consumible: px_per_m=None, validez semántica='SCALE_INCOMPATIBLE_REGION'. Pedir dos puntos y la distancia real entre ellos."
+      },
+      "area_consistent": {
+        "status": "NOT_EVALUATED",
+        "why": "sin escala consumible no hay área en metros que comparar"
+      },
+      "obstacles_representable": {
+        "status": "NEEDS_HITL",
+        "why": "faltan núcleo: 0 núcleo(s), 17 pilar(es). Confirmar elementos fijos."
+      },
+      "entrance_identifiable": {
+        "status": "NEEDS_HITL",
+        "why": "no se identificó acceso: pedir al usuario que lo señale"
+      },
+      "not_layout_dominated": {
+        "status": "FAIL",
+        "why": "hecho declarado en el caso: shell_declared_clean = false. El dibujo está dominado por un layout existente. V1 no limpia planos: es entrada no lista, no un fallo del producto (docs/PLAN_CLEANING_DEFERRED.md)."
+      },
+      "geometry_unambiguous": {
+        "status": "PASS",
+        "why": "polígono simple de 10 vértices, sin huecos ni aristas degeneradas; incógnitas declaradas: ['scale', 'core', 'primary_entrance', 'daylight']"
+      }
+    },
+    "evidence": {
+      "floorplate_sha256": "c03ad8c9a6500cff97998b1b4533e2bce9d12f90575e64e6b068cf57405eb5ca",
+      "floorplate_path": "cases/003_res_unknown/outputs/E16_8_floorplate.json",
+      "scale_semantic_validity": "SCALE_INCOMPATIBLE_REGION",
+      "px_per_m": null,
+      "usable_area_m2": null,
+      "obstacle_count": 17,
+      "shell_declared_clean": false,
+      "scale_provenance": "published_area_rejected",
+      "scale_confirmation": null,
+      "notes": "1/7 checks en PASS"
+    }
+  }
+}

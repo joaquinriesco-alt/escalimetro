@@ -1,0 +1,18 @@
+{
+  "contract_version": "brief_v1",
+  "brief_id": "BRIEF_EQUILIBRADO",
+  "target_headcount": 48,
+  "open_workstations": 40,
+  "rooms": [
+    {"module": "private_office", "count": 4},
+    {"module": "meeting_4", "count": 3},
+    {"module": "meeting_8", "count": 1},
+    {"module": "boardroom_12", "count": 1},
+    {"module": "phone_booth", "count": 3},
+    {"module": "reception", "count": 1},
+    {"module": "kitchenette", "count": 1},
+    {"module": "dining", "count": 1},
+    {"module": "lounge", "count": 1}
+  ],
+  "notes": "Equivalente semántico del programa histórico de GPS 403 (office_balanced_48): 40 puestos open, 4 privados, 16 recintos, 48 personas declaradas."
+}

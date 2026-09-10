@@ -9,6 +9,7 @@ from __future__ import annotations
 import re
 from typing import Dict, List, Tuple
 
+from ...brief import program_rows
 from ...case_context import CaseContext
 from ...fit_evidence import FitEvidence, PresentationFit, presentation_fit
 from ..model import Layout, ShellM
@@ -22,9 +23,8 @@ PALETTE = {
 LEGEND = [("Puestos de trabajo", "#dfe7f5"), ("Salas y directorio", "#dfeee2"), ("Recepción", "#f7e3d3"),
           ("Cocina / comedor / cabinas", "#f2e7db"), ("Lounge", "#ece0ef"), ("Circulación", "#fbf3dd"),
           ("Núcleo del edificio", "#e3e5e8"), ("Pilar", "#111111")]
-PROGRAM_ROWS = [("Puestos open space", "40"), ("Oficinas privadas", "4"), ("Salas de 4", "3"), ("Sala de 8", "1"),
-                ("Directorio de 12", "1"), ("Phone booths", "3"), ("Recepción", "1"), ("Kitchenette", "1"),
-                ("Comedor", "1"), ("Lounge", "1")]
+# E24 §6 — el programa de la barra lateral se DERIVA del brief (brief.program_rows). Antes estaba
+# escrito aquí con los números de un cliente concreto: 40 puestos, 4 privados, 16 recintos.
 
 W, H = 2400, 1160
 SIDEBAR_X, SIDEBAR_W = 40, 380
@@ -71,7 +71,7 @@ def _plan_svg(layout: Layout, shell: ShellM, width_px: int = 1300) -> Tuple[str,
 
 
 def build_board(alts: List[Dict], shell: ShellM, evidence: FitEvidence = None, subtitle: str = "",
-                ctx: CaseContext = None) -> str:
+                ctx: CaseContext = None, program: Dict = None) -> str:
     """alts: [{spec, result}] en orden A, B, C.
 
     E15 — la identidad del inmueble llega en `ctx` (CaseContext).
@@ -98,6 +98,9 @@ def build_board(alts: List[Dict], shell: ShellM, evidence: FitEvidence = None, s
                         "(fit_evidence.load(case_dir)). Un diccionario, u otro objeto con las claves "
                         "correctas, NO es evidencia: un veredicto es un RESULTADO COMPUTADO con "
                         "procedencia, no un blob escrito a mano.")
+    if not program or "program" not in program:
+        raise ValueError("build_board necesita el programa compilado del BriefV1: las cantidades de la "
+                         "barra lateral son dato del cliente, no literales de la lámina (E24 §6)")
     fit = presentation_fit(ctx, evidence)      # la copy se deriva DENTRO del boundary controlado
     o = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}" '
          f'font-family="Helvetica Neue,Helvetica,Arial,sans-serif">',
@@ -130,7 +133,7 @@ def build_board(alts: List[Dict], shell: ShellM, evidence: FitEvidence = None, s
     o.append(_text(SIDEBAR_X + 22, y, "PROGRAMA", 12, PALETTE["muted"], 700, ls=1.8)); y += 10
     o.append(f'<rect x="{SIDEBAR_X + 22}" y="{y}" width="{SIDEBAR_W - 44}" height="1" fill="{PALETTE["line"]}"/>')
     y += 26
-    for label, val in PROGRAM_ROWS:
+    for label, val in program_rows(program):
         o.append(_text(SIDEBAR_X + 22, y, label, 14, PALETTE["ink"]))
         o.append(_text(SIDEBAR_X + SIDEBAR_W - 22, y, val, 14, PALETTE["ink"], 700, anchor="end"))
         y += 27

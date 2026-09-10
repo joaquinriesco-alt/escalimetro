@@ -1,0 +1,11 @@
+{
+  "alt": "A",
+  "name": "EFICIENTE",
+  "status": "NO_FIT_INFEASIBLE",
+  "solver_status": "INFEASIBLE",
+  "reason": "A: sin solución factible (INFEASIBLE: CP-SAT: sin asignación que cumpla las restricciones duras)",
+  "runtime_s": 76.4,
+  "brief_id": "BRIEF_EJECUTIVO",
+  "open_workstations_requested": 24,
+  "note": "CP-SAT PRUEBA que no hay asignación válida sobre el CONJUNTO DE CANDIDATOS PODADO (cap=200 por módulo, bench_cfgs=[6, 5, 4]). No prueba que el programa no quepa en el shell: prueba que ESTE generador de candidatos no ofrece una combinación que lo resuelva."
+}

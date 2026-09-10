@@ -1,8 +1,20 @@
 # E23 — REBASELINE MVP V1: MOTOR DE LAYOUT SHELL-ONLY
 
-**Veredicto: SÍ estamos en condiciones de construir V1 shell-only.** El motor de layout ya genera
-tres alternativas válidas y distintas sobre un shell real. Lo que falta no es el motor: es el
-camino de entrada, la parametrización del brief y el volumen de shells.
+**Veredicto: SÍ estamos en condiciones de construir V1 shell-only.**
+**LAYOUT ENGINE EXISTS AND IS FUNCTIONAL, BUT ARCHITECTURAL QUALITY IS STILL B — CORRECTABLE.**
+El motor de layout genera tres alternativas VÁLIDAS y distintas sobre un shell real; ninguna de las
+tres se enviaría a un cliente sin corregirla. Lo que falta, además de esa calidad: el camino de
+entrada, la parametrización del brief y el volumen de shells.
+
+> **Corrección posterior (E24, adenda §3).** La redacción original de este párrafo decía *"lo que
+> falta no es el motor"*. Era una afirmación más fuerte que la evidencia de E23, que había calificado
+> las tres plantas como **B — CORREGIBLE** en el mismo ciclo. Afirmar que el motor no es el problema
+> mientras se lo califica B es contradictorio, y esa contradicción se corrige aquí, no reescribiendo
+> el commit de E23 (7536ecd), que se conserva como estaba.
+>
+> E24 además puso a prueba la parte que E23 daba por hecha: **el motor sólo resolvió el brief para el
+> que estaba afinado**. Con 56 puestos y con 24 puestos, sobre el mismo shell y con el mismo programa
+> del resto, no produjo ninguna alternativa válida. Ver `docs/E24_BRIEF_V1_SHELL_ACCEPTANCE.md`.
 
 ## El hecho central
 

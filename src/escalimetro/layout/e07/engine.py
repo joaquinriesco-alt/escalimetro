@@ -90,7 +90,8 @@ class Engine:
         self.validator = Solver(shell, modules, program, clearances)     # validador + scoring + raster de E04
         self.grid: Grid = self.validator.grid
         self.feats: ShellFeatures = extract_features(shell, self.grid)
-        self.e05_strategies = {s.strategy_id: s for s in generate_strategies(self.feats)}
+        self.e05_strategies = {s.strategy_id: s for s in
+                               generate_strategies(self.feats, int(program["open_workstations_exact"]))}
         self.critic = RuleBasedCritic()
         self._geom_cache: Dict[Tuple[str, tuple], Tuple[list, list, float]] = {}
 
@@ -134,7 +135,7 @@ class Engine:
                             seats_mode="max", seed=self.seed, time_limit_s=tl_warm, extra=extra)
         prof.warm_start_s = round(time.time() - t, 2)
         prof.warm_start_seats = warm.get("seats")
-        # 1b) factibilidad exacta (Σ = 40 duro) con esa pista
+        # 1b) factibilidad exacta (Σ puestos duro = open_workstations del brief) con esa pista
         t = time.time()
         res = F.solve_free(self.shell, self.grid, self.feats, strat, els, cands, self.modules, self.program, weights,
                            seats_mode="exact", seed=self.seed, time_limit_s=tl_feas, feasibility_only=True, extra=extra,

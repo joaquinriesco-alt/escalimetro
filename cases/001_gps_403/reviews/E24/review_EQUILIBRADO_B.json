@@ -1,0 +1,20 @@
+{
+  "contract_version": "human_layout_review_v1",
+  "case_id": "001_gps_403",
+  "brief_id": "BRIEF_EQUILIBRADO",
+  "alternative": "B",
+  "layout_sha256": "1181720b37a3e6a7fa56ecb1377a25553d13b2bc27577e31808e0a74621eca4a",
+  "grade": "B_CORRECTABLE",
+  "reason_tags": [
+    "sin_espesor_de_tabique",
+    "sin_pasillo_legible",
+    "espacio_desperdiciado",
+    "conflicto_nucleo",
+    "mala_adyacencia",
+    "mala_proporcion"
+  ],
+  "free_note": "Mismo problema de franja de servicio contigua a la recepción y misma ausencia de pasillo dibujado bajo el núcleo. Además los puestos aparecen como pares sueltos repartidos por toda el ala izquierda en vez de benches continuos: la proporción de los bloques de trabajo no lee como open space, lee como mobiliario disperso. El directorio sí queda junto al acceso, que era la corrección que B declaraba respecto de E06, y eso funciona.",
+  "reviewer": "E24 (revisión de ciclo, NO un arquitecto humano externo)",
+  "reviewed_at": "2026-09-10T02:32:49+00:00",
+  "minutes_spent": 0
+}

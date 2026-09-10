@@ -16,6 +16,7 @@ import numpy as np
 from ..case_context import SEMANTICS_ARTIFACT_MISSING, from_case_dir
 from ..schemas.floorplate import Floorplate
 from .model import Layout, load_modules, load_program
+from .program_access import open_workstations
 from .render import render_png, triptych
 from .shell_adapter import shell_from_floorplate
 from .solver import Solver
@@ -32,7 +33,7 @@ def compute_metrics(layout: Layout, solver: Solver, circ) -> dict:
     for p in layout.placements:
         counts[p.module] = counts.get(p.module, 0) + 1
     seats = sum(p.seats for p in layout.placements if p.module.startswith("workstation"))
-    need = solver.program.get("open_workstations_exact", 40)
+    need = open_workstations(solver.program)
     prog = solver.program["program"]
     complete = all(counts.get(pp["module"], 0) == pp["count"] for pp in prog if pp["module"] != "workstation_cluster") and seats == need
     collisions = [v for v in layout.hard_violations if v.startswith("colisión")]

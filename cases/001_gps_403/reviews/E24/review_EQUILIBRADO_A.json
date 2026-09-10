@@ -1,0 +1,19 @@
+{
+  "contract_version": "human_layout_review_v1",
+  "case_id": "001_gps_403",
+  "brief_id": "BRIEF_EQUILIBRADO",
+  "alternative": "A",
+  "layout_sha256": "982b4cb410062cb8a7519654205a770d2bec5d1ed41b5dac99afd0f91a8235cf",
+  "grade": "B_CORRECTABLE",
+  "reason_tags": [
+    "sin_espesor_de_tabique",
+    "sin_pasillo_legible",
+    "espacio_desperdiciado",
+    "conflicto_nucleo",
+    "mala_adyacencia"
+  ],
+  "free_note": "Los tres recintos de servicio (recepción, comedor, kitchenette) quedan en una sola franja contigua junto al acceso: la cocina termina pegada a la recepción, que es justo la adyacencia que la estrategia declara evitar. La única conexión entre el ala izquierda y el ala del acceso pasa por debajo del núcleo, y esa franja está ocupada por una fila de puestos: no queda pasillo dibujado, sólo el hueco que sobra. Los recintos son rectángulos sin espesor de tabique. Hay un vacío grande entre los privados y las filas de puestos del centro-izquierda. La idea (privados y salas agrupados, puestos en fachada) sirve; la ejecución hay que corregirla.",
+  "reviewer": "E24 (revisión de ciclo, NO un arquitecto humano externo)",
+  "reviewed_at": "2026-09-10T02:32:49+00:00",
+  "minutes_spent": 0
+}

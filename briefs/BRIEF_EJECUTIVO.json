@@ -1,0 +1,18 @@
+{
+  "contract_version": "brief_v1",
+  "brief_id": "BRIEF_EJECUTIVO",
+  "target_headcount": 40,
+  "open_workstations": 24,
+  "rooms": [
+    {"module": "private_office", "count": 8},
+    {"module": "meeting_4", "count": 4},
+    {"module": "meeting_8", "count": 2},
+    {"module": "boardroom_12", "count": 1},
+    {"module": "phone_booth", "count": 3},
+    {"module": "reception", "count": 1},
+    {"module": "kitchenette", "count": 1},
+    {"module": "dining", "count": 1},
+    {"module": "lounge", "count": 1}
+  ],
+  "notes": "Perfil ejecutivo: menos puestos open, más oficinas privadas y más superficie de reunión."
+}

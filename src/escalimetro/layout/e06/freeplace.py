@@ -10,7 +10,8 @@ polígono, orientación, relación con fachada, distancia al acceso, luz, regió
 circulación toca. Se descartan ANTES del solver los que cruzan núcleo, pilares (salvo pilar en tabique de
 recinto), salen del shell, invaden la zona del acceso o no tocan ningún elemento de circulación.
 
-CP-SAT elige: un candidato por recinto, bloques de puestos con Σ = 40, ramales activos (bool), NoOverlap2D
+CP-SAT elige: un candidato por recinto, bloques de puestos con Σ = open_workstations del brief, ramales
+activos (bool), NoOverlap2D
 entre todos los rectángulos elegidos y los ramales activos; un candidato que sólo toca ramales exige que
 alguno esté activo. La red queda conectada por construcción (todo ramal nace en la espina o en otro pasillo
 fijo) y el validador determinista de E04 vuelve a verificar puertas y conectividad por raster."""
@@ -28,6 +29,7 @@ from shapely.prepared import prep
 
 from ..grid import Grid
 from ..model import Layout, Module, Placement, ShellM
+from ..program_access import open_workstations
 from ..zoning import ZONE_OF_MODULE
 from ..e05.bands import SpinePlan, _corridor_clear
 from ..e05.features import ShellFeatures
@@ -363,7 +365,7 @@ def solve_free(shell: ShellM, grid: Grid, feats: ShellFeatures, strat: SpatialSt
     t0 = time.time()
     extra = dict(extra or {})
     W = dict(weights); W.update(strat.objective_weights); W.update(extra.get("weight_overrides", {}))
-    need = int(program.get("open_workstations_exact", 40))
+    need = open_workstations(program)
     m = cp_model.CpModel()
     branches = [e for e in elements if not e.fixed]
     b_lit = {b.id: m.NewBoolVar(f"b_{b.id}") for b in branches}

@@ -448,7 +448,7 @@ def main(argv=None):
 
     # ---- §18 §19 dirección de lámina real ----------------------------------------------------------
     mf.set_stage("presentation_director")
-    ctx = presentation_context([specs[a] for a in ALTS], list(rows.values()), fit)
+    ctx = presentation_context([specs[a] for a in ALTS], list(rows.values()), fit, program=prog)
     ctx["aggregated_reviews"] = {a: {"status": agg[a]["status"],
                                      "consensus_scores": agg[a]["consensus_scores"]} for a in ALTS}
     spec, spec_status = None, "BLOCKED"
@@ -481,7 +481,7 @@ def main(argv=None):
             board_alts = [{"alt": a, "layout": layouts[a], "row": rows[a],
                            "metrics": json.load(open(os.path.join(e07, "alternatives", a, "metrics.json"),
                                                      encoding="utf-8")), "critique": {}} for a in ALTS]
-            svg = build_board02(board_alts, shell, spec, case_ctx, evidence)\
+            svg = build_board02(board_alts, shell, spec, case_ctx, evidence, program=prog)\
                      .replace("STANDARD 02", "STANDARD 03")
             svg_path = os.path.join(out, "ESCALIMETRO_PRESENTATION_STANDARD_03.svg")
             open(svg_path, "w", encoding="utf-8").write(svg)

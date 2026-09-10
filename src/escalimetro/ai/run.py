@@ -47,10 +47,13 @@ def _callout(alt: str, row: Dict) -> str:
     return f'Cuatro barrios de trabajo y {row["circulation_m2"]:.0f} m² de circulación, la menor de las tres.'
 
 
-def presentation_context(specs, rows, fit) -> Dict:
+def presentation_context(specs, rows, fit, program: Dict = None) -> Dict:
     by = {r["alt"]: r for r in rows}
     return {
         "order": ALTS,
+        # E24 §6 — el headcount de la copy es dato del brief, no un 48 escrito en el provider
+        "target_headcount": (program or {}).get("target_headcount"),
+        "open_workstations": (program or {}).get("open_workstations_exact"),
         "fit_copy": "El programa completo cabe en el rango de escala asumido.",
         "alternatives": [{
             "alt": s.alt, "name": s.name, "copy_short": s.copy_short, "priority": PRIORITY[s.alt],
@@ -132,7 +135,7 @@ def main(argv=None):
     dump(decision_log, os.path.join(out, "provider_decision_log.json"))
 
     # ---- dirección de lámina + render determinista ------------------------------------------------
-    ctx = presentation_context([specs[a] for a in ALTS], list(rows.values()), fit)
+    ctx = presentation_context([specs[a] for a in ALTS], list(rows.values()), fit, program=prog)
     spec = orch.presentation_spec(ctx)
     dump(spec, os.path.join(out, "presentation_spec.json"))
     print(f'[e08] presentation spec: provider={spec["provider"]} model={spec["model"]} '
@@ -147,7 +150,7 @@ def main(argv=None):
                            "metrics": json.load(open(os.path.join(d, "metrics.json"), encoding="utf-8")),
                            "critique": json.load(open(os.path.join(d, "critique.json"), encoding="utf-8")),
                            "row": rows[alt]})
-    svg = build_board02(board_alts, shell, spec, case_ctx, evidence)
+    svg = build_board02(board_alts, shell, spec, case_ctx, evidence, program=prog)
     open(os.path.join(out, "ESCALIMETRO_PRESENTATION_STANDARD_02.svg"), "w", encoding="utf-8").write(svg)
     cv2.imwrite(os.path.join(out, "ESCALIMETRO_PRESENTATION_STANDARD_02.png"), _svg_to_bgr(svg, 3600))
     hashes_after = {a["alt"]: geometry_hash(a["layout"], shell) for a in board_alts}

@@ -1,0 +1,53 @@
+{
+  "contract_version": "shell_input_v1",
+  "case_id": "003_res_unknown",
+  "verdict": "INPUT_NOT_READY",
+  "hitl_required": [
+    "perimeter",
+    "scale",
+    "entrance",
+    "fixed_elements"
+  ],
+  "checks": {
+    "perimeter_recoverable": {
+      "status": "NEEDS_HITL",
+      "why": "perímetro de 10 vértices recuperado, estado 'needs_confirmation': pedir confirmación de una sola pregunta"
+    },
+    "scale_consumable": {
+      "status": "FAIL",
+      "why": "no hay escala consumible: px_per_m=None, validez semántica='SCALE_INCOMPATIBLE_REGION'. Pedir dos puntos y la distancia real entre ellos."
+    },
+    "area_consistent": {
+      "status": "NOT_EVALUATED",
+      "why": "sin escala consumible no hay área en metros que comparar"
+    },
+    "obstacles_representable": {
+      "status": "NEEDS_HITL",
+      "why": "faltan núcleo: 0 núcleo(s), 17 pilar(es). Confirmar elementos fijos."
+    },
+    "entrance_identifiable": {
+      "status": "NEEDS_HITL",
+      "why": "no se identificó acceso: pedir al usuario que lo señale"
+    },
+    "not_layout_dominated": {
+      "status": "FAIL",
+      "why": "hecho declarado en el caso: shell_declared_clean = false. El dibujo está dominado por un layout existente. V1 no limpia planos: es entrada no lista, no un fallo del producto (docs/PLAN_CLEANING_DEFERRED.md)."
+    },
+    "geometry_unambiguous": {
+      "status": "PASS",
+      "why": "polígono simple de 10 vértices, sin huecos ni aristas degeneradas; incógnitas declaradas: ['scale', 'core', 'primary_entrance', 'daylight']"
+    }
+  },
+  "evidence": {
+    "floorplate_sha256": "c03ad8c9a6500cff97998b1b4533e2bce9d12f90575e64e6b068cf57405eb5ca",
+    "floorplate_path": "cases/003_res_unknown/outputs/E16_8_floorplate.json",
+    "scale_semantic_validity": "SCALE_INCOMPATIBLE_REGION",
+    "px_per_m": null,
+    "usable_area_m2": null,
+    "obstacle_count": 17,
+    "shell_declared_clean": false,
+    "scale_provenance": "published_area_rejected",
+    "scale_confirmation": null,
+    "notes": "1/7 checks en PASS"
+  }
+}

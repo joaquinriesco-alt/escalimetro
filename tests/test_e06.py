@@ -39,7 +39,7 @@ def ctx(fp):
     prog = load_program(PROG)
     S04 = Solver(shell, mods, prog, clr)
     feats = extract_features(shell, S04.grid)
-    strat = {s.strategy_id: s for s in generate_strategies(feats)}["B_CLIENT_FRONT"]
+    strat = {s.strategy_id: s for s in generate_strategies(feats, int(prog["open_workstations_exact"]))}["B_CLIENT_FRONT"]
     plan = build_spine(shell, feats, strat, S04.grid)
     els = F.spine_elements(plan)
     brs = F.branch_candidates(shell, feats, els)

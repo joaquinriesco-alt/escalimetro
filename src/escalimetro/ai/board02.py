@@ -19,6 +19,7 @@ from __future__ import annotations
 import re
 from typing import Dict, List, Tuple
 
+from ..brief import program_band_items, program_kpis
 from ..case_context import CaseContext
 from ..fit_evidence import FitEvidence, PresentationFit, presentation_fit
 from ..layout.model import Layout, ShellM
@@ -77,7 +78,7 @@ def _num(t: str) -> float:
 
 
 def build_board02(alts: List[Dict], shell: ShellM, spec: Dict, ctx: CaseContext = None,
-                  evidence: FitEvidence = None) -> str:
+                  evidence: FitEvidence = None, program: Dict = None) -> str:
     """alts: [{alt, layout, metrics, critique, row}] en el orden que manda `spec["alternative_order"]`.
 
     E16.1 — antes esta función recibía `fit: Dict` y además imprimía `"543 m² publicados"` y
@@ -102,6 +103,9 @@ def build_board02(alts: List[Dict], shell: ShellM, spec: Dict, ctx: CaseContext 
                         "computados (fit_evidence.load(case_dir)). Un diccionario con las claves "
                         "correctas NO es evidencia: un veredicto es un RESULTADO COMPUTADO con "
                         "procedencia, no un blob escrito a mano.")
+    if not program or "program" not in program:
+        raise ValueError("build_board02 necesita el programa compilado del BriefV1: la banda de "
+                         "programa y los KPIs eran literales del brief histórico hasta E24 (§6)")
     fit = presentation_fit(ctx, evidence)      # la copy se deriva DENTRO del boundary controlado
     order = spec["alternative_order"]
     by = {a["alt"]: a for a in alts}
@@ -130,8 +134,7 @@ def build_board02(alts: List[Dict], shell: ShellM, spec: Dict, ctx: CaseContext 
     by_ = 196
     o.append(f'<rect x="{M}" y="{by_}" width="{W - 2 * M}" height="60" rx="6" fill="{PALETTE["band"]}"/>')
     o.append(_t(M + 24, by_ + 25, "EL MISMO PROGRAMA EN LAS TRES", 10.5, PALETTE["faint"], 700, ls=2.0))
-    items = [("40", "puestos"), ("4", "oficinas privadas"), ("5", "salas"), ("1", "directorio de 12"),
-             ("3", "phone booths"), ("1", "recepción"), ("1", "cocina"), ("1", "comedor"), ("1", "lounge")]
+    items = program_band_items(program)      # E24 §6 — del brief, no escritos aquí
     x = M + 24
     for val, lab in items:
         o.append(_t(x, by_ + 48, val, 18, PALETTE["ink"], 700))
@@ -171,8 +174,7 @@ def build_board02(alts: List[Dict], shell: ShellM, spec: Dict, ctx: CaseContext 
                  f'preserveAspectRatio="xMidYMid meet">{body}</svg>')
         # KPIs: tres, no siete
         m, row = a["metrics"], a["row"]
-        kpis = [("40", "puestos"), ("16", "recintos"),
-                (f'{row["circulation_m2"]:.0f} m²', "circulación")]
+        kpis = program_kpis(program) + [(f'{row["circulation_m2"]:.0f} m²', "circulación")]
         ky = box_y + bh + 62
         o.append(f'<rect x="{x + 28}" y="{ky - 46}" width="{COL_W - 56}" height="1" fill="{PALETTE["hair"]}"/>')
         kw = (COL_W - 56) / 3

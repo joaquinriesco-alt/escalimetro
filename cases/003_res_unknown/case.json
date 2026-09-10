@@ -7,6 +7,8 @@
   "known_area_kind": "useful",
   "source_name": "RES Real Estate Services",
   "drawing_scope": "whole_shell",
+  "shell_declared_clean": false,
+  "_shell_declared_clean_note": "E24 §12 — HECHO DE INTAKE, no inferencia. Lo declara el propio image_note de este caso: 'no se limpió el mobiliario', y _source_facts_fuera_del_contrato: 'El plano muestra 4 oficinas privadas y 8 baños'. Se estructura un hecho que ya estaba escrito en prosa desde E16.4. NO se miró la imagen para decidirlo.",
   "vision": "ocr",
   "segmentation": "auto",
   "_contract": "E16.4 — case.json contiene SOLO HECHOS DE ENTRADA bajo el contrato vigente (E15.2 CASE_INPUT_FIELDS). unit_label es UNKNOWN porque el aviso no identifica la unidad: declarar ignorancia, no inventar una oficina. La configuracion de vision y segmentacion es la misma ruta automatica por defecto que usan 001 y 002; no se eligio en funcion de este plano.",

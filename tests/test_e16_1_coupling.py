@@ -97,7 +97,7 @@ def _codigo_sin_comentarios(path):
 def test_board02_toma_la_superficie_publicada_del_contexto():
     """§9 — `543 m² publicados` era un literal. Ahora es SOURCE_FACT del caso."""
     alts, shell, spec, ctx, ev = _board02_inputs()
-    assert f"{ctx.published_area_label()} publicados" in build_board02(alts, shell, spec, ctx, ev)
+    assert f"{ctx.published_area_label()} publicados" in build_board02(alts, shell, spec, ctx, ev, program=load_program(PROG))
     codigo = _codigo_sin_comentarios(os.path.join(ROOT, "src", "escalimetro", "ai", "board02.py"))
     assert '"543 m² publicados"' not in codigo      # el docstring sí lo cita: es documentación
 
@@ -107,7 +107,7 @@ def test_board02_toma_la_superficie_del_modelo_de_las_metricas():
     fuente que ya usaba la Standard 01."""
     alts, shell, spec, ctx, ev = _board02_inputs()
     esperado = f'{alts[0]["metrics"]["usable_area_m2"]:.0f} m² útiles del modelo'
-    assert esperado in build_board02(alts, shell, spec, ctx, ev)
+    assert esperado in build_board02(alts, shell, spec, ctx, ev, program=load_program(PROG))
     codigo = _codigo_sin_comentarios(os.path.join(ROOT, "src", "escalimetro", "ai", "board02.py"))
     assert '"539 m² útiles del modelo"' not in codigo
 
@@ -124,20 +124,20 @@ def test_board02_rechaza_un_veredicto_fabricado(falso):
     """§27 — el mismo contrato que la Standard 01: un dict con las claves correctas no es evidencia."""
     alts, shell, spec, ctx, _ = _board02_inputs()
     with pytest.raises(TypeError):
-        build_board02(alts, shell, spec, ctx, falso)
+        build_board02(alts, shell, spec, ctx, falso, program=load_program(PROG))
 
 
 def test_board02_rechaza_un_presentationfit_construido_a_mano():
     alts, shell, spec, ctx, ev = _board02_inputs()
     forjado = PresentationFit.from_evidence(ctx, ev)
     with pytest.raises(TypeError):
-        build_board02(alts, shell, spec, ctx, forjado)
+        build_board02(alts, shell, spec, ctx, forjado, program=load_program(PROG))
 
 
 def test_board02_exige_contexto():
     alts, shell, spec, _, ev = _board02_inputs()
     with pytest.raises(ValueError):
-        build_board02(alts, shell, spec, None, ev)
+        build_board02(alts, shell, spec, None, ev, program=load_program(PROG))
 
 
 def test_board02_rechaza_evidencia_sin_procedencia():
@@ -146,19 +146,19 @@ def test_board02_rechaza_evidencia_sin_procedencia():
     alts, shell, spec, ctx, _ = _board02_inputs()
     hueca = FitEvidence(technical=FE.FIT, robustness=FE.ROBUST_FIT, freshness=FE.FRESH)
     with pytest.raises(EvidenceWithoutProvenance):
-        build_board02(alts, shell, spec, ctx, hueca)
+        build_board02(alts, shell, spec, ctx, hueca, program=load_program(PROG))
 
 
 def test_standard_02_de_403_sigue_byte_identica():
     alts, shell, spec, ctx, ev = _board02_inputs()
     disco = open(os.path.join(E08, "ESCALIMETRO_PRESENTATION_STANDARD_02.svg"), encoding="utf-8").read()
-    assert build_board02(alts, shell, spec, ctx, ev) == disco
+    assert build_board02(alts, shell, spec, ctx, ev, program=load_program(PROG)) == disco
 
 
 def test_standard_03_usa_el_mismo_renderer_y_por_tanto_el_mismo_contrato():
     """§12 — la 03 es la 02 con otra spec. Corregir en un solo punto arregla las dos."""
     e09 = open(os.path.join(ROOT, "src", "escalimetro", "ai", "e09.py"), encoding="utf-8").read()
-    assert "build_board02(board_alts, shell, spec, case_ctx, evidence)" in e09
+    assert "build_board02(board_alts, shell, spec, case_ctx, evidence, program=prog)" in e09
     assert 'STANDARD 02", "STANDARD 03' in e09
 
 
@@ -315,7 +315,7 @@ def test_403_standard_01_byte_identica():
             layout=Layout.load(os.path.join(d, "layout.json")),
             metrics=_j(os.path.join(d, "metrics.json")),
             critique=_j(os.path.join(d, "critique.json")))})
-    svg = build_board(alts, shell, FE.load(C403, PROG), ctx=ctx)
+    svg = build_board(alts, shell, FE.load(C403, PROG), ctx=ctx, program=load_program(PROG))
     assert hashlib.sha256(svg.encode()).hexdigest() == \
         "175c43d48f61c91a397b4d25b89f5e2d2d645d84e0df8b8c5b19905ccedc519c"
 

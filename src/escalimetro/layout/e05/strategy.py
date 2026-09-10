@@ -120,6 +120,7 @@ def _pattern_for(r: Region, facade_kind: str, deep_interior: str = "mixed") -> s
 
 def _base(f: ShellFeatures, R: Dict, sid: str, family: str, desc: str, facade_kind: Dict[str, str],
           client_regions: List[str], support_regions: List[str], work_regions: List[str],
+          seats_total: int,
           extra_forbidden=None, extra_preferred=None, weights=None, bench=None) -> SpatialStrategy:
     ent = R["ent"]
     pat = {r.id: _pattern_for(r, facade_kind.get(r.id, "mixed")) for r in f.regions}
@@ -130,7 +131,8 @@ def _base(f: ShellFeatures, R: Dict, sid: str, family: str, desc: str, facade_ki
         "kitchenette": support_regions, "dining": support_regions, "phone_booth": support_regions + work_regions,
         "lounge": work_regions + support_regions,
     }
-    seats_total = 40
+    # E24 §6 — los puestos vienen del BriefV1 (open_workstations). Antes había un 40 escrito aquí.
+    seats_total = int(seats_total)
     neigh = []
     for k, rid in enumerate(work_regions):
         neigh.append({"name": f"barrio_{rid}", "regions": [rid], "facade_band": facade_kind.get(rid, "work"),
@@ -158,8 +160,11 @@ def _base(f: ShellFeatures, R: Dict, sid: str, family: str, desc: str, facade_ki
         objective_weights=weights or {})
 
 
-def generate_strategies(f: ShellFeatures) -> List[SpatialStrategy]:
-    """8 familias conceptualmente distintas, derivadas de roles. Determinista."""
+def generate_strategies(f: ShellFeatures, open_workstations: int) -> List[SpatialStrategy]:
+    """9 familias conceptualmente distintas, derivadas de roles. Determinista.
+
+    `open_workstations` es el dato del brief (E24 §4): reparte los puestos entre los barrios de cada
+    familia en proporción al área de sus regiones. No hay ningún total escrito a mano."""
     R = _roles(f)
     ent, fac1, fac2, deep, near, far = R["ent"], R["fac1"], R["fac2"], R["deep"], R["near"], R["far"]
     all_ids = R["all"]
@@ -169,32 +174,32 @@ def generate_strategies(f: ShellFeatures) -> List[SpatialStrategy]:
     out.append(_base(f, R, "A_PERIMETER_WORK", "PERIMETER_WORK",
                      "Open office en toda la fachada iluminada; salas y soporte en bandas interiores; cliente junto al acceso.",
                      {rid: "mixed" for rid in all_ids}, client_regions=[ent.id, near.id, deep.id],
-                     support_regions=[far.id, deep.id], work_regions=all_ids,
+                     support_regions=[far.id, deep.id], seats_total=open_workstations, work_regions=all_ids,
                      weights={"daylight_utilization": 0.26, "facade_preservation": 0.14}))
     # B. CLIENT FRONT: recepción + directorio + salas principales en la región del acceso (fachada incluida)
     out.append(_base(f, R, "B_CLIENT_FRONT", "CLIENT_FRONT",
                      "Frente de cliente: recepción, directorio y salas principales en la región del acceso; trabajo en el resto.",
                      {**{rid: "mixed" for rid in all_ids}, ent.id: "rooms", deep.id: "rooms"},
-                     client_regions=[ent.id, deep.id], support_regions=[far.id], work_regions=others,
+                     client_regions=[ent.id, deep.id], support_regions=[far.id], seats_total=open_workstations, work_regions=others,
                      weights={"entrance_logic": 0.18, "meeting_accessibility": 0.14}))
     # C. DUAL NEIGHBORHOOD: dos barrios de trabajo (las dos regiones con más fachada) unidos por la espina
     out.append(_base(f, R, "C_DUAL_NEIGHBORHOOD", "DUAL_NEIGHBORHOOD",
                      "Dos barrios de trabajo en las dos regiones con más fachada, conectados por circulación central; cliente en el acceso.",
                      {fac1.id: "mixed", fac2.id: "mixed", ent.id: "rooms"}, client_regions=[ent.id, near.id],
                      support_regions=[x for x in all_ids if x not in (fac1.id, fac2.id)] or [far.id],
-                     work_regions=[fac1.id, fac2.id], weights={"adjacency_quality": 0.18}))
+                     seats_total=open_workstations, work_regions=[fac1.id, fac2.id], weights={"adjacency_quality": 0.18}))
     # D. CENTRAL MEETING HUB: salas agrupadas en bandas interiores junto al núcleo/acceso; trabajo alrededor
     out.append(_base(f, R, "D_CENTRAL_MEETING_HUB", "CENTRAL_MEETING_HUB",
                      "Hub de salas en la banda interior (junto al núcleo) de la región con más fachada, con pasillo perimetral; open office en el resto.",
                      {**{rid: "mixed" for rid in all_ids}, fac1.id: "corridor"}, client_regions=[ent.id, near.id, fac1.id],
-                     support_regions=[far.id], work_regions=all_ids,
+                     support_regions=[far.id], seats_total=open_workstations, work_regions=all_ids,
                      extra_preferred=[{"a": "meeting_4", "b": "meeting_8", "relation": "adjacent", "weight": 0.8}],
                      weights={"meeting_accessibility": 0.16, "adjacency_quality": 0.16}))
     # E. DAYLIGHT MAX: sólo puestos en fachada; privados interiores; benches largos
     out.append(_base(f, R, "E_DAYLIGHT_MAX", "DAYLIGHT_MAX",
                      "Maximizar puestos con fachada: benches largos en toda fachada, privados y salas interiores.",
                      {rid: "work" for rid in all_ids}, client_regions=[deep.id, ent.id],
-                     support_regions=[far.id, deep.id], work_regions=all_ids,
+                     support_regions=[far.id, deep.id], seats_total=open_workstations, work_regions=all_ids,
                      extra_forbidden=[{"a": "private_office", "b": "facade", "relation": "on_facade"}],
                      weights={"daylight_utilization": 0.32, "facade_preservation": 0.14}, bench=[6, 5, 4]))
     # F. COMPACT ROOMS: recintos cerrados concentrados en la región profunda + acceso; open office continuo
@@ -202,19 +207,19 @@ def generate_strategies(f: ShellFeatures) -> List[SpatialStrategy]:
                      "Recintos cerrados concentrados en bandas interiores hondas (pasillo perimetral en las dos regiones con más fachada) y en la región profunda; open office continuo en lo que queda.",
                      {**{rid: "mixed" for rid in all_ids}, deep.id: "rooms", fac1.id: "corridor", fac2.id: "corridor"},
                      client_regions=[deep.id, ent.id, fac1.id], support_regions=[deep.id, fac2.id],
-                     work_regions=[x for x in all_ids if x != deep.id], weights={"compactness": 0.16, "wasted_space": 0.12}))
+                     seats_total=open_workstations, work_regions=[x for x in all_ids if x != deep.id], weights={"compactness": 0.16, "wasted_space": 0.12}))
     # G. <ENT> PUBLIC / <FAC1> WORK: usa explícitamente la posición real del acceso
     out.append(_base(f, R, f"G_{ent.id}_PUBLIC_{fac1.id}_WORK", "ENTRANCE_PUBLIC_FACADE_WORK",
                      f"Región del acceso ({ent.id}) = público + salas; región con más fachada ({fac1.id}) = trabajo; soporte en la más lejana ({far.id}).",
                      {**{rid: "mixed" for rid in all_ids}, ent.id: "rooms"}, client_regions=[ent.id, near.id],
-                     support_regions=[far.id], work_regions=[fac1.id, fac2.id, deep.id],
+                     support_regions=[far.id], seats_total=open_workstations, work_regions=[fac1.id, fac2.id, deep.id],
                      weights={"entrance_logic": 0.16, "daylight_utilization": 0.24}))
     # H. WORK (fachadas lejanas) + CLIENT (acceso): separación clara cliente / interno; privados con el trabajo
     out.append(_base(f, R, "H_WORK_FAR_CLIENT_ENTRANCE", "SPLIT_CLIENT_WORK",
                      "Separación cliente/interno: todo lo de cliente (recepción, directorio, salas) en la región del acceso y su vecina; trabajo y soporte en las fachadas lejanas.",
                      {**{rid: "mixed" for rid in all_ids}, ent.id: "rooms", near.id: "rooms"},
                      client_regions=[ent.id, near.id], support_regions=[far.id],
-                     work_regions=[x for x in all_ids if x not in (ent.id,)],
+                     seats_total=open_workstations, work_regions=[x for x in all_ids if x not in (ent.id,)],
                      extra_forbidden=[{"a": "client_meeting_zone", "b": "work_neighborhoods", "relation": "through_traffic"}],
                      weights={"privacy_gradient": 0.16, "meeting_accessibility": 0.14}))
     # I. PERIMETER CORRIDOR: pasillo perimetral pegado a la línea de pilares en toda fachada larga; todo el
@@ -223,6 +228,6 @@ def generate_strategies(f: ShellFeatures) -> List[SpatialStrategy]:
                      "Pasillo perimetral junto a la fachada (antes de la línea de pilares) en todas las regiones con fachada larga; recintos y benches en una única banda interior honda.",
                      {**{rid: "corridor" for rid in all_ids if f.region(rid).facade_side and f.region(rid).length_m >= 0.7 * f.region(rid).depth_m and f.region(rid).depth_m < 11.0},
                       **{rid: "mixed" for rid in all_ids if f.region(rid).depth_m >= 11.0}},
-                     client_regions=[ent.id, fac1.id], support_regions=[far.id, deep.id], work_regions=all_ids,
+                     client_regions=[ent.id, fac1.id], support_regions=[far.id, deep.id], seats_total=open_workstations, work_regions=all_ids,
                      weights={"wasted_space": 0.12, "daylight_utilization": 0.22}))
     return out

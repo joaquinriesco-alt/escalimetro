@@ -67,6 +67,8 @@ def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument("--case", required=True)
     ap.add_argument("--program", default="program_templates/office_balanced_48.json")
+    ap.add_argument("--brief", default="", help="E24: ruta a un BriefV1 JSON; compila el programa desde él")
+    ap.add_argument("--out-name", default="E07", help="subdirectorio bajo layouts/ (E24 corre varios briefs)")
     ap.add_argument("--modules", default="program_templates/modules_office.json")
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--tl-warm", type=float, default=22.0)
@@ -77,8 +79,20 @@ def main(argv=None):
     ap.add_argument("--only", default="")
     args = ap.parse_args(argv)
     t_all = time.time()
-    out = os.path.join(args.case, "layouts", "E07")
+    out = os.path.join(args.case, "layouts", args.out_name)
     os.makedirs(os.path.join(out, "alternatives"), exist_ok=True)
+    if args.brief:
+        # E24 §4 — el programa se COMPILA desde el BriefV1 del cliente + la DesignPolicyV1 interna.
+        from ...brief import load_brief, compile_program, DEFAULT_POLICY
+        _mods, _ = load_modules(args.modules)
+        _brief = load_brief(args.brief)
+        _prog = compile_program(_brief, DEFAULT_POLICY, _mods)
+        args.program = os.path.join(out, "program_compiled.json")
+        json.dump(_prog, open(args.program, "w", encoding="utf-8"), indent=2, ensure_ascii=False)
+        print(f"[e07] brief {_brief.brief_id}: {_brief.open_workstations} puestos open · "
+              f"{_brief.target_headcount} personas declaradas · "
+              f"{_brief.permanent_seats(_mods)} puestos permanentes · "
+              f"{_brief.cluster_count()} clusters")
     ctx = from_case_dir(args.case)                     # E15: la identidad del inmueble es dato del caso
     EVIDENCE = load_fit_evidence(args.case, args.program)   # E15.1: el resultado, de los artefactos
     FIT = presentation_fit(ctx, EVIDENCE)
@@ -93,11 +107,38 @@ def main(argv=None):
     print(f"[e07] {ctx.title()} · {ctx.published_area_label()} publicados · shell {shell.usable.area:.1f} m² · "
           f"{len(specs)} alternativas · escala nominal (UNCONFIRMED)")
 
-    results, burdens, gates, handoffs = [], {}, {}, {}
+    results, burdens, gates, handoffs, no_fit = [], {}, {}, {}, {}
     for spec in specs:
         spec.graph.save(os.path.join(out, "alternatives", f"spatial_graph_{spec.alt}.json"))
-        r = eng.run(spec, tl_feas=args.tl_feas, tl_opt=args.tl_opt, early_stop_s=args.early_stop,
-                    tl_warm=args.tl_warm, cap=args.cap)
+        # E24 §9/§16 — NO_FIT es un RESULTADO, no una excepción: la celda se rotula y el ciclo sigue.
+        # No se reduce el programa, no se relajan restricciones y no se cambia el brief para conseguir FIT.
+        t_alt = time.time()
+        try:
+            r = eng.run(spec, tl_feas=args.tl_feas, tl_opt=args.tl_opt, early_stop_s=args.early_stop,
+                        tl_warm=args.tl_warm, cap=args.cap)
+        except RuntimeError as e:
+            d = os.path.join(out, "alternatives", spec.alt)
+            os.makedirs(d, exist_ok=True)
+            infeasible = "INFEASIBLE" in str(e)
+            nf = {"alt": spec.alt, "name": spec.name,
+                  "status": "NO_FIT_INFEASIBLE" if infeasible else "NO_RESULT_TIMEOUT",
+                  "solver_status": "INFEASIBLE" if infeasible else "UNKNOWN",
+                  "reason": str(e), "runtime_s": round(time.time() - t_alt, 2),
+                  "brief_id": prog.get("template_id"),
+                  "open_workstations_requested": prog.get("open_workstations_exact"),
+                  "note": (
+                      (f"CP-SAT PRUEBA que no hay asignación válida sobre el CONJUNTO DE CANDIDATOS "
+                       f"PODADO (cap={args.cap} por módulo, bench_cfgs={spec.bench_cfgs}). No prueba "
+                       f"que el programa no quepa en el shell: prueba que ESTE generador de candidatos "
+                       f"no ofrece una combinación que lo resuelva.")
+                      if infeasible else
+                      (f"El solver NO CONCLUYÓ dentro del presupuesto de tiempo del producto "
+                       f"(feas={args.tl_feas}s con reintento, opt={args.tl_opt}s). UNKNOWN no dice nada "
+                       f"sobre factibilidad: no es una demostración de que no quepa ni de que quepa."))}
+            no_fit[spec.alt] = nf
+            dump(nf, os.path.join(d, "no_fit.json"))
+            print(f"[e07]   {spec.alt}: NO_FIT · {e}")
+            continue
         # ---- QA interno (revalidación determinista; sin rediseño) ----
         ops = [HumanCorrectionOperation(**o) for o in QA_OPS.get(spec.alt, [])]
 
@@ -134,6 +175,12 @@ def main(argv=None):
               f"QA {burden.operation_count} ops / {burden.estimated_minutes} min est.")
 
     # ---- comparación, diferencia geométrica, handoff ------------------------------------------------
+    specs = [s for s in specs if s.alt not in no_fit]
+    if not results:
+        dump({"brief_id": prog.get("template_id"), "no_fit": no_fit, "alternatives_solved": 0,
+              "total_runtime_s": round(time.time() - t_all, 1)}, os.path.join(out, "summary.json"))
+        print(f"[e07] ninguna alternativa resolvió este brief: {sorted(no_fit)}")
+        return 0
     comp = compare(results, burdens, gates)
     diffs = {}
     for i in range(len(results)):
@@ -149,7 +196,8 @@ def main(argv=None):
         r.layout.zones["shell_columns"] = [[round(v, 3) for v in c.bounds] for c in shell.columns]
         r.layout.zones["shell_entrance"] = [round(v, 3) for v in shell.entrance]
         r.layout.zones["scale_px_per_m"] = round(shell.px_per_m, 4)
-        h = presentation_handoff(r, spec, FIT, svg_t, svg_c, gates[spec.alt], burdens[spec.alt], row, ctx=ctx)
+        h = presentation_handoff(r, spec, FIT, svg_t, svg_c, gates[spec.alt], burdens[spec.alt], row,
+                                 ctx=ctx, program=prog)
         handoffs[spec.alt] = h
         dump(h, os.path.join(out, "alternatives", spec.alt, "presentation_handoff.json"))
         open(os.path.join(out, "alternatives", spec.alt, "layout_technical.svg"), "w", encoding="utf-8").write(svg_t)
@@ -180,14 +228,15 @@ def main(argv=None):
     # lámina: sólo con layouts validados
     valid = [{"spec": s, "result": r} for s, r in zip(specs, results) if r.hard_valid]
     if len(valid) == len(results) and results:
-        svg = build_board(valid, shell, evidence=EVIDENCE, ctx=ctx)
+        svg = build_board(valid, shell, evidence=EVIDENCE, ctx=ctx, program=prog)
         open(os.path.join(out, "ESCALIMETRO_PRESENTATION_STANDARD_01.svg"), "w", encoding="utf-8").write(svg)
         board = _svg_to_bgr(svg, 3600)
         cv2.imwrite(os.path.join(out, "ESCALIMETRO_PRESENTATION_STANDARD_01.png"), board)
     else:
         print("[e07] lámina NO generada: la Presentation Standard sólo recibe alternativas validadas")
     total = round(time.time() - t_all, 1)
-    dump({"total_runtime_s": total, "per_alternative_s": {r.alt: r.profile.total_s for r in results},
+    dump({"total_runtime_s": total, "no_fit": no_fit,
+          "per_alternative_s": {r.alt: r.profile.total_s for r in results},
           "kpi_target_s": 120.0, "kpi_met": all(r.profile.total_s < 120 for r in results),
           "gates": {k: {g: v[g]["status"] for g in v} for k, v in gates.items()},
           "geometric_difference": diffs, "fit_verdict": FIT},

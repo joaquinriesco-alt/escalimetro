@@ -1,0 +1,176 @@
+{
+  "template_id": "BRIEF_EJECUTIVO",
+  "brief": {
+    "contract_version": "brief_v1",
+    "brief_id": "BRIEF_EJECUTIVO",
+    "target_headcount": 40,
+    "open_workstations": 24,
+    "rooms": [
+      {
+        "module": "private_office",
+        "count": 8
+      },
+      {
+        "module": "meeting_4",
+        "count": 4
+      },
+      {
+        "module": "meeting_8",
+        "count": 2
+      },
+      {
+        "module": "boardroom_12",
+        "count": 1
+      },
+      {
+        "module": "phone_booth",
+        "count": 3
+      },
+      {
+        "module": "reception",
+        "count": 1
+      },
+      {
+        "module": "kitchenette",
+        "count": 1
+      },
+      {
+        "module": "dining",
+        "count": 1
+      },
+      {
+        "module": "lounge",
+        "count": 1
+      }
+    ]
+  },
+  "design_policy": {
+    "policy_id": "design_policy_v1",
+    "objective_weights": {
+      "daylight_utilization": 0.2,
+      "circulation_efficiency": 0.12,
+      "entrance_logic": 0.12,
+      "adjacency_quality": 0.14,
+      "compactness": 0.08,
+      "privacy_gradient": 0.08,
+      "meeting_accessibility": 0.1,
+      "facade_preservation": 0.08,
+      "wasted_space": 0.08
+    },
+    "neighborhood_proportions": {
+      "A": [
+        0.6,
+        0.4
+      ],
+      "B": [
+        0.4,
+        0.35,
+        0.25
+      ],
+      "C": [
+        0.3,
+        0.25,
+        0.25,
+        0.2
+      ]
+    },
+    "seats_per_cluster": 6,
+    "zoning_rules": {
+      "PUBLIC": [
+        "reception"
+      ],
+      "SEMI_PUBLIC": [
+        "boardroom_12",
+        "lounge",
+        "meeting_4",
+        "meeting_8"
+      ],
+      "SUPPORT": [
+        "dining",
+        "kitchenette",
+        "phone_booth"
+      ],
+      "WORK": [
+        "private_office",
+        "workstation_cluster"
+      ]
+    }
+  },
+  "vertical": "OFFICE",
+  "target_headcount": 40,
+  "program": [
+    {
+      "module": "workstation_cluster",
+      "count": 4
+    },
+    {
+      "module": "private_office",
+      "count": 8
+    },
+    {
+      "module": "meeting_4",
+      "count": 4
+    },
+    {
+      "module": "meeting_8",
+      "count": 2
+    },
+    {
+      "module": "boardroom_12",
+      "count": 1
+    },
+    {
+      "module": "phone_booth",
+      "count": 3
+    },
+    {
+      "module": "reception",
+      "count": 1
+    },
+    {
+      "module": "kitchenette",
+      "count": 1
+    },
+    {
+      "module": "dining",
+      "count": 1
+    },
+    {
+      "module": "lounge",
+      "count": 1
+    }
+  ],
+  "open_workstations_exact": 24,
+  "objectives_weights": {
+    "daylight_utilization": 0.2,
+    "circulation_efficiency": 0.12,
+    "entrance_logic": 0.12,
+    "adjacency_quality": 0.14,
+    "compactness": 0.08,
+    "privacy_gradient": 0.08,
+    "meeting_accessibility": 0.1,
+    "facade_preservation": 0.08,
+    "wasted_space": 0.08
+  },
+  "brief_semantics": {
+    "brief_id": "BRIEF_EJECUTIVO",
+    "target_headcount": 40,
+    "open_workstations": 24,
+    "permanent_seats": 33,
+    "meeting_seats": 44,
+    "support_capacity": 24,
+    "unseated_headcount": 7,
+    "cluster_count": 4,
+    "rooms": {
+      "private_office": 8,
+      "meeting_4": 4,
+      "meeting_8": 2,
+      "boardroom_12": 1,
+      "phone_booth": 3,
+      "reception": 1,
+      "kitchenette": 1,
+      "dining": 1,
+      "lounge": 1
+    }
+  }
+}

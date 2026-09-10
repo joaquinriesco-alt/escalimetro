@@ -268,7 +268,7 @@ def test_403_lamina_byte_identica():
             layout=Layout.load(os.path.join(d, "layout.json")),
             metrics=_j(os.path.join(d, "metrics.json")),
             critique=_j(os.path.join(d, "critique.json")))})
-    assert build_board(alts, shell, evidence, ctx=ctx) == open(
+    assert build_board(alts, shell, evidence, ctx=ctx, program=load_program(PROG)) == open(
         os.path.join(e07, "ESCALIMETRO_PRESENTATION_STANDARD_01.svg"), encoding="utf-8").read()
 
 

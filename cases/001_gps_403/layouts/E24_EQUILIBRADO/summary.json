@@ -1,0 +1,62 @@
+{
+  "total_runtime_s": 423.0,
+  "no_fit": {},
+  "per_alternative_s": {
+    "A": 187.22,
+    "B": 114.55,
+    "C": 118.71
+  },
+  "kpi_target_s": 120.0,
+  "kpi_met": false,
+  "gates": {
+    "A": {
+      "E1-T": "PASS",
+      "E1-A": "PASS_PROVISIONAL",
+      "E1-C": "READY_FOR_BROKER_REVIEW"
+    },
+    "B": {
+      "E1-T": "PASS",
+      "E1-A": "FAIL",
+      "E1-C": "NOT_READY"
+    },
+    "C": {
+      "E1-T": "PASS",
+      "E1-A": "PASS_PROVISIONAL",
+      "E1-C": "READY_FOR_BROKER_REVIEW"
+    }
+  },
+  "geometric_difference": {
+    "AvsB": {
+      "identical_placements": 7,
+      "n": 27,
+      "different_pct": 74.1
+    },
+    "AvsC": {
+      "identical_placements": 4,
+      "n": 25,
+      "different_pct": 84.0
+    },
+    "BvsC": {
+      "identical_placements": 3,
+      "n": 27,
+      "different_pct": 88.9
+    }
+  },
+  "fit_verdict": {
+    "unit": "Oficina 403 (GPS Property)",
+    "published_area_m2": 543.0,
+    "technical_fit": "FIT",
+    "robustness": "ROBUST_FIT",
+    "freshness": "STALE",
+    "fit": "STALE",
+    "fit_label": "REQUIERE RECÁLCULO",
+    "scale": "UNCONFIRMED",
+    "scale_confidence": "LOW",
+    "headcount": 48,
+    "program": "OFFICE_BALANCED_48",
+    "recommendation": "Confirma una dimensión real antes de comprometer capacidad.",
+    "reason": "La evidencia guardada no corresponde al floorplate, al programa o a una versión compatible del motor: program_sha256 cambió respecto del pinchado en EVIDENCE_LEGACY.json",
+    "note": "Test-fit conceptual de space planning. No constituye proyecto de arquitectura.",
+    "source": "evidencia computada: cases/001_gps_403/layouts/E07/gates.json, cases/001_gps_403/layouts/E07/alternatives/A/metrics.json, cases/001_gps_403/layouts/E06/fit_robustness_report.json, cases/001_gps_403/layouts/E06/fit_verdict.json"
+  }
+}

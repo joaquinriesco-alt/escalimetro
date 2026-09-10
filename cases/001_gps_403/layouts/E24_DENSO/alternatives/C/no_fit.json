@@ -1,0 +1,11 @@
+{
+  "alt": "C",
+  "name": "COLABORATIVO",
+  "status": "NO_RESULT_TIMEOUT",
+  "solver_status": "UNKNOWN",
+  "reason": "C: sin solución factible (UNKNOWN: sin solución en el tiempo)",
+  "runtime_s": 160.28,
+  "brief_id": "BRIEF_DENSO",
+  "open_workstations_requested": 56,
+  "note": "El solver NO CONCLUYÓ dentro del presupuesto de tiempo del producto (feas=25.0s con reintento, opt=34.0s). UNKNOWN no dice nada sobre factibilidad: no es una demostración de que no quepa ni de que quepa."
+}

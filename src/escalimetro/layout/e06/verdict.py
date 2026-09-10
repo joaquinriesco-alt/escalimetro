@@ -41,7 +41,7 @@ class FitVerdict:
 
 
 def build(unit: str, program: str, headcount: int, rob: Dict, ev: Dict, gate_auto: str, gate_assisted: str,
-          qa_gate: str, published_area_m2=None) -> FitVerdict:
+          qa_gate: str, published_area_m2=None, open_workstations: int = None) -> FitVerdict:
     """E15 — `published_area_m2` es dato del caso. Sin declarar, el texto dice que no hay superficie
     publicada; nunca la de otro inmueble."""
     cls = rob["classification"]
@@ -49,7 +49,8 @@ def build(unit: str, program: str, headcount: int, rob: Dict, ev: Dict, gate_aut
     pct = rob.get("pct_scenarios_exact_fit", 0.0)
     ex = rob.get("exact_fit_factors", [])
     if ex:
-        reason = (f"40 puestos + programa completo de recintos caben con escala ≥ {mn:.3f}× la nominal "
+        puestos = f"{open_workstations} puestos" if open_workstations else "los puestos del brief"
+        reason = (f"{puestos} + programa completo de recintos caben con escala ≥ {mn:.3f}× la nominal "
                   f"({pct:.0f} % de los escenarios probados: {', '.join(f'{f:.3f}' for f in ex)}). Restricción dominante: {rob.get('primary_constraint')}.")
     else:
         reason = f"ningún escenario de escala probado admite el programa completo; restricción dominante: {rob.get('primary_constraint')}."
@@ -62,6 +63,6 @@ def build(unit: str, program: str, headcount: int, rob: Dict, ev: Dict, gate_aut
     elif cls in ("LIKELY_FIT", "BORDERLINE"):
         rec = "confirmar UNA dimensión (ancho de fachada o del núcleo) antes de comprometer; el resultado cambia dentro del error de escala."
     else:
-        rec = "no comprometer 48 personas en esta planta sin confirmar escala; negociar el brief."
+        rec = (f"no comprometer {headcount} personas en esta planta sin confirmar escala; negociar el brief.")
     return FitVerdict(unit, program, headcount, cls, reason, unc, rec, rob.get("confidence", "LOW"), mn, pct,
                       ev.get("verdict", "UNKNOWN"), gate_auto, gate_assisted, qa_gate)

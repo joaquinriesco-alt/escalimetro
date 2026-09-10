@@ -14,7 +14,9 @@ import os
 import re
 from typing import Dict, List, Tuple
 
+from ..brief import program_rows, total_rooms
 from ..case_context import CaseContext, from_case_dir
+from ..layout.program_access import open_workstations
 from .blind import BLIND, REAL_NAMES, mapping_for
 
 #: programa congelado por defecto. No es identidad de caso: es el programa del experimento, y el
@@ -31,12 +33,14 @@ LEGEND = [("Puestos de trabajo", "#dfe7f5"), ("Salas y directorio", "#dfeee2"), 
           ("Cocina / comedor / cabinas", "#f2e7db"), ("Lounge", "#ece0ef"), ("Circulación", "#e9ecf2"),
           ("Núcleo del edificio", "#e3e5e8"), ("Pilar", "#222222")]
 
-PROGRAM_ROWS = [("Puestos open space", "40"), ("Oficinas privadas", "4"), ("Salas de 4", "3"),
-                ("Sala de 8", "1"), ("Directorio de 12", "1"), ("Phone booths", "3"),
-                ("Recepción", "1"), ("Kitchenette", "1"), ("Comedor", "1"), ("Lounge", "1")]
+# E24 §6 — programa y KPIs comunes se DERIVAN del brief compilado, no se escriben aquí.
 
-#: idéntico en las tres alternativas — verificado en metrics.json de A, B y C
-COMMON_METRICS = [("Programa", "completo"), ("Puestos open", "40 / 40"), ("Recintos", "16 / 16")]
+
+def _common_metrics(program: Dict) -> List[Tuple[str, str]]:
+    """Idéntico en las tres alternativas: el mismo programa del cliente resuelto completo."""
+    need = open_workstations(program)
+    return [("Programa", "completo"), ("Puestos open", f"{need} / {need}"),
+            ("Recintos", f"{total_rooms(program)} / {total_rooms(program)}")]
 
 W, H = 4900, 1390
 SIDE_X, SIDE_W = 60, 500
@@ -116,7 +120,7 @@ def base_plan_svg(shell: Dict, width: int = 900) -> str:
 
 
 # ---------------------------------------------------------------------------------------------------
-def _sidebar(shell: Dict) -> List[str]:
+def _sidebar(shell: Dict, program: Dict) -> List[str]:
     o: List[str] = []
     x = SIDE_X
     o.append(f'<rect x="{x}" y="{PLAN_Y - 46}" width="{SIDE_W}" height="{H - PLAN_Y - 20}" '
@@ -131,7 +135,7 @@ def _sidebar(shell: Dict) -> List[str]:
     y += bh + 40
 
     o.append(_t(x + 24, y, "PROGRAMA SOLICITADO", 16, PAL["muted"], 700, ls=1.6)); y += 30
-    for name, qty in PROGRAM_ROWS:
+    for name, qty in program_rows(program):
         o.append(_t(x + 24, y, name, 18))
         o.append(_t(x + SIDE_W - 24, y, qty, 18, PAL["ink"], 700, anchor="end"))
         y += 28
@@ -146,7 +150,7 @@ def _sidebar(shell: Dict) -> List[str]:
     return o
 
 
-def _column(i: int, label: str, plan_body: str, pw: int, ph: int) -> List[str]:
+def _column(i: int, label: str, plan_body: str, pw: int, ph: int, program: Dict) -> List[str]:
     x = COL_X[i]
     o: List[str] = [f'<rect x="{x}" y="{PLAN_Y - 46}" width="{COL_W}" height="{H - PLAN_Y - 20}" '
                     f'fill="{PAL["paper"]}" stroke="{PAL["line"]}"/>']
@@ -158,7 +162,7 @@ def _column(i: int, label: str, plan_body: str, pw: int, ph: int) -> List[str]:
     o.append(f'<g transform="translate({x + 20},{PLAN_Y + 40}) scale({k:.5f})">{plan_body}</g>')
 
     y = PLAN_Y + 40 + int(ph * k) + 46
-    for name, val in COMMON_METRICS:
+    for name, val in _common_metrics(program):
         o.append(_t(x + 26, y, name, 19, PAL["muted"]))
         o.append(_t(x + COL_W - 26, y, val, 19, PAL["ink"], 700, anchor="end"))
         y += 30
@@ -196,10 +200,10 @@ def build_board(handoffs: Dict[str, Dict], labels: Dict[str, str], order: List[s
     o.append(f'<line x1="{SIDE_X}" y1="{PLAN_Y - 80}" x2="{W - SIDE_X}" y2="{PLAN_Y - 80}" '
              f'stroke="{PAL["ink"]}" stroke-width="2"/>')
 
-    o += _sidebar(shell)
+    o += _sidebar(shell, program)
     for i, alt in enumerate(order):
         body, pw, ph = strip_chrome(handoffs[alt]["svg"]["commercial_base"])
-        o += _column(i, labels[alt], body, pw, ph)
+        o += _column(i, labels[alt], body, pw, ph, program)
 
     o.append(_t(SIDE_X, H - 24, "ESCALÍMETRO  ·  pre-design  ·  feasibility  ·  test-fit",
                 17, PAL["muted"]))

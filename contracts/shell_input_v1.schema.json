@@ -2,64 +2,240 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "escalimetro/contracts/shell_input_v1.schema.json",
   "title": "ShellInputV1 — veredicto de aceptación de entrada para ESCALÍMETRO V1",
-  "description": "Decide si una planta tiene geometría suficiente para INTENTAR un layout. NO limpia el plano. NO interpreta mobiliario. Se evalúa sobre un Floorplate ya normalizado (schema floorplate 0.2.0) más los hechos declarados del caso. E23 especifica; E24 implementa.",
+  "description": "Decide si una planta tiene geometría suficiente para INTENTAR un layout. NO limpia el plano. NO interpreta mobiliario. Se evalúa sobre un Floorplate ya normalizado (schema floorplate 0.2.0) más los HECHOS DECLARADOS del caso. E23 especifica; E24 implementa. E24 §12: `not_layout_dominated` NO se infiere con IA, VLM ni SemanticHint: se resuelve con el hecho de intake `shell_declared_clean` (true|false|unknown).",
   "type": "object",
-  "required": ["contract_version", "case_id", "verdict", "checks", "evidence"],
+  "required": [
+    "contract_version",
+    "case_id",
+    "verdict",
+    "checks",
+    "evidence"
+  ],
   "additionalProperties": false,
   "properties": {
-    "contract_version": {"const": "shell_input_v1"},
-    "case_id": {"type": "string", "minLength": 1},
+    "contract_version": {
+      "const": "shell_input_v1"
+    },
+    "case_id": {
+      "type": "string",
+      "minLength": 1
+    },
     "verdict": {
       "type": "string",
-      "enum": ["SHELL_ACCEPTED", "INPUT_NOT_READY", "INVALID_INPUT", "SCALE_UNRESOLVED"],
-      "description": "SHELL_ACCEPTED: hay geometría suficiente para intentar layout. INPUT_NOT_READY: el dibujo es legible pero le falta confirmación o está dominado por un layout previo. INVALID_INPUT: no se pudo recuperar geometría utilizable. SCALE_UNRESOLVED: geometría OK pero no hay escala consumible y nadie la confirmó."
+      "enum": [
+        "SHELL_ACCEPTED",
+        "INPUT_NOT_READY",
+        "INVALID_INPUT",
+        "SCALE_UNRESOLVED"
+      ],
+      "description": "SHELL_ACCEPTED: hay geometría suficiente para intentar layout (puede quedar HITL pendiente). INPUT_NOT_READY: el dibujo es legible pero está dominado por un layout previo declarado. INVALID_INPUT: no se pudo recuperar geometría utilizable. SCALE_UNRESOLVED: geometría OK pero no hay escala consumible y nadie la confirmó. Precedencia determinista al resolver: INVALID_INPUT > INPUT_NOT_READY > SCALE_UNRESOLVED > SHELL_ACCEPTED. Un check en NEEDS_HITL NUNCA bloquea: sólo agrega una pregunta a hitl_required."
     },
     "hitl_required": {
       "type": "array",
-      "description": "Confirmaciones humanas de UNA pregunta cada una. V1 nunca pide dibujar.",
-      "items": {"type": "string", "enum": ["perimeter", "scale", "entrance", "fixed_elements"]}
+      "description": "Confirmaciones humanas de UNA pregunta cada una. V1 nunca pide dibujar. La pregunta de escala es marcar dos puntos y decir cuántos metros hay entre ellos; no se construye lector de cotas ni de barra de escala (§14).",
+      "items": {
+        "type": "string",
+        "enum": [
+          "perimeter",
+          "scale",
+          "entrance",
+          "fixed_elements"
+        ]
+      }
     },
     "checks": {
       "type": "object",
-      "required": ["perimeter_recoverable", "scale_consumable", "area_consistent",
-                   "obstacles_representable", "entrance_identifiable", "not_layout_dominated",
-                   "geometry_unambiguous"],
+      "required": [
+        "perimeter_recoverable",
+        "scale_consumable",
+        "area_consistent",
+        "obstacles_representable",
+        "entrance_identifiable",
+        "not_layout_dominated",
+        "geometry_unambiguous"
+      ],
       "additionalProperties": false,
       "properties": {
-        "perimeter_recoverable":  {"$ref": "#/definitions/check"},
-        "scale_consumable":       {"$ref": "#/definitions/check"},
-        "area_consistent":        {"$ref": "#/definitions/check"},
-        "obstacles_representable":{"$ref": "#/definitions/check"},
-        "entrance_identifiable":  {"$ref": "#/definitions/check"},
-        "not_layout_dominated":   {"$ref": "#/definitions/check"},
-        "geometry_unambiguous":   {"$ref": "#/definitions/check"}
+        "perimeter_recoverable": {
+          "$ref": "#/definitions/check"
+        },
+        "scale_consumable": {
+          "$ref": "#/definitions/check"
+        },
+        "area_consistent": {
+          "$ref": "#/definitions/check"
+        },
+        "obstacles_representable": {
+          "$ref": "#/definitions/check"
+        },
+        "entrance_identifiable": {
+          "$ref": "#/definitions/check"
+        },
+        "not_layout_dominated": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/check"
+            }
+          ],
+          "description": "Fuente ÚNICA: el hecho declarado `shell_declared_clean` del caso. true → PASS · unknown → NEEDS_HITL (una confirmación simple) · false → FAIL (INPUT_NOT_READY). Prohibido derivarlo de la imagen, de un VLM, de SemanticHint o de contar muebles. V1 no limpia planos (docs/PLAN_CLEANING_DEFERRED.md)."
+        },
+        "geometry_unambiguous": {
+          "$ref": "#/definitions/check"
+        }
       }
     },
     "evidence": {
       "type": "object",
-      "required": ["floorplate_sha256", "scale_semantic_validity", "px_per_m", "usable_area_m2"],
+      "required": [
+        "floorplate_sha256",
+        "floorplate_path",
+        "scale_semantic_validity",
+        "px_per_m",
+        "usable_area_m2",
+        "shell_declared_clean",
+        "scale_provenance"
+      ],
       "properties": {
-        "floorplate_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-        "scale_semantic_validity": {
-          "type": ["string", "null"],
-          "enum": ["SCALE_CONFIRMED", "SCALE_INFERRED_MATCHED_REGION", "SCALE_UNCONFIRMED_REGION",
-                   "SCALE_INCOMPATIBLE_REGION", "SCALE_NOT_EVALUATED", null]
+        "floorplate_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
         },
-        "px_per_m": {"type": ["number", "null"]},
-        "usable_area_m2": {"type": ["number", "null"]},
-        "obstacle_count": {"type": "integer"},
-        "notes": {"type": "string"}
+        "scale_semantic_validity": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "SCALE_CONFIRMED",
+            "SCALE_INFERRED_MATCHED_REGION",
+            "SCALE_UNCONFIRMED_REGION",
+            "SCALE_INCOMPATIBLE_REGION",
+            "SCALE_NOT_EVALUATED",
+            null
+          ]
+        },
+        "px_per_m": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "usable_area_m2": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "obstacle_count": {
+          "type": "integer"
+        },
+        "notes": {
+          "type": "string"
+        },
+        "floorplate_path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "shell_declared_clean": {
+          "type": [
+            "boolean",
+            "string"
+          ],
+          "enum": [
+            true,
+            false,
+            "unknown"
+          ],
+          "description": "Hecho de intake declarado en case.json. Nunca inferido."
+        },
+        "scale_provenance": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "USER_CONFIRMED_DISTANCE",
+            "USER_DECLARED_PX_PER_M",
+            "published_area_inferred",
+            "published_area_rejected",
+            "NONE",
+            null
+          ],
+          "description": "E24 §14. Vía primaria: USER_CONFIRMED_DISTANCE — el usuario marca punto A, punto B y declara la distancia real; px_per_m = |AB|px / distancia_m. Vía secundaria: USER_DECLARED_PX_PER_M. Todo lo demás es escala inferida, no confirmada."
+        },
+        "scale_confirmation": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "Datos crudos para reproducir la escala confirmada (§14). Se guardan, no se recalculan.",
+          "additionalProperties": false,
+          "properties": {
+            "method": {
+              "type": "string",
+              "enum": [
+                "two_point_distance",
+                "px_per_m"
+              ]
+            },
+            "point_a_px": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "point_b_px": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "real_distance_m": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "px_per_m": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "pixel_distance": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "note": {
+              "type": "string"
+            }
+          }
+        }
       }
     }
   },
   "definitions": {
     "check": {
       "type": "object",
-      "required": ["status", "why"],
+      "required": [
+        "status",
+        "why"
+      ],
       "additionalProperties": false,
       "properties": {
-        "status": {"type": "string", "enum": ["PASS", "NEEDS_HITL", "FAIL", "NOT_EVALUATED"]},
-        "why": {"type": "string", "minLength": 1}
+        "status": {
+          "type": "string",
+          "enum": [
+            "PASS",
+            "NEEDS_HITL",
+            "FAIL",
+            "NOT_EVALUATED"
+          ]
+        },
+        "why": {
+          "type": "string",
+          "minLength": 1
+        }
       }
     }
   }

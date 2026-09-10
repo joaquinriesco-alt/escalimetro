@@ -17,6 +17,7 @@ import numpy as np
 
 from ...schemas.floorplate import Floorplate
 from ..model import Layout, load_modules, load_program
+from ..program_access import open_workstations
 from ..run import compute_metrics
 from ..scoring import score as score_layout
 from ..solver import Solver
@@ -112,7 +113,7 @@ def cmd_solve(args):
                             "daylight": (lay.scores or {}).get("objectives", {}).get("daylight_utilization"), "circulation_m2": lay.metrics.get("circulation_area_m2")})
         lr["exact_fit"] = ok
         if ok:
-            lr["max_seats"] = 40
+            lr["max_seats"] = open_workstations(prog)
         print(f"[solve] válido={ok} viol={viol[:3]} arq={crit.architectural_score}")
     scen.sort(key=lambda x: x["scale_factor"])
     dump(scen, path)
@@ -135,7 +136,7 @@ def _ctx(args, factor):
     prog = load_program(args.program)
     S04 = Solver(shell, mods, prog, clr)
     feats = extract_features(shell, S04.grid)
-    strat = {s.strategy_id: s for s in generate_strategies(feats)}[args.strategy]
+    strat = {s.strategy_id: s for s in generate_strategies(feats, int(prog["open_workstations_exact"]))}[args.strategy]
     return fp, shell, mods, prog, S04, strat
 
 
@@ -234,7 +235,9 @@ def cmd_report(args):
         ax.scatter([f], [sc_], s=110, color="#2ca02c" if ok else "#d62728", marker="o" if ok else "X", zorder=3)
         lab = f"{sc_}" if v is not None else "sin anclaje\npara directorio"
         ax.annotate(lab, (f, sc_), textcoords="offset points", xytext=(0, 9), ha="center", fontsize=8 if v is None else 9)
-    ax.axhline(40, color="#555", ls="--", lw=1); ax.text(fs[0], 40.4, "brief: 40 puestos", fontsize=9, color="#555")
+    _need = open_workstations(load_program(args.program))      # E24 §6 — la línea del brief es el brief
+    ax.axhline(_need, color="#555", ls="--", lw=1)
+    ax.text(fs[0], _need + 0.4, f"brief: {_need} puestos", fontsize=9, color="#555")
     ax.axvline(1.0, color="#999", ls=":", lw=1); ax.text(1.001, min(seats) - 1.5, "escala nominal (LOW)", fontsize=8, color="#777")
     ax.set_xlabel(f"factor de escala respecto de {ctx.scale_px_per_m:.2f} px/m (published_area_inferred)")
     ax.set_ylabel("puestos open máximos con recintos completos")
@@ -304,8 +307,10 @@ def cmd_report(args):
     assisted_gate = "PASS" if (qa and qa["after"]["hard_valid"] and qa["after"]["broker_showable"]) else "FAIL"
     qa_g = qa["qa_gate"] if qa else ("AUTONOMOUS_PASS" if auto_gate == "PASS" else "FAIL")
     unit_full = f"{ctx.unit_label} ({ctx.source_name})" if ctx.source_name else ctx.unit_label
-    v = build(unit_full, "OFFICE_BALANCED_48", 48, rob, ev.to_dict(), auto_gate, assisted_gate, qa_g,
-              published_area_m2=ctx.published_area_m2)
+    prog_v = load_program(args.program)                     # E24 §6 — brief, no "OFFICE_BALANCED_48"/48
+    v = build(unit_full, prog_v.get("template_id", os.path.basename(args.program)),
+              int(prog_v["target_headcount"]), rob, ev.to_dict(), auto_gate, assisted_gate, qa_g,
+              published_area_m2=ctx.published_area_m2, open_workstations=open_workstations(prog_v))
     dump(v.to_dict(), os.path.join(out, "fit_verdict.json"))
     open(os.path.join(out, "fit_verdict.txt"), "w", encoding="utf-8").write(v.text())
     dump({"robustness": rob, "evidence": ev.to_dict(), "autonomous": auto_info and {k: v_ for k, v_ in auto_info.items() if k not in ("critique", "metrics")},

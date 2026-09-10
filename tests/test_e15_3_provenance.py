@@ -96,7 +96,7 @@ def test_ninguna_forma_falsa_entra_al_board(falso):
 def test_el_board_deriva_la_copy_desde_la_evidencia():
     """La copy ya no llega hecha: se construye dentro del boundary controlado."""
     ctx = from_case_dir(C403)
-    svg = build_board(_alts_403(), _shell_403(), FE.load(C403, PROG), ctx=ctx)
+    svg = build_board(_alts_403(), _shell_403(), FE.load(C403, PROG), ctx=ctx, program=load_program(PROG))
     assert "ROBUST WITHIN" in svg and "ASSUMED SCALE RANGE" in svg
 
 
@@ -266,7 +266,8 @@ def test_el_vocabulario_lo_fija_el_esquema_existente():
 # regresiones duras
 # ---------------------------------------------------------------------------------------------------
 def test_403_lamina_byte_identica():
-    svg = build_board(_alts_403(), _shell_403(), FE.load(C403, PROG), ctx=from_case_dir(C403))
+    svg = build_board(_alts_403(), _shell_403(), FE.load(C403, PROG), ctx=from_case_dir(C403),
+                      program=load_program(PROG))
     assert svg == open(os.path.join(C403, "layouts", "E07",
                                     "ESCALIMETRO_PRESENTATION_STANDARD_01.svg"),
                        encoding="utf-8").read()

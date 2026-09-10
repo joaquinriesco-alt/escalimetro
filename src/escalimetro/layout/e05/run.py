@@ -147,7 +147,7 @@ def main(argv=None):
     grid = S04.grid
     feats = extract_features(shell, grid)
     dump(feats.to_dict(), os.path.join(out, "shell_features.json"))
-    strategies = generate_strategies(feats)
+    strategies = generate_strategies(feats, int(prog["open_workstations_exact"]))
     if args.only:
         keep = set(args.only.split(","))
         strategies = [s for s in strategies if s.strategy_id in keep]

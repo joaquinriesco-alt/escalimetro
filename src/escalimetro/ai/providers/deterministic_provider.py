@@ -103,6 +103,13 @@ def visual_review(ctx: Dict) -> Dict:
     }
 
 
+def _subtitle(ctx: Dict) -> str:
+    """E24 §6 — el subtítulo decía '48 personas' para cualquier cliente."""
+    hc = ctx.get("target_headcount")
+    return (f"Mismo programa para {hc} personas, mismo piso. Cambia la prioridad." if hc
+            else "El mismo programa, el mismo piso. Cambia la prioridad.")
+
+
 def presentation_spec(ctx: Dict) -> Dict:
     """Dirección de lámina de respaldo. Copy corto, tomado de la intención declarada de cada alternativa."""
     alts = ctx["alternatives"]
@@ -113,7 +120,7 @@ def presentation_spec(ctx: Dict) -> Dict:
     return {
         "alternative_order": order,
         "headline": "Tres formas de ocupar la misma oficina",
-        "subtitle": "Mismo programa para 48 personas, mismo piso. Cambia la prioridad.",
+        "subtitle": _subtitle(ctx),
         "alternative_copy": copy,
         "strengths": {k: by[k]["strengths"][:4] for k in order},
         "metric_priority": ["puestos", "salas", "luz en puestos", "circulación"],

@@ -182,9 +182,25 @@ def _path(r, pid: str) -> Optional[float]:
     return None
 
 
+def _program_block(program: Dict, r) -> Dict:
+    """E24 §17 — el bloque `program` del handoff: lo pedido, lo entregado y la diferencia."""
+    from .program_delivery import delivery
+    d = delivery(program, r)
+    return {"brief_id": program.get("template_id"),
+            "target_headcount": d["requested"]["target_headcount"],
+            "open_workstations": d["requested"]["open_workstations"],
+            "rooms": {k: v for k, v in r.metrics["program_completeness"]["rooms"].items()},
+            "requested_vs_delivered": d,
+            "brief_semantics": program.get("brief_semantics")}
+
+
 def presentation_handoff(r, spec, fit_verdict: Dict, svg_technical: str, svg_commercial: str, gates: Dict,
-                         burden: InternalQABurden, comparison_row: Dict, ctx=None) -> Dict:
+                         burden: InternalQABurden, comparison_row: Dict, ctx=None,
+                         program: Dict = None) -> Dict:
     """Contrato para que OpenAI eleve la lámina SIN reinterpretar la planta."""
+    if not program or "program" not in program:
+        raise ValueError("presentation_handoff necesita el programa compilado del BriefV1: el bloque "
+                         "`program` del handoff era un literal (48 personas / 40 puestos) hasta E24.")
     return {
         "geometry_locked": True,
         "geometry_lock_note": "La geometría está validada y cerrada. Cualquier capa de presentación puede cambiar "
@@ -204,8 +220,7 @@ def presentation_handoff(r, spec, fit_verdict: Dict, svg_technical: str, svg_com
                              "w": round(p.w, 3), "d": round(p.d, 3), "rot": p.rot, "seats": p.seats,
                              "zone": p.zone} for p in r.layout.placements],
         "svg": {"technical": svg_technical, "commercial_base": svg_commercial},
-        "program": {"target_headcount": 48, "open_workstations": 40,
-                    "rooms": {k: v for k, v in r.metrics["program_completeness"]["rooms"].items()}},
+        "program": _program_block(program, r),
         "metrics": comparison_row,
         "critique": r.critique,
         "gates": gates,

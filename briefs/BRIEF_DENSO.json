@@ -1,0 +1,18 @@
+{
+  "contract_version": "brief_v1",
+  "brief_id": "BRIEF_DENSO",
+  "target_headcount": 64,
+  "open_workstations": 56,
+  "rooms": [
+    {"module": "private_office", "count": 2},
+    {"module": "meeting_4", "count": 2},
+    {"module": "meeting_8", "count": 1},
+    {"module": "boardroom_12", "count": 1},
+    {"module": "phone_booth", "count": 4},
+    {"module": "reception", "count": 1},
+    {"module": "kitchenette", "count": 1},
+    {"module": "dining", "count": 1},
+    {"module": "lounge", "count": 1}
+  ],
+  "notes": "Densidad alta: la mayor cantidad de puestos posible, pocos privados y programa de reuniones reducido."
+}

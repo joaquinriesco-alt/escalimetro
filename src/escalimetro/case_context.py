@@ -55,6 +55,15 @@ CASE_INPUT_FIELDS = {
     "known_area_m2", "known_area_kind", "known_area_region", "sibling_units",
     "overrides", "vision", "segmentation", "simplify_eps_frac", "mask_open_px",
     "drawing_scope",          # E16.5 — hecho de la fuente: multi_unit | whole_shell
+    # E24 §12 — hecho de INTAKE, no inferencia: ¿el dibujo viene libre de layout previo?
+    # true | false | "unknown". Es la ÚNICA fuente de `not_layout_dominated` en ShellInputV1.
+    # Prohibido derivarlo de la imagen, de un VLM o de SemanticHint.
+    "shell_declared_clean",
+    # E24 §14 — confirmación humana de escala: dos puntos + la distancia real entre ellos.
+    # {"method": "two_point_distance", "point_a_px": [x,y], "point_b_px": [x,y], "real_distance_m": n}
+    # o, vía secundaria, {"method": "px_per_m", "px_per_m": n}. Es un dato declarado por una persona,
+    # no evidencia derivada de la geometría: por eso vive aquí y no en DERIVED_EVIDENCE_FIELDS.
+    "scale_confirmation",
 }
 #: valores derivados de la geometría: se leen del floorplate, nunca se declaran a mano
 DERIVED_EVIDENCE_FIELDS = {"scale_confidence", "scale_px_per_m", "scale_status", "scale",

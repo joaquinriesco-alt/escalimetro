@@ -1,0 +1,51 @@
+{
+  "contract_version": "shell_input_v1",
+  "case_id": "002_gps_401",
+  "verdict": "SHELL_ACCEPTED",
+  "hitl_required": [
+    "scale",
+    "fixed_elements"
+  ],
+  "checks": {
+    "perimeter_recoverable": {
+      "status": "PASS",
+      "why": "perímetro de 28 vértices, 17908 px², estado confirmed"
+    },
+    "scale_consumable": {
+      "status": "NEEDS_HITL",
+      "why": "escala inferida por 'published_area_inferred' sin validación semántica (None): 8.4300 px/m. Se puede intentar layout, pero el número es un supuesto."
+    },
+    "area_consistent": {
+      "status": "PASS",
+      "why": "área del modelo 252.0 m² vs publicada 252.0 m² (desvío 0.0 % ≤ 10 %)"
+    },
+    "obstacles_representable": {
+      "status": "PASS",
+      "why": "1 núcleo(s) y 2 pilar(es) representables como polígonos"
+    },
+    "entrance_identifiable": {
+      "status": "PASS",
+      "why": "acceso principal confirmado en [507, 207] (confianza 1.0)"
+    },
+    "not_layout_dominated": {
+      "status": "NEEDS_HITL",
+      "why": "el caso no declara shell_declared_clean: una confirmación simple ('¿esta planta viene libre?'). No se infiere del dibujo."
+    },
+    "geometry_unambiguous": {
+      "status": "PASS",
+      "why": "polígono simple de 28 vértices, sin huecos ni aristas degeneradas; incógnitas declaradas: ['scale.area_kind', 'windows.exact']"
+    }
+  },
+  "evidence": {
+    "floorplate_sha256": "687b0fdb8dacd5aaff00b9d17a8387ae4146fee9db8c690a421ce02b05ae0856",
+    "floorplate_path": "cases/002_gps_401/outputs/floorplate.json",
+    "scale_semantic_validity": null,
+    "px_per_m": 8.430034174929316,
+    "usable_area_m2": 252.0,
+    "obstacle_count": 3,
+    "shell_declared_clean": "unknown",
+    "scale_provenance": "published_area_inferred",
+    "scale_confirmation": null,
+    "notes": "5/7 checks en PASS"
+  }
+}

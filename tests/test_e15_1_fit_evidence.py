@@ -55,7 +55,9 @@ def test_case_json_solo_tiene_campos_del_contrato():
     allowed = {"case_id", "image", "image_note", "unit_label", "known_area_m2", "known_area_kind",
                "overrides", "vision", "segmentation", "simplify_eps_frac", "mask_open_px",
                "source_name", "display_name", "sibling_units",
-               "drawing_scope"}                                   # E16.5: alcance del dibujo
+               "drawing_scope",                                  # E16.5: alcance del dibujo
+               # E24 §12/§14 — hechos de INTAKE, declarados por una persona, no derivados del dibujo
+               "shell_declared_clean", "scale_confirmation"}
     #: E15.2/E15.3: scale_confidence
     #: es DERIVED_EVIDENCE y no puede declararse como entrada; esta lista blanca lo admitía todavía
     for p in _case_files():
@@ -302,7 +304,7 @@ def test_la_lamina_de_403_sigue_byte_identica_con_evidencia_computada():
             layout=Layout.load(os.path.join(d, "layout.json")),
             metrics=_j(os.path.join(d, "metrics.json")),
             critique=_j(os.path.join(d, "critique.json")))})
-    new = build_board(alts, shell, evidence, ctx=ctx)
+    new = build_board(alts, shell, evidence, ctx=ctx, program=load_program(PROG))
     assert new == open(os.path.join(e07, "ESCALIMETRO_PRESENTATION_STANDARD_01.svg"),
                        encoding="utf-8").read()
 

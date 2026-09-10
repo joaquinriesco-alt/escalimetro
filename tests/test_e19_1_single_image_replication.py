@@ -18,6 +18,7 @@ RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ / "tests" / "fixtures" / "semantic_context"))
 import context_bench_scene as B  # noqa: E402
 
+import engine_baseline  # noqa: E402
 from escalimetro.generalization import freeze, producer_freeze, scope_guard  # noqa: E402
 
 BENCH_E19 = "2b3e2eb06248f3897b4bf663ce39930fc111b59560ccffd7cac8478141be6f81"
@@ -92,7 +93,12 @@ def test_el_target_sigue_siendo_byte_identico_dentro_del_par(pid):
 
 def test_e19_1_no_toca_el_motor():
     r = producer_freeze.read_worktree(str(RAIZ))
-    assert freeze.manifest(str(RAIZ))["engine_hash"] == ENGINE
+    # E24 — el literal ENGINE es el motor de ESTE ciclo y queda documentado en la cadena de
+    # baselines. Lo que se comprueba hoy es que el motor está en el baseline VIGENTE: un ciclo
+    # posterior puede moverlo a propósito, pero sólo declarando un baseline nuevo.
+    assert engine_baseline.esta_en_la_cadena(ENGINE), "el motor de este ciclo salió de la cadena"
+    assert freeze.manifest(str(RAIZ))["engine_hash"] == engine_baseline.engine_hash(), \
+        "el motor cambió sin declarar un GENERIC_ENGINE_BASELINE.json nuevo"
     assert producer_freeze.producer_hash(r) == PRODUCER
     assert scope_guard.hashes(r) == SCOPE
 

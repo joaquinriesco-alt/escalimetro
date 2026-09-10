@@ -2,10 +2,10 @@
 
 Modelo: cada banda tiene slots 1D (intervalos libres a lo largo de su eje). Cada recinto elige EXACTAMENTE
 una opción (slot, orientación) = intervalo opcional; los puestos son bloques opcionales por slot con
-configuración parametrizada (bench 2×2…2×6, filas 1×2…1×6) y suma EXACTA de 40. NoOverlap por slot.
+configuración parametrizada (bench 2×2…2×6, filas 1×2…1×6) y suma EXACTA = brief. NoOverlap por slot.
 
 Las restricciones duras están DENTRO de la búsqueda: programa completo y conteos exactos (una opción por
-recinto, Σ puestos = 40), dentro del usable / fuera de núcleo y pilares (los slots ya lo garantizan),
+recinto, Σ puestos = open_workstations del brief), dentro del usable / fuera de núcleo y pilares,
 recepción a ≤ 8 m de ruta del acceso (dominio de posiciones restringido por la distancia geodésica sobre
 la espina), sin colisiones (NoOverlap), acceso a cada recinto (toda opción toca un pasillo por
 construcción). El validador determinista de E04 vuelve a comprobar todo después.
@@ -26,6 +26,7 @@ from shapely.geometry import box, Point as ShPoint
 
 from ..grid import Grid
 from ..model import Layout, Module, Placement, ShellM
+from ..program_access import open_workstations
 from ..zoning import ZONE_OF_MODULE
 from .bands import Band, SpinePlan
 from .strategy import SpatialStrategy
@@ -98,7 +99,7 @@ def solve(shell: ShellM, grid: Grid, plan: SpinePlan, strat: SpatialStrategy, mo
     t0 = time.time()
     repair = repair or RepairConstraints()
     W = dict(weights); W.update(strat.objective_weights); W.update(repair.weight_overrides)
-    need = int(program.get("open_workstations_exact", 40))
+    need = open_workstations(program)
     rooms = _room_items(modules, program)
     reach = _reach_line(grid, plan, shell)
     bands = [b for b in plan.bands if b.kind in ("work", "rooms", "mixed", "support")]

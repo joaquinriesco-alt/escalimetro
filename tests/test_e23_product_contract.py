@@ -13,6 +13,7 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(RAIZ / "src"))
 
+import engine_baseline  # noqa: E402
 from escalimetro.generalization import freeze, producer_freeze, scope_guard  # noqa: E402
 
 ENGINE = "779a1eee6d3d2f2ce4fcc185dbf08da8890768e49a64211770eb1ee800a8105c"
@@ -38,17 +39,36 @@ def _j(p):
 def test_e23_no_toca_el_motor():
     """§26 — src/escalimetro/** = cero cambios. E23 es auditoría y contrato."""
     r = producer_freeze.read_worktree(str(RAIZ))
-    assert freeze.manifest(str(RAIZ))["engine_hash"] == ENGINE
+    # E24 — el literal ENGINE es el motor de ESTE ciclo y queda documentado en la cadena de
+    # baselines. Lo que se comprueba hoy es que el motor está en el baseline VIGENTE: un ciclo
+    # posterior puede moverlo a propósito, pero sólo declarando un baseline nuevo.
+    assert engine_baseline.esta_en_la_cadena(ENGINE), "el motor de este ciclo salió de la cadena"
+    assert freeze.manifest(str(RAIZ))["engine_hash"] == engine_baseline.engine_hash(), \
+        "el motor cambió sin declarar un GENERIC_ENGINE_BASELINE.json nuevo"
     assert producer_freeze.producer_hash(r) == PRODUCER
     assert scope_guard.hashes(r) == SCOPE
 
 
-def test_los_contratos_v1_viven_fuera_del_runtime():
-    """El contrato es especificación, no código embarcado: por eso el hash del motor no se mueve."""
+def test_el_esquema_del_contrato_sigue_viviendo_fuera_del_runtime():
+    """E23 dejó los contratos como ESPECIFICACIÓN (JSON Schema), fuera de src/, para no mover el hash
+    del motor mientras se decidía el alcance de V1.
+
+    E24 §11 los IMPLEMENTA a propósito: `src/escalimetro/shell_input/` es runtime y el hash del motor
+    se mueve, con baseline declarado (cases/generalization/E24/GENERIC_ENGINE_BASELINE.json). Lo que
+    sigue en pie —y es lo que este test comprueba— es que el ESQUEMA no se copió dentro del código:
+    hay una sola definición del contrato, en contracts/, y el runtime la valida contra ella."""
     assert C.is_dir()
-    assert not list(C.glob("*.py"))
+    assert not list(C.glob("*.py")), "el contrato se define en JSON Schema, no en Python"
+    esquema = (C / "shell_input_v1.schema.json").read_text(encoding="utf-8")
     for py in (RAIZ / "src").rglob("*.py"):
-        assert "shell_input_v1" not in py.read_text(), py
+        t = py.read_text(encoding="utf-8")
+        assert '"$id": "escalimetro/contracts/shell_input_v1' not in t, (py, "esquema duplicado en runtime")
+        assert esquema[:200] not in t, (py, "el contrato se copió dentro del runtime")
+    # y el runtime declara la MISMA versión de contrato que el esquema, sin redefinirlo
+    from escalimetro.shell_input import CONTRACT_VERSION, VERDICTS
+    esq = _j(C / "shell_input_v1.schema.json")
+    assert CONTRACT_VERSION == esq["properties"]["contract_version"]["const"]
+    assert set(VERDICTS) == set(esq["properties"]["verdict"]["enum"])
 
 
 # ------------------------------------------------ contratos V1

@@ -31,7 +31,7 @@ def ctx():
     prog = load_program(PROG)
     S04 = Solver(shell, mods, prog, clr)
     feats = extract_features(shell, S04.grid)
-    strats = generate_strategies(feats)
+    strats = generate_strategies(feats, int(prog["open_workstations_exact"]))
     return dict(shell=shell, mods=mods, prog=prog, S04=S04, grid=S04.grid, feats=feats, strats=strats)
 
 
@@ -69,8 +69,9 @@ def test_at_least_8_distinct_strategies(ctx):
 
 
 def test_strategy_generation_is_deterministic(ctx):
-    a = [s.to_dict() for s in generate_strategies(ctx["feats"])]
-    b = [s.to_dict() for s in generate_strategies(ctx["feats"])]
+    n = int(ctx["prog"]["open_workstations_exact"]) if "prog" in ctx else 40
+    a = [s.to_dict() for s in generate_strategies(ctx["feats"], n)]
+    b = [s.to_dict() for s in generate_strategies(ctx["feats"], n)]
     assert a == b
 
 

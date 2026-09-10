@@ -9,6 +9,7 @@ from dataclasses import dataclass, field, asdict
 from typing import Dict, List, Tuple
 
 from ..model import Module
+from ..program_access import open_workstations
 from .bands import SpinePlan, Band
 from .strategy import SpatialStrategy
 
@@ -23,7 +24,7 @@ class FeasibilityReport:
     open_work_area_m2: float
     estimated_circulation_m2: float
     spine_corridor_area_m2: float
-    facade_demand_m: float                 # metros de fachada que pedirían 40 puestos en bench 2×c
+    facade_demand_m: float                 # metros de fachada que pedirían los puestos del brief en bench 2×c
     facade_offer_m: float                  # metros de slots de puestos en bandas de fachada
     largest_required_rectangle: List[float]
     boardroom_hosts: List[str]             # bandas donde cabe el directorio
@@ -50,7 +51,7 @@ def _room_items(modules: Dict[str, Module], program: Dict) -> List[Tuple[str, Mo
 def preflight(strat: SpatialStrategy, plan: SpinePlan, modules: Dict[str, Module], program: Dict,
               usable_area: float) -> FeasibilityReport:
     rooms = _room_items(modules, program)
-    need_seats = int(program.get("open_workstations_exact", 40))
+    need_seats = open_workstations(program)
     ws = modules["workstation"]
     closed = sum(m.w * m.d for _, m in rooms)
     open_area = need_seats * ws.w * (ws.d + float(ws.spec.get("chair_zone_d", 0.8)))

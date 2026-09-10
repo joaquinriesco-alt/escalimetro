@@ -14,6 +14,7 @@ import numpy as np
 
 from ...schemas.floorplate import Floorplate
 from ..model import Layout, load_modules, load_program
+from ..program_access import open_workstations
 from ..run import compute_metrics
 from ..scoring import score as score_layout
 from ..solver import Solver
@@ -78,7 +79,7 @@ def run_scenario(fp: Floorplate, factor: float, strategy_id: str, modules_path: 
     S04 = Solver(shell, mods, prog, clr)
     grid = S04.grid
     feats = extract_features(shell, grid)
-    strat = {s.strategy_id: s for s in generate_strategies(feats)}[strategy_id]
+    strat = {s.strategy_id: s for s in generate_strategies(feats, int(prog["open_workstations_exact"]))}[strategy_id]
     plan = build_spine(shell, feats, strat, grid)
     els = F.spine_elements(plan)
     brs = F.branch_candidates(shell, feats, els)
@@ -116,7 +117,7 @@ def run_scenario(fp: Floorplate, factor: float, strategy_id: str, modules_path: 
     if "layout" in resp:
         result["probe"].update(finish(resp, "probe"))
     probe_seats = resp.get("seats")
-    # 2) brief exacto (Σ = 40 duro): primero factibilidad pura con la sonda como pista, luego optimización con
+    # 2) brief exacto (Σ puestos duro = open_workstations): primero factibilidad pura con la sonda como pista, luego optimización con
     #    la solución factible como pista (dos fases: CP-SAT encuentra antes una solución sin objetivo)
     res = F.solve_free(shell, grid, feats, strat, els + brs, cands, mods, prog, weights, seats_mode="exact", seed=seed,
                        time_limit_s=tl_exact * 0.6, hint=resp.get("layout"), feasibility_only=True)
@@ -133,7 +134,7 @@ def run_scenario(fp: Floorplate, factor: float, strategy_id: str, modules_path: 
         # si CP-SAT halló solución pero el validador la rechaza, no hay fit exacto validado
     exact_valid = bool(result["exact"].get("hard_valid"))
     result["exact_fit"] = exact_valid
-    result["max_seats"] = 40 if exact_valid else probe_seats
+    result["max_seats"] = open_workstations(prog) if exact_valid else probe_seats
     result["runtime_total_s"] = round(time.time() - t0, 1)
     sc.layout_result = result
     if log:
@@ -165,7 +166,7 @@ def robustness(scenarios: List[ScaleScenario]) -> FitRobustnessReport:
     cls = classify(factors, exact)
     conf = "LOW" if scenarios and scenarios[0].confidence == "LOW" else "MEDIUM"
     notes = ["Los umbrales de clasificación son hipótesis de producto (THRESHOLDS), no norma ni referencia externa.",
-             "Un 'exact fit' es un candidato con hard_valid=true del validador determinista E04 (programa 100 %, 40 puestos, 0 colisiones, circulación, recepción ≤ 8 m).",
+             "Un 'exact fit' es un candidato con hard_valid=true del validador determinista E04 (programa 100 %, los puestos exactos del brief, 0 colisiones, circulación, recepción ≤ 8 m).",
              "max_seats proviene de la sonda de capacidad (recintos completos, maximizar puestos, límite de tiempo): es cota inferior del óptimo si el status no es OPTIMAL."]
     return FitRobustnessReport(factors, exact, min(exact) if exact else None, round(100.0 * len(exact) / max(1, len(factors)), 1),
                                max_seats, sens, primary, conf, cls, notes=notes)

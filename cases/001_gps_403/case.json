@@ -33,5 +33,7 @@
       ]
     }
   },
-  "_contract": "E15.1 — case.json contiene SÓLO HECHOS DE ENTRADA: identidad, fuente, superficie publicada, unidades hermanas y configuración del pipeline. Ningún resultado de ejecución. El veredicto de fit se lee de los artefactos computados de E06/E07 (ver src/escalimetro/fit_evidence.py y docs/E15_1_DATA_LINEAGE.md)."
+  "_contract": "E15.1 — case.json contiene SÓLO HECHOS DE ENTRADA: identidad, fuente, superficie publicada, unidades hermanas y configuración del pipeline. Ningún resultado de ejecución. El veredicto de fit se lee de los artefactos computados de E06/E07 (ver src/escalimetro/fit_evidence.py y docs/E15_1_DATA_LINEAGE.md).",
+  "shell_declared_clean": "unknown",
+  "_shell_declared_clean_note": "E24 §12 — no hay declaración de intake sobre si esta planta viene libre. 'unknown' es la respuesta honesta: dispara UNA confirmación humana, no un supuesto. Mirar la imagen para decidirlo está prohibido en V1."
 }

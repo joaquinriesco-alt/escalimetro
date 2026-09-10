@@ -1,0 +1,290 @@
+{
+  "graph_id": "B_BALANCEADO",
+  "intent": "Equilibrio entre llegada, salas, trabajo y luz: frente de cliente completo junto al acceso, puestos en la mejor fachada y soporte al fondo.",
+  "nodes": [
+    {
+      "id": "reception",
+      "kind": "room",
+      "count": 1,
+      "seats": 0,
+      "zone": "PUBLIC",
+      "notes": ""
+    },
+    {
+      "id": "boardroom_12",
+      "kind": "room",
+      "count": 1,
+      "seats": 0,
+      "zone": "SEMI_PUBLIC",
+      "notes": ""
+    },
+    {
+      "id": "meeting_8",
+      "kind": "room",
+      "count": 1,
+      "seats": 0,
+      "zone": "SEMI_PUBLIC",
+      "notes": ""
+    },
+    {
+      "id": "meeting_4",
+      "kind": "room",
+      "count": 3,
+      "seats": 0,
+      "zone": "SEMI_PUBLIC",
+      "notes": ""
+    },
+    {
+      "id": "private_office",
+      "kind": "room",
+      "count": 4,
+      "seats": 0,
+      "zone": "WORK",
+      "notes": ""
+    },
+    {
+      "id": "phone_booth",
+      "kind": "support",
+      "count": 3,
+      "seats": 0,
+      "zone": "SUPPORT",
+      "notes": ""
+    },
+    {
+      "id": "kitchenette",
+      "kind": "support",
+      "count": 1,
+      "seats": 0,
+      "zone": "SUPPORT",
+      "notes": ""
+    },
+    {
+      "id": "dining",
+      "kind": "support",
+      "count": 1,
+      "seats": 0,
+      "zone": "SUPPORT",
+      "notes": ""
+    },
+    {
+      "id": "lounge",
+      "kind": "room",
+      "count": 1,
+      "seats": 0,
+      "zone": "SEMI_PUBLIC",
+      "notes": ""
+    },
+    {
+      "id": "open_work_neighborhood_1",
+      "kind": "work",
+      "count": 1,
+      "seats": 16,
+      "zone": "WORK",
+      "notes": ""
+    },
+    {
+      "id": "open_work_neighborhood_2",
+      "kind": "work",
+      "count": 1,
+      "seats": 14,
+      "zone": "WORK",
+      "notes": ""
+    },
+    {
+      "id": "open_work_neighborhood_3",
+      "kind": "work",
+      "count": 1,
+      "seats": 10,
+      "zone": "WORK",
+      "notes": ""
+    },
+    {
+      "id": "entrance",
+      "kind": "anchor",
+      "count": 1,
+      "seats": 0,
+      "zone": "",
+      "notes": "ancla del shell"
+    },
+    {
+      "id": "facade_premium",
+      "kind": "anchor",
+      "count": 1,
+      "seats": 0,
+      "zone": "",
+      "notes": "ancla del shell"
+    },
+    {
+      "id": "core",
+      "kind": "anchor",
+      "count": 1,
+      "seats": 0,
+      "zone": "",
+      "notes": "ancla del shell"
+    },
+    {
+      "id": "circulation",
+      "kind": "anchor",
+      "count": 1,
+      "seats": 0,
+      "zone": "",
+      "notes": "ancla del shell"
+    }
+  ],
+  "edges": [
+    {
+      "a": "reception",
+      "b": "entrance",
+      "relation": "entrance_priority",
+      "weight": 1.0,
+      "hard": true,
+      "note": "recepción ≤ 8 m de ruta del acceso"
+    },
+    {
+      "a": "reception",
+      "b": "boardroom_12",
+      "relation": "client_route",
+      "weight": 0.8,
+      "hard": false,
+      "note": "el cliente llega al directorio desde recepción"
+    },
+    {
+      "a": "reception",
+      "b": "meeting_8",
+      "relation": "client_route",
+      "weight": 0.8,
+      "hard": false,
+      "note": ""
+    },
+    {
+      "a": "reception",
+      "b": "meeting_4",
+      "relation": "client_route",
+      "weight": 0.5,
+      "hard": false,
+      "note": ""
+    },
+    {
+      "a": "kitchenette",
+      "b": "dining",
+      "relation": "shared_support",
+      "weight": 1.0,
+      "hard": false,
+      "note": "cocina y comedor deben tener relación directa"
+    },
+    {
+      "a": "kitchenette",
+      "b": "reception",
+      "relation": "prefer_far",
+      "weight": 0.6,
+      "hard": false,
+      "note": ""
+    },
+    {
+      "a": "phone_booth",
+      "b": "open_work_neighborhood_1",
+      "relation": "prefer_near",
+      "weight": 0.5,
+      "hard": false,
+      "note": ""
+    },
+    {
+      "a": "phone_booth",
+      "b": "core",
+      "relation": "acoustic_separation",
+      "weight": 0.4,
+      "hard": false,
+      "note": "cabinas interiores, separadas del open"
+    },
+    {
+      "a": "open_work_neighborhood_1",
+      "b": "facade_premium",
+      "relation": "daylight_preference",
+      "weight": 1.0,
+      "hard": false,
+      "note": ""
+    },
+    {
+      "a": "private_office",
+      "b": "facade_premium",
+      "relation": "daylight_preference",
+      "weight": 0.5,
+      "hard": false,
+      "note": "pueden usar fachada, sin consumirla toda"
+    },
+    {
+      "a": "reception",
+      "b": "open_work_neighborhood_1",
+      "relation": "privacy_gradient",
+      "weight": 0.7,
+      "hard": false,
+      "note": "public → semi-public → work → support"
+    },
+    {
+      "a": "dining",
+      "b": "circulation",
+      "relation": "must_connect",
+      "weight": 1.0,
+      "hard": true,
+      "note": ""
+    },
+    {
+      "a": "boardroom_12",
+      "b": "entrance",
+      "relation": "client_route",
+      "weight": 1.0,
+      "hard": true,
+      "note": "corrige E06: el directorio quedaba a 31 m del acceso"
+    },
+    {
+      "a": "meeting_8",
+      "b": "reception",
+      "relation": "prefer_near",
+      "weight": 0.9,
+      "hard": false,
+      "note": ""
+    },
+    {
+      "a": "private_office",
+      "b": "facade_premium",
+      "relation": "prefer_far",
+      "weight": 0.6,
+      "hard": false,
+      "note": "corrige E06: 48 % de fachada premium con recintos cerrados"
+    },
+    {
+      "a": "open_work_neighborhood_1",
+      "b": "facade_premium",
+      "relation": "daylight_preference",
+      "weight": 1.0,
+      "hard": false,
+      "note": ""
+    },
+    {
+      "a": "lounge",
+      "b": "open_work_neighborhood_2",
+      "relation": "prefer_near",
+      "weight": 0.7,
+      "hard": false,
+      "note": ""
+    },
+    {
+      "a": "dining",
+      "b": "kitchenette",
+      "relation": "prefer_near",
+      "weight": 1.0,
+      "hard": true,
+      "note": "corrige E06: quedaban separados"
+    }
+  ],
+  "priorities": {
+    "space_efficiency": 0.6,
+    "circulation_efficiency": 0.7,
+    "compactness": 0.6,
+    "open_work_daylight": 0.9,
+    "low_residual": 0.6,
+    "facade_preservation": 0.9,
+    "collaboration": 0.6,
+    "client_experience": 0.9
+  }
+}
