@@ -1,0 +1,44 @@
+{
+  "candidate_id": "OFFICE_403_A_EFICIENTE_optimized",
+  "hard_valid": true,
+  "scores": {
+    "arrival_sequence": 0.525,
+    "reception": 0.4,
+    "client_access_to_rooms": 1.0,
+    "privacy": 0.875,
+    "open_office_quality": 0.494,
+    "facade_use": 0.633,
+    "kitchenette_dining": 1.0,
+    "lounge_location": 1.0,
+    "circulation": 1.0,
+    "residual_spaces": 0.0,
+    "fragmentation": 0.84,
+    "architectural_plausibility": 0.706
+  },
+  "verdicts": {
+    "arrival_sequence": "recepción a 6.8 m de ruta del acceso",
+    "reception": "fuera de la región del acceso, a 6.8 m",
+    "client_access_to_rooms": "meeting_accessibility 1.00 (rutas acceso→salas junto a puestos)",
+    "privacy": "gradiente 0.88; 0 privados pegados a recepción",
+    "open_office_quality": "70% de puestos en benches; daylight 0.29",
+    "facade_use": "48% de la fachada con luz frente a recintos cerrados (tolerancia 30 %)",
+    "kitchenette_dining": "adyacentes",
+    "lounge_location": "junto a puestos",
+    "circulation": "eficiencia 1.00; 0 conectores; pasillos 84.6 m²",
+    "residual_spaces": "71.8 m² en bolsillos; 144.5 m² sin asignar",
+    "fragmentation": "puestos en 3 bandas; 2 bloques de ≤ 3 puestos",
+    "architectural_plausibility": "media de aspectos 0.71"
+  },
+  "architectural_score": 0.706,
+  "broker_showable": false,
+  "repair_suggestions": [
+    {
+      "type": "min_seats_on_facade",
+      "args": {
+        "seats": 24
+      },
+      "reason": "daylight 0.29 < 0.5"
+    }
+  ],
+  "provider": "rule_based"
+}

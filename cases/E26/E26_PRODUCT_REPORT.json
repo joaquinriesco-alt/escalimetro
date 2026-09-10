@@ -1,0 +1,102 @@
+{
+  "columnas": [
+    "case",
+    "brief",
+    "strategy",
+    "status",
+    "workstations",
+    "program_complete",
+    "unallocated_pct",
+    "daylight",
+    "facade_use",
+    "fragmentation",
+    "architectural_score",
+    "layout_sha256"
+  ],
+  "filas": [
+    {
+      "case": "001_gps_403",
+      "brief": "BRIEF_EQUILIBRADO",
+      "strategy": "A",
+      "status": "FIT",
+      "workstations": "40/40",
+      "program_complete": true,
+      "unallocated_pct": 26.8,
+      "daylight": 0.288,
+      "facade_use": 0.633,
+      "fragmentation": 0.84,
+      "architectural_score": 0.706,
+      "layout_sha256": "753ecca6570ec76750331ead3623be04a7e3601c3cee479af8fea87d015f6305"
+    },
+    {
+      "case": "001_gps_403",
+      "brief": "BRIEF_EQUILIBRADO",
+      "strategy": "B",
+      "status": "FIT",
+      "workstations": "40/40",
+      "program_complete": true,
+      "unallocated_pct": 27.39,
+      "daylight": 0.282,
+      "facade_use": 0.296,
+      "fragmentation": 0.76,
+      "architectural_score": 0.772,
+      "layout_sha256": "61cd28dd9ca277027c63b127c560708fd7a25323decb45c3af1385e3e14fbca8"
+    },
+    {
+      "case": "001_gps_403",
+      "brief": "BRIEF_EQUILIBRADO",
+      "strategy": "C",
+      "status": "FIT",
+      "workstations": "40/40",
+      "program_complete": true,
+      "unallocated_pct": 26.95,
+      "daylight": 0.475,
+      "facade_use": 0.953,
+      "fragmentation": 0.58,
+      "architectural_score": 0.717,
+      "layout_sha256": "1e7d63c59df0d4d5005259f0b78d0f1d1af2b7711e2c206f9c68c08650edf779"
+    },
+    {
+      "case": "002_gps_401",
+      "brief": "BRIEF_401_V1",
+      "strategy": "A",
+      "status": "SEARCH_EXHAUSTED",
+      "workstations": "0/18",
+      "program_complete": false,
+      "unallocated_pct": null,
+      "daylight": null,
+      "facade_use": null,
+      "fragmentation": null,
+      "architectural_score": null,
+      "layout_sha256": null
+    },
+    {
+      "case": "002_gps_401",
+      "brief": "BRIEF_401_V1",
+      "strategy": "B",
+      "status": "SEARCH_EXHAUSTED",
+      "workstations": "0/18",
+      "program_complete": false,
+      "unallocated_pct": null,
+      "daylight": null,
+      "facade_use": null,
+      "fragmentation": null,
+      "architectural_score": null,
+      "layout_sha256": null
+    },
+    {
+      "case": "002_gps_401",
+      "brief": "BRIEF_401_V1",
+      "strategy": "C",
+      "status": "SEARCH_EXHAUSTED",
+      "workstations": "0/18",
+      "program_complete": false,
+      "unallocated_pct": null,
+      "daylight": null,
+      "facade_use": null,
+      "fragmentation": null,
+      "architectural_score": null,
+      "layout_sha256": null
+    }
+  ]
+}

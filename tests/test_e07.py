@@ -183,9 +183,12 @@ def test_diferencia_geometrica_significativa(arts):
 # ---------------------------------------------------------------------------------------------------
 # gates
 # ---------------------------------------------------------------------------------------------------
+PROG_40 = {"template_id": "office_balanced_48", "open_workstations_exact": 40}
+
+
 def test_gate_e1t_pass(arts):
     for a in ALTS:
-        assert gate_e1t(_result(a, arts))["status"] == "PASS"
+        assert gate_e1t(_result(a, arts), PROG_40)["status"] == "PASS"
         assert arts[a]["gates"]["E1-T"]["status"] == "PASS"
 
 
@@ -193,7 +196,7 @@ def test_gate_e1t_detecta_programa_incompleto(arts):
     r = _result("A", arts)
     r.metrics = json.loads(json.dumps(arts["A"]["metrics"]))
     r.metrics["program_completeness"]["open_seats"] = "38/40"
-    assert gate_e1t(r)["status"] == "FAIL"
+    assert gate_e1t(r, PROG_40)["status"] == "FAIL"
 
 
 def test_gate_e1a_provisional_con_umbral_documentado(arts):

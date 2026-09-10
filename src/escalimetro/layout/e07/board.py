@@ -173,7 +173,13 @@ def build_board(alts: List[Dict], shell: ShellM, evidence: FitEvidence = None, s
         o.append(_text(x + 37, ty - 2, spec.alt, 20, "#ffffff", 700, anchor="middle"))
         o.append(_text(x + 66, ty, spec.name, 22, PALETTE["ink"], 700, ls=1.0))
         cy = ty + 26
-        for ln in _wrap(spec.copy_short, 56)[:2]:
+        # E26 §5 — lo que se muestra es la INTENCIÓN declarada de la estrategia, rotulada como tal.
+        # `copy_short` e `ideal_for` eran afirmaciones comerciales sobre el resultado ("fachada
+        # liberada para puestos", "empresas que priorizan costo por puesto") que este layout concreto
+        # puede no demostrar. La intención sí es verdadera por construcción: es lo que el motor buscó.
+        o.append(_text(x + 20, cy, "INTENCIÓN DE LA ESTRATEGIA", 10, PALETTE["muted"], 700, ls=1.4))
+        cy += 18
+        for ln in _wrap(spec.intent, 56)[:2]:
             o.append(_text(x + 20, cy, ln, 13.5, PALETTE["muted"])); cy += 19
         # planta incrustada (geometría idéntica al layout validado)
         box_y, box_h = sy + 104, 330
@@ -196,15 +202,25 @@ def build_board(alts: List[Dict], shell: ShellM, evidence: FitEvidence = None, s
             o.append(_text(kx, ky, val, 21, PALETTE["ink"], 700))
             o.append(_text(kx, ky + 19, lab, 11, PALETTE["muted"], 500, ls=0.6))
         o.append(f'<rect x="{x + 20}" y="{ky + 36}" width="{COL_W - 40}" height="1" fill="{PALETTE["line"]}"/>')
-        # fortalezas
+        # E26 §5 — MEDIDO EN ESTA PLANTA, no fortalezas escritas de antemano.
+        # El bloque "FORTALEZAS" repetía frases fijas por alternativa ("Fachada liberada para puestos")
+        # que no dependían del layout producido. Se reemplaza por cifras de esta planta: son hechos, no
+        # adjetivos, y no las escribe nadie a mano ni las genera un modelo de lenguaje.
+        usable = m["usable_area_m2"] or 0.0
+        def _pct(v):
+            return f"{(100.0 * (v or 0.0) / usable):.1f} %" if usable else "—"
+        medido = [("Programa entregado", "completo" if m["program_completeness"]["complete"] else "INCOMPLETO"),
+                  ("Circulación", f'{m["circulation_area_m2"]:.0f} m² · {_pct(m["circulation_area_m2"])}'),
+                  ("Espacio sin asignar", f'{(m.get("unallocated_area_m2") or 0):.0f} m² · '
+                                          f'{_pct(m.get("unallocated_area_m2"))}'),
+                  ("Área programada neta", f'{m["net_programmed_area_m2"]:.0f} m² · '
+                                           f'{_pct(m["net_programmed_area_m2"])}')]
         fy = ky + 62
-        o.append(_text(x + 20, fy, "FORTALEZAS", 11, PALETTE["muted"], 700, ls=1.6)); fy += 24
-        for s in spec.strengths[:4]:
-            lines = _wrap(s, 52)
-            o.append(f'<circle cx="{x + 26}" cy="{fy - 5}" r="3" fill="{col}"/>')
-            for j, ln in enumerate(lines[:2]):
-                o.append(_text(x + 38, fy, ln, 13, PALETTE["ink"])); fy += 18
-            fy += 6
+        o.append(_text(x + 20, fy, "MEDIDO EN ESTA PLANTA", 11, PALETTE["muted"], 700, ls=1.6)); fy += 24
+        for lab, val in medido:
+            o.append(_text(x + 20, fy, lab, 12.5, PALETTE["muted"]))
+            o.append(_text(x + COL_W - 20, fy, val, 12.5, PALETTE["ink"], 600, anchor="end")); fy += 21
+        fy += 6
         # detalle secundario (informativo para el revisor comercial)
         dy = fy + 16
         o.append(f'<rect x="{x + 20}" y="{dy - 26}" width="{COL_W - 40}" height="1" fill="{PALETTE["line"]}"/>')
@@ -216,12 +232,9 @@ def build_board(alts: List[Dict], shell: ShellM, evidence: FitEvidence = None, s
         for lab, val in det:
             o.append(_text(x + 20, dy, lab, 12.5, PALETTE["muted"]))
             o.append(_text(x + COL_W - 20, dy, val, 12.5, PALETTE["ink"], 600, anchor="end")); dy += 21
-        # ideal para
-        iy = H - 96 - 74
-        o.append(f'<rect x="{x + 14}" y="{iy - 26}" width="{COL_W - 28}" height="62" rx="4" fill="{PALETTE["panel"]}"/>')
-        o.append(_text(x + 26, iy - 6, "IDEAL PARA", 10.5, PALETTE["muted"], 700, ls=1.4))
-        for j, ln in enumerate(_wrap(spec.ideal_for, 54)[:2]):
-            o.append(_text(x + 26, iy + 14 + j * 17, ln, 13, PALETTE["ink"], 500))
+        # E26 §5 — el bloque "IDEAL PARA" era una afirmación comercial sobre a qué cliente le sirve
+        # esta planta. Ni el motor ni el crítico lo pueden sostener. Se retira: silencio antes que
+        # copy falsa. Vuelve cuando haya revisión humana que lo respalde.
     # ---------- pie --------------------------------------------------------------------------------
     fy = H - 62
     o.append(f'<rect x="0" y="{fy - 26}" width="{W}" height="{H - fy + 26}" fill="{PALETTE["panel"]}"/>')

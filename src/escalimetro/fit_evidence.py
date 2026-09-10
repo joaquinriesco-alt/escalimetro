@@ -73,6 +73,8 @@ class FitEvidence:
     """Lo que el motor encontró. Ningún campo se declara a mano en un archivo de configuración."""
     technical: str = TECHNICAL_NOT_EVALUATED
     robustness: str = ROBUSTNESS_NOT_EVALUATED
+    #: E26 §4 — por qué NO hay robustez, cuando la disponible pertenece a otra corrida
+    robustness_note: str = ""
     freshness: str = FRESHNESS_NOT_EVALUATED
     program: Optional[str] = None
     headcount: Optional[int] = None
@@ -148,6 +150,43 @@ def engine_is_compatible(producer_baseline: Optional[str], path: str = COMPATIBI
         return False, (f"el baseline productor '{producer_baseline}' no está declarado compatible con "
                        f"'{c['current']}'")
     return True, ""
+
+
+RUN_PROVENANCE = "run_provenance.json"
+EVIDENCE_FROM_ANOTHER_RUN = "EVIDENCE_FROM_ANOTHER_RUN"
+
+
+def vigente_engine_baseline(root: str = ".") -> Dict:
+    """El GENERIC_ENGINE_BASELINE.json con la cadena más larga. Mismo mecanismo que usan E16.4 y E25:
+    determinista y sin depender de mtime."""
+    import glob
+    best = None
+    for p in glob.glob(os.path.join(root, "cases", "generalization", "*", "GENERIC_ENGINE_BASELINE.json")):
+        d = _load(p) or {}
+        if not d.get("engine_hash"):
+            continue
+        k = (len(d.get("chain", [])), d.get("created_by", ""))
+        if best is None or k > best[0]:
+            best = (k, d)
+    return best[1] if best else {}
+
+
+def _same_run_freshness(case_dir: str, run_prov: Dict, program_path: str) -> (str, List[str]):
+    """E26 §4 — frescura de la evidencia que produjo ESTA MISMA corrida.
+
+    El registro de compatibilidad entre baselines existe para decidir si evidencia VIEJA sobrevive a
+    un cambio de motor. Para la evidencia que acaba de generar la corrida que se está presentando esa
+    pregunta no aplica: lo único que hay que comprobar es que el floorplate, el programa y el motor
+    siguen siendo los mismos que cuando se generó."""
+    now = current_fingerprint(case_dir, program_path)
+    bad = []
+    for k in ("floorplate_sha256", "program_sha256"):
+        if run_prov.get(k) != now.get(k):
+            bad.append(f"{k} cambió desde que se generó esta corrida")
+    vig = (vigente_engine_baseline() or {}).get("engine_hash")
+    if run_prov.get("engine_hash") and vig and run_prov["engine_hash"] != vig:
+        bad.append("el motor cambió desde que se generó esta corrida")
+    return (STALE, bad) if bad else (FRESH, [])
 
 
 def current_fingerprint(case_dir: str, program_path: str = "") -> Dict[str, Optional[str]]:
@@ -254,23 +293,34 @@ def _technical_from_metrics(m: Dict) -> Optional[str]:
     return None
 
 
-def load(case_dir: str, program_path: str = "program_templates/office_balanced_48.json") -> FitEvidence:
+def load(case_dir: str, program_path: str = "program_templates/office_balanced_48.json",
+         run_dir: str = "") -> FitEvidence:
     """Lee la evidencia de los artefactos que el motor dejó. Si no hay artefactos, NOT_EVALUATED —
-    nunca un veredicto declarado a mano."""
+    nunca un veredicto declarado a mano.
+
+    E26 §4 — `run_dir`: cuando se presenta UNA corrida concreta, la evidencia tiene que ser LA DE ESA
+    CORRIDA. Sin este parámetro la carga leía siempre `layouts/E07/` y `layouts/E06/`, así que una
+    lámina de `layouts/E25_EQUILIBRADO` mostraba el veredicto de una corrida distinta, con otro brief
+    y otra versión del motor. Con `run_dir` la capa técnica sale del propio directorio de salida y la
+    capa de robustez sólo se usa si su procedencia coincide con este programa; si no coincide, se
+    declara NO DISPONIBLE en vez de heredar un FIT ajeno."""
     ev = FitEvidence()
     arts: List[str] = []
 
     # --- capa técnica -----------------------------------------------------------------------------
-    p_gates = os.path.join(case_dir, "layouts", "E07", "gates.json")
+    tech_dir = run_dir or os.path.join(case_dir, "layouts", "E07")
+    p_gates = os.path.join(tech_dir, "gates.json")
     gates = _load(p_gates)
     tech = None
     if gates:
         tech = _technical_from_gates(gates)
         arts.append(p_gates)
-        pm = os.path.join(case_dir, "layouts", "E07", "alternatives", "A", "metrics.json")
+        pm = os.path.join(tech_dir, "alternatives", "A", "metrics.json")
         m = _load(pm) or {}
         if m:
             arts.append(pm)
+    elif run_dir:
+        m = {}
     else:
         pm = os.path.join(case_dir, "layouts", "OFFICE_BALANCED_001", "metrics.json")
         m = _load(pm) or {}
@@ -286,8 +336,18 @@ def load(case_dir: str, program_path: str = "program_templates/office_balanced_4
         ev.collisions = m.get("collisions")
 
     # --- capa de robustez -------------------------------------------------------------------------
+    # E26 §4 — el barrido de escala de E06 es OTRA corrida, con otro programa. Sólo se consume si su
+    # procedencia declara el MISMO programa que esta corrida. Si no, no se hereda: se declara ausente.
     p_rob = os.path.join(case_dir, "layouts", "E06", "fit_robustness_report.json")
     rob = _load(p_rob)
+    if rob and run_dir:
+        prov_rob = (rob.get("provenance") or {})
+        mismo = prov_rob.get("program_sha256") == sha256_file(program_path) if program_path else False
+        if not mismo:
+            ev.robustness_note = (
+                "la robustez de escala disponible pertenece a otra corrida (otro programa o sin "
+                "procedencia declarada): no se hereda")
+            rob = None
     if rob:
         ev.robustness = rob.get("classification") or ROBUSTNESS_NOT_EVALUATED
         ev.min_scale_factor_exact_fit = rob.get("min_scale_factor_exact_fit")
@@ -299,6 +359,8 @@ def load(case_dir: str, program_path: str = "program_templates/office_balanced_4
     # --- narrativa computada por E06 --------------------------------------------------------------
     p_v = os.path.join(case_dir, "layouts", "E06", "fit_verdict.json")
     v = _load(p_v)
+    if v and run_dir and rob is None:
+        v = None          # el veredicto narrativo de E06 acompaña a su propia robustez, no a ésta
     if v:
         ev.program = v.get("program")
         ev.headcount = v.get("headcount")
@@ -316,6 +378,22 @@ def load(case_dir: str, program_path: str = "program_templates/office_balanced_4
     ev.source_artifacts = [a.replace(os.sep, "/") for a in arts]
     if not ev.evaluated:
         ev.freshness = FRESHNESS_NOT_EVALUATED
+        return ev
+    if run_dir:
+        # la corrida declara su propia procedencia; no se pregunta al registro de compatibilidad
+        run_prov = _load(os.path.join(run_dir, RUN_PROVENANCE))
+        if not run_prov:
+            ev.freshness, ev.stale_reasons = STALE, [
+                f"la corrida no dejó {RUN_PROVENANCE}: no se puede afirmar que esta evidencia sea suya"]
+            ev.provenance = {"recorded": None, "current": current_fingerprint(case_dir, program_path),
+                             "checked_at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+            return ev
+        arts.append(os.path.join(run_dir, RUN_PROVENANCE))
+        ev.source_artifacts = [a.replace(os.sep, "/") for a in arts]
+        ev.freshness, ev.stale_reasons = _same_run_freshness(case_dir, run_prov, program_path)
+        ev.provenance = {"recorded": run_prov, "current": current_fingerprint(case_dir, program_path),
+                         "checked_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                         "scope": "SAME_RUN"}
         return ev
     recorded = (v or {}).get("provenance") or (rob or {}).get("provenance")
     ev.freshness, ev.stale_reasons = _freshness(case_dir, arts, recorded, program_path)

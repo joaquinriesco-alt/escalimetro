@@ -1,0 +1,17 @@
+{
+  "unit": "Oficina 403 (GPS Property)",
+  "published_area_m2": 543.0,
+  "technical_fit": "FIT",
+  "robustness": "NOT_EVALUATED",
+  "freshness": "FRESH",
+  "fit": "NOT_EVALUATED",
+  "fit_label": "FIT TÉCNICO",
+  "scale": "UNCONFIRMED",
+  "scale_confidence": "LOW",
+  "headcount": 48,
+  "program": "BRIEF_EQUILIBRADO",
+  "recommendation": "Confirma una dimensión real antes de comprometer capacidad.",
+  "reason": "",
+  "note": "Test-fit conceptual de space planning. No constituye proyecto de arquitectura.",
+  "source": "evidencia computada: cases/001_gps_403/layouts/E26_403/gates.json, cases/001_gps_403/layouts/E26_403/alternatives/A/metrics.json, cases/001_gps_403/layouts/E26_403/run_provenance.json"
+}

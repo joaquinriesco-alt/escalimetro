@@ -1,0 +1,16 @@
+{
+  "case_id": "002_gps_401",
+  "brief_id": "BRIEF_401_V1",
+  "out_name": "E26_401",
+  "run_dir": "cases/002_gps_401/layouts/E26_401",
+  "floorplate_sha256": "687b0fdb8dacd5aaff00b9d17a8387ae4146fee9db8c690a421ce02b05ae0856",
+  "program_sha256": "6f9af75b23a40e9bd8f831bfd9429a1dbe7cc6bb2c62a0a86521110bf55f73af",
+  "brief_sha256": "3b5608e8ba2d760729690c30a8cedebaa184c654621ba752c0d48ad0c07b3eea",
+  "brief_path": "briefs/BRIEF_401_V1.json",
+  "modules_sha256": "e5d7dc3bad238d901aacc835f9cb1e1c0e0241a5d3be4897e654977c201b46f9",
+  "engine_hash": "49977b59e519a5b6075ce9fc1452fb682dd8c597e4b08150b1c09aa6e45c31c5",
+  "engine_baseline": "E26",
+  "engine_commit": "2f8bf43fdf0ef5034f878349141499cb7efa6d4a+dirty",
+  "seed": 1,
+  "generated_at": "2026-09-10T15:54:45+00:00"
+}

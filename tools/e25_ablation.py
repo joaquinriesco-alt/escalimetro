@@ -37,11 +37,12 @@ def main(argv=None):
     ap.add_argument("--brief", default="EJECUTIVO")
     ap.add_argument("--alts", default="A,B")
     ap.add_argument("--tl", type=float, default=60.0)
+    ap.add_argument("--brief-file", default="")
     ap.add_argument("--reception-max-path", type=float, default=8.0)
     args = ap.parse_args(argv)
     filas = []
     for alt in args.alts.split(","):
-        shell, grid, feats, mods, brief, prog, e05, specs = contexto(args.brief)
+        shell, grid, feats, mods, brief, prog, e05, specs = contexto(args.brief, args.brief_file or None)
         spec = next(s for s in specs if s.alt == alt)
         strat, els, cands, gs, ps = geometria(shell, grid, feats, mods, prog, spec, e05, STEP, CAP)
         weights = dict(prog["objectives_weights"]); weights.update(spec.weights)

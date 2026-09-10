@@ -1,0 +1,62 @@
+{
+  "total_runtime_s": 411.0,
+  "no_fit": {},
+  "per_alternative_s": {
+    "A": 164.28,
+    "B": 107.8,
+    "C": 135.99
+  },
+  "kpi_target_s": 120.0,
+  "kpi_met": false,
+  "gates": {
+    "A": {
+      "E1-T": "PASS",
+      "E1-A": "PASS_PROVISIONAL",
+      "E1-C": "READY_FOR_BROKER_REVIEW"
+    },
+    "B": {
+      "E1-T": "PASS",
+      "E1-A": "PASS_PROVISIONAL",
+      "E1-C": "READY_FOR_BROKER_REVIEW"
+    },
+    "C": {
+      "E1-T": "PASS",
+      "E1-A": "PASS_PROVISIONAL",
+      "E1-C": "READY_FOR_BROKER_REVIEW"
+    }
+  },
+  "geometric_difference": {
+    "AvsB": {
+      "identical_placements": 5,
+      "n": 25,
+      "different_pct": 80.0
+    },
+    "AvsC": {
+      "identical_placements": 7,
+      "n": 26,
+      "different_pct": 73.1
+    },
+    "BvsC": {
+      "identical_placements": 2,
+      "n": 26,
+      "different_pct": 92.3
+    }
+  },
+  "fit_verdict": {
+    "unit": "Oficina 403 (GPS Property)",
+    "published_area_m2": 543.0,
+    "technical_fit": "FIT",
+    "robustness": "NOT_EVALUATED",
+    "freshness": "FRESH",
+    "fit": "NOT_EVALUATED",
+    "fit_label": "FIT TÉCNICO",
+    "scale": "UNCONFIRMED",
+    "scale_confidence": "LOW",
+    "headcount": 48,
+    "program": "BRIEF_EQUILIBRADO",
+    "recommendation": "Confirma una dimensión real antes de comprometer capacidad.",
+    "reason": "",
+    "note": "Test-fit conceptual de space planning. No constituye proyecto de arquitectura.",
+    "source": "evidencia computada: cases/001_gps_403/layouts/E26_403/gates.json, cases/001_gps_403/layouts/E26_403/alternatives/A/metrics.json, cases/001_gps_403/layouts/E26_403/run_provenance.json"
+  }
+}

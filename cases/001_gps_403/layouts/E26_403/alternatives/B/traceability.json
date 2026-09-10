@@ -1,0 +1,18 @@
+{
+  "contract_version": "layout_traceability_v1",
+  "case_id": "001_gps_403",
+  "brief_id": "BRIEF_EQUILIBRADO",
+  "strategy": "B",
+  "layout_sha256": "61cd28dd9ca277027c63b127c560708fd7a25323decb45c3af1385e3e14fbca8",
+  "engine_commit": "2f8bf43fdf0ef5034f878349141499cb7efa6d4a+dirty",
+  "brief_sha256": "f6174547ac8f7dabe3e402a07f653f7644672892354ee083713c72f7a76628af",
+  "generated_at": "2026-09-10T15:53:27+00:00",
+  "engine_hash": "49977b59e519a5b6075ce9fc1452fb682dd8c597e4b08150b1c09aa6e45c31c5",
+  "engine_baseline": "E26",
+  "program_sha256": "6fee09bc3680132d95b96268105836b56dea0c9912c3407f09a3b2db506a6921",
+  "floorplate_sha256": "117c66cacdb95962f6c53d836b80743b8ff86d7eefd58307c25d3929de077823",
+  "modules_sha256": "e5d7dc3bad238d901aacc835f9cb1e1c0e0241a5d3be4897e654977c201b46f9",
+  "out_name": "E26_403",
+  "run_dir": "cases/001_gps_403/layouts/E26_403",
+  "seed": 1
+}

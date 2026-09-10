@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ESCALÍMETRO — Revisión arquitectónica</title>
+<style>
+  :root{--ink:#1d2430;--muted:#6b7480;--line:#d9dce2;--panel:#f7f7f5;--paper:#fff;
+        --good:#2f6d4f;--bad:#b5452f;--warn:#8a6d1f;--a:#2a78d6;--b:#eb6834;--c:#1baf7a}
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+       color:var(--ink);background:#f2f2f0}
+  header{background:var(--paper);border-bottom:1px solid var(--line);padding:18px 24px;position:sticky;top:0;z-index:9}
+  h1{margin:0;font-size:19px;letter-spacing:.4px}
+  .sub{color:var(--muted);font-size:13px;margin-top:4px}
+  .wrap{padding:24px;max-width:1900px;margin:0 auto}
+  .case{background:var(--paper);border:1px solid var(--line);border-radius:8px;margin-bottom:28px;overflow:hidden}
+  .case>h2{margin:0;padding:16px 20px;font-size:17px;border-bottom:1px solid var(--line)}
+  .case>h2 small{display:block;font-weight:400;color:var(--muted);font-size:12.5px;margin-top:4px}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+  @media(max-width:1200px){.grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:700px){.grid{grid-template-columns:1fr}}
+  .cell{border-right:1px solid var(--line);padding:14px}
+  .cell:last-child{border-right:0}
+  .cell h3{margin:0 0 2px;font-size:14px;letter-spacing:.6px}
+  .tag{display:inline-block;font-size:11px;padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:2px}
+  .fit{background:#e6f2ea;color:var(--good)} .nofit{background:#f7e8e4;color:var(--bad)}
+  .plan{width:100%;background:#fdfdfc;border:1px solid var(--line);border-radius:4px;cursor:zoom-in;display:block}
+  .q{font-size:11.5px;color:var(--muted);margin-top:8px;line-height:1.7}
+  .q b{color:var(--ink);font-weight:600}
+  .sha{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;color:var(--muted);word-break:break-all}
+  fieldset{border:1px solid var(--line);border-radius:6px;margin:12px 0 0;padding:10px 12px}
+  legend{font-size:11px;color:var(--muted);letter-spacing:.8px;padding:0 4px}
+  .grades{display:flex;gap:6px;flex-wrap:wrap}
+  .grades label{flex:1;min-width:96px;text-align:center;border:1px solid var(--line);border-radius:5px;
+                padding:7px 4px;font-size:12px;cursor:pointer;background:#fff}
+  .grades input{display:none}
+  .grades input:checked+span{font-weight:700}
+  .grades label:has(input:checked){border-color:var(--ink);background:var(--panel)}
+  .tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}
+  .tags label{font-size:11.5px;border:1px solid var(--line);border-radius:12px;padding:3px 9px;cursor:pointer;background:#fff}
+  .tags input{display:none}
+  .tags label:has(input:checked){background:var(--ink);color:#fff;border-color:var(--ink)}
+  textarea{width:100%;min-height:64px;font:13px/1.5 inherit;border:1px solid var(--line);border-radius:5px;padding:7px;resize:vertical}
+  input[type=number],input[type=text]{border:1px solid var(--line);border-radius:5px;padding:6px 8px;font:13px inherit}
+  .best{padding:14px 20px;border-top:1px solid var(--line);background:var(--panel);display:flex;
+        align-items:center;gap:14px;flex-wrap:wrap}
+  .bar{position:sticky;bottom:0;background:var(--paper);border-top:1px solid var(--line);padding:14px 24px;
+       display:flex;gap:14px;align-items:center;flex-wrap:wrap;z-index:9}
+  button{font:14px inherit;padding:9px 18px;border-radius:6px;border:1px solid var(--ink);
+         background:var(--ink);color:#fff;cursor:pointer}
+  button.sec{background:#fff;color:var(--ink)}
+  #msg{font-size:13px;color:var(--muted)}
+  dialog{border:0;border-radius:8px;padding:0;max-width:96vw;max-height:96vh}
+  dialog img{display:block;max-width:96vw;max-height:90vh}
+  dialog .x{padding:8px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line)}
+  .note{background:#fffdf3;border:1px solid #e8dfb8;border-radius:6px;padding:10px 14px;font-size:13px;margin-bottom:20px}
+</style>
+</head>
+<body>
+<header>
+  <h1>ESCALÍMETRO — Revisión arquitectónica</h1>
+  <div class="sub">Test-fit conceptual · escala asumida, sin confirmar · la revisión se guarda contra
+    <code>contracts/human_review_v1.schema.json</code></div>
+</header>
+<div class="wrap">
+  <div class="note">Nada viene prellenado. Los grados, los tags y las notas son tuyos:
+    <b>ninguna evaluación fue escrita por un agente</b>. Haz clic en una planta para ampliarla.</div>
+  <div id="app">Cargando <code>review_index.json</code>…</div>
+</div>
+<div class="bar">
+  <label>Revisor <input type="text" id="reviewer" placeholder="tu nombre" size="18"></label>
+  <button id="save">Guardar revisión</button>
+  <button class="sec" id="download">Descargar JSON</button>
+  <span id="msg"></span>
+</div>
+<dialog id="zoom"><div class="x"><span id="zt"></span><button class="sec" onclick="zoom.close()">cerrar</button></div><img id="zi"></dialog>
+<script>
+const GRADES = [["A_GOOD","A · la mandaría"],["B_CORRECTABLE","B · corregible"],["C_BAD","C · no sirve"]];
+let IDX = null;
+const el = (t,a={},...k)=>{const n=document.createElement(t);
+  for(const[p,v]of Object.entries(a)){if(p==="class")n.className=v;else if(p.startsWith("on"))n.addEventListener(p.slice(2),v);else n.setAttribute(p,v);}
+  k.flat().forEach(c=>n.append(c?.nodeType?c:document.createTextNode(c??"")));return n;};
+
+function celda(caso, a){
+  const c = el("div",{class:"cell"});
+  c.append(el("h3",{}, `${a.alt} ${a.nombre}`,
+    el("span",{class:"tag "+(a.status==="FIT"?"fit":"nofit")}, a.status)));
+  if(a.png){
+    const img = el("img",{class:"plan",src:"../"+a.png,alt:`${caso.case_id} ${a.alt}`});
+    img.addEventListener("click",()=>{zi.src=img.src;zt.textContent=`${caso.titulo} · ${a.alt} ${a.nombre}`;zoom.showModal();});
+    c.append(img);
+    if(a.png_tecnica) c.append(el("div",{class:"q"},
+      el("a",{href:"../"+a.png_tecnica,target:"_blank"},"ver planta técnica (cotas, rejilla, circulación)")));
+  } else {
+    c.append(el("div",{class:"q"}, a.explicacion || "sin layout"));
+  }
+  if(a.quality){
+    const q=a.quality;
+    c.append(el("div",{class:"q"},
+      el("b",{},"puestos "), q.open_seats||"—", " · ",
+      el("b",{},"sin asignar "), (q.unallocated_pct??"—")+" %", " · ",
+      el("b",{},"residual "), (q.residual_spaces_m2??"—")+" m²", el("br"),
+      el("b",{},"circulación "), (q.circulation_pct??"—")+" %", " · ",
+      el("b",{},"luz "), (q.daylight_score??"—"), " · ",
+      el("b",{},"fachada "), (q.facade_use??"—"), " · ",
+      el("b",{},"fragmentación "), (q.fragmentation??"—")));
+  }
+  if(a.layout_sha256) c.append(el("div",{class:"sha"}, "sha256 "+a.layout_sha256));
+  if(a.status!=="FIT") return c;
+
+  const k = `${caso.case_id}|${a.alt}`;
+  const fs = el("fieldset",{}, el("legend",{},"TU EVALUACIÓN"));
+  const g = el("div",{class:"grades"});
+  GRADES.forEach(([v,lab])=>{
+    const inp = el("input",{type:"radio",name:"g_"+k,value:v});
+    g.append(el("label",{}, inp, el("span",{},lab)));
+  });
+  fs.append(g);
+  const tw = el("div",{class:"tags"});
+  (IDX.reason_tags||[]).forEach(t=>{
+    const inp = el("input",{type:"checkbox",name:"t_"+k,value:t});
+    tw.append(el("label",{}, inp, el("span",{},t)));
+  });
+  fs.append(el("div",{class:"q",style:"margin-top:10px"},"reason_tags"), tw);
+  fs.append(el("textarea",{name:"n_"+k,placeholder:"qué está mal, qué salvarías, qué cambiarías"}));
+  fs.append(el("div",{class:"q"},"minutos ", el("input",{type:"number",name:"m_"+k,min:"0",step:"1",size:"4",value:""})));
+  c.append(fs);
+  return c;
+}
+
+function pinta(){
+  const app = document.getElementById("app"); app.textContent="";
+  IDX.casos.forEach(caso=>{
+    const box = el("div",{class:"case"});
+    const p = caso.programa||{};
+    box.append(el("h2",{}, caso.titulo,
+      el("small",{}, `${caso.brief_id} · ${p.open_workstations??"?"} puestos · `+
+        `${(p.rooms||{}).private_office??0} privados · ${Object.values(p.rooms||{}).reduce((a,b)=>a+b,0)} recintos`+
+        (caso.engine_commit?` · motor ${String(caso.engine_commit).slice(0,10)}`:"")+
+        (caso.generated_at?` · ${caso.generated_at}`:""))));
+    const g = el("div",{class:"grid"});
+    const sh = el("div",{class:"cell"});
+    sh.append(el("h3",{},"SHELL"));
+    const si = el("img",{class:"plan",src:"../"+caso.shell_png,alt:"shell"});
+    si.addEventListener("click",()=>{zi.src=si.src;zt.textContent=caso.titulo+" · shell";zoom.showModal();});
+    sh.append(si, el("div",{class:"q"},"perímetro, núcleo, pilares y acceso tal como los recibió el motor"));
+    g.append(sh);
+    caso.alternativas.forEach(a=>g.append(celda(caso,a)));
+    box.append(g);
+    const bestbox = el("div",{class:"best"}, el("b",{},"Mejor alternativa: "));
+    ["A","B","C","NINGUNA"].forEach(v=>{
+      const inp = el("input",{type:"radio",name:"best_"+caso.case_id,value:v});
+      bestbox.append(el("label",{style:"cursor:pointer"}, inp, " ", v, "  "));
+    });
+    box.append(bestbox);
+    app.append(box);
+  });
+}
+
+function recolecta(){
+  const rev = document.getElementById("reviewer").value.trim();
+  const now = new Date().toISOString().replace(/\.\d+Z$/,"+00:00");
+  const out = {contract_version_batch:"human_review_batch_v1", reviewer:rev, reviewed_at:now,
+               best_alternative:{}, reviews:[]};
+  IDX.casos.forEach(caso=>{
+    const b = document.querySelector(`input[name="best_${caso.case_id}"]:checked`);
+    if(b) out.best_alternative[caso.case_id] = b.value;
+    caso.alternativas.forEach(a=>{
+      if(a.status!=="FIT") return;
+      const k = `${caso.case_id}|${a.alt}`;
+      const gsel = document.querySelector(`input[name="g_${k}"]:checked`);
+      if(!gsel) return;                       // sin grado no hay revisión: no se inventa
+      const tags = [...document.querySelectorAll(`input[name="t_${k}"]:checked`)].map(i=>i.value);
+      const note = document.querySelector(`textarea[name="n_${k}"]`).value.trim();
+      const mins = document.querySelector(`input[name="m_${k}"]`).value;
+      const r = {contract_version:"human_layout_review_v1", case_id:caso.case_id,
+                 brief_id:caso.brief_id, alternative:a.alt, grade:gsel.value,
+                 reviewer:rev, reviewed_at:now};
+      if(a.layout_sha256) r.layout_sha256 = a.layout_sha256;
+      if(tags.length) r.reason_tags = tags;
+      if(note) r.free_note = note;
+      if(mins!=="") r.minutes_spent = Number(mins);
+      out.reviews.push(r);
+    });
+  });
+  return out;
+}
+
+function valida(d){
+  if(!d.reviewer) return "falta el nombre del revisor";
+  if(!d.reviews.length) return "no calificaste ninguna alternativa todavía";
+  return null;
+}
+
+document.getElementById("save").addEventListener("click", async ()=>{
+  const d = recolecta(); const err = valida(d);
+  const msg = document.getElementById("msg");
+  if(err){ msg.textContent = "⚠ "+err; return; }
+  msg.textContent = "guardando…";
+  try{
+    const r = await fetch("/save", {method:"POST", headers:{"Content-Type":"application/json"},
+                                    body: JSON.stringify(d)});
+    const t = await r.json();
+    msg.textContent = r.ok ? ("✓ guardado: "+t.written.join(", ")) : ("⚠ "+(t.error||r.status));
+  }catch(e){
+    msg.textContent = "⚠ no hay servidor de guardado (abriste el archivo directo). Usa «Descargar JSON».";
+  }
+});
+
+document.getElementById("download").addEventListener("click", ()=>{
+  const d = recolecta(); const err = valida(d);
+  const msg = document.getElementById("msg");
+  if(err){ msg.textContent = "⚠ "+err; return; }
+  const blob = new Blob([JSON.stringify(d,null,2)],{type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `E26_review_${(d.reviewer||"revisor").replace(/\W+/g,"_")}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+  msg.textContent = "✓ descargado";
+});
+
+fetch("review_index.json").then(r=>r.json()).then(d=>{IDX=d; pinta();})
+  .catch(e=>{document.getElementById("app").textContent =
+    "No pude leer review_index.json. Corre: PYTHONPATH=src python3 tools/e26_build_review.py";});
+</script>
+</body>
+</html>

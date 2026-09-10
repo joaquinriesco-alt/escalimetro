@@ -1,0 +1,37 @@
+{
+  "contract_version": "brief_freeze_v1",
+  "_doc": "E26 §9 — este archivo se escribe ANTES del primer solve del BRIEF_401_V1. Su razón de ser es poder demostrar después que el brief no se ajustó al ver los resultados.",
+  "brief_id": "BRIEF_401_V1",
+  "brief_path": "briefs/BRIEF_401_V1.json",
+  "brief_sha256": "3b5608e8ba2d760729690c30a8cedebaa184c654621ba752c0d48ad0c07b3eea",
+  "case_id": "002_gps_401",
+  "frozen_at": "2026-09-10T15:22:00+00:00",
+  "frozen_at_commit": "2f8bf43fdf0ef5034f878349141499cb7efa6d4a",
+  "first_solve": "NOT_RUN_YET",
+  "dimensionamiento": {
+    "shell_disponible_m2": 253.6,
+    "shell_bbox_m": [
+      22.5,
+      18.6
+    ],
+    "publicada_m2": 252.0,
+    "nucleos": 1,
+    "pilares": 2,
+    "area_nominal_programa_m2": 149.4,
+    "circulacion_estimada_m2": 37.4,
+    "area_min_total_m2": 186.8,
+    "ratio": 0.737,
+    "fuente_dimensiones": "program_templates/modules_office.json"
+  },
+  "programa": {
+    "open_workstations": 18,
+    "target_headcount": 24,
+    "permanent_seats": 21,
+    "meeting_seats": 12,
+    "recintos": 9,
+    "clusters_derivados": 3,
+    "sin_boardroom_12": true
+  },
+  "razon_sin_boardroom": "36 m² de directorio en una planta de 250 m² no es un programa comercial real. Su ausencia además prueba que el motor no depende de que ese módulo exista: las tres estrategias lo referencian en sus aristas.",
+  "compromiso": "Si alguna alternativa falla, el brief NO se cambia. Se reporta FIT / SEARCH_EXHAUSTED / TIMEOUT_* según corresponda."
+}

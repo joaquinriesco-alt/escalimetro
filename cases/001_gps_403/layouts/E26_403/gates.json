@@ -1,0 +1,131 @@
+{
+  "A": {
+    "E1-T": {
+      "gate": "E1-T",
+      "status": "PASS",
+      "checks": {
+        "programa_completo": true,
+        "puestos_solicitados (40)": true,
+        "0_hard_violations": true,
+        "0_colisiones": true,
+        "circulacion_conectada": true,
+        "shell_exacto": true
+      },
+      "open_workstations_requested": 40,
+      "open_workstations_delivered": 40,
+      "brief_id": "BRIEF_EQUILIBRADO"
+    },
+    "E1-A": {
+      "gate": "E1-A",
+      "status": "PASS_PROVISIONAL",
+      "checks": {
+        "critic_score ≥ 0.65": true,
+        "sin_aspecto_critico (≤0.2)": true,
+        "qa_interno ≤ 5.0 min": true,
+        "geometria_preservada ≥ 90.0 %": true,
+        "sin_redisenio": true
+      },
+      "critical_aspects": [],
+      "shell_dominated_aspects": {
+        "residual_spaces": 0.0
+      },
+      "thresholds": {
+        "critic": 0.65,
+        "qa_minutes": 5.0,
+        "geometry_preserved_pct": 90.0
+      },
+      "note": "Umbrales = hipótesis de producto documentadas; no provienen de norma ni de terceros."
+    },
+    "E1-C": {
+      "gate": "E1-C",
+      "status": "READY_FOR_BROKER_REVIEW",
+      "note": "El PASS comercial requiere que un broker o arquitecto externo declare que enviaría esta lámina a un cliente. Ningún crítico interno puede otorgarlo (broker_showable del crítico NO se usa aquí)."
+    }
+  },
+  "B": {
+    "E1-T": {
+      "gate": "E1-T",
+      "status": "PASS",
+      "checks": {
+        "programa_completo": true,
+        "puestos_solicitados (40)": true,
+        "0_hard_violations": true,
+        "0_colisiones": true,
+        "circulacion_conectada": true,
+        "shell_exacto": true
+      },
+      "open_workstations_requested": 40,
+      "open_workstations_delivered": 40,
+      "brief_id": "BRIEF_EQUILIBRADO"
+    },
+    "E1-A": {
+      "gate": "E1-A",
+      "status": "PASS_PROVISIONAL",
+      "checks": {
+        "critic_score ≥ 0.65": true,
+        "sin_aspecto_critico (≤0.2)": true,
+        "qa_interno ≤ 5.0 min": true,
+        "geometria_preservada ≥ 90.0 %": true,
+        "sin_redisenio": true
+      },
+      "critical_aspects": [],
+      "shell_dominated_aspects": {
+        "residual_spaces": 0.015
+      },
+      "thresholds": {
+        "critic": 0.65,
+        "qa_minutes": 5.0,
+        "geometry_preserved_pct": 90.0
+      },
+      "note": "Umbrales = hipótesis de producto documentadas; no provienen de norma ni de terceros."
+    },
+    "E1-C": {
+      "gate": "E1-C",
+      "status": "READY_FOR_BROKER_REVIEW",
+      "note": "El PASS comercial requiere que un broker o arquitecto externo declare que enviaría esta lámina a un cliente. Ningún crítico interno puede otorgarlo (broker_showable del crítico NO se usa aquí)."
+    }
+  },
+  "C": {
+    "E1-T": {
+      "gate": "E1-T",
+      "status": "PASS",
+      "checks": {
+        "programa_completo": true,
+        "puestos_solicitados (40)": true,
+        "0_hard_violations": true,
+        "0_colisiones": true,
+        "circulacion_conectada": true,
+        "shell_exacto": true
+      },
+      "open_workstations_requested": 40,
+      "open_workstations_delivered": 40,
+      "brief_id": "BRIEF_EQUILIBRADO"
+    },
+    "E1-A": {
+      "gate": "E1-A",
+      "status": "PASS_PROVISIONAL",
+      "checks": {
+        "critic_score ≥ 0.65": true,
+        "sin_aspecto_critico (≤0.2)": true,
+        "qa_interno ≤ 5.0 min": true,
+        "geometria_preservada ≥ 90.0 %": true,
+        "sin_redisenio": true
+      },
+      "critical_aspects": [],
+      "shell_dominated_aspects": {
+        "residual_spaces": 0.0
+      },
+      "thresholds": {
+        "critic": 0.65,
+        "qa_minutes": 5.0,
+        "geometry_preserved_pct": 90.0
+      },
+      "note": "Umbrales = hipótesis de producto documentadas; no provienen de norma ni de terceros."
+    },
+    "E1-C": {
+      "gate": "E1-C",
+      "status": "READY_FOR_BROKER_REVIEW",
+      "note": "El PASS comercial requiere que un broker o arquitecto externo declare que enviaría esta lámina a un cliente. Ningún crítico interno puede otorgarlo (broker_showable del crítico NO se usa aquí)."
+    }
+  }
+}

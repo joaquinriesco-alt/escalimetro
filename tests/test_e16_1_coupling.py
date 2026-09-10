@@ -316,8 +316,12 @@ def test_403_standard_01_byte_identica():
             metrics=_j(os.path.join(d, "metrics.json")),
             critique=_j(os.path.join(d, "critique.json")))})
     svg = build_board(alts, shell, FE.load(C403, PROG), ctx=ctx, program=load_program(PROG))
+    # E26 §5 — expectativa RE-BASELINEADA a propósito: la lámina dejó de publicar fortalezas escritas
+    # de antemano ("Fachada liberada para puestos") y el bloque IDEAL PARA, y pasó a mostrar cifras
+    # medidas de esta planta. La GEOMETRÍA no cambió; cambió lo que la lámina afirma.
     assert hashlib.sha256(svg.encode()).hexdigest() == \
-        "175c43d48f61c91a397b4d25b89f5e2d2d645d84e0df8b8c5b19905ccedc519c"
+        "485f02fc31202543775341f90503615dbe4462ab5e296fa4dc1c278f306318a6"
+    assert "Fachada liberada para puestos" not in svg and "IDEAL PARA" not in svg
 
 
 def test_403_geometria_intacta():

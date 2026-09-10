@@ -15,6 +15,7 @@ from dataclasses import dataclass, field, asdict
 from typing import Dict, List, Optional
 
 from ..model import Layout, Module
+from ..program_access import open_workstations
 from ..e06.qa import HumanCorrectionOperation, apply_operations, preserved_pct
 
 # Umbrales documentados (hipótesis de producto, no norma ni referencia de terceros)
@@ -65,18 +66,26 @@ def internal_qa(alt: str, layout: Layout, ops: List[HumanCorrectionOperation], m
     return after, burden
 
 
-def gate_e1t(result) -> Dict:
-    """Técnico: decidible por software."""
+def gate_e1t(result, program: Dict) -> Dict:
+    """Técnico: decidible por software.
+
+    E26 §3 — el check de puestos era el literal `open_seats == "40/40"`. Cualquier brief con otro
+    número fallaba el gate aunque hubiera entregado exactamente lo pedido. Ahora se compara contra
+    `open_workstations_exact` del BriefV1 REALMENTE EJECUTADO, que llega en `program`."""
     m = result.metrics
+    pedidos = open_workstations(program)
+    entregados = int(str(m["program_completeness"]["open_seats"]).split("/")[0])
     checks = {
         "programa_completo": bool(m["program_completeness"]["complete"]),
-        "40_puestos": m["program_completeness"]["open_seats"] == "40/40",
+        f"puestos_solicitados ({pedidos})": entregados == pedidos,
         "0_hard_violations": m["hard_constraint_violations"] == 0,
         "0_colisiones": m["collisions"] == 0,
         "circulacion_conectada": bool(m["circulation_connectivity"]),
         "shell_exacto": True,        # todas las alternativas se resuelven sobre el mismo ShellM de E03
     }
-    return {"gate": "E1-T", "status": "PASS" if all(checks.values()) else "FAIL", "checks": checks}
+    return {"gate": "E1-T", "status": "PASS" if all(checks.values()) else "FAIL", "checks": checks,
+            "open_workstations_requested": pedidos, "open_workstations_delivered": entregados,
+            "brief_id": program.get("template_id")}
 
 
 def gate_e1a(result, burden: InternalQABurden) -> Dict:
@@ -207,9 +216,15 @@ def presentation_handoff(r, spec, fit_verdict: Dict, svg_technical: str, svg_com
                               "color, trazo, tipografía, etiquetas, iconografía, composición y narrativa; NO puede "
                               "mover, redibujar ni reinterpretar muros, shell, recintos, puestos, mobiliario, "
                               "puertas, pilares ni circulación. Prohibido usar image generation para redibujar la planta.",
-        "alternative": {"id": r.alt, "name": r.name, "intent": spec.intent, "copy_short": spec.copy_short,
-                        "strengths": spec.strengths, "ideal_for": spec.ideal_for,
+        # E26 §5 — `strengths`, `copy_short` e `ideal_for` son AFIRMACIONES DE INTENCIÓN de la
+        # estrategia, no propiedades verificadas de esta planta. Se entregan bajo un nombre que lo
+        # dice, para que ninguna capa de presentación las publique como si fueran resultados medidos.
+        "alternative": {"id": r.alt, "name": r.name, "intent": spec.intent,
                         "graph_id": spec.graph.graph_id, "spine_strategy": spec.spine_strategy},
+        "strategy_intent_claims": {
+            "_contract": "TEXTO DE INTENCIÓN, NO VERIFICADO CONTRA ESTA PLANTA. No publicar como "
+                         "propiedad del layout: usar `metrics` o `program.requested_vs_delivered`.",
+            "copy_short": spec.copy_short, "strengths": spec.strengths, "ideal_for": spec.ideal_for},
         "shell_geometry": {"perimeter": [[round(x, 3), round(y, 3)] for x, y in r.layout.zones.get("shell_perimeter", [])],
                            "core": r.layout.zones.get("shell_core", []),
                            "columns": r.layout.zones.get("shell_columns", []),

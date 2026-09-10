@@ -9,14 +9,17 @@ import argparse
 import json
 import os
 import sys
+import subprocess
 import time
+from datetime import datetime, timezone
 from typing import Dict, List
 
 import cv2
 import numpy as np
 
 from ...case_context import CaseContext, from_case_dir
-from ...fit_evidence import load as load_fit_evidence, presentation_fit
+from ...fit_evidence import (load as load_fit_evidence, presentation_fit, sha256_file,
+                             vigente_engine_baseline)
 from ...renderer.side_by_side import _svg_to_bgr
 from ...schemas.floorplate import Floorplate
 from ..model import Layout, load_modules, load_program
@@ -25,6 +28,7 @@ from ..e05.run import label as label_img, mosaic
 from ..e06.qa import HumanCorrectionOperation
 from ..e06.scale import scaled_shell
 from .board import build_board
+from .traceability import load_previous_quality, quality, traceability
 from .engine import Engine, NoSolution, geometric_difference
 from .graph import SCHEMA as GRAPH_SCHEMA
 from .pipeline import (AlternativeComparison, compare, gate_e1a, gate_e1c, gate_e1t, internal_qa,
@@ -45,6 +49,20 @@ def fit_for_presentation(ctx, case_dir: str, program_path: str) -> Dict:
 
 # QA interno (operaciones mínimas de reparación; el cliente final no ve esta capa)
 QA_OPS: Dict[str, List[Dict]] = {}
+
+
+def _git_commit() -> str:
+    """Commit del motor con el que se generó esta corrida. E26 §6 — identidad, no decoración."""
+    try:
+        out = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True, timeout=10)
+        h = out.stdout.strip()
+        if not h:
+            return "UNKNOWN"
+        dirty = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True,
+                               timeout=10).stdout.strip()
+        return h + ("+dirty" if dirty else "")
+    except Exception:
+        return "UNKNOWN"
 
 
 def _default(o):
@@ -94,10 +112,8 @@ def main(argv=None):
               f"{_brief.permanent_seats(_mods)} puestos permanentes · "
               f"{_brief.cluster_count()} clusters")
     ctx = from_case_dir(args.case)                     # E15: la identidad del inmueble es dato del caso
-    EVIDENCE = load_fit_evidence(args.case, args.program)   # E15.1: el resultado, de los artefactos
-    FIT = presentation_fit(ctx, EVIDENCE)
-    print(f"[e07] evidencia de fit · técnica={EVIDENCE.technical} · robustez={EVIDENCE.robustness} · "
-          f"frescura={EVIDENCE.freshness} · fuentes={len(EVIDENCE.source_artifacts)}")
+    # E26 §4 — la evidencia de fit se carga DESPUÉS de resolver, desde el directorio de ESTA corrida.
+    # Antes se cargaba aquí, antes de resolver nada, y por eso sólo podía venir de una corrida anterior.
     fp = Floorplate.load(ctx.require_floorplate())
     shell = scaled_shell(fp, 1.0)                      # escala nominal: E07 NO repite el barrido de E06
     mods, clr = load_modules(args.modules)
@@ -151,7 +167,7 @@ def main(argv=None):
             r.metrics = lay_after.metrics
         results.append(r); burdens[spec.alt] = burden
         cand_stats[spec.alt] = eng.candidate_stats.get(spec.alt, {})
-        e1t = gate_e1t(r); e1a = gate_e1a(r, burden); e1c = gate_e1c(e1t, e1a)
+        e1t = gate_e1t(r, prog); e1a = gate_e1a(r, burden); e1c = gate_e1c(e1t, e1a)
         gates[spec.alt] = {"E1-T": e1t, "E1-A": e1a, "E1-C": e1c}
         d = os.path.join(out, "alternatives", spec.alt)
         os.makedirs(d, exist_ok=True)
@@ -172,6 +188,27 @@ def main(argv=None):
               f"QA {burden.operation_count} ops / {burden.estimated_minutes} min est.")
 
     # ---- comparación, diferencia geométrica, handoff ------------------------------------------------
+    # ---- E26 §6 — la corrida declara su procedencia SIEMPRE, resuelva o no. Si no resolvió nada,
+    # el registro es lo único que dice qué se intentó, con qué brief y con qué motor.
+    _vig = vigente_engine_baseline()
+    RUN_PROV = {
+        "case_id": ctx.case_id,
+        "brief_id": prog.get("template_id"),
+        "out_name": args.out_name,
+        "run_dir": out.replace(os.sep, "/"),
+        "floorplate_sha256": sha256_file(ctx.require_floorplate()),
+        "program_sha256": sha256_file(args.program),
+        "brief_sha256": sha256_file(args.brief) if args.brief else None,
+        "brief_path": args.brief or None,
+        "modules_sha256": sha256_file(args.modules),
+        "engine_hash": _vig.get("engine_hash"),
+        "engine_baseline": _vig.get("created_by"),
+        "engine_commit": _git_commit(),
+        "seed": args.seed,
+        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    }
+    dump(RUN_PROV, os.path.join(out, "run_provenance.json"))
+
     specs = [s for s in specs if s.alt not in no_fit]
     if not results:
         dump({"brief_id": prog.get("template_id"), "no_fit": no_fit, "alternatives_solved": 0,
@@ -179,6 +216,30 @@ def main(argv=None):
         dump(cand_stats, os.path.join(out, "candidate_stats.json"))
         print(f"[e07] ninguna alternativa resolvió este brief: {sorted(no_fit)}")
         return 0
+    # ---- E26 §4/§6 — la corrida declara su procedencia y su evidencia sale de ella misma ----------
+    dump(gates, os.path.join(out, "gates.json"))
+    # ---- E26 §6/§7 — identidad y calidad por layout entregado -------------------------------------
+    for r in results:
+        d = os.path.join(out, "alternatives", r.alt)
+        lay = os.path.join(d, "layout.json")
+        tr = traceability(RUN_PROV, r.alt, lay)
+        dump(tr, os.path.join(d, "traceability.json"))
+        prev = load_previous_quality(args.case, RUN_PROV.get("brief_id"), r.alt, out)
+        q = quality(RUN_PROV, r.alt, lay, r.metrics, r.critique, previous=prev)
+        dump(q, os.path.join(d, "quality.json"))
+        print(f"[e07]   {r.alt}: layout_sha256 {tr['layout_sha256'][:16]} · "
+              f"sin asignar {q['unallocated_pct']} % · residual {q['residual_spaces_m2']} m² · "
+              f"arq {q['architectural_score']}" +
+              (f" · delta vs corrida previa {q['delta_vs_previous']}" if prev else ""))
+
+    EVIDENCE = load_fit_evidence(args.case, args.program, run_dir=out)
+    FIT = presentation_fit(ctx, EVIDENCE)
+    print(f"[e07] evidencia de fit (esta corrida) · técnica={EVIDENCE.technical} · "
+          f"robustez={EVIDENCE.robustness} · frescura={EVIDENCE.freshness} · "
+          f"fuentes={len(EVIDENCE.source_artifacts)}")
+    if EVIDENCE.robustness_note:
+        print(f"[e07]   robustez no disponible: {EVIDENCE.robustness_note}")
+
     comp = compare(results, burdens, gates)
     diffs = {}
     for i in range(len(results)):
@@ -208,7 +269,6 @@ def main(argv=None):
     dump(FIT, os.path.join(out, "fit_verdict.json"))
     dump({r.alt: r.profile.to_dict() for r in results}, os.path.join(out, "performance_profile.json"))
     dump({k: v.to_dict() for k, v in burdens.items()}, os.path.join(out, "internal_qa.json"))
-    dump(gates, os.path.join(out, "gates.json"))
     dump(cand_stats, os.path.join(out, "candidate_stats.json"))
 
     # ---- visuales ----------------------------------------------------------------------------------

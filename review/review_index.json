@@ -1,0 +1,167 @@
+{
+  "contract": "human_review_v1",
+  "reason_tags": [
+    "circulacion",
+    "acceso",
+    "luz_natural",
+    "salas_mal_ubicadas",
+    "privados_mal_ubicados",
+    "espacio_desperdiciado",
+    "densidad_excesiva",
+    "geometria_imposible",
+    "conflicto_nucleo",
+    "conflicto_pilar",
+    "programa_incompleto",
+    "mala_adyacencia",
+    "falta_privacidad",
+    "mala_proporcion",
+    "sin_espesor_de_tabique",
+    "sin_pasillo_legible",
+    "otro"
+  ],
+  "casos": [
+    {
+      "case_id": "001_gps_403",
+      "titulo": "OFICINA 403 · GPS PROPERTY",
+      "brief_id": "BRIEF_EQUILIBRADO",
+      "brief_sha256": "f6174547ac8f7dabe3e402a07f653f7644672892354ee083713c72f7a76628af",
+      "engine_commit": "2f8bf43fdf0ef5034f878349141499cb7efa6d4a+dirty",
+      "generated_at": "2026-09-10T15:53:27+00:00",
+      "shell_png": "cases/001_gps_403/outputs/shell_clean.png",
+      "programa": {
+        "open_workstations": 40,
+        "target_headcount": 48,
+        "rooms": {
+          "private_office": 4,
+          "meeting_4": 3,
+          "meeting_8": 1,
+          "boardroom_12": 1,
+          "phone_booth": 3,
+          "reception": 1,
+          "kitchenette": 1,
+          "dining": 1,
+          "lounge": 1
+        }
+      },
+      "alternativas": [
+        {
+          "alt": "A",
+          "nombre": "EFICIENTE",
+          "status": "FIT",
+          "layout_sha256": "753ecca6570ec76750331ead3623be04a7e3601c3cee479af8fea87d015f6305",
+          "png": "cases/001_gps_403/layouts/E26_403/alternatives/A/layout_commercial.png",
+          "png_tecnica": "cases/001_gps_403/layouts/E26_403/alternatives/A/layout_geometry.png",
+          "quality": {
+            "open_seats": "40/40",
+            "program_complete": true,
+            "unallocated_pct": 26.8,
+            "residual_spaces_m2": 71.8,
+            "daylight_score": 0.288,
+            "fragmentation": 0.84,
+            "facade_use": 0.633,
+            "architectural_score": 0.706,
+            "circulation_pct": 15.69,
+            "waste_pct": 13.32
+          },
+          "explicacion": null
+        },
+        {
+          "alt": "B",
+          "nombre": "BALANCEADO",
+          "status": "FIT",
+          "layout_sha256": "61cd28dd9ca277027c63b127c560708fd7a25323decb45c3af1385e3e14fbca8",
+          "png": "cases/001_gps_403/layouts/E26_403/alternatives/B/layout_commercial.png",
+          "png_tecnica": "cases/001_gps_403/layouts/E26_403/alternatives/B/layout_geometry.png",
+          "quality": {
+            "open_seats": "40/40",
+            "program_complete": true,
+            "unallocated_pct": 27.39,
+            "residual_spaces_m2": 53.1,
+            "daylight_score": 0.282,
+            "fragmentation": 0.76,
+            "facade_use": 0.296,
+            "architectural_score": 0.772,
+            "circulation_pct": 14.3,
+            "waste_pct": 9.85
+          },
+          "explicacion": null
+        },
+        {
+          "alt": "C",
+          "nombre": "COLABORATIVO",
+          "status": "FIT",
+          "layout_sha256": "1e7d63c59df0d4d5005259f0b78d0f1d1af2b7711e2c206f9c68c08650edf779",
+          "png": "cases/001_gps_403/layouts/E26_403/alternatives/C/layout_commercial.png",
+          "png_tecnica": "cases/001_gps_403/layouts/E26_403/alternatives/C/layout_geometry.png",
+          "quality": {
+            "open_seats": "40/40",
+            "program_complete": true,
+            "unallocated_pct": 26.95,
+            "residual_spaces_m2": 64.5,
+            "daylight_score": 0.475,
+            "fragmentation": 0.58,
+            "facade_use": 0.953,
+            "architectural_score": 0.717,
+            "circulation_pct": 15.13,
+            "waste_pct": 11.96
+          },
+          "explicacion": null
+        }
+      ]
+    },
+    {
+      "case_id": "002_gps_401",
+      "titulo": "OFICINA 401 · GPS PROPERTY",
+      "brief_id": "BRIEF_401_V1",
+      "brief_sha256": "3b5608e8ba2d760729690c30a8cedebaa184c654621ba752c0d48ad0c07b3eea",
+      "engine_commit": "2f8bf43fdf0ef5034f878349141499cb7efa6d4a+dirty",
+      "generated_at": "2026-09-10T15:54:45+00:00",
+      "shell_png": "cases/002_gps_401/outputs/shell_clean.png",
+      "programa": {
+        "open_workstations": 18,
+        "target_headcount": 24,
+        "rooms": {
+          "private_office": 2,
+          "meeting_8": 1,
+          "meeting_4": 1,
+          "phone_booth": 2,
+          "reception": 1,
+          "kitchenette": 1,
+          "dining": 1
+        }
+      },
+      "alternativas": [
+        {
+          "alt": "A",
+          "nombre": "EFICIENTE",
+          "status": "SEARCH_EXHAUSTED",
+          "layout_sha256": null,
+          "png": null,
+          "png_tecnica": null,
+          "quality": null,
+          "explicacion": "el solver probó que no hay solución DENTRO del espacio de candidatos considerado, que es incompleto (posiciones muestreadas cada 1.0 m; candidatos colapsados por dominancia; tope por módulo escalado con la demanda del programa). No es una demostración de que no quepa."
+        },
+        {
+          "alt": "B",
+          "nombre": "BALANCEADO",
+          "status": "SEARCH_EXHAUSTED",
+          "layout_sha256": null,
+          "png": null,
+          "png_tecnica": null,
+          "quality": null,
+          "explicacion": "el solver probó que no hay solución DENTRO del espacio de candidatos considerado, que es incompleto (posiciones muestreadas cada 1.0 m; candidatos colapsados por dominancia; tope por módulo escalado con la demanda del programa). No es una demostración de que no quepa."
+        },
+        {
+          "alt": "C",
+          "nombre": "COLABORATIVO",
+          "status": "SEARCH_EXHAUSTED",
+          "layout_sha256": null,
+          "png": null,
+          "png_tecnica": null,
+          "quality": null,
+          "explicacion": "el solver probó que no hay solución DENTRO del espacio de candidatos considerado, que es incompleto (posiciones muestreadas cada 1.0 m; candidatos colapsados por dominancia; tope por módulo escalado con la demanda del programa). No es una demostración de que no quepa."
+        }
+      ]
+    }
+  ]
+}

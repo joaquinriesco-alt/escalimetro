@@ -1,0 +1,264 @@
+{
+  "_doc": "E26 §3-§7 — baseline vigente. E26 NO toca search (§2): cambia el GATE, la PROCEDENCIA de la evidencia, la COPY de la lámina y agrega IDENTIDAD y CALIDAD por layout. Cadena: E14 → … → E25 → E26.",
+  "created_by": "E26",
+  "chain": [
+    {
+      "experiment": "E14",
+      "engine_hash": "5ce5f6a1f4e3dd17f5f4518fb8365bc24ed90d337dfc5aacb1c1b144b7877259",
+      "note": "motor durante el experimento de generalización, sobre 85c8cb1"
+    },
+    {
+      "experiment": "E15",
+      "engine_hash": "d213b4294290247913011d50a15df03fd5ba51b380e905b4a74a7d44ba1201ff",
+      "note": "tras el contrato genérico de caso, sobre e5fc1f7"
+    },
+    {
+      "experiment": "E15.1",
+      "engine_hash": "1bf28635dab42bfbbcd9dfca62d8ee5ad28db503957552e3fe65536d87ca069e",
+      "note": "tras separar hechos de entrada y evidencia computada"
+    },
+    {
+      "experiment": "E15.2",
+      "engine_hash": "74c60443aebae7f21b71be355975d3348ac106eae60cf309822f3e5770458ca4",
+      "note": "tras cerrar la frontera hechos/evidencia (A: scale_confidence fuera de case.json; B: compatibilidad de motor en la frescura; C: PresentationFit tipada)"
+    },
+    {
+      "experiment": "E15.3",
+      "engine_hash": "49f36d0a63a14a0bbf1610d3fc086ea4052a0b14e5c9b2b61b9fd8f1616e5e68",
+      "note": "tras hacer la procedencia honesta y no forjable (A: el board recibe la evidencia, no la copy; B: productor desconocido != ancla de compatibilidad verificada; C: umbrales de confianza inventados fuera)"
+    },
+    {
+      "experiment": "E16.1",
+      "engine_hash": "a6ee3213b6994897aaa16c0852e2079a5eab0b1750f55db4b1d670a39d3c07fa",
+      "note": "tras retirar los acoplamientos de caso conocidos de las rutas genéricas (Standard 02/03, lámina de validación, runner de Railway, orquestador de IA, side-by-side)"
+    },
+    {
+      "experiment": "E16.5",
+      "engine_hash": "1fdc9b64b824edf70d0c908f19f1682e470b6abe83c19b3a12da01eb4ef39456",
+      "note": "tras generalizar la localizacion a dibujos de planta completa (drawing_scope: multi_unit | whole_shell)"
+    },
+    {
+      "experiment": "E16.6",
+      "engine_hash": "9f25241d8d88066f2567299594bd3faef35364bfc4ea0deafa52a70199385bf0",
+      "note": "tras generalizar la segmentacion para dibujos whole_shell (proveedor por conectividad con el exterior, sin semilla)"
+    },
+    {
+      "experiment": "E16.7",
+      "engine_hash": "2de297f99507d0a27d4e68e56f2f13dbc2903389db8b7cd1bdcf0b6d731804d4",
+      "note": "tras generalizar la deteccion de evidencia estructural (contraste local a escala de trazo en vez de umbral global de gris)"
+    },
+    {
+      "experiment": "E16.8",
+      "engine_hash": "29a9129867d3b770f1061e5b58c531e7c9e3958f3275583a5fc8e8fba0c5f1bf",
+      "note": "tras exigir compatibilidad semantica de region entre el area en pixeles y el area publicada"
+    },
+    {
+      "experiment": "E16.10",
+      "engine_hash": "050d4beea8dc3e203b61294c376c1f64e1a3d1d69455fd37260188d4955566f1",
+      "note": "tras introducir geometria de nucleo guiada por pista semantica, con contrato de aceptacion propio"
+    },
+    {
+      "experiment": "E16.11",
+      "engine_hash": "f4ead85145f85a43567eefc994b1572e9e304b3754da905404c942c5b442b530",
+      "note": "tras separar plausibilidad de completitud en el contrato de nucleo"
+    },
+    {
+      "experiment": "E16.13.1",
+      "engine_hash": "43c22573449f74c0dc18f24636656d04cc676f3df59a9b65fdb37824e1a33f5c",
+      "note": "tras admitir nucleos de 1..N regiones en el contrato, con el productor congelado y verificado"
+    },
+    {
+      "experiment": "E16.14",
+      "engine_hash": "779a1eee6d3d2f2ce4fcc185dbf08da8890768e49a64211770eb1ee800a8105c",
+      "note": "tras hacer que el productor proponga 1..N regiones por evidencia, con el contrato congelado"
+    },
+    {
+      "experiment": "E24",
+      "engine_hash": "ea55d67374535121306fc201ceccc1d11ec7107ee55b70bec7ebf3b176c1f214",
+      "note": "tras sacar el brief histórico de 40 puestos del motor (BriefV1 + DesignPolicyV1) e implementar ShellInputV1 en runtime"
+    },
+    {
+      "experiment": "E25",
+      "engine_hash": "70b0bdc1971a26099e065d0045c5f6a2b70120af7c1f46a9f8a6659a96b9bd13",
+      "note": "tras separar FIT de fallo de búsqueda (search_status) y generalizar el generador de candidatos: dominancia sensible al tamaño, tope escalado con la demanda y piso de cobertura por instancia"
+    },
+    {
+      "experiment": "E26",
+      "engine_hash": "49977b59e519a5b6075ce9fc1452fb682dd8c597e4b08150b1c09aa6e45c31c5",
+      "note": "tras generalizar el gate técnico, atar la evidencia de fit a su propia corrida, quitar la copy comercial no verificada y agregar identidad y quality.json por layout — VIGENTE"
+    }
+  ],
+  "commit_at_creation": {
+    "parent": "2f8bf43",
+    "note": "un archivo no puede contener el hash del commit que lo introduce"
+  },
+  "engine_hash": "49977b59e519a5b6075ce9fc1452fb682dd8c597e4b08150b1c09aa6e45c31c5",
+  "n_files": 119,
+  "group_hashes": {
+    "ai": "055827a3b10c08d8cbf1b33ab2e134e8de59f75b0eedf155512e4e24c2cabcb8",
+    "catalog": "39b973f7d14863195da44bcb089417673e5fd78b6b0e20062160e5faecc1b441",
+    "core": "3406519082dc127dfbcefcb067f6fbb6ef1110ad0969cedcecba3961f2ae0982",
+    "geometry": "8d19d4e080475257e4d77362af0748320dac9513d0c2309590c2a4c1079eb226",
+    "layout": "459f418d56b29536f08cd1b4932c8b4a6f4a84608f618f66be4a2e3175afb810",
+    "overrides": "5efeacc89294f64d9b529e72492dc06be13511878eea1ea4bbfa7425d4925dc8",
+    "renderer": "5da8fc6cdca51cb4e32252f1611538f6f1e8e2ed3baa5b8df31ff48250ee76e4",
+    "schemas": "1c8b67356e8cb4e1f766bd93e2ea01aee3f7853ff6ca2d376c78d92d6f7d1577",
+    "segmentation": "8df17698d0e35867be703bcf822057eb662e1bea1dca7a656030f337238f55ee",
+    "semantics": "c6d1959030de0d3920477a9886f1c17e5e758aa44b0c6afbf4d028ce5ae96ae9",
+    "solver": "8f7aea53c22f8549783a1a69e4737f4f503085b419452f767df85fa45e8ad14a",
+    "strategies": "ce4236114380dc16929b88172494b32d74ec428b304643eb1df4e73173842c5a",
+    "vision": "b487dcbc1c79b25d290c402d2e2385e1f1bc9d1a982063a28732dd083e7434f2"
+  },
+  "file_hashes": {
+    "program_templates/modules_office.json": "e5d7dc3bad238d901aacc835f9cb1e1c0e0241a5d3be4897e654977c201b46f9",
+    "program_templates/office_balanced_48.json": "6f21f50330110b7c4d43b5c0cfe7d6587f7ee0827482d76e00df26a382f56107",
+    "program_templates/office_balanced_48_diag36.json": "97d7cc57584d223dcb1923718d438136f622d9af171ff92675b542eca847495a",
+    "src/escalimetro/__init__.py": "91447944015cec709e8aa7655f7e9d64e1e4508e7023a57fe3746911c0fc6fed",
+    "src/escalimetro/__main__.py": "7afeadd4522552160b4980dc798d62c6351e23026023c4dc3f40ef0a286a8f3d",
+    "src/escalimetro/ai/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/escalimetro/ai/board02.py": "29617b36454d9435d9cc7b3ab401e808f41861ed97db59474bd0af12c76b8051",
+    "src/escalimetro/ai/config.py": "c695aeaf5f916910ef4ca5ba87c8ebd24a4d5d1c3a3ebb0725a4812f14b6acf8",
+    "src/escalimetro/ai/costs.py": "467344ed64826123d213ec46bb602e3a6c954570c8ad9e6b3692d05f9185f7c2",
+    "src/escalimetro/ai/e09.py": "9533183985b14a73d064030ab0ce74a5bc295f9035e2628528d2f47a404b2220",
+    "src/escalimetro/ai/geometry_guard.py": "f5ca1ed6d618693748f4b5ecd2da9be481ed2d39c2900c054fe82906de0430ba",
+    "src/escalimetro/ai/manifest.py": "c091eb1e2c5aa064f02e4918961275985d25679888402211e02bc3f826e574eb",
+    "src/escalimetro/ai/orchestrator.py": "6200bee98432d5655c67f6d1aaeac6db296ecf9584379d00c9c7bee7b34e8463",
+    "src/escalimetro/ai/prompts/__init__.py": "143fb22b884e00d06a63b1e624575db2c2d12f52881b426146cb82dcd349d8e8",
+    "src/escalimetro/ai/providers/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/escalimetro/ai/providers/anthropic_provider.py": "089ae09d5c31e50842e5ba6b74132320298d7904614b16de2e663f87d416e767",
+    "src/escalimetro/ai/providers/base.py": "55fc91b2100a0d50023539ca66ae52c13aaf1da10e9039bf7189fcc1e252fd9d",
+    "src/escalimetro/ai/providers/deterministic_provider.py": "dd2dfcf8bce34833f3965e503870c713d5bb33fc431fba006326b4abe0486b92",
+    "src/escalimetro/ai/providers/openai_provider.py": "06532e79c71826b0b897c5043a63d653ed382e3966d7ed6b393e52dda30d9d12",
+    "src/escalimetro/ai/railway_e09_runner.py": "f7a9decc27e37275a9368e3fb0550698dafe70c3c6256c3bc0006bbc5288fbeb",
+    "src/escalimetro/ai/review_aggregator.py": "7e7355a3b237c6916be9c4e4cc361e0f946c9eb9d1975275a9c9dd471768af7a",
+    "src/escalimetro/ai/reviewers.py": "da434d6b33c14ddf83576e76acc2d4a3c81cb320b9a5e56255fe73c52ac10cae",
+    "src/escalimetro/ai/run.py": "fe600193cdddd463341181851b3eca9d29bf42a5483a4145cac08d8375721188",
+    "src/escalimetro/ai/schemas.py": "677c949f70c24b7ec77bc49b13a85692619ec89c7d36edc6d1d1af4206a723df",
+    "src/escalimetro/ai/svg_rasterizer.py": "2f60b660cca5133bb964dada5baee693958f114c919b07274d760c8332236b91",
+    "src/escalimetro/ai/telemetry.py": "645f192c409f7a0744f8c0360974e9b9cab543d12eeed6c88c5ab7c40cb8c583",
+    "src/escalimetro/ai/visuals.py": "42297dbed7d9f584e790b4e3b16c64c15091fb37f1142a1f9fb9c858cce10fef",
+    "src/escalimetro/ai/visuals09.py": "1ffd06846072c1789eb4b679be7779d0326b8bfaa7484772f91723b57d91f25c",
+    "src/escalimetro/area_semantics.py": "a8ce6884613cbe2c62f3c9fa59cf794dc52dfae78ac0461d0af037a2b6e1fd9d",
+    "src/escalimetro/brief/__init__.py": "9fcdeedbee28a2f7591a862e619c4cd69d6b60bf750c2fd1a66ae5343b408edf",
+    "src/escalimetro/brief/apportion.py": "d9f3024a0df219cdfef0600ac4eb0c62b6365eaa1ad4e0746cb3aee21627e0be",
+    "src/escalimetro/brief/brief_v1.py": "e1b9b9d8b00f64ab8d7bd43afc387a696fe6d5d588f8852ce0bc91d73d574344",
+    "src/escalimetro/brief/design_policy_v1.py": "60a9c59c615be3b7ba0e9112b4eeb2a66fea90243963aee495887bafac86119a",
+    "src/escalimetro/brief/display.py": "a9ab65852674f1c9cc5dd5bb814495508177d52a65724a2989cb40a6f3334f59",
+    "src/escalimetro/case_context.py": "673f8833263782587beee2da89853f50fde2be6bacd89ffd178a8874176dad0c",
+    "src/escalimetro/cli.py": "268e53defab94fef69fc7e429995f58aa733b8a28b7b777e013fd7de9a2da247",
+    "src/escalimetro/fit_evidence.py": "80ac30a75d0955e68942972b732a8fd65ba00d62cbdf1d49153f14c26b9ecd16",
+    "src/escalimetro/geometry/__init__.py": "c05cc07463047c98eda1c668078ddfcec3d4996e15143859378816683be15891",
+    "src/escalimetro/geometry/core_completeness.py": "08d88b43f376b45c67a0eff58dbcc42c223b1cf3ecefbe9ca18c470d2e15361c",
+    "src/escalimetro/geometry/core_components.py": "db04bfb5b298f9bb652e197d105e48fa3d81defbd3f02623218496ea7187e9dc",
+    "src/escalimetro/geometry/core_fabrication.py": "13fde1e66f59032d5c504741e7cc58acb4d6a11a12c674de3cea2ab3ed1e8ec7",
+    "src/escalimetro/geometry/core_geometry.py": "303d3f0a0be0143a3a1dcbb503ae01874b9e6d73e3f024c3baf47954f69447b9",
+    "src/escalimetro/geometry/core_producer.py": "6b56a080238697517a64d9087aa62ca9e91d6b8bbce18631a8bd8602a06c3a5e",
+    "src/escalimetro/geometry/elements.py": "86064fb4b9c67640b3843dee00fd05a2c51712d54048ec1b54e8f8bb7591f0ae",
+    "src/escalimetro/geometry/extractor.py": "3e1973d82859bf1aad2ccfb797cb9c2d2e6dfa59a7f4557a76f083a391464c96",
+    "src/escalimetro/geometry/scale.py": "6930c77bfa875c39415d086383b07d6a48e49b2f95d19690566ab7769bfb4e5b",
+    "src/escalimetro/layout/__init__.py": "2802c7a4b652156d01f90e8b8470816340790fafcb5324d3d4a108c3fe5b35e9",
+    "src/escalimetro/layout/circulation.py": "3f65e0a883c9a124fb886d3cb45b1f501865403004904e77e807f0fdd1afbdb0",
+    "src/escalimetro/layout/e05/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/escalimetro/layout/e05/bands.py": "40c5c443f6bcb446d516ea1b5d6295380fe628756c0e6b41c3e7c247e8b477a8",
+    "src/escalimetro/layout/e05/cpsolver.py": "f99ef5744fe7634a4b435fdd5c79db076f7baf80889e27f3b3af439723a42239",
+    "src/escalimetro/layout/e05/critic.py": "803551660c369c51004352dfe9dee28f18392eac105a6e806cc8cb7ac16054b7",
+    "src/escalimetro/layout/e05/features.py": "41a693135a4a322e97fccbfca0ffd05aead6f4f66a70618bc5065453b2cd208f",
+    "src/escalimetro/layout/e05/preflight.py": "8867a8743b976e7f5ab29ab84830ad2af5a67eae9197292b016ad2d12a0019cb",
+    "src/escalimetro/layout/e05/run.py": "96ad0b9c192436e2428335a12b96fb53118200160c30f965bf8a9d22183e349e",
+    "src/escalimetro/layout/e05/strategy.py": "f155aefe345af127c0e9c96f7f53d63afbaedf5662a31ce2f9392418c952a822",
+    "src/escalimetro/layout/e06/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/escalimetro/layout/e06/evidence.py": "beeab58292cfa42c12579f43168c1fd62f9b81e404b28dea20243a3f12436ff8",
+    "src/escalimetro/layout/e06/freeplace.py": "0ce4d8faf5f1ec6f3279b25fbb158a1762d6f293bddb416e461efbbf9f0cd445",
+    "src/escalimetro/layout/e06/qa.py": "2801158d80ee476262d65fd905541cf852d12031c2ae0eb17b0f8f5a8da1d4e6",
+    "src/escalimetro/layout/e06/run.py": "f16da8cfefbf10a8f9af769c1f109518d0649a35bef7ea81f52d8b5436db8894",
+    "src/escalimetro/layout/e06/scale.py": "551ace6789530d99b8a6a64dd1d7b937303d0cae52fe5c0498f491369a4d198d",
+    "src/escalimetro/layout/e06/sweep.py": "5e48ef35c2f73664853a2203efd270e5af7ea8c5bdab23d6239cac9ee29aa0ac",
+    "src/escalimetro/layout/e06/verdict.py": "c40fcba58a6a300b1df7c93d4f22a79166d8f59bb1a979c7c753dc1caf362fb0",
+    "src/escalimetro/layout/e07/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "src/escalimetro/layout/e07/board.py": "d29be5a08a5c8d4cc4819e57aef7d5a56d15313dba86146823bf2cd4945a56da",
+    "src/escalimetro/layout/e07/engine.py": "45c3f89cb071ad9d177472acd0b54bc9523e0484b8fbe3991789d13f1ee7e7ae",
+    "src/escalimetro/layout/e07/graph.py": "08feb6bba9b569bddd3be68d451a8b9a313858f98d0c2fc3494be3dc2886f659",
+    "src/escalimetro/layout/e07/pipeline.py": "331c749a735a38c595e141239adb690607dffb36087372ce6f3fe8669660e404",
+    "src/escalimetro/layout/e07/program_delivery.py": "1e7fd270745163d6b697777b57edaaf868a0bee08c913b006dc48d35c3d4aec2",
+    "src/escalimetro/layout/e07/run.py": "7e2f76f6c1c2c141845fcf729322245a8e3b2d3db3b6c5a894523d01ab32baac",
+    "src/escalimetro/layout/e07/strategies.py": "f338719792eb7cbcf517c669d6f3cfde7c1b5998bbd6ac10799efa6c031e954b",
+    "src/escalimetro/layout/e07/traceability.py": "c9ea052079cdf9edbf84fcb16e7f3c6ae5a12e60e3b64426b939b6a7d2741006",
+    "src/escalimetro/layout/e07/visuals.py": "6ab8978ffcd00211a6a8e9e4fb10cef92511d2f3530d00d5b635ff43dff6935d",
+    "src/escalimetro/layout/grid.py": "dc30a9023325a75517b199434d44d70f9b2f537b44ad1239ce13ee9f9e6168d9",
+    "src/escalimetro/layout/model.py": "758e28167c367845d48dacb9217c3a574462dcf13b7610ecb19820ca4a7c1fd5",
+    "src/escalimetro/layout/program_access.py": "175496d8ecd1fa1d990a75ca7fe42c089fb186218442db030c5df243114b6aa7",
+    "src/escalimetro/layout/render.py": "4f3d726768da1ebeb253e6afd30ae77caf928359412cef96c022eaf7a3591ccb",
+    "src/escalimetro/layout/run.py": "42abbc68e80a354dd06a8569b49b9c0acf13cd01c3d6644f9373a7970b5b4bac",
+    "src/escalimetro/layout/scoring.py": "9e83f8a8c1e34af13a7ff535d65231569007898ecac05547fa9b664411536e24",
+    "src/escalimetro/layout/search_status.py": "f38905ffa2610f92cd6c98ed6e974e16f2aa1ba815db03752ba14874f50fbffe",
+    "src/escalimetro/layout/shell_adapter.py": "f1dbac3fab13922d8149ac342afb0a026c060c3de74754697b10b3ee954ecb82",
+    "src/escalimetro/layout/solver.py": "4ab540407a94625cb561529705df85ae2f4954d659f5953c622f6a5e05896774",
+    "src/escalimetro/layout/strips.py": "afed59aa8e813affd8edd3767418f52baa6616fe658b5ec094561033ba4959f3",
+    "src/escalimetro/layout/zoning.py": "7f2c78bc58fe6d607de523cec38169d0b9da14497dcfef28cd0341b05c4b1e44",
+    "src/escalimetro/localization.py": "14ec83b3a931a9ed797ddd3261af33397bb6593d61fc9e844a2704992853172a",
+    "src/escalimetro/overrides/__init__.py": "4e7d192d313a5c703aa36775921a99116c9cc85ac88581d03a860c3d399ce927",
+    "src/escalimetro/pipeline.py": "5ccc6a4c63caed5586c14d6d28879b1897ac5cc33272692e7683b75ddcfaf9b6",
+    "src/escalimetro/renderer/__init__.py": "2811b491b70e70b7b52bd0dc957d12f9584139a3c2dcd32605e6e94beb897b4b",
+    "src/escalimetro/renderer/annotate.py": "f5dc5cb34510223d4623bacd72528e3a8995fb96e1d47efbd6b5a3b5348aaeb0",
+    "src/escalimetro/renderer/shell.py": "594a6156808e35a1e599491cde42d71687647d6ba8c2bf086f0145b8cc3a55f9",
+    "src/escalimetro/renderer/side_by_side.py": "530b6ecee412df745e41e461aca065dfe89f079581ea495ceb4d16796f0aba03",
+    "src/escalimetro/renderer/svg.py": "91fc0d18e7dd923b4f13c23a9dcc8f7ccadb73e9ce7598f892148968fc7e362c",
+    "src/escalimetro/schemas/__init__.py": "db519bab9c85437c0743d788007dda842801a462e8e3dbe60cbddae6cc1b6d29",
+    "src/escalimetro/schemas/floorplate.py": "171aefe2b0c954ed10d18471c1621945a55fab8c8f3a9d4f3661e8200249185d",
+    "src/escalimetro/segmentation/__init__.py": "07b55ed63cce3703de281a8951d3fa833405b63030ff04f205985b6751fe4158",
+    "src/escalimetro/segmentation/base.py": "85504ad24c83f071471d4bca3cdcd8abb3180b25a17ffe2ee0efef985fd7beb0",
+    "src/escalimetro/segmentation/providers.py": "246f9a0297912202396d9689ccae7ce3d9ba4e54cee73fe1bd3894330b29faf7",
+    "src/escalimetro/segmentation/strategy.py": "c0fc60db512bed441af63f66ab1f992b9fac51cb82022eaa5057b7a991dfbd16",
+    "src/escalimetro/segmentation/structural.py": "e595b7b7c207e975cd8affb9941d0eb491fbd46071257a58f21892cea36cbd87",
+    "src/escalimetro/semantic_hint.py": "c2063abadcc1859069ea0e3eebf60c1c2a7375cd889b76fde543c2ada1bab12a",
+    "src/escalimetro/semantics/__init__.py": "173dd2381fda2c4862e258accae9e93b141c340587218f70b1ead35090ea1624",
+    "src/escalimetro/semantics/columns_v2.py": "47cb856f7d1eacfcbe4d505cdc84edc8be50ac4e43939eb70ad11a60adb81a62",
+    "src/escalimetro/semantics/daylight.py": "6041e881d5481a2b718c70768009c4a75a2f888e31108d7a39bca562e6e981db",
+    "src/escalimetro/semantics/entrance.py": "76965a1a4832946632adccdfe048c5d595b39b149530cc88b6531b4243bd9b45",
+    "src/escalimetro/semantics/shell.py": "b65359d6c3f90e50f19a9404682f1b0bd72de0aa8ba2aba9f6acac2c638e6b68",
+    "src/escalimetro/shell_input/__init__.py": "d64c729f03a249e739e48326762e39b95e9b5f59edc7c4888cb77c7df3d6fb8b",
+    "src/escalimetro/shell_input/scale_confirmation.py": "ef1062343b1adcd6b265ebccd07d4b3ce0097f5292675ba92179a7e16da2c669",
+    "src/escalimetro/shell_input/shell_input_v1.py": "0d7dfe90fc0523888fdbdcc59d55c9c769a0fdff4a7adc48d028a49bb0a9bf88",
+    "src/escalimetro/validation/__init__.py": "d663e0e88f0a10997b5a59ad9289ffd8d4af654878207401f39ab8b90646200c",
+    "src/escalimetro/validation/blind.py": "57834e325baef3ec64dc4e841a36ca0c0a70957a6a1e3907c113ba770a9de67f",
+    "src/escalimetro/validation/boards.py": "3c57da2e67ce0f7a826f95cabd53b26b62c646e793da966af06705e6c6d25b03",
+    "src/escalimetro/validation/forms.py": "84859171cc568849d20bdece0e0bebe73998245f357bc81533cfe201743e2f9b",
+    "src/escalimetro/validation/schema.py": "7afd0caf4410ae807179cf1c94d9edfc524c818cf098f6a4e03b3c08bcd8e9f2",
+    "src/escalimetro/validation/scorecard.py": "8fea9af2d65886f2a8dc4b85b7e32cf69521ccf9a048b61f6a78ae07e1c1a32f",
+    "src/escalimetro/vision/__init__.py": "80bb02c5ba5131061522485197ed0c839e5543f0a39e1035215420606476c9e7",
+    "src/escalimetro/vision/adapters.py": "42598717d7b547d56329adedfc800d6800cf30bfc2fe00a7104688c67c615884",
+    "src/escalimetro/vision/base.py": "0522d60444058d348a54b9a80e4a65cdb9e925ee18fa7608ded71b84a798613a",
+    "src/escalimetro/vision/ocr_localizer.py": "dc65452d33caa63c96d9663100b87c49547db1afb8d24e87a09dde9d67128e0b"
+  },
+  "diff_vs_previous": {
+    "previous": "E25",
+    "previous_engine_hash": "70b0bdc1971a26099e065d0045c5f6a2b70120af7c1f46a9f8a6659a96b9bd13",
+    "changed_files": [
+      "src/escalimetro/fit_evidence.py",
+      "src/escalimetro/layout/e07/board.py",
+      "src/escalimetro/layout/e07/pipeline.py",
+      "src/escalimetro/layout/e07/run.py"
+    ],
+    "added_files": [
+      "src/escalimetro/layout/e07/traceability.py"
+    ],
+    "removed_files": [],
+    "semantic_surface_touched": [],
+    "search_surface_touched": [],
+    "kind": "PRESENTATION_AND_CONTRACT",
+    "gate_change": "gate_e1t comparaba `open_seats == \"40/40\"` como literal: cualquier brief con otro conteo fallaba el gate aunque hubiera entregado exactamente lo pedido. Ahora recibe el programa ejecutado y compara contra open_workstations_exact. El brief de la 401 pide 18 y pasa.",
+    "evidence_change": "fit_evidence.load acepta run_dir: la capa técnica sale del directorio de ESA corrida y la robustez de escala sólo se consume si su procedencia declara el mismo programa. Antes se leía siempre layouts/E07 y layouts/E06, así que una lámina de otra corrida mostraba el veredicto de una corrida ajena y salía STALE. La corrida escribe run_provenance.json y su frescura se juzga contra eso, no contra el registro de compatibilidad entre baselines.",
+    "copy_change": "la lámina dejó de publicar `spec.strengths` y `spec.ideal_for` —frases fijas por alternativa que el layout producido puede no demostrar— y muestra en su lugar cifras medidas de esta planta. En el handoff esas frases pasan a `strategy_intent_claims`, marcadas como no verificadas.",
+    "traceability_change": "cada layout FIT deja traceability.json (case, brief, strategy, layout_sha256, engine_commit, brief_sha256, generated_at) y quality.json con las métricas de acompañamiento y el delta contra una corrida comparable anterior.",
+    "what_did_not_change": [
+      "el productor semántico (PRODUCER_HASH intacto)",
+      "contract / wall evidence / semantic hint / downstream (SCOPE intacto)",
+      "candidate generation, caps, ranking, poda y configuración de CP-SAT",
+      "module_max_path, bench constraints y dimensiones de módulos",
+      "build_spine y todo el diseño de circulación",
+      "los pesos de scoring",
+      "la geometría de los layouts de E07 (la lámina se re-renderizó, no se resolvió de nuevo)"
+    ]
+  },
+  "evidence_compatibility_note": "Regresión del caso base verificada: GPS 403 + BRIEF_EQUILIBRADO da 40/40, programa completo, 0 violaciones, 0 colisiones y circulación conectada en A, B y C, con E1-T PASS bajo el gate nuevo. La lámina histórica Standard 01 de la 403 se RE-RENDERIZÓ con el renderer corregido sobre la MISMA geometría: cambia lo que la lámina afirma, no la planta."
+}

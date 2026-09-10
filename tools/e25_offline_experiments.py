@@ -26,18 +26,19 @@ from escalimetro.layout.model import load_modules                              #
 from escalimetro.layout.solver import Solver                                   # noqa: E402
 from escalimetro.schemas.floorplate import Floorplate                          # noqa: E402
 
-CASE = os.path.join(ROOT, "cases", "001_gps_403")
+# E26 — el caso se puede fijar desde el entorno para diagnosticar OTRO shell sin tocar el runtime
+CASE = os.path.join(ROOT, os.environ.get("ESCALIMETRO_CASE", "cases/001_gps_403"))
 MODS = os.path.join(ROOT, "program_templates", "modules_office.json")
 SEED, WORKERS = 1, 1                       # determinista para diagnóstico
 CAP_E24, STEP_E24 = 200, 1.0
 CAP_AMPLIO, STEP_FINO = 10 ** 9, 0.8
 
 
-def contexto(brief_id):
+def contexto(brief_id, brief_file=None):
     ctx = from_case_dir(CASE)
     shell = scaled_shell(Floorplate.load(ctx.require_floorplate()), 1.0)
     mods, clr = load_modules(MODS)
-    brief = load_brief(os.path.join(ROOT, "briefs", f"BRIEF_{brief_id}.json"))
+    brief = load_brief(brief_file or os.path.join(ROOT, "briefs", f"BRIEF_{brief_id}.json"))
     prog = compile_program(brief, modules=mods)
     S = Solver(shell, mods, prog, clr)
     feats = extract_features(shell, S.grid)

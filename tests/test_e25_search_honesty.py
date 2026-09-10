@@ -262,8 +262,12 @@ def test_e25_movio_el_motor_a_proposito_con_baseline_declarado():
     from escalimetro.generalization import freeze, producer_freeze, scope_guard
     base = json.loads((RAIZ / "cases/generalization/E25/GENERIC_ENGINE_BASELINE.json").read_text(encoding="utf-8"))
     eng = freeze.manifest(str(RAIZ))["engine_hash"]
-    assert base["engine_hash"] == eng
-    assert engine_baseline.engine_hash() == eng, "el baseline vigente debe ser el de E25"
+    # E26 — mismo arreglo que se aplicó a los ciclos anteriores: el baseline de E25 declara el motor
+    # DE E25, y lo que se comprueba hoy es que el motor está en el baseline VIGENTE, que un ciclo
+    # posterior puede mover declarando baseline nuevo.
+    assert engine_baseline.esta_en_la_cadena(base["engine_hash"]), "el motor de E25 salió de la cadena"
+    assert eng == engine_baseline.engine_hash(), \
+        "el motor cambió sin declarar un GENERIC_ENGINE_BASELINE.json nuevo"
     assert base["diff_vs_previous"]["previous"] == "E24"
     r = producer_freeze.read_worktree(str(RAIZ))
     assert producer_freeze.producer_hash(r) == "cacc3636ee14928d2eada9c63103081d305511b73b6716cc48ef2fe8fb38a5a3"

@@ -1,0 +1,398 @@
+{
+  "A": {
+    "brutos": 1136,
+    "finales": 962,
+    "descartados_pct": 15.32,
+    "refinamientos": [],
+    "por_modulo": {
+      "dining": {
+        "brutos": 48,
+        "tras_dominancia": 41,
+        "descartados_por_dominancia": 7,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 41,
+        "descartados_por_cap": 0
+      },
+      "kitchenette": {
+        "brutos": 106,
+        "tras_dominancia": 93,
+        "descartados_por_dominancia": 13,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 93,
+        "descartados_por_cap": 0
+      },
+      "meeting_4": {
+        "brutos": 142,
+        "tras_dominancia": 127,
+        "descartados_por_dominancia": 15,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 127,
+        "descartados_por_cap": 0
+      },
+      "meeting_8": {
+        "brutos": 48,
+        "tras_dominancia": 41,
+        "descartados_por_dominancia": 7,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 41,
+        "descartados_por_cap": 0
+      },
+      "phone_booth": {
+        "brutos": 257,
+        "tras_dominancia": 222,
+        "descartados_por_dominancia": 35,
+        "instancias_pedidas": 2,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": true,
+        "cap": 200,
+        "finales": 200,
+        "descartados_por_cap": 22
+      },
+      "private_office": {
+        "brutos": 106,
+        "tras_dominancia": 93,
+        "descartados_por_dominancia": 13,
+        "instancias_pedidas": 2,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 93,
+        "descartados_por_cap": 0
+      },
+      "reception": {
+        "brutos": 102,
+        "tras_dominancia": 92,
+        "descartados_por_dominancia": 10,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 92,
+        "descartados_por_cap": 0
+      },
+      "workstation_cluster": {
+        "brutos": 140,
+        "tras_dominancia": 115,
+        "descartados_por_dominancia": 25,
+        "instancias_pedidas": 3,
+        "cap_base": 200,
+        "cap_efectivo": 240,
+        "cap_activo": false,
+        "cap": 240,
+        "finales": 115,
+        "descartados_por_cap": 0
+      },
+      "workstation_row": {
+        "brutos": 187,
+        "tras_dominancia": 160,
+        "descartados_por_dominancia": 27,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 160,
+        "descartados_por_cap": 0
+      }
+    },
+    "causas_de_descarte": {
+      "fuera_de_bbox": 2790,
+      "duplicado": 46,
+      "fuera_del_usable": 2685,
+      "invade_zona_de_acceso": 11,
+      "choca_elemento_fijo": 667,
+      "choca_pilar": 63,
+      "no_toca_circulacion": 0
+    },
+    "modulos_sin_candidatos": [],
+    "bench_cfgs": [
+      6,
+      5,
+      4
+    ],
+    "cap_base": 200
+  },
+  "B": {
+    "brutos": 1103,
+    "finales": 932,
+    "descartados_pct": 15.5,
+    "refinamientos": [],
+    "por_modulo": {
+      "dining": {
+        "brutos": 48,
+        "tras_dominancia": 41,
+        "descartados_por_dominancia": 7,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 41,
+        "descartados_por_cap": 0
+      },
+      "kitchenette": {
+        "brutos": 106,
+        "tras_dominancia": 93,
+        "descartados_por_dominancia": 13,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 93,
+        "descartados_por_cap": 0
+      },
+      "meeting_4": {
+        "brutos": 142,
+        "tras_dominancia": 127,
+        "descartados_por_dominancia": 15,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 127,
+        "descartados_por_cap": 0
+      },
+      "meeting_8": {
+        "brutos": 48,
+        "tras_dominancia": 41,
+        "descartados_por_dominancia": 7,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 41,
+        "descartados_por_cap": 0
+      },
+      "phone_booth": {
+        "brutos": 257,
+        "tras_dominancia": 222,
+        "descartados_por_dominancia": 35,
+        "instancias_pedidas": 2,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": true,
+        "cap": 200,
+        "finales": 200,
+        "descartados_por_cap": 22
+      },
+      "private_office": {
+        "brutos": 106,
+        "tras_dominancia": 93,
+        "descartados_por_dominancia": 13,
+        "instancias_pedidas": 2,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 93,
+        "descartados_por_cap": 0
+      },
+      "reception": {
+        "brutos": 102,
+        "tras_dominancia": 92,
+        "descartados_por_dominancia": 10,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 92,
+        "descartados_por_cap": 0
+      },
+      "workstation_cluster": {
+        "brutos": 125,
+        "tras_dominancia": 101,
+        "descartados_por_dominancia": 24,
+        "instancias_pedidas": 3,
+        "cap_base": 200,
+        "cap_efectivo": 240,
+        "cap_activo": false,
+        "cap": 240,
+        "finales": 101,
+        "descartados_por_cap": 0
+      },
+      "workstation_row": {
+        "brutos": 169,
+        "tras_dominancia": 144,
+        "descartados_por_dominancia": 25,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 144,
+        "descartados_por_cap": 0
+      }
+    },
+    "causas_de_descarte": {
+      "fuera_de_bbox": 2568,
+      "duplicado": 476,
+      "fuera_del_usable": 2338,
+      "invade_zona_de_acceso": 9,
+      "choca_elemento_fijo": 633,
+      "choca_pilar": 63,
+      "no_toca_circulacion": 0
+    },
+    "modulos_sin_candidatos": [],
+    "bench_cfgs": [
+      6,
+      4,
+      3
+    ],
+    "cap_base": 200
+  },
+  "C": {
+    "brutos": 1074,
+    "finales": 909,
+    "descartados_pct": 15.36,
+    "refinamientos": [],
+    "por_modulo": {
+      "dining": {
+        "brutos": 48,
+        "tras_dominancia": 41,
+        "descartados_por_dominancia": 7,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 41,
+        "descartados_por_cap": 0
+      },
+      "kitchenette": {
+        "brutos": 106,
+        "tras_dominancia": 93,
+        "descartados_por_dominancia": 13,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 93,
+        "descartados_por_cap": 0
+      },
+      "meeting_4": {
+        "brutos": 142,
+        "tras_dominancia": 127,
+        "descartados_por_dominancia": 15,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 127,
+        "descartados_por_cap": 0
+      },
+      "meeting_8": {
+        "brutos": 48,
+        "tras_dominancia": 41,
+        "descartados_por_dominancia": 7,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 41,
+        "descartados_por_cap": 0
+      },
+      "phone_booth": {
+        "brutos": 257,
+        "tras_dominancia": 222,
+        "descartados_por_dominancia": 35,
+        "instancias_pedidas": 2,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": true,
+        "cap": 200,
+        "finales": 200,
+        "descartados_por_cap": 22
+      },
+      "private_office": {
+        "brutos": 106,
+        "tras_dominancia": 93,
+        "descartados_por_dominancia": 13,
+        "instancias_pedidas": 2,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 93,
+        "descartados_por_cap": 0
+      },
+      "reception": {
+        "brutos": 102,
+        "tras_dominancia": 92,
+        "descartados_por_dominancia": 10,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 92,
+        "descartados_por_cap": 0
+      },
+      "workstation_cluster": {
+        "brutos": 112,
+        "tras_dominancia": 91,
+        "descartados_por_dominancia": 21,
+        "instancias_pedidas": 3,
+        "cap_base": 200,
+        "cap_efectivo": 240,
+        "cap_activo": false,
+        "cap": 240,
+        "finales": 91,
+        "descartados_por_cap": 0
+      },
+      "workstation_row": {
+        "brutos": 153,
+        "tras_dominancia": 131,
+        "descartados_por_dominancia": 22,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 131,
+        "descartados_por_cap": 0
+      }
+    },
+    "causas_de_descarte": {
+      "fuera_de_bbox": 2190,
+      "duplicado": 866,
+      "fuera_del_usable": 1988,
+      "invade_zona_de_acceso": 9,
+      "choca_elemento_fijo": 612,
+      "choca_pilar": 63,
+      "no_toca_circulacion": 0
+    },
+    "modulos_sin_candidatos": [],
+    "bench_cfgs": [
+      4,
+      3,
+      2
+    ],
+    "cap_base": 200
+  }
+}

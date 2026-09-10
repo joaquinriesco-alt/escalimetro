@@ -1,0 +1,16 @@
+{
+  "contract_version": "brief_v1",
+  "brief_id": "BRIEF_401_V1",
+  "target_headcount": 24,
+  "open_workstations": 18,
+  "rooms": [
+    {"module": "private_office", "count": 2},
+    {"module": "meeting_8", "count": 1},
+    {"module": "meeting_4", "count": 1},
+    {"module": "phone_booth", "count": 2},
+    {"module": "reception", "count": 1},
+    {"module": "kitchenette", "count": 1},
+    {"module": "dining", "count": 1}
+  ],
+  "notes": "E26 §9 — primer brief para un shell distinto de GPS 403. Oficina 401: 252 m² publicados, 253.6 m² libres en la rejilla, bbox 22.5 x 18.6 m, 1 núcleo, 2 pilares. Programa comercial plausible para una empresa de ~24 personas: 18 puestos open, 2 privados (gerencia), una sala de 8 y una de 4, recepción, kitchenette con comedor y 2 phone booths. SIN directorio de 12: 36 m² de sala en una planta de 250 m² no es un programa real, y su ausencia además prueba que el motor no depende de que exista ese módulo. Área nominal del programa 149.4 m² + 20 % de circulación estimada = 186.8 m², ratio 0.737 sobre el disponible. Dimensionado contra program_templates/modules_office.json ANTES del primer solve; congelado y hasheado antes de ejecutar. No se ajusta despues de ver resultados."
+}
