@@ -1,0 +1,174 @@
+#!/usr/bin/env python3
+"""E22 - scoring contra las metricas congeladas en PREREGISTRO.md (SS10-SS16).
+Mismas definiciones que E21. No define metricas nuevas. No mueve ningun umbral."""
+import json, hashlib, numpy as np
+
+MAN = json.load(open('manifest.json'))
+man = {a['call_id']: a for a in MAN['manifest']}
+A, F = "ARCHITECTURAL_ENCLOSURE", "FURNITURE_OBJECT"
+V = ['CONSISTENT','REVIEW','INSUFFICIENT_EVIDENCE']
+
+def carga(path):
+    r, orden = {}, []
+    for L in open(path):
+        L=L.strip()
+        if not L or L.startswith('#'): continue
+        p=L.split()
+        cid, v = p[1], p[2]
+        assert cid in man and v in V, L
+        r[cid]=v; orden.append(cid)
+    return r, orden
+
+ALT, orden_alt = carga('respuestas_e22.txt')
+BASE, _ = carga('respuestas_e21_baseline.txt')
+
+pre=[c for ola in MAN['olas'] for c in ola]
+assert orden_alt == pre, "ORDEN NO COINCIDE CON EL PRE-REGISTRO"
+assert len(ALT)==144 and len(BASE)==144
+
+def sel(arm=None, asserted=None):
+    return sorted(c for c,a in man.items()
+                  if (arm is None or a['arm']==arm) and (asserted is None or a['asserted']==asserted))
+F_ALL, F_ARCH, F_FURN = sel('FALSE'), sel('FALSE',A), sel('FALSE',F)
+T_ALL, T_ARCH, T_FURN = sel('TRUE'),  sel('TRUE',A),  sel('TRUE',F)
+
+def frac(r,cids,v): return sum(1 for c in cids if r[c]==v)/len(cids)
+
+def metricas(r):
+    m={}
+    m['ERROR_CATCH_RATE']            = frac(r,F_ALL,'REVIEW')
+    m['ERROR_CATCH_RATE_falsa_ARCH'] = frac(r,F_ARCH,'REVIEW')
+    m['ERROR_CATCH_RATE_falsa_FURN'] = frac(r,F_FURN,'REVIEW')
+    m['CORRECT_PASS_RATE']           = frac(r,T_ALL,'CONSISTENT')
+    m['CORRECT_PASS_RATE_true_ARCH'] = frac(r,T_ARCH,'CONSISTENT')
+    m['CORRECT_PASS_RATE_true_FURN'] = frac(r,T_FURN,'CONSISTENT')
+    m['TRUE_ASSERTION_REVIEW_RATE']  = frac(r,T_ALL,'REVIEW')
+    m['FALSE_ASSERTION_CONSISTENT_RATE'] = frac(r,F_ALL,'CONSISTENT')
+    m['INSUFFICIENT_RATE_true']  = frac(r,T_ALL,'INSUFFICIENT_EVIDENCE')
+    m['INSUFFICIENT_RATE_false'] = frac(r,F_ALL,'INSUFFICIENT_EVIDENCE')
+    m['INSUFFICIENT_RATE_total'] = frac(r,sorted(man),'INSUFFICIENT_EVIDENCE')
+    m['BALANCED_QA_ACCURACY'] = (m['ERROR_CATCH_RATE']+m['CORRECT_PASS_RATE'])/2
+    imgs=sorted({a['img'] for a in man.values()})
+    m['IDEAL_PAIR_RATE'] = sum(1 for i in imgs if r[i+'_T']=='CONSISTENT' and r[i+'_F']=='REVIEW')/len(imgs)
+    m['PASS_ASYMMETRY']  = m['CORRECT_PASS_RATE_true_FURN'] - m['CORRECT_PASS_RATE_true_ARCH']
+    m['CATCH_ASYMMETRY'] = m['ERROR_CATCH_RATE_falsa_ARCH'] - m['ERROR_CATCH_RATE_falsa_FURN']
+    return m
+
+MA, MB = metricas(ALT), metricas(BASE)
+
+# SS15 bootstrap: unidad = IMAGE TARGET, brazos juntos
+imgs=sorted({a['img'] for a in man.values()})
+rng=np.random.default_rng(2101); B=10000; n=len(imgs)
+def desde(r,s):
+    fr=[i+'_F' for i in s]; tr=[i+'_T' for i in s]
+    fa=[c for c in fr if man[c]['asserted']==A]; ff=[c for c in fr if man[c]['asserted']==F]
+    ta=[c for c in tr if man[c]['asserted']==A]; tf=[c for c in tr if man[c]['asserted']==F]
+    ecr=sum(1 for c in fr if r[c]=='REVIEW')/len(fr)
+    cpr=sum(1 for c in tr if r[c]=='CONSISTENT')/len(tr)
+    tap=sum(1 for c in ta if r[c]=='CONSISTENT')/len(ta) if ta else float('nan')
+    tfp=sum(1 for c in tf if r[c]=='CONSISTENT')/len(tf) if tf else float('nan')
+    fac=sum(1 for c in fa if r[c]=='REVIEW')/len(fa) if fa else float('nan')
+    ffc=sum(1 for c in ff if r[c]=='REVIEW')/len(ff) if ff else float('nan')
+    return ecr,cpr,(ecr+cpr)/2,tap,tfp-tap,fac-ffc
+boot=np.empty((B,7))
+for b in range(B):
+    s=[imgs[i] for i in rng.integers(0,n,n)]
+    a=desde(ALT,s); z=desde(BASE,s)
+    boot[b]=[a[0],a[1],a[2],a[2]-z[2],a[3]-z[3],a[4],a[5]]
+def ic(k):
+    col=boot[:,k]; col=col[~np.isnan(col)]
+    return float(np.percentile(col,2.5)), float(np.percentile(col,97.5))
+
+# SS11 gate absoluto - umbrales originales de E21-A, sin relajar
+G=[('ERROR_CATCH_RATE overall        >= 0.80', MA['ERROR_CATCH_RATE']>=0.80, MA['ERROR_CATCH_RATE']),
+   ('ERROR_CATCH_RATE falsa-ARCH     >= 0.70', MA['ERROR_CATCH_RATE_falsa_ARCH']>=0.70, MA['ERROR_CATCH_RATE_falsa_ARCH']),
+   ('ERROR_CATCH_RATE falsa-FURN     >= 0.70', MA['ERROR_CATCH_RATE_falsa_FURN']>=0.70, MA['ERROR_CATCH_RATE_falsa_FURN']),
+   ('CORRECT_PASS_RATE overall       >= 0.75', MA['CORRECT_PASS_RATE']>=0.75, MA['CORRECT_PASS_RATE']),
+   ('CORRECT_PASS_RATE true-ARCH     >= 0.65', MA['CORRECT_PASS_RATE_true_ARCH']>=0.65, MA['CORRECT_PASS_RATE_true_ARCH']),
+   ('CORRECT_PASS_RATE true-FURN     >= 0.65', MA['CORRECT_PASS_RATE_true_FURN']>=0.65, MA['CORRECT_PASS_RATE_true_FURN']),
+   ('FALSE_ASSERTION_CONSISTENT_RATE <= 0.15', MA['FALSE_ASSERTION_CONSISTENT_RATE']<=0.15, MA['FALSE_ASSERTION_CONSISTENT_RATE']),
+   ('TRUE_ASSERTION_REVIEW_RATE      <= 0.25', MA['TRUE_ASSERTION_REVIEW_RATE']<=0.25, MA['TRUE_ASSERTION_REVIEW_RATE']),
+   ('INSUFFICIENT overall            <= 0.15', MA['INSUFFICIENT_RATE_total']<=0.15, MA['INSUFFICIENT_RATE_total']),
+   ('BALANCED_QA_ACCURACY            >= 0.775', MA['BALANCED_QA_ACCURACY']>=0.775, MA['BALANCED_QA_ACCURACY'])]
+
+out=[];w=out.append
+w("E22 - SCORECARD (evaluador alternativo = sonnet; metricas y umbrales congelados)")
+w("respuestas_e22.txt sha256 = "+hashlib.sha256(open('respuestas_e22.txt','rb').read()).hexdigest())
+w("baseline E21    sha256 = "+hashlib.sha256(open('respuestas_e21_baseline.txt','rb').read()).hexdigest())
+w("N = 144 (72 TRUE, 72 FALSE)   orden == pre-registro: OK")
+w("")
+w("-- SS10 metricas del alternativo, con el baseline E21 al lado --")
+w(f"{'metrica':34s}{'ALT(sonnet)':>13s}{'BASE(opus)':>13s}{'DELTA':>10s}")
+for k in ['ERROR_CATCH_RATE','ERROR_CATCH_RATE_falsa_ARCH','ERROR_CATCH_RATE_falsa_FURN',
+          'CORRECT_PASS_RATE','CORRECT_PASS_RATE_true_ARCH','CORRECT_PASS_RATE_true_FURN',
+          'TRUE_ASSERTION_REVIEW_RATE','FALSE_ASSERTION_CONSISTENT_RATE',
+          'INSUFFICIENT_RATE_true','INSUFFICIENT_RATE_false','INSUFFICIENT_RATE_total',
+          'BALANCED_QA_ACCURACY','IDEAL_PAIR_RATE']:
+    w(f"{k:34s}{MA[k]:13.4f}{MB[k]:13.4f}{MA[k]-MB[k]:+10.4f}")
+w("")
+w("-- conteos crudos del alternativo --")
+for nm,c in [('FALSE total',F_ALL),('FALSE-ARCH',F_ARCH),('FALSE-FURN',F_FURN),
+             ('TRUE  total',T_ALL),('TRUE-ARCH',T_ARCH),('TRUE-FURN',T_FURN)]:
+    w(f"{nm:12s} n={len(c):3d}  CONSISTENT={sum(1 for x in c if ALT[x]=='CONSISTENT'):3d}"
+      f"  REVIEW={sum(1 for x in c if ALT[x]=='REVIEW'):3d}"
+      f"  INSUFFICIENT={sum(1 for x in c if ALT[x]=='INSUFFICIENT_EVIDENCE'):3d}")
+w("")
+w("-- SS12 comparacion pareada (alternativo menos baseline) --")
+for nm,k in [('DELTA_ERROR_CATCH','ERROR_CATCH_RATE'),('DELTA_CORRECT_PASS','CORRECT_PASS_RATE'),
+             ('DELTA_BALANCED_QA','BALANCED_QA_ACCURACY'),('DELTA_IDEAL_PAIR','IDEAL_PAIR_RATE'),
+             ('DELTA_TRUE_ARCH_PASS','CORRECT_PASS_RATE_true_ARCH'),
+             ('DELTA_TRUE_FURN_PASS','CORRECT_PASS_RATE_true_FURN'),
+             ('DELTA_FALSE_ARCH_CATCH','ERROR_CATCH_RATE_falsa_ARCH'),
+             ('DELTA_FALSE_FURN_CATCH','ERROR_CATCH_RATE_falsa_FURN')]:
+    w(f"{nm:26s}{MA[k]-MB[k]:+.4f}")
+w("")
+w("-- SS13 indices de asimetria --")
+w(f"{'':26s}{'ALT':>10s}{'BASE':>10s}{'DELTA':>10s}")
+w(f"{'PASS_ASYMMETRY':26s}{MA['PASS_ASYMMETRY']:10.4f}{MB['PASS_ASYMMETRY']:10.4f}{MA['PASS_ASYMMETRY']-MB['PASS_ASYMMETRY']:+10.4f}")
+w(f"{'CATCH_ASYMMETRY':26s}{MA['CATCH_ASYMMETRY']:10.4f}{MB['CATCH_ASYMMETRY']:10.4f}{MA['CATCH_ASYMMETRY']-MB['CATCH_ASYMMETRY']:+10.4f}")
+w("")
+w("-- SS14 materialidad (descriptiva, NO es gate) --")
+dbqa=MA['BALANCED_QA_ACCURACY']-MB['BALANCED_QA_ACCURACY']
+dtap=MA['CORRECT_PASS_RATE_true_ARCH']-MB['CORRECT_PASS_RATE_true_ARCH']
+w(f"MATERIAL_BQA_CHANGE          |{dbqa:+.4f}| >= 0.10   -> {'SI' if abs(dbqa)>=0.10 else 'NO'}")
+w(f"MATERIAL_ARCH_PASS_CHANGE    |{dtap:+.4f}| >= 0.15   -> {'SI' if abs(dtap)>=0.15 else 'NO'}")
+w(f"MATERIAL_ASYMMETRY_REDUCTION  {MA['PASS_ASYMMETRY']:.4f}  <= 0.20   -> {'SI' if MA['PASS_ASYMMETRY']<=0.20 else 'NO'}")
+w("")
+w("-- SS16 pairwise, unidad = imagen (n=72) --")
+d={(x,y):0 for x in V for y in V}
+for i in imgs: d[(ALT[i+'_T'],ALT[i+'_F'])]+=1
+w("distribucion 3x3 ALT   filas = brazo TRUE, columnas = brazo FALSE")
+w(f"{'':24s}"+"".join(f"{v[:6]:>8s}" for v in V))
+for x in V: w(f"{x:24s}"+"".join(f"{d[(x,y)]:8d}" for y in V))
+db={(x,y):0 for x in V for y in V}
+for i in imgs: db[(BASE[i+'_T'],BASE[i+'_F'])]+=1
+w("distribucion 3x3 BASE (E21)")
+w(f"{'':24s}"+"".join(f"{v[:6]:>8s}" for v in V))
+for x in V: w(f"{x:24s}"+"".join(f"{db[(x,y)]:8d}" for y in V))
+ig=sum(1 for i in imgs if ALT[i+'_T']=='CONSISTENT' and ALT[i+'_F']=='REVIEW')
+ib=sum(1 for i in imgs if BASE[i+'_T']=='CONSISTENT' and BASE[i+'_F']=='REVIEW')
+amb=sum(1 for i in imgs if (ALT[i+'_T']=='CONSISTENT')==(BASE[i+'_T']=='CONSISTENT' ) and False)
+w(f"IDEAL_PAIR_RATE ALT {ig}/72 = {ig/72:.4f}   BASE {ib}/72 = {ib/72:.4f}")
+ideal_alt={i for i in imgs if ALT[i+'_T']=='CONSISTENT' and ALT[i+'_F']=='REVIEW'}
+ideal_base={i for i in imgs if BASE[i+'_T']=='CONSISTENT' and BASE[i+'_F']=='REVIEW'}
+w(f"ideales en ambos {len(ideal_alt&ideal_base)}  ·  solo ALT {len(ideal_alt-ideal_base)}  ·  solo BASE {len(ideal_base-ideal_alt)}  ·  en ninguno {72-len(ideal_alt|ideal_base)}")
+ig2=sum(1 for c in man if ALT[c]==BASE[c])
+w(f"acuerdo llamada a llamada ALT vs BASE: {ig2}/144 = {ig2/144:.4f}")
+w("")
+w("-- SS15 bootstrap, 10.000 remuestreos, unidad = image target --")
+for k,(nm,val) in enumerate([('ERROR_CATCH_RATE alt',MA['ERROR_CATCH_RATE']),
+                             ('CORRECT_PASS_RATE alt',MA['CORRECT_PASS_RATE']),
+                             ('BALANCED_QA alt',MA['BALANCED_QA_ACCURACY']),
+                             ('DELTA_BALANCED_QA',dbqa),
+                             ('DELTA_TRUE_ARCH_PASS',dtap),
+                             ('PASS_ASYMMETRY alt',MA['PASS_ASYMMETRY']),
+                             ('CATCH_ASYMMETRY alt',MA['CATCH_ASYMMETRY'])]):
+    lo,hi=ic(k); w(f"{nm:24s}{val:+.4f}   IC95 [{lo:+.4f}, {hi:+.4f}]")
+w("")
+w("-- SS11 gate absoluto (los ocho umbrales originales de E21-A) --")
+allp=True
+for t,ok,v in G:
+    allp&=ok; w(f"[{'PASS' if ok else 'FAIL'}] {t:36s} obtenido {v:.4f}")
+w("")
+w(f"GATE ABSOLUTO = {'PASS' if allp else 'FAIL'}")
+txt="\n".join(out); open('score_e22.txt','w').write(txt+"\n"); print(txt)

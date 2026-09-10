@@ -1,0 +1,86 @@
+E22 - SCORECARD (evaluador alternativo = sonnet; metricas y umbrales congelados)
+respuestas_e22.txt sha256 = 40436c26202dad83c23c4cdfc7950c500df80761891006d04c3c493514b64a68
+baseline E21    sha256 = 312ee30c106711c7aa845181fdb176a0cf4409e994d72463993e752853f17f5f
+N = 144 (72 TRUE, 72 FALSE)   orden == pre-registro: OK
+
+-- SS10 metricas del alternativo, con el baseline E21 al lado --
+metrica                             ALT(sonnet)   BASE(opus)     DELTA
+ERROR_CATCH_RATE                         0.4444       0.5694   -0.1250
+ERROR_CATCH_RATE_falsa_ARCH              0.8889       0.6944   +0.1944
+ERROR_CATCH_RATE_falsa_FURN              0.0000       0.4444   -0.4444
+CORRECT_PASS_RATE                        0.6111       0.7639   -0.1528
+CORRECT_PASS_RATE_true_ARCH              0.2222       0.5556   -0.3333
+CORRECT_PASS_RATE_true_FURN              1.0000       0.9722   +0.0278
+TRUE_ASSERTION_REVIEW_RATE               0.3750       0.2222   +0.1528
+FALSE_ASSERTION_CONSISTENT_RATE          0.5139       0.4167   +0.0972
+INSUFFICIENT_RATE_true                   0.0139       0.0139   +0.0000
+INSUFFICIENT_RATE_false                  0.0417       0.0139   +0.0278
+INSUFFICIENT_RATE_total                  0.0278       0.0139   +0.0139
+BALANCED_QA_ACCURACY                     0.5278       0.6667   -0.1389
+IDEAL_PAIR_RATE                          0.4444       0.5417   -0.0972
+
+-- conteos crudos del alternativo --
+FALSE total  n= 72  CONSISTENT= 37  REVIEW= 32  INSUFFICIENT=  3
+FALSE-ARCH   n= 36  CONSISTENT=  3  REVIEW= 32  INSUFFICIENT=  1
+FALSE-FURN   n= 36  CONSISTENT= 34  REVIEW=  0  INSUFFICIENT=  2
+TRUE  total  n= 72  CONSISTENT= 44  REVIEW= 27  INSUFFICIENT=  1
+TRUE-ARCH    n= 36  CONSISTENT=  8  REVIEW= 27  INSUFFICIENT=  1
+TRUE-FURN    n= 36  CONSISTENT= 36  REVIEW=  0  INSUFFICIENT=  0
+
+-- SS12 comparacion pareada (alternativo menos baseline) --
+DELTA_ERROR_CATCH         -0.1250
+DELTA_CORRECT_PASS        -0.1528
+DELTA_BALANCED_QA         -0.1389
+DELTA_IDEAL_PAIR          -0.0972
+DELTA_TRUE_ARCH_PASS      -0.3333
+DELTA_TRUE_FURN_PASS      +0.0278
+DELTA_FALSE_ARCH_CATCH    +0.1944
+DELTA_FALSE_FURN_CATCH    -0.4444
+
+-- SS13 indices de asimetria --
+                                 ALT      BASE     DELTA
+PASS_ASYMMETRY                0.7778    0.4167   +0.3611
+CATCH_ASYMMETRY               0.8889    0.2500   +0.6389
+
+-- SS14 materialidad (descriptiva, NO es gate) --
+MATERIAL_BQA_CHANGE          |-0.1389| >= 0.10   -> SI
+MATERIAL_ARCH_PASS_CHANGE    |-0.3333| >= 0.15   -> SI
+MATERIAL_ASYMMETRY_REDUCTION  0.7778  <= 0.20   -> NO
+
+-- SS16 pairwise, unidad = imagen (n=72) --
+distribucion 3x3 ALT   filas = brazo TRUE, columnas = brazo FALSE
+                          CONSIS  REVIEW  INSUFF
+CONSISTENT                     9      32       3
+REVIEW                        27       0       0
+INSUFFICIENT_EVIDENCE          1       0       0
+distribucion 3x3 BASE (E21)
+                          CONSIS  REVIEW  INSUFF
+CONSISTENT                    15      39       1
+REVIEW                        14       2       0
+INSUFFICIENT_EVIDENCE          1       0       0
+IDEAL_PAIR_RATE ALT 32/72 = 0.4444   BASE 39/72 = 0.5417
+ideales en ambos 24  ·  solo ALT 8  ·  solo BASE 15  ·  en ninguno 25
+acuerdo llamada a llamada ALT vs BASE: 101/144 = 0.7014
+
+-- SS15 bootstrap, 10.000 remuestreos, unidad = image target --
+ERROR_CATCH_RATE alt    +0.4444   IC95 [+0.3333, +0.5556]
+CORRECT_PASS_RATE alt   +0.6111   IC95 [+0.5000, +0.7222]
+BALANCED_QA alt         +0.5278   IC95 [+0.4236, +0.6319]
+DELTA_BALANCED_QA       -0.1389   IC95 [-0.2361, -0.0417]
+DELTA_TRUE_ARCH_PASS    -0.3333   IC95 [-0.5128, -0.1613]
+PASS_ASYMMETRY alt      +0.7778   IC95 [+0.6364, +0.9048]
+CATCH_ASYMMETRY alt     +0.8889   IC95 [+0.7750, +0.9737]
+
+-- SS11 gate absoluto (los ocho umbrales originales de E21-A) --
+[FAIL] ERROR_CATCH_RATE overall        >= 0.80 obtenido 0.4444
+[PASS] ERROR_CATCH_RATE falsa-ARCH     >= 0.70 obtenido 0.8889
+[FAIL] ERROR_CATCH_RATE falsa-FURN     >= 0.70 obtenido 0.0000
+[FAIL] CORRECT_PASS_RATE overall       >= 0.75 obtenido 0.6111
+[FAIL] CORRECT_PASS_RATE true-ARCH     >= 0.65 obtenido 0.2222
+[PASS] CORRECT_PASS_RATE true-FURN     >= 0.65 obtenido 1.0000
+[FAIL] FALSE_ASSERTION_CONSISTENT_RATE <= 0.15 obtenido 0.5139
+[FAIL] TRUE_ASSERTION_REVIEW_RATE      <= 0.25 obtenido 0.3750
+[PASS] INSUFFICIENT overall            <= 0.15 obtenido 0.0278
+[FAIL] BALANCED_QA_ACCURACY            >= 0.775 obtenido 0.5278
+
+GATE ABSOLUTO = FAIL

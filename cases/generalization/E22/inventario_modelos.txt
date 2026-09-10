@@ -1,0 +1,47 @@
+E22 - INVENTARIO DE CONFIGURACIONES VISION-CAPABLE DISPONIBLES
+Levantado ANTES de mostrar una sola imagen del banco. Sonda: /home/claude/E22/probe/sonda_neutra.png
+sha256 c51672301018873e24b2d32d705949b5bdadc684e0c34357d0c9355ec523a1ec
+(imagen NEUTRA generada para esto: circulo rojo, triangulo azul, linea verde. NO pertenece al banco,
+ no es una planta, no tiene marcador punteado. Sirve solo para establecer VISION_CAPABLE.)
+
+FUENTE DEL INVENTARIO
+  El unico mecanismo del entorno para despachar un evaluador es el parametro `model` de la
+  herramienta Agent. Su enum, tal como lo declara el esquema de la herramienta, es exactamente:
+      ["sonnet", "opus", "haiku", "fable"]
+  No hay otro proveedor de vision alcanzable sin instalar algo o conseguir credenciales nuevas:
+    - servidores MCP locales en la maquina del usuario: get_device_info devuelve localMcpServers: []
+    - conectores MCP de la sesion (Canva, Google Drive, Notion, claude-in-chrome, remote-devices,
+      memory, visualize): ninguno expone un evaluador de vision que pueda correr este protocolo.
+    - NO se buscaron credenciales ni se abrio ningun .env (restriccion permanente del usuario).
+
+SONDEO (una llamada por candidato, imagen neutra, sin banco)
+  parametro  VISION_CAPABLE  autoidentificacion declarada por el propio modelo
+  ---------  --------------  ----------------------------------------------------------
+  opus       SI (baseline)   baseline E21; sesion configurada claude-opus-5
+  sonnet     SI              "Claude Sonnet 5, made by Anthropic"
+  haiku      SI              "Claude Haiku 4.5, made by Anthropic"
+  fable      SI              "Claude (model Fable 5.1, ID claude-fable-5-1), made by Anthropic"
+
+  Los tres alternativos describieron correctamente las tres figuras de la sonda.
+  Los tres se autodeclaran de la MISMA familia/proveedor que el baseline (Claude / Anthropic).
+
+CONSECUENCIA PARA LA REGLA DEL SS3
+  PRIORIDAD 1 (familia/provider razonablemente distinto del baseline): NO SATISFACIBLE.
+    No existe en este entorno una configuracion vision-capable de otra familia sin instalar nada
+    ni obtener credenciales nuevas.
+  PRIORIDAD 2 (el vision-capable mas fuerte disponible distinto de `opus`): SE APLICA.
+
+RANKING DE FUERZA, DECLARADO ANTES DE VER RESULTADOS
+  El orden de capacidad publicado de la familia es Opus > Sonnet > Haiku. Excluido `opus`, el mas
+  fuerte documentado es SONNET.
+  `fable` no es ubicable en esa escala: no conozco su posicionamiento de capacidad y el entorno no
+  lo declara. Elegir un modelo de fuerza desconocida por encima del mas fuerte conocido seria una
+  desviacion sin justificacion, y ademas tendria despues la apariencia de haber escogido algo
+  exotico esperando otro resultado. Por eso NO se elige `fable`.
+  El propio prompt E22 nombra `sonnet` como ejemplo, si esta disponible. Lo esta.
+
+SELECCION CONGELADA
+  EVALUADOR ALTERNATIVO = sonnet     (UNO SOLO)
+  SELECTION_PRIORITY_USED = PRIORIDAD 2
+  Elegido ANTES de mostrar cualquier imagen del banco y ANTES de cualquier metrica.
+  No se probara ningun otro. No hay segunda oportunidad, ni ensemble, ni reemplazo posterior.

@@ -1,0 +1,42 @@
+E22 - INCIDENCIAS Y DESVIACIONES DE PROTOCOLO
+Auditado sobre los logs de subagente, no sobre memoria.
+
+## 1. DESVIACION DE TOOL RESTRICTION  (7 de 144 llamadas = 4.9 %)
+
+El prompt congelado prohibe explicitamente: "Do not use Glob, Grep, Bash, WebSearch or any
+other tool." Siete instancias del evaluador alternativo usaron Bash.
+
+QUE HICIERON, exactamente (verificado leyendo el log de cada subagente):
+  abrieron con PIL LA MISMA imagen asignada, recortaron/ampliaron regiones de esa imagen,
+  escribieron los recortes en /tmp o en el scratchpad, y leyeron esos recortes.
+
+  call_id     agente               tool_uses   ruta de cada Bash / Read extra
+  MJK6F2_T    ab52fc6e5c5ee5ca8        4       solo MJK6F2.png -> /tmp/crop1.png
+  TL3PFB_T    a65845e1bd8035cd6        2       solo TL3PFB.png
+  E3M2GB_F    a68bea476a8659891        8       solo E3M2GB.png -> crop1/crop_mid/crop_left/crop_bottom
+  WLCDKW_T    abd91f5c4ce24fee5        7       solo WLCDKW.png -> crop1/crop2/crop3
+  YAJ5GC_F    a448f5489ad40549e        5       solo YAJ5GC.png -> crop1/crop2
+  JQ6ZTY_T    ae0dabdea37f8ef2f        6       solo JQ6ZTY.png -> crop1/crop2/crop3
+  3Y29N4_T    a385a756af7b6c809        6       solo 3Y29N4.png -> crop1/crop2/crop3
+
+QUE NO HICIERON:
+  ninguna leyo otra imagen del banco, ni el ground truth, ni el manifest, ni el repositorio,
+  ni las respuestas baseline, ni listo un directorio. Cero fuga de informacion hacia el evaluador.
+  (abd91f5c4ce24fee5 ademas invoco ReportFindings, una herramienta de reporte, sin efecto sobre
+   el veredicto.)
+
+EFECTO REAL: esas 7 llamadas tuvieron resolucion efectiva extra (zoom) que las otras 137 no
+tuvieron, y que NINGUNA de las 144 llamadas de opus en E21 tuvo (opus uso exactamente 1 tool_use
+en las 144). No es fuga: es capacidad desigual dentro del propio brazo alternativo.
+
+NO se descarto ninguna. NO se repitio ninguna. Las 144 entran en la metrica pre-registrada.
+El analisis de sensibilidad excluyendo las 7 imagenes esta en el informe y en score_e22.txt.
+
+## 2. DESVIACION DE FORMATO DE SALIDA  (2 de 144)
+  a65845e1bd8035cd6 (TL3PFB_T) emitio prosa ANTES del JSON.
+  a385a756af7b6c809 (3Y29N4_T) emitio prosa DESPUES del JSON.
+  En ambos el qa_verdict se tomo del objeto JSON, que estaba bien formado. Sin repeticion.
+
+## 3. FALLOS TECNICOS
+  Cero. TECHNICAL_RETRY = FALSE en las 144 llamadas.
+  Nota: CRMQAT_T, que en E21 fallo tecnicamente dos veces con opus, se ejecuto sin problemas aqui.
