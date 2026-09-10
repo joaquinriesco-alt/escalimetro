@@ -40,7 +40,14 @@ _lock = threading.Lock()
 
 
 def engine_commit() -> str:
-    """Commit del motor que produjo un resultado. Va a cada revisión (§12)."""
+    """Commit del motor que produjo un resultado. Va a cada revisión (§12).
+
+    En el contenedor no hay `.git` (lo excluye .dockerignore), así que `git rev-parse` no sirve:
+    se usa el SHA que Railway inyecta. Sin esto la trazabilidad diría "unknown" en producción,
+    que es justo el dato que §12 exige no perder."""
+    sha = os.environ.get("ESCALIMETRO_ENGINE_COMMIT") or os.environ.get("RAILWAY_GIT_COMMIT_SHA")
+    if sha:
+        return sha.strip()
     try:
         out = subprocess.run(["git", "rev-parse", "HEAD"], cwd=REPO_ROOT,
                              capture_output=True, text=True, timeout=10)

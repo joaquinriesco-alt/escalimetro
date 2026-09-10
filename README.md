@@ -45,7 +45,25 @@ Salidas en `cases/<id>/outputs/`: `floorplate.json`, `planta_escalimetro.svg` (m
 
 ---
 
-## Railway — backend validation runtime
+## Railway — dos servicios en el proyecto `ESCALIMETRO`
+
+| | servicio `backend` (E09–E12) | servicio `web` (E27) |
+|---|---|---|
+| qué es | runtime de validación multi-modelo | herramienta interna de plantas y revisión |
+| branch | `main` | `e27_internal_web_app` |
+| build | nixpacks + `requirements.txt` | `Dockerfile` |
+| start | `PYTHONPATH=src python -m escalimetro.ai.railway_e09_runner` | `gunicorn wsgi:app` |
+| variables | `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, modelos, tuning | `ESCALIMETRO_PASSWORD`, `ESCALIMETRO_REVIEWER` |
+| volumen | ninguno (evidencia efímera, por diseño) | **`/data`**, persistente |
+
+**Por qué son dos servicios y no uno (auditoría E27.1).** Convertir `backend` habría exigido cambiar
+a la vez builder, start command, branch y añadirle un volumen; y su start command **ejecuta el
+experimento E09 al arrancar**, que llama a OpenAI y a Anthropic — cada redeploy costaría dinero.
+Además `backend` guarda las credenciales de IA, que E27 no usa en absoluto: el camino productivo de
+layout no importa nada de `ai/`. Dos servicios en el mismo proyecto mantienen el mínimo privilegio y
+dejan intacto el runtime de validación.
+
+## Railway — backend validation runtime (E09–E12)
 
 El experimento multi-modelo (E09) **no se puede ejecutar desde el entorno de desarrollo**: su egress
 bloquea `api.openai.com` y `railway.com` (E10 lo dejó documentado). El runtime real de la validación es

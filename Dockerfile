@@ -6,8 +6,12 @@ FROM python:3.12-slim
 
 # tesseract: el pipeline de normalización corre con vision="ocr" para leer cotas y rótulos.
 # libgl/libglib: opencv los pide aunque sea la build headless.
+# libcairo2: `renderer/side_by_side._svg_to_bgr` rasteriza con cairosvg, y cairosvg carga
+#   libcairo.so.2 por cffi. Sin ella devuelve None en silencio (su except es un `pass`) y el
+#   `cv2.imwrite` de e07/run.py muere — que es EXACTAMENTE el fallo que E12 documentó en
+#   `ai/svg_rasterizer.py`. Se instala la librería en vez de tocar el motor.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        tesseract-ocr libgl1 libglib2.0-0 git \
+        tesseract-ocr libgl1 libglib2.0-0 libcairo2 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
