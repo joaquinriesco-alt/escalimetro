@@ -25,7 +25,7 @@ from ..e05.run import label as label_img, mosaic
 from ..e06.qa import HumanCorrectionOperation
 from ..e06.scale import scaled_shell
 from .board import build_board
-from .engine import Engine, geometric_difference
+from .engine import Engine, NoSolution, geometric_difference
 from .graph import SCHEMA as GRAPH_SCHEMA
 from .pipeline import (AlternativeComparison, compare, gate_e1a, gate_e1c, gate_e1t, internal_qa,
                        presentation_handoff)
@@ -108,6 +108,7 @@ def main(argv=None):
           f"{len(specs)} alternativas · escala nominal (UNCONFIRMED)")
 
     results, burdens, gates, handoffs, no_fit = [], {}, {}, {}, {}
+    cand_stats = {}
     for spec in specs:
         spec.graph.save(os.path.join(out, "alternatives", f"spatial_graph_{spec.alt}.json"))
         # E24 §9/§16 — NO_FIT es un RESULTADO, no una excepción: la celda se rotula y el ciclo sigue.
@@ -116,28 +117,23 @@ def main(argv=None):
         try:
             r = eng.run(spec, tl_feas=args.tl_feas, tl_opt=args.tl_opt, early_stop_s=args.early_stop,
                         tl_warm=args.tl_warm, cap=args.cap)
-        except RuntimeError as e:
+        except NoSolution as e:
+            # E25 §8 — el estado lo decide `search_status.classify` a partir del estado del solver y
+            # de la COMPLETITUD del espacio de candidatos. El motor no puede etiquetar
+            # PROVEN_INFEASIBLE mientras ese espacio sea muestreado/podado, que es siempre en V1.
             d = os.path.join(out, "alternatives", spec.alt)
             os.makedirs(d, exist_ok=True)
-            infeasible = "INFEASIBLE" in str(e)
-            nf = {"alt": spec.alt, "name": spec.name,
-                  "status": "NO_FIT_INFEASIBLE" if infeasible else "NO_RESULT_TIMEOUT",
-                  "solver_status": "INFEASIBLE" if infeasible else "UNKNOWN",
-                  "reason": str(e), "runtime_s": round(time.time() - t_alt, 2),
-                  "brief_id": prog.get("template_id"),
-                  "open_workstations_requested": prog.get("open_workstations_exact"),
-                  "note": (
-                      (f"CP-SAT PRUEBA que no hay asignación válida sobre el CONJUNTO DE CANDIDATOS "
-                       f"PODADO (cap={args.cap} por módulo, bench_cfgs={spec.bench_cfgs}). No prueba "
-                       f"que el programa no quepa en el shell: prueba que ESTE generador de candidatos "
-                       f"no ofrece una combinación que lo resuelva.")
-                      if infeasible else
-                      (f"El solver NO CONCLUYÓ dentro del presupuesto de tiempo del producto "
-                       f"(feas={args.tl_feas}s con reintento, opt={args.tl_opt}s). UNKNOWN no dice nada "
-                       f"sobre factibilidad: no es una demostración de que no quepa ni de que quepa."))}
+            nf = dict(e.to_dict())
+            nf.update({"name": spec.name, "brief_id": prog.get("template_id"),
+                       "open_workstations_requested": prog.get("open_workstations_exact"),
+                       "bench_cfgs": list(spec.bench_cfgs), "cap_base": args.cap,
+                       "presupuesto_producto_s": {"warm": args.tl_warm, "feas": args.tl_feas,
+                                                  "feas_retry": args.tl_feas * 2, "opt": args.tl_opt},
+                       "runtime_s": round(time.time() - t_alt, 2)})
             no_fit[spec.alt] = nf
+            cand_stats[spec.alt] = eng.candidate_stats.get(spec.alt, {})
             dump(nf, os.path.join(d, "no_fit.json"))
-            print(f"[e07]   {spec.alt}: NO_FIT · {e}")
+            print(f"[e07]   {spec.alt}: {nf['status']} · {nf['explicacion'][:96]}")
             continue
         # ---- QA interno (revalidación determinista; sin rediseño) ----
         ops = [HumanCorrectionOperation(**o) for o in QA_OPS.get(spec.alt, [])]
@@ -154,6 +150,7 @@ def main(argv=None):
             r.hard_valid, r.violations, r.critique = ok, viol, crit.to_dict()
             r.metrics = lay_after.metrics
         results.append(r); burdens[spec.alt] = burden
+        cand_stats[spec.alt] = eng.candidate_stats.get(spec.alt, {})
         e1t = gate_e1t(r); e1a = gate_e1a(r, burden); e1c = gate_e1c(e1t, e1a)
         gates[spec.alt] = {"E1-T": e1t, "E1-A": e1a, "E1-C": e1c}
         d = os.path.join(out, "alternatives", spec.alt)
@@ -179,6 +176,7 @@ def main(argv=None):
     if not results:
         dump({"brief_id": prog.get("template_id"), "no_fit": no_fit, "alternatives_solved": 0,
               "total_runtime_s": round(time.time() - t_all, 1)}, os.path.join(out, "summary.json"))
+        dump(cand_stats, os.path.join(out, "candidate_stats.json"))
         print(f"[e07] ninguna alternativa resolvió este brief: {sorted(no_fit)}")
         return 0
     comp = compare(results, burdens, gates)
@@ -211,6 +209,7 @@ def main(argv=None):
     dump({r.alt: r.profile.to_dict() for r in results}, os.path.join(out, "performance_profile.json"))
     dump({k: v.to_dict() for k, v in burdens.items()}, os.path.join(out, "internal_qa.json"))
     dump(gates, os.path.join(out, "gates.json"))
+    dump(cand_stats, os.path.join(out, "candidate_stats.json"))
 
     # ---- visuales ----------------------------------------------------------------------------------
     img = _svg_to_bgr(spatial_graph_svg([s.graph for s in specs]), 2400)

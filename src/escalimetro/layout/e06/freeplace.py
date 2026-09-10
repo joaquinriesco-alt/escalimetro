@@ -17,6 +17,7 @@ alguno esté activo. La red queda conectada por construcción (todo ramal nace e
 fijo) y el validador determinista de E04 vuelve a verificar puertas y conectividad por raster."""
 from __future__ import annotations
 
+import os
 import time
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
@@ -38,6 +39,11 @@ from ..e05.strategy import SpatialStrategy
 SC = 100
 AISLE = 0.9
 EMBED_M = 0.6
+#: E25 §11 · D3 — piso de cobertura del generador: candidatos por INSTANCIA pedida antes de refinar.
+MIN_CANDIDATOS_POR_INSTANCIA = 40
+#: rondas máximas de refinamiento y paso mínimo (cota de costo, no de calidad)
+MAX_REFINAMIENTOS = 2
+STEP_MINIMO = 0.2
 ORDER = ["boardroom_12", "reception", "meeting_8", "dining", "private_office", "meeting_4", "lounge", "kitchenette", "phone_booth"]
 
 
@@ -192,28 +198,66 @@ def _contact(a, b) -> float:
     return max(w, h)
 
 
-def prune(cands: List[Candidate], per_module_cap: int = 220, log=None) -> List[Candidate]:
+def prune(cands: List[Candidate], per_module_cap: int = 220, log=None,
+          stats: Optional[Dict] = None, demand: Optional[Dict[str, int]] = None,
+          per_instance_cap: int = 80) -> List[Candidate]:
     """E07 — poda de candidatos dominados, sin perder diversidad geométrica.
 
     Un candidato domina a otro del mismo módulo si ocupa CASI la misma posición (misma celda de 1.2 m,
     misma orientación, mismo elemento de circulación principal) y no es mejor en luz ni en ruta. Se
     conserva el mejor de cada celda y, si aún hay más de `per_module_cap`, se muestrea uniformemente el
-    resto ordenado por calidad para no sesgar la geometría hacia una sola zona."""
+    resto ordenado por calidad para no sesgar la geometría hacia una sola zona.
+
+    E25 §11 — dos defectos GENERALES corregidos aquí, ninguno ligado a un brief concreto:
+
+    D1. La clave de dominancia no incluía el TAMAÑO del candidato. Un bench 2×6 y uno 2×2 anclados en
+        la misma celda de 1.2 m, con la misma orientación y el mismo elemento de circulación,
+        colapsaban a uno solo. Medido sobre GPS 403: `workstation_cluster` pasaba de 251 candidatos a
+        98, y con ellos desaparecía la MEZCLA DE TAMAÑOS, que es justamente lo que permite componer un
+        total de puestos arbitrario. Ahora la huella entra en la clave.
+
+    D2. El tope era plano por TIPO de módulo, ciego a cuántas instancias pide el programa: 8 oficinas
+        privadas recibían el mismo pool de 200 candidatos que 1. El tope efectivo ahora escala con la
+        demanda: `max(per_module_cap, per_instance_cap × nº de instancias)`. `demand` viene del
+        programa compilado, no de ningún identificador de brief."""
     out: List[Candidate] = []
+    det: Dict[str, Dict] = {}
     for mod in sorted({c.module for c in cands}):
         group = [c for c in cands if c.module == mod]
         best: Dict[tuple, Candidate] = {}
         for c in group:
-            key = (round(c.rect[0] / 1.2), round(c.rect[1] / 1.2), c.rot, c.touches[0] if c.touches else "")
+            # D1 — la huella forma parte de la identidad del candidato
+            w = round(c.rect[2] - c.rect[0], 1)
+            d = round(c.rect[3] - c.rect[1], 1)
+            key = (round(c.rect[0] / 1.2), round(c.rect[1] / 1.2), c.rot,
+                   c.touches[0] if c.touches else "", w, d)
             cur = best.get(key)
             if cur is None or (c.daylight_m, c.path_m) < (cur.daylight_m, cur.path_m):
                 best[key] = c
         kept = list(best.values())
-        if len(kept) > per_module_cap:
+        n_tras_dominancia = len(kept)
+        # D2 — el tope escala con la demanda del programa, no es una constante por tipo de módulo
+        n_inst = int((demand or {}).get(mod, 1) or 1)
+        cap_efectivo = max(per_module_cap, per_instance_cap * n_inst)
+        cap_activo = len(kept) > cap_efectivo
+        if cap_activo:
             kept.sort(key=lambda c: (c.path_m, c.daylight_m))
-            stepk = len(kept) / per_module_cap
-            kept = [kept[int(i * stepk)] for i in range(per_module_cap)]
+            stepk = len(kept) / cap_efectivo
+            kept = [kept[int(i * stepk)] for i in range(cap_efectivo)]
+        det[mod] = {"brutos": len(group), "tras_dominancia": n_tras_dominancia,
+                    "descartados_por_dominancia": len(group) - n_tras_dominancia,
+                    "instancias_pedidas": n_inst, "cap_base": per_module_cap,
+                    "cap_efectivo": cap_efectivo, "cap_activo": cap_activo,
+                    "cap": cap_efectivo, "finales": len(kept),
+                    "descartados_por_cap": n_tras_dominancia - len(kept)}
         out += kept
+    if stats is not None:
+        stats["por_modulo"] = det
+        stats["cap"] = per_module_cap
+        stats["brutos"] = len(cands)
+        stats["finales"] = len(out)
+        stats["descartados_pct"] = round(100.0 * (len(cands) - len(out)) / len(cands), 2) if cands else 0.0
+        stats["modulos_con_cap_activo"] = sorted(k for k, v in det.items() if v["cap_activo"])
     if log:
         log(f"[free] poda: {len(cands)} → {len(out)} candidatos")
     return out
@@ -221,7 +265,7 @@ def prune(cands: List[Candidate], per_module_cap: int = 220, log=None) -> List[C
 
 def generate_candidates(shell: ShellM, grid: Grid, feats: ShellFeatures, elements: List[Element],
                         modules: Dict[str, Module], program: Dict, bench_cfgs: List[int], step: float = 0.8,
-                        log=None) -> Tuple[List[Candidate], np.ndarray]:
+                        log=None, stats: Optional[Dict] = None) -> Tuple[List[Candidate], np.ndarray]:
     usable_p = prep(shell.usable.buffer(0.005))
     fixed = [e for e in elements if e.fixed]
     branches = [e for e in elements if not e.fixed]
@@ -252,31 +296,42 @@ def generate_candidates(shell: ShellM, grid: Grid, feats: ShellFeatures, element
 
     cands: List[Candidate] = []
     seen = set()
+    # E25 §5 — contadores de CAUSA DE DESCARTE. Puramente observacionales: no cambian una sola decisión.
+    rej: Dict[str, int] = {k: 0 for k in ("intentos", "fuera_de_bbox", "duplicado", "fuera_del_usable",
+                                          "invade_zona_de_acceso", "choca_elemento_fijo", "choca_pilar",
+                                          "no_toca_circulacion", "aceptado")}
+    rej_mod: Dict[str, Dict[str, int]] = {}
+
+    def _rej(module: str, causa: str):
+        rej[causa] += 1
+        rej_mod.setdefault(module, {}).setdefault(causa, 0)
+        rej_mod[module][causa] += 1
 
     ubx = shell.usable.bounds
 
     def try_rect(module: str, rect, rot, is_room: bool, seats=0, config="", rows=0, cols=0):
         # rechazo rápido por caja envolvente antes de cualquier operación de shapely
+        _rej(module, "intentos")
         if rect[0] < ubx[0] - 0.01 or rect[1] < ubx[1] - 0.01 or rect[2] > ubx[2] + 0.01 or rect[3] > ubx[3] + 0.01:
-            return
+            return _rej(module, "fuera_de_bbox")
         key = (module, config, tuple(round(v, 2) for v in rect))
         if key in seen:
-            return
+            return _rej(module, "duplicado")
         seen.add(key)
         poly = box(*rect)
         if not usable_p.contains(poly):
-            return
+            return _rej(module, "fuera_del_usable")
         if poly.intersects(ent_zone) and poly.intersection(ent_zone).area > 0.05:
-            return
+            return _rej(module, "invade_zona_de_acceso")
         if fixed_union.intersects(poly) and fixed_union.intersection(poly).area > 1e-3:
-            return
+            return _rej(module, "choca_elemento_fijo")
         emb = []
         for c in shell.columns:
             if c.intersects(poly) and c.intersection(poly).area > 1e-4:
                 if is_room and poly.exterior.distance(c.centroid) <= EMBED_M:
                     emb.append([round(v, 2) for v in c.bounds])
                 else:
-                    return
+                    return _rej(module, "choca_pilar")
         touches, tf = [], False
         for e in elements:
             if _contact(rect, e.rect) >= 0.8:
@@ -284,7 +339,8 @@ def generate_candidates(shell: ShellM, grid: Grid, feats: ShellFeatures, element
                 if e.fixed:
                     tf = True
         if not touches:
-            return
+            return _rej(module, "no_toca_circulacion")
+        _rej(module, "aceptado")
         conflicts = [b.id for b in branches if b.poly.intersects(poly) and b.poly.intersection(poly).area > 1e-3]
         # puerta = centro del contacto con el elemento fijo más cercano al acceso (o del ramal)
         best_path = float("inf")
@@ -297,16 +353,16 @@ def generate_candidates(shell: ShellM, grid: Grid, feats: ShellFeatures, element
         cands.append(Candidate(len(cands), module, rect, rot, touches, tf, conflicts, region_of(rect), ftouch,
                                daylight_at(rect), best_path, emb, seats, config, rows, cols))
 
-    def positions_along(e: Element, along: float):
+    def positions_along(e: Element, along: float, st: float):
         x0, y0, x1, y1 = e.rect
         a0, a1 = (x0, x1) if e.axis == "h" else (y0, y1)
         lo, hi = a0 - along + 1.0, a1 - 1.0
-        ts = np.arange(np.floor(lo / 0.4) * 0.4, hi + 1e-6, step)
+        ts = np.arange(np.floor(lo / 0.4) * 0.4, hi + 1e-6, st)
         return [round(t, 2) for t in ts]
 
-    def anchored_rects(e: Element, along: float, deep: float):
+    def anchored_rects(e: Element, along: float, deep: float, st: float):
         x0, y0, x1, y1 = e.rect
-        for t in positions_along(e, along):
+        for t in positions_along(e, along, st):
             if e.axis == "h":
                 yield (t, y1, t + along, y1 + deep)           # lado N
                 yield (t, y0 - deep, t + along, y0)           # lado S
@@ -314,34 +370,85 @@ def generate_candidates(shell: ShellM, grid: Grid, feats: ShellFeatures, element
                 yield (x1, t, x1 + deep, t + along)           # lado E
                 yield (x0 - deep, t, x0, t + along)           # lado W
 
-    # recintos
-    for e in ORDER:
-        n = next((p["count"] for p in program["program"] if p["module"] == e), 0)
-        if n == 0:
-            continue
+    def generar_recinto(e: str, st: float):
         mod = modules[e]
         for el in elements:
             for along, deep in ((mod.w, mod.d), (mod.d, mod.w)):
                 if not mod.spec.get("rotation_allowed", True) and along != mod.w:
                     continue
-                for rect in anchored_rects(el, along, deep):
+                for rect in anchored_rects(el, along, deep, st):
                     try_rect(e, rect, 0 if along == mod.w else 90, True)
+
+    def generar_puestos(st: float):
+        ws = modules["workstation"]
+        unit = ws.w
+        for el in elements:
+            for rows in (2, 1):
+                for c in bench_cfgs + [2, 3]:
+                    if rows == 1 and c > 6:
+                        continue
+                    along, deep = unit * c, (ws.d + float(ws.spec.get("chair_zone_d", 0.8))) * rows
+                    for rect in anchored_rects(el, along, deep, st):
+                        try_rect("workstation_cluster" if rows == 2 else "workstation_row", rect, 0, False,
+                                 seats=rows * c, config=f"bench {rows}x{c}" if rows == 2 else f"row 1x{c}",
+                                 rows=rows, cols=c)
+
+    demanda = {p["module"]: int(p["count"]) for p in program["program"]}
+    # recintos
+    for e in ORDER:
+        if demanda.get(e, 0) == 0:
+            continue
+        generar_recinto(e, step)
     # puestos: benches 2×c y filas 1×c; el pasillo terciario de 0.9 m se incorpora al rectángulo (a un lado)
-    ws = modules["workstation"]
-    unit = ws.w
-    for el in elements:
-        for rows in (2, 1):
-            for c in bench_cfgs + [2, 3]:
-                if rows == 1 and c > 6:
-                    continue
-                along, deep = unit * c, (ws.d + float(ws.spec.get("chair_zone_d", 0.8))) * rows
-                for rect in anchored_rects(el, along, deep):
-                    try_rect("workstation_cluster" if rows == 2 else "workstation_row", rect, 0, False, seats=rows * c,
-                             config=f"bench {rows}x{c}" if rows == 2 else f"row 1x{c}", rows=rows, cols=c)
-    if log:
-        by = {}
+    generar_puestos(step)
+
+    # ---- E25 §11 · D3 — COBERTURA MÍNIMA POR INSTANCIA -------------------------------------------
+    # Defecto general medido en E25: el paso de muestreo es CONSTANTE, así que un módulo grande
+    # (boardroom_12, 7.2×5.0) obtenía 15 posiciones en toda la planta mientras uno pequeño obtenía 700.
+    # Cuando un módulo queda por debajo del piso de cobertura que pide el programa, se REFINA sólo ese
+    # módulo, halvando el paso. La regla depende de la geometría y del programa; de ningún brief.
+    refinamientos = []
+    for ronda in range(MAX_REFINAMIENTOS):
+        cuenta = {}
         for c in cands:
-            by[c.module] = by.get(c.module, 0) + 1
+            cuenta[c.module] = cuenta.get(c.module, 0) + 1
+        st = step / (2 ** (ronda + 1))
+        if st < STEP_MINIMO:
+            break
+        escasos = []
+        for m, n in demanda.items():
+            if m in ("workstation_cluster", "workstation_row"):
+                continue
+            if cuenta.get(m, 0) < MIN_CANDIDATOS_POR_INSTANCIA * max(1, n):
+                escasos.append(m)
+        puestos_escasos = (cuenta.get("workstation_cluster", 0) + cuenta.get("workstation_row", 0)
+                           < MIN_CANDIDATOS_POR_INSTANCIA * max(1, demanda.get("workstation_cluster", 1)))
+        if not escasos and not puestos_escasos:
+            break
+        for m in escasos:
+            generar_recinto(m, st)
+        if puestos_escasos:
+            generar_puestos(st)
+        refinamientos.append({"ronda": ronda + 1, "step": st, "modulos": escasos,
+                              "puestos": puestos_escasos,
+                              "candidatos_tras_ronda": len(cands)})
+    by = {}
+    for c in cands:
+        by[c.module] = by.get(c.module, 0) + 1
+    if stats is not None:
+        stats["refinamientos"] = refinamientos
+        stats["demanda"] = demanda
+        stats["brutos_total"] = len(cands)
+        stats["brutos_por_modulo"] = by
+        stats["intentos"] = rej["intentos"]
+        stats["causas_de_descarte"] = {k: v for k, v in rej.items() if k not in ("intentos", "aceptado")}
+        stats["causas_por_modulo"] = rej_mod
+        stats["bench_cfgs"] = list(bench_cfgs)
+        stats["step"] = step
+        stats["modulos_sin_candidatos"] = sorted(
+            m for m in ORDER
+            if next((p["count"] for p in program["program"] if p["module"] == m), 0) > 0 and by.get(m, 0) == 0)
+    if log:
         log(f"[free] candidatos: {len(cands)} · {by}")
     return cands, reach
 
@@ -350,7 +457,9 @@ def solve_free(shell: ShellM, grid: Grid, feats: ShellFeatures, strat: SpatialSt
                cands: List[Candidate], modules: Dict[str, Module], program: Dict, weights: Dict[str, float],
                seats_mode: str = "exact", seed: int = 1, time_limit_s: float = 60.0, workers: int = 2,
                reception_max_path: float = 8.0, locks: Optional[List[Dict]] = None, log=None,
-               hint: Optional[Layout] = None, feasibility_only: bool = False, extra: Optional[Dict] = None) -> Dict:
+               hint: Optional[Layout] = None, feasibility_only: bool = False, extra: Optional[Dict] = None,
+               stats: Optional[Dict] = None, deterministic: Optional[bool] = None,
+               deterministic_budget: float = 60.0) -> Dict:
     """locks: [{"module","rect"}] rectángulos fijados por QA humano (el solver debe respetarlos).
 
     extra (E07, opcional): opciones de estrategia que NO relajan ninguna restricción dura —
@@ -403,7 +512,7 @@ def solve_free(shell: ShellM, grid: Grid, feats: ShellFeatures, strat: SpatialSt
     for name, n in counts.items():
         opts = by_mod.get(name, [])
         if len(opts) < n:
-            return {"status": "INFEASIBLE_MODEL", "reason": f"{name}: {len(opts)} candidatos para {n} instancias", "runtime_s": round(time.time() - t0, 2)}
+            return {"status": "INFEASIBLE_MODEL", "reason": f"{name}: {len(opts)} candidatos para {n} instancias", "runtime_s": round(time.time() - t0, 2), "pre_solver_reject": "menos_candidatos_que_instancias"}
         lst = []
         mod = modules[name]
         ep = float(mod.spec.get("entrance_preference", 0.5)); dp = float(mod.spec.get("daylight_preference", 0.5))
@@ -437,7 +546,7 @@ def solve_free(shell: ShellM, grid: Grid, feats: ShellFeatures, strat: SpatialSt
             s -= 0.08 * c.seats
         obj.append((lit, int(round(s * SC))))
     if not seat_terms:
-        return {"status": "INFEASIBLE_MODEL", "reason": "sin candidatos de puestos", "runtime_s": round(time.time() - t0, 2)}
+        return {"status": "INFEASIBLE_MODEL", "reason": "sin candidatos de puestos", "runtime_s": round(time.time() - t0, 2), "pre_solver_reject": "sin_candidatos_de_puestos"}
     if seats_mode == "max":
         m.Add(sum(l * c.seats for c, l in seat_terms) <= need)
     else:
@@ -491,7 +600,7 @@ def solve_free(shell: ShellM, grid: Grid, feats: ShellFeatures, strat: SpatialSt
         lst = pair_lits.get((ma, mb), [])
         if not lst:
             return {"status": "INFEASIBLE_MODEL", "reason": f"{ma}+{mb}: ningún par de candidatos es adyacente",
-                    "runtime_s": round(time.time() - t0, 2)}
+                    "runtime_s": round(time.time() - t0, 2), "pre_solver_reject": "sin_par_adyacente"}
         m.AddBoolOr(lst)
     # luz natural para puestos (principio común): mínimo de asientos a ≤ `facade_seat_dist_m` de fachada con luz
     if "min_facade_seats" in extra:
@@ -499,7 +608,7 @@ def solve_free(shell: ShellM, grid: Grid, feats: ShellFeatures, strat: SpatialSt
         near = [(c, l) for c, l in seat_terms if c.daylight_m <= dmax]
         if not near:
             return {"status": "INFEASIBLE_MODEL", "reason": "sin candidatos de puestos junto a fachada",
-                    "runtime_s": round(time.time() - t0, 2)}
+                    "runtime_s": round(time.time() - t0, 2), "pre_solver_reject": "sin_puestos_en_fachada"}
         m.Add(sum(l * c.seats for c, l in near) >= int(extra["min_facade_seats"]))
     blocks_lits = [l for c, l in seat_terms]
     if "min_bench_blocks" in extra and blocks_lits:
@@ -522,10 +631,25 @@ def solve_free(shell: ShellM, grid: Grid, feats: ShellFeatures, strat: SpatialSt
         for b in branches:
             m.AddHint(b_lit[b.id], 1 if b.id in act else 0)
     solver = cp_model.CpSolver()
-    solver.parameters.max_time_in_seconds = time_limit_s
-    solver.parameters.num_search_workers = workers
-    solver.parameters.random_seed = seed
-    early = float(extra.get("early_stop_after_s", 0) or 0)
+    # ---- E25 §9 · DETERMINISTIC_DEV_MODE ---------------------------------------------------------
+    # E24 detectó: mismo input + misma seed → distinta geometría y distinto runtime. La causa es doble
+    # y está aquí: (a) `num_search_workers = 2` corre búsquedas en paralelo y devuelve lo que gane la
+    # carrera, y (b) `max_time_in_seconds` es tiempo de PARED, así que el corte depende de la carga de
+    # la máquina. Con 1 worker y presupuesto en TIEMPO DETERMINISTA de CP-SAT, la misma versión + el
+    # mismo shell + el mismo brief + la misma estrategia dan el mismo resultado.
+    # Es un modo de DESARROLLO: cuesta velocidad y no se activa solo en producción.
+    det = deterministic if deterministic is not None else (
+        os.environ.get("ESCALIMETRO_DETERMINISTIC", "") == "1")
+    if det:
+        solver.parameters.num_search_workers = 1
+        solver.parameters.max_deterministic_time = float(deterministic_budget)
+        solver.parameters.random_seed = seed
+        solver.parameters.randomize_search = False
+    else:
+        solver.parameters.max_time_in_seconds = time_limit_s
+        solver.parameters.num_search_workers = workers
+        solver.parameters.random_seed = seed
+    early = 0.0 if det else float(extra.get("early_stop_after_s", 0) or 0)
     cb = None
     if early > 0:
         class _EarlyStop(cp_model.CpSolverSolutionCallback):
@@ -543,6 +667,36 @@ def solve_free(shell: ShellM, grid: Grid, feats: ShellFeatures, strat: SpatialSt
     runtime = round(time.time() - t0, 2)
     status = solver.StatusName(st)
     n_cands = sum(len(v) for v in by_mod.values())
+    # E25 §5 — telemetría del solver. Observacional: no cambia ninguna decisión del modelo.
+    if stats is not None:
+        proto = m.Proto()
+        stats.update({
+            "status": status,
+            "n_variables": len(proto.variables),
+            "n_constraints": len(proto.constraints),
+            "n_candidatos_en_modelo": n_cands,
+            "candidatos_por_modulo_en_modelo": {k: len(v) for k, v in sorted(by_mod.items())},
+            "n_ramales": len(branches),
+            "wall_time_s": round(solver.WallTime(), 3),
+            "deterministic_time": round(solver.ResponseProto().deterministic_time, 4),
+            "num_branches_explorados": solver.ResponseProto().num_branches,
+            "num_conflicts": solver.ResponseProto().num_conflicts,
+            "best_objective": (solver.ObjectiveValue() / SC) if st in (cp_model.OPTIMAL, cp_model.FEASIBLE)
+                              and not feasibility_only else None,
+            "best_bound": (solver.BestObjectiveBound() / SC) if st in (cp_model.OPTIMAL, cp_model.FEASIBLE)
+                          and not feasibility_only else None,
+            "solutions_found": getattr(cb, "n", None),
+            "workers": 1 if det else workers, "seed": seed,
+            "time_limit_s": None if det else time_limit_s,
+            "deterministic_mode": bool(det),
+            "deterministic_budget": float(deterministic_budget) if det else None,
+            "max_deterministic_time": (solver.parameters.max_deterministic_time
+                                       if solver.parameters.max_deterministic_time else None),
+            "seats_mode": seats_mode, "feasibility_only": feasibility_only,
+            "early_stop_after_s": early or None,
+            "sufficient_assumptions": len(solver.ResponseProto().sufficient_assumptions_for_infeasibility),
+            "solve_log_tail": (solver.ResponseProto().solve_log or "")[-400:],
+        })
     if st not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
         return {"status": status, "runtime_s": runtime, "n_candidates": n_cands, "n_branches": len(branches),
                 "reason": "CP-SAT: sin asignación que cumpla las restricciones duras" if status == "INFEASIBLE" else "sin solución en el tiempo"}

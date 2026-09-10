@@ -1,0 +1,3688 @@
+{
+  "case": "001_gps_403",
+  "parametros": {
+    "cap": 200,
+    "step": 1.0,
+    "tl_warm": 22.0,
+    "tl_feas": 25.0,
+    "seed": 1,
+    "workers": 2
+  },
+  "combinaciones": [
+    {
+      "brief": "DENSO",
+      "alt": "A",
+      "nombre": "EFICIENTE",
+      "solicitud": {
+        "puestos": 56,
+        "privados": 2,
+        "modulos": {
+          "workstation_cluster": 10,
+          "private_office": 2,
+          "meeting_4": 2,
+          "meeting_8": 1,
+          "boardroom_12": 1,
+          "phone_booth": 4,
+          "reception": 1,
+          "kitchenette": 1,
+          "dining": 1,
+          "lounge": 1
+        },
+        "area_nominal_por_modulo_m2": {
+          "workstation_cluster": 153.6,
+          "private_office": 24.0,
+          "meeting_4": 21.0,
+          "meeting_8": 20.0,
+          "boardroom_12": 36.0,
+          "phone_booth": 6.72,
+          "reception": 13.5,
+          "kitchenette": 12.0,
+          "dining": 20.0,
+          "lounge": 17.5
+        },
+        "area_nominal_programa_m2": 324.32
+      },
+      "estrategia": {
+        "spine": "A_PERIMETER_WORK",
+        "bench_cfgs": [
+          6,
+          5,
+          4
+        ],
+        "solver_extra": {
+          "max_bench_blocks": 7,
+          "max_facade_closed_rooms": 5,
+          "module_max_path": {
+            "boardroom_12": 16.0
+          }
+        }
+      },
+      "generacion": {
+        "brutos_total": 2762,
+        "brutos_por_modulo": {
+          "boardroom_12": 15,
+          "reception": 230,
+          "meeting_8": 100,
+          "dining": 100,
+          "private_office": 255,
+          "meeting_4": 316,
+          "lounge": 135,
+          "kitchenette": 255,
+          "phone_booth": 702,
+          "workstation_cluster": 251,
+          "workstation_row": 403
+        },
+        "intentos": 24892,
+        "causas_de_descarte": {
+          "fuera_de_bbox": 6599,
+          "duplicado": 1206,
+          "fuera_del_usable": 5760,
+          "invade_zona_de_acceso": 84,
+          "choca_elemento_fijo": 8041,
+          "choca_pilar": 431,
+          "no_toca_circulacion": 9
+        },
+        "causas_por_modulo": {
+          "boardroom_12": {
+            "intentos": 2036,
+            "fuera_de_bbox": 795,
+            "choca_elemento_fijo": 470,
+            "fuera_del_usable": 624,
+            "aceptado": 15,
+            "invade_zona_de_acceso": 6,
+            "choca_pilar": 7,
+            "duplicado": 119
+          },
+          "reception": {
+            "intentos": 1564,
+            "fuera_de_bbox": 304,
+            "choca_elemento_fijo": 624,
+            "fuera_del_usable": 336,
+            "aceptado": 230,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 19,
+            "duplicado": 45,
+            "invade_zona_de_acceso": 5
+          },
+          "meeting_8": {
+            "intentos": 1714,
+            "fuera_de_bbox": 467,
+            "aceptado": 100,
+            "fuera_del_usable": 382,
+            "choca_elemento_fijo": 650,
+            "choca_pilar": 22,
+            "duplicado": 88,
+            "invade_zona_de_acceso": 5
+          },
+          "dining": {
+            "intentos": 1714,
+            "fuera_de_bbox": 467,
+            "aceptado": 100,
+            "fuera_del_usable": 382,
+            "choca_elemento_fijo": 650,
+            "choca_pilar": 22,
+            "duplicado": 88,
+            "invade_zona_de_acceso": 5
+          },
+          "private_office": {
+            "intentos": 1514,
+            "fuera_de_bbox": 287,
+            "aceptado": 255,
+            "fuera_del_usable": 270,
+            "choca_elemento_fijo": 603,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 18,
+            "duplicado": 75,
+            "invade_zona_de_acceso": 5
+          },
+          "meeting_4": {
+            "intentos": 1492,
+            "fuera_de_bbox": 248,
+            "aceptado": 316,
+            "fuera_del_usable": 274,
+            "choca_elemento_fijo": 607,
+            "no_toca_circulacion": 3,
+            "choca_pilar": 19,
+            "invade_zona_de_acceso": 5,
+            "duplicado": 20
+          },
+          "lounge": {
+            "intentos": 1692,
+            "fuera_de_bbox": 427,
+            "aceptado": 135,
+            "fuera_del_usable": 392,
+            "choca_elemento_fijo": 669,
+            "choca_pilar": 27,
+            "invade_zona_de_acceso": 5,
+            "duplicado": 36,
+            "no_toca_circulacion": 1
+          },
+          "kitchenette": {
+            "intentos": 1514,
+            "fuera_de_bbox": 287,
+            "aceptado": 255,
+            "fuera_del_usable": 270,
+            "choca_elemento_fijo": 603,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 18,
+            "duplicado": 75,
+            "invade_zona_de_acceso": 5
+          },
+          "phone_booth": {
+            "intentos": 1080,
+            "no_toca_circulacion": 2,
+            "aceptado": 702,
+            "choca_elemento_fijo": 225,
+            "fuera_del_usable": 89,
+            "invade_zona_de_acceso": 4,
+            "fuera_de_bbox": 36,
+            "duplicado": 22
+          },
+          "workstation_cluster": {
+            "intentos": 5286,
+            "fuera_de_bbox": 1665,
+            "choca_elemento_fijo": 1358,
+            "fuera_del_usable": 1528,
+            "choca_pilar": 135,
+            "aceptado": 251,
+            "duplicado": 331,
+            "invade_zona_de_acceso": 18
+          },
+          "workstation_row": {
+            "intentos": 5286,
+            "fuera_de_bbox": 1616,
+            "choca_elemento_fijo": 1582,
+            "choca_pilar": 144,
+            "aceptado": 403,
+            "fuera_del_usable": 1213,
+            "invade_zona_de_acceso": 21,
+            "duplicado": 307
+          }
+        },
+        "bench_cfgs": [
+          6,
+          5,
+          4
+        ],
+        "step": 1.0,
+        "modulos_sin_candidatos": []
+      },
+      "poda": {
+        "por_modulo": {
+          "boardroom_12": {
+            "brutos": 15,
+            "tras_dominancia": 15,
+            "descartados_por_dominancia": 0,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 15,
+            "descartados_por_cap": 0
+          },
+          "dining": {
+            "brutos": 100,
+            "tras_dominancia": 88,
+            "descartados_por_dominancia": 12,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 88,
+            "descartados_por_cap": 0
+          },
+          "kitchenette": {
+            "brutos": 255,
+            "tras_dominancia": 233,
+            "descartados_por_dominancia": 22,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 33
+          },
+          "lounge": {
+            "brutos": 135,
+            "tras_dominancia": 117,
+            "descartados_por_dominancia": 18,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 117,
+            "descartados_por_cap": 0
+          },
+          "meeting_4": {
+            "brutos": 316,
+            "tras_dominancia": 280,
+            "descartados_por_dominancia": 36,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 80
+          },
+          "meeting_8": {
+            "brutos": 100,
+            "tras_dominancia": 88,
+            "descartados_por_dominancia": 12,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 88,
+            "descartados_por_cap": 0
+          },
+          "phone_booth": {
+            "brutos": 702,
+            "tras_dominancia": 600,
+            "descartados_por_dominancia": 102,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 400
+          },
+          "private_office": {
+            "brutos": 255,
+            "tras_dominancia": 233,
+            "descartados_por_dominancia": 22,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 33
+          },
+          "reception": {
+            "brutos": 230,
+            "tras_dominancia": 206,
+            "descartados_por_dominancia": 24,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 6
+          },
+          "workstation_cluster": {
+            "brutos": 251,
+            "tras_dominancia": 98,
+            "descartados_por_dominancia": 153,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 98,
+            "descartados_por_cap": 0
+          },
+          "workstation_row": {
+            "brutos": 403,
+            "tras_dominancia": 150,
+            "descartados_por_dominancia": 253,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 150,
+            "descartados_por_cap": 0
+          }
+        },
+        "cap": 200,
+        "brutos": 2762,
+        "finales": 1556,
+        "descartados_pct": 43.66,
+        "modulos_con_cap_activo": [
+          "kitchenette",
+          "meeting_4",
+          "phone_booth",
+          "private_office",
+          "reception"
+        ]
+      },
+      "generacion_runtime_s": 17.41,
+      "n_elementos_circulacion": 9,
+      "n_ramales_candidatos": 41,
+      "warm": {
+        "status": "FEASIBLE",
+        "n_variables": 2443,
+        "n_constraints": 9020,
+        "n_candidatos_en_modelo": 1386,
+        "candidatos_por_modulo_en_modelo": {
+          "boardroom_12": 12,
+          "dining": 88,
+          "kitchenette": 200,
+          "lounge": 117,
+          "meeting_4": 200,
+          "meeting_8": 88,
+          "phone_booth": 200,
+          "private_office": 200,
+          "reception": 33,
+          "workstation_cluster": 98,
+          "workstation_row": 150
+        },
+        "n_ramales": 41,
+        "wall_time_s": 22.009,
+        "deterministic_time": 14.2698,
+        "num_branches_explorados": 167257,
+        "num_conflicts": 7842,
+        "best_objective": 962.56,
+        "best_bound": 1082.79,
+        "solutions_found": null,
+        "workers": 2,
+        "seed": 1,
+        "time_limit_s": 22.0,
+        "max_deterministic_time": Infinity,
+        "seats_mode": "max",
+        "feasibility_only": false,
+        "early_stop_after_s": null,
+        "sufficient_assumptions": 0,
+        "solve_log_tail": ""
+      },
+      "warm_seats": 48,
+      "feasibility": {
+        "status": "INFEASIBLE",
+        "n_variables": 2443,
+        "n_constraints": 9020,
+        "n_candidatos_en_modelo": 1386,
+        "candidatos_por_modulo_en_modelo": {
+          "boardroom_12": 12,
+          "dining": 88,
+          "kitchenette": 200,
+          "lounge": 117,
+          "meeting_4": 200,
+          "meeting_8": 88,
+          "phone_booth": 200,
+          "private_office": 200,
+          "reception": 33,
+          "workstation_cluster": 98,
+          "workstation_row": 150
+        },
+        "n_ramales": 41,
+        "wall_time_s": 1.686,
+        "deterministic_time": 0.748,
+        "num_branches_explorados": 2025,
+        "num_conflicts": 9,
+        "best_objective": null,
+        "best_bound": null,
+        "solutions_found": null,
+        "workers": 2,
+        "seed": 1,
+        "time_limit_s": 25.0,
+        "max_deterministic_time": Infinity,
+        "seats_mode": "exact",
+        "feasibility_only": true,
+        "early_stop_after_s": null,
+        "sufficient_assumptions": 0,
+        "solve_log_tail": ""
+      },
+      "feasibility_retry": false,
+      "feasibility_retry_stats": null,
+      "resultado_e24": {
+        "status": "INFEASIBLE",
+        "tiene_layout": false,
+        "reason": "CP-SAT: sin asignación que cumpla las restricciones duras",
+        "pre_solver_reject": null
+      },
+      "runtime_total_s": 67.78
+    },
+    {
+      "brief": "DENSO",
+      "alt": "B",
+      "nombre": "BALANCEADO",
+      "solicitud": {
+        "puestos": 56,
+        "privados": 2,
+        "modulos": {
+          "workstation_cluster": 10,
+          "private_office": 2,
+          "meeting_4": 2,
+          "meeting_8": 1,
+          "boardroom_12": 1,
+          "phone_booth": 4,
+          "reception": 1,
+          "kitchenette": 1,
+          "dining": 1,
+          "lounge": 1
+        },
+        "area_nominal_por_modulo_m2": {
+          "workstation_cluster": 153.6,
+          "private_office": 24.0,
+          "meeting_4": 21.0,
+          "meeting_8": 20.0,
+          "boardroom_12": 36.0,
+          "phone_booth": 6.72,
+          "reception": 13.5,
+          "kitchenette": 12.0,
+          "dining": 20.0,
+          "lounge": 17.5
+        },
+        "area_nominal_programa_m2": 324.32
+      },
+      "estrategia": {
+        "spine": "B_CLIENT_FRONT",
+        "bench_cfgs": [
+          6,
+          4,
+          3
+        ],
+        "solver_extra": {
+          "module_max_path": {
+            "boardroom_12": 14.0
+          },
+          "max_facade_closed_rooms": 4
+        }
+      },
+      "generacion": {
+        "brutos_total": 2696,
+        "brutos_por_modulo": {
+          "boardroom_12": 15,
+          "reception": 230,
+          "meeting_8": 100,
+          "dining": 100,
+          "private_office": 255,
+          "meeting_4": 316,
+          "lounge": 135,
+          "kitchenette": 255,
+          "phone_booth": 702,
+          "workstation_cluster": 228,
+          "workstation_row": 360
+        },
+        "intentos": 24284,
+        "causas_de_descarte": {
+          "fuera_de_bbox": 6074,
+          "duplicado": 2478,
+          "fuera_del_usable": 5063,
+          "invade_zona_de_acceso": 77,
+          "choca_elemento_fijo": 7508,
+          "choca_pilar": 379,
+          "no_toca_circulacion": 9
+        },
+        "causas_por_modulo": {
+          "boardroom_12": {
+            "intentos": 2036,
+            "fuera_de_bbox": 795,
+            "choca_elemento_fijo": 470,
+            "fuera_del_usable": 624,
+            "aceptado": 15,
+            "invade_zona_de_acceso": 6,
+            "choca_pilar": 7,
+            "duplicado": 119
+          },
+          "reception": {
+            "intentos": 1564,
+            "fuera_de_bbox": 304,
+            "choca_elemento_fijo": 624,
+            "fuera_del_usable": 336,
+            "aceptado": 230,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 19,
+            "duplicado": 45,
+            "invade_zona_de_acceso": 5
+          },
+          "meeting_8": {
+            "intentos": 1714,
+            "fuera_de_bbox": 467,
+            "aceptado": 100,
+            "fuera_del_usable": 382,
+            "choca_elemento_fijo": 650,
+            "choca_pilar": 22,
+            "duplicado": 88,
+            "invade_zona_de_acceso": 5
+          },
+          "dining": {
+            "intentos": 1714,
+            "fuera_de_bbox": 467,
+            "aceptado": 100,
+            "fuera_del_usable": 382,
+            "choca_elemento_fijo": 650,
+            "choca_pilar": 22,
+            "duplicado": 88,
+            "invade_zona_de_acceso": 5
+          },
+          "private_office": {
+            "intentos": 1514,
+            "fuera_de_bbox": 287,
+            "aceptado": 255,
+            "fuera_del_usable": 270,
+            "choca_elemento_fijo": 603,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 18,
+            "duplicado": 75,
+            "invade_zona_de_acceso": 5
+          },
+          "meeting_4": {
+            "intentos": 1492,
+            "fuera_de_bbox": 248,
+            "aceptado": 316,
+            "fuera_del_usable": 274,
+            "choca_elemento_fijo": 607,
+            "no_toca_circulacion": 3,
+            "choca_pilar": 19,
+            "invade_zona_de_acceso": 5,
+            "duplicado": 20
+          },
+          "lounge": {
+            "intentos": 1692,
+            "fuera_de_bbox": 427,
+            "aceptado": 135,
+            "fuera_del_usable": 392,
+            "choca_elemento_fijo": 669,
+            "choca_pilar": 27,
+            "invade_zona_de_acceso": 5,
+            "duplicado": 36,
+            "no_toca_circulacion": 1
+          },
+          "kitchenette": {
+            "intentos": 1514,
+            "fuera_de_bbox": 287,
+            "aceptado": 255,
+            "fuera_del_usable": 270,
+            "choca_elemento_fijo": 603,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 18,
+            "duplicado": 75,
+            "invade_zona_de_acceso": 5
+          },
+          "phone_booth": {
+            "intentos": 1080,
+            "no_toca_circulacion": 2,
+            "aceptado": 702,
+            "choca_elemento_fijo": 225,
+            "fuera_del_usable": 89,
+            "invade_zona_de_acceso": 4,
+            "fuera_de_bbox": 36,
+            "duplicado": 22
+          },
+          "workstation_cluster": {
+            "intentos": 4982,
+            "fuera_de_bbox": 1402,
+            "choca_elemento_fijo": 1120,
+            "fuera_del_usable": 1145,
+            "choca_pilar": 111,
+            "aceptado": 228,
+            "duplicado": 961,
+            "invade_zona_de_acceso": 15
+          },
+          "workstation_row": {
+            "intentos": 4982,
+            "fuera_de_bbox": 1354,
+            "choca_elemento_fijo": 1287,
+            "choca_pilar": 116,
+            "aceptado": 360,
+            "duplicado": 949,
+            "fuera_del_usable": 899,
+            "invade_zona_de_acceso": 17
+          }
+        },
+        "bench_cfgs": [
+          6,
+          4,
+          3
+        ],
+        "step": 1.0,
+        "modulos_sin_candidatos": []
+      },
+      "poda": {
+        "por_modulo": {
+          "boardroom_12": {
+            "brutos": 15,
+            "tras_dominancia": 15,
+            "descartados_por_dominancia": 0,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 15,
+            "descartados_por_cap": 0
+          },
+          "dining": {
+            "brutos": 100,
+            "tras_dominancia": 88,
+            "descartados_por_dominancia": 12,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 88,
+            "descartados_por_cap": 0
+          },
+          "kitchenette": {
+            "brutos": 255,
+            "tras_dominancia": 233,
+            "descartados_por_dominancia": 22,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 33
+          },
+          "lounge": {
+            "brutos": 135,
+            "tras_dominancia": 117,
+            "descartados_por_dominancia": 18,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 117,
+            "descartados_por_cap": 0
+          },
+          "meeting_4": {
+            "brutos": 316,
+            "tras_dominancia": 280,
+            "descartados_por_dominancia": 36,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 80
+          },
+          "meeting_8": {
+            "brutos": 100,
+            "tras_dominancia": 88,
+            "descartados_por_dominancia": 12,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 88,
+            "descartados_por_cap": 0
+          },
+          "phone_booth": {
+            "brutos": 702,
+            "tras_dominancia": 600,
+            "descartados_por_dominancia": 102,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 400
+          },
+          "private_office": {
+            "brutos": 255,
+            "tras_dominancia": 233,
+            "descartados_por_dominancia": 22,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 33
+          },
+          "reception": {
+            "brutos": 230,
+            "tras_dominancia": 206,
+            "descartados_por_dominancia": 24,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 6
+          },
+          "workstation_cluster": {
+            "brutos": 228,
+            "tras_dominancia": 98,
+            "descartados_por_dominancia": 130,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 98,
+            "descartados_por_cap": 0
+          },
+          "workstation_row": {
+            "brutos": 360,
+            "tras_dominancia": 150,
+            "descartados_por_dominancia": 210,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 150,
+            "descartados_por_cap": 0
+          }
+        },
+        "cap": 200,
+        "brutos": 2696,
+        "finales": 1556,
+        "descartados_pct": 42.28,
+        "modulos_con_cap_activo": [
+          "kitchenette",
+          "meeting_4",
+          "phone_booth",
+          "private_office",
+          "reception"
+        ]
+      },
+      "generacion_runtime_s": 19.33,
+      "n_elementos_circulacion": 9,
+      "n_ramales_candidatos": 41,
+      "warm": {
+        "status": "FEASIBLE",
+        "n_variables": 1892,
+        "n_constraints": 7915,
+        "n_candidatos_en_modelo": 1386,
+        "candidatos_por_modulo_en_modelo": {
+          "boardroom_12": 12,
+          "dining": 88,
+          "kitchenette": 200,
+          "lounge": 117,
+          "meeting_4": 200,
+          "meeting_8": 88,
+          "phone_booth": 200,
+          "private_office": 200,
+          "reception": 33,
+          "workstation_cluster": 98,
+          "workstation_row": 150
+        },
+        "n_ramales": 41,
+        "wall_time_s": 22.002,
+        "deterministic_time": 13.0538,
+        "num_branches_explorados": 68347,
+        "num_conflicts": 17605,
+        "best_objective": 1040.33,
+        "best_bound": 1124.67,
+        "solutions_found": null,
+        "workers": 2,
+        "seed": 1,
+        "time_limit_s": 22.0,
+        "max_deterministic_time": Infinity,
+        "seats_mode": "max",
+        "feasibility_only": false,
+        "early_stop_after_s": null,
+        "sufficient_assumptions": 0,
+        "solve_log_tail": ""
+      },
+      "warm_seats": 52,
+      "feasibility": {
+        "status": "UNKNOWN",
+        "n_variables": 1892,
+        "n_constraints": 7915,
+        "n_candidatos_en_modelo": 1386,
+        "candidatos_por_modulo_en_modelo": {
+          "boardroom_12": 12,
+          "dining": 88,
+          "kitchenette": 200,
+          "lounge": 117,
+          "meeting_4": 200,
+          "meeting_8": 88,
+          "phone_booth": 200,
+          "private_office": 200,
+          "reception": 33,
+          "workstation_cluster": 98,
+          "workstation_row": 150
+        },
+        "n_ramales": 41,
+        "wall_time_s": 25.003,
+        "deterministic_time": 21.4482,
+        "num_branches_explorados": 122400,
+        "num_conflicts": 14586,
+        "best_objective": null,
+        "best_bound": null,
+        "solutions_found": null,
+        "workers": 2,
+        "seed": 1,
+        "time_limit_s": 25.0,
+        "max_deterministic_time": Infinity,
+        "seats_mode": "exact",
+        "feasibility_only": true,
+        "early_stop_after_s": null,
+        "sufficient_assumptions": 0,
+        "solve_log_tail": ""
+      },
+      "feasibility_retry": true,
+      "feasibility_retry_stats": {
+        "status": "UNKNOWN",
+        "n_variables": 1892,
+        "n_constraints": 7915,
+        "n_candidatos_en_modelo": 1386,
+        "candidatos_por_modulo_en_modelo": {
+          "boardroom_12": 12,
+          "dining": 88,
+          "kitchenette": 200,
+          "lounge": 117,
+          "meeting_4": 200,
+          "meeting_8": 88,
+          "phone_booth": 200,
+          "private_office": 200,
+          "reception": 33,
+          "workstation_cluster": 98,
+          "workstation_row": 150
+        },
+        "n_ramales": 41,
+        "wall_time_s": 50.004,
+        "deterministic_time": 52.1439,
+        "num_branches_explorados": 220452,
+        "num_conflicts": 28579,
+        "best_objective": null,
+        "best_bound": null,
+        "solutions_found": null,
+        "workers": 2,
+        "seed": 1,
+        "time_limit_s": 50.0,
+        "max_deterministic_time": Infinity,
+        "seats_mode": "exact",
+        "feasibility_only": true,
+        "early_stop_after_s": null,
+        "sufficient_assumptions": 0,
+        "solve_log_tail": ""
+      },
+      "resultado_e24": {
+        "status": "UNKNOWN",
+        "tiene_layout": false,
+        "reason": "sin solución en el tiempo",
+        "pre_solver_reject": null
+      },
+      "runtime_total_s": 137.53
+    },
+    {
+      "brief": "DENSO",
+      "alt": "C",
+      "nombre": "COLABORATIVO",
+      "solicitud": {
+        "puestos": 56,
+        "privados": 2,
+        "modulos": {
+          "workstation_cluster": 10,
+          "private_office": 2,
+          "meeting_4": 2,
+          "meeting_8": 1,
+          "boardroom_12": 1,
+          "phone_booth": 4,
+          "reception": 1,
+          "kitchenette": 1,
+          "dining": 1,
+          "lounge": 1
+        },
+        "area_nominal_por_modulo_m2": {
+          "workstation_cluster": 153.6,
+          "private_office": 24.0,
+          "meeting_4": 21.0,
+          "meeting_8": 20.0,
+          "boardroom_12": 36.0,
+          "phone_booth": 6.72,
+          "reception": 13.5,
+          "kitchenette": 12.0,
+          "dining": 20.0,
+          "lounge": 17.5
+        },
+        "area_nominal_programa_m2": 324.32
+      },
+      "estrategia": {
+        "spine": "C_DUAL_NEIGHBORHOOD",
+        "bench_cfgs": [
+          4,
+          3,
+          2
+        ],
+        "solver_extra": {
+          "min_bench_blocks": 8,
+          "max_facade_closed_rooms": 4,
+          "module_max_path": {
+            "boardroom_12": 18.0
+          }
+        }
+      },
+      "generacion": {
+        "brutos_total": 2466,
+        "brutos_por_modulo": {
+          "boardroom_12": 14,
+          "reception": 209,
+          "meeting_8": 89,
+          "dining": 89,
+          "private_office": 237,
+          "meeting_4": 301,
+          "lounge": 121,
+          "kitchenette": 237,
+          "phone_booth": 681,
+          "workstation_cluster": 197,
+          "workstation_row": 291
+        },
+        "intentos": 21708,
+        "causas_de_descarte": {
+          "fuera_de_bbox": 4764,
+          "duplicado": 3352,
+          "fuera_del_usable": 4320,
+          "invade_zona_de_acceso": 64,
+          "choca_elemento_fijo": 6461,
+          "choca_pilar": 275,
+          "no_toca_circulacion": 6
+        },
+        "causas_por_modulo": {
+          "boardroom_12": {
+            "intentos": 1946,
+            "fuera_de_bbox": 764,
+            "choca_elemento_fijo": 444,
+            "fuera_del_usable": 615,
+            "aceptado": 14,
+            "invade_zona_de_acceso": 6,
+            "duplicado": 103
+          },
+          "reception": {
+            "intentos": 1474,
+            "fuera_de_bbox": 291,
+            "choca_elemento_fijo": 571,
+            "fuera_del_usable": 333,
+            "aceptado": 209,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 22,
+            "invade_zona_de_acceso": 5,
+            "duplicado": 42
+          },
+          "meeting_8": {
+            "intentos": 1624,
+            "fuera_de_bbox": 441,
+            "choca_elemento_fijo": 611,
+            "fuera_del_usable": 391,
+            "aceptado": 89,
+            "choca_pilar": 13,
+            "duplicado": 74,
+            "invade_zona_de_acceso": 5
+          },
+          "dining": {
+            "intentos": 1624,
+            "fuera_de_bbox": 441,
+            "choca_elemento_fijo": 611,
+            "fuera_del_usable": 391,
+            "aceptado": 89,
+            "choca_pilar": 13,
+            "duplicado": 74,
+            "invade_zona_de_acceso": 5
+          },
+          "private_office": {
+            "intentos": 1424,
+            "fuera_de_bbox": 261,
+            "choca_elemento_fijo": 552,
+            "fuera_del_usable": 282,
+            "aceptado": 237,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 20,
+            "duplicado": 66,
+            "invade_zona_de_acceso": 5
+          },
+          "meeting_4": {
+            "intentos": 1394,
+            "fuera_de_bbox": 224,
+            "choca_elemento_fijo": 542,
+            "fuera_del_usable": 278,
+            "aceptado": 301,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 22,
+            "duplicado": 21,
+            "invade_zona_de_acceso": 5
+          },
+          "lounge": {
+            "intentos": 1594,
+            "fuera_de_bbox": 400,
+            "choca_elemento_fijo": 620,
+            "fuera_del_usable": 394,
+            "aceptado": 121,
+            "choca_pilar": 19,
+            "duplicado": 35,
+            "invade_zona_de_acceso": 5
+          },
+          "kitchenette": {
+            "intentos": 1424,
+            "fuera_de_bbox": 261,
+            "choca_elemento_fijo": 552,
+            "fuera_del_usable": 282,
+            "aceptado": 237,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 20,
+            "duplicado": 66,
+            "invade_zona_de_acceso": 5
+          },
+          "phone_booth": {
+            "intentos": 996,
+            "no_toca_circulacion": 2,
+            "aceptado": 681,
+            "choca_elemento_fijo": 172,
+            "fuera_del_usable": 89,
+            "invade_zona_de_acceso": 4,
+            "fuera_de_bbox": 36,
+            "duplicado": 12
+          },
+          "workstation_cluster": {
+            "intentos": 4104,
+            "fuera_de_bbox": 845,
+            "choca_elemento_fijo": 841,
+            "fuera_del_usable": 721,
+            "choca_pilar": 63,
+            "aceptado": 197,
+            "duplicado": 1429,
+            "invade_zona_de_acceso": 8
+          },
+          "workstation_row": {
+            "intentos": 4104,
+            "fuera_de_bbox": 800,
+            "choca_elemento_fijo": 945,
+            "choca_pilar": 83,
+            "aceptado": 291,
+            "duplicado": 1430,
+            "fuera_del_usable": 544,
+            "invade_zona_de_acceso": 11
+          }
+        },
+        "bench_cfgs": [
+          4,
+          3,
+          2
+        ],
+        "step": 1.0,
+        "modulos_sin_candidatos": []
+      },
+      "poda": {
+        "por_modulo": {
+          "boardroom_12": {
+            "brutos": 14,
+            "tras_dominancia": 14,
+            "descartados_por_dominancia": 0,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 14,
+            "descartados_por_cap": 0
+          },
+          "dining": {
+            "brutos": 89,
+            "tras_dominancia": 77,
+            "descartados_por_dominancia": 12,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 77,
+            "descartados_por_cap": 0
+          },
+          "kitchenette": {
+            "brutos": 237,
+            "tras_dominancia": 217,
+            "descartados_por_dominancia": 20,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 17
+          },
+          "lounge": {
+            "brutos": 121,
+            "tras_dominancia": 104,
+            "descartados_por_dominancia": 17,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 104,
+            "descartados_por_cap": 0
+          },
+          "meeting_4": {
+            "brutos": 301,
+            "tras_dominancia": 268,
+            "descartados_por_dominancia": 33,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 68
+          },
+          "meeting_8": {
+            "brutos": 89,
+            "tras_dominancia": 77,
+            "descartados_por_dominancia": 12,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 77,
+            "descartados_por_cap": 0
+          },
+          "phone_booth": {
+            "brutos": 681,
+            "tras_dominancia": 583,
+            "descartados_por_dominancia": 98,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 383
+          },
+          "private_office": {
+            "brutos": 237,
+            "tras_dominancia": 217,
+            "descartados_por_dominancia": 20,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 17
+          },
+          "reception": {
+            "brutos": 209,
+            "tras_dominancia": 185,
+            "descartados_por_dominancia": 24,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 185,
+            "descartados_por_cap": 0
+          },
+          "workstation_cluster": {
+            "brutos": 197,
+            "tras_dominancia": 89,
+            "descartados_por_dominancia": 108,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 89,
+            "descartados_por_cap": 0
+          },
+          "workstation_row": {
+            "brutos": 291,
+            "tras_dominancia": 134,
+            "descartados_por_dominancia": 157,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 134,
+            "descartados_por_cap": 0
+          }
+        },
+        "cap": 200,
+        "brutos": 2466,
+        "finales": 1480,
+        "descartados_pct": 39.98,
+        "modulos_con_cap_activo": [
+          "kitchenette",
+          "meeting_4",
+          "phone_booth",
+          "private_office"
+        ]
+      },
+      "generacion_runtime_s": 16.85,
+      "n_elementos_circulacion": 9,
+      "n_ramales_candidatos": 41,
+      "warm": {
+        "status": "FEASIBLE",
+        "n_variables": 2214,
+        "n_constraints": 8117,
+        "n_candidatos_en_modelo": 1326,
+        "candidatos_por_modulo_en_modelo": {
+          "boardroom_12": 12,
+          "dining": 77,
+          "kitchenette": 200,
+          "lounge": 104,
+          "meeting_4": 200,
+          "meeting_8": 77,
+          "phone_booth": 200,
+          "private_office": 200,
+          "reception": 33,
+          "workstation_cluster": 89,
+          "workstation_row": 134
+        },
+        "n_ramales": 41,
+        "wall_time_s": 22.003,
+        "deterministic_time": 15.5517,
+        "num_branches_explorados": 72544,
+        "num_conflicts": 13119,
+        "best_objective": 1021.44,
+        "best_bound": 1126.9,
+        "solutions_found": null,
+        "workers": 2,
+        "seed": 1,
+        "time_limit_s": 22.0,
+        "max_deterministic_time": Infinity,
+        "seats_mode": "max",
+        "feasibility_only": false,
+        "early_stop_after_s": null,
+        "sufficient_assumptions": 0,
+        "solve_log_tail": ""
+      },
+      "warm_seats": 51,
+      "feasibility": {
+        "status": "UNKNOWN",
+        "n_variables": 2214,
+        "n_constraints": 8117,
+        "n_candidatos_en_modelo": 1326,
+        "candidatos_por_modulo_en_modelo": {
+          "boardroom_12": 12,
+          "dining": 77,
+          "kitchenette": 200,
+          "lounge": 104,
+          "meeting_4": 200,
+          "meeting_8": 77,
+          "phone_booth": 200,
+          "private_office": 200,
+          "reception": 33,
+          "workstation_cluster": 89,
+          "workstation_row": 134
+        },
+        "n_ramales": 41,
+        "wall_time_s": 25.063,
+        "deterministic_time": 20.5569,
+        "num_branches_explorados": 287876,
+        "num_conflicts": 19159,
+        "best_objective": null,
+        "best_bound": null,
+        "solutions_found": null,
+        "workers": 2,
+        "seed": 1,
+        "time_limit_s": 25.0,
+        "max_deterministic_time": Infinity,
+        "seats_mode": "exact",
+        "feasibility_only": true,
+        "early_stop_after_s": null,
+        "sufficient_assumptions": 0,
+        "solve_log_tail": ""
+      },
+      "feasibility_retry": true,
+      "feasibility_retry_stats": {
+        "status": "UNKNOWN",
+        "n_variables": 2214,
+        "n_constraints": 8117,
+        "n_candidatos_en_modelo": 1326,
+        "candidatos_por_modulo_en_modelo": {
+          "boardroom_12": 12,
+          "dining": 77,
+          "kitchenette": 200,
+          "lounge": 104,
+          "meeting_4": 200,
+          "meeting_8": 77,
+          "phone_booth": 200,
+          "private_office": 200,
+          "reception": 33,
+          "workstation_cluster": 89,
+          "workstation_row": 134
+        },
+        "n_ramales": 41,
+        "wall_time_s": 50.045,
+        "deterministic_time": 47.0701,
+        "num_branches_explorados": 651462,
+        "num_conflicts": 31851,
+        "best_objective": null,
+        "best_bound": null,
+        "solutions_found": null,
+        "workers": 2,
+        "seed": 1,
+        "time_limit_s": 50.0,
+        "max_deterministic_time": Infinity,
+        "seats_mode": "exact",
+        "feasibility_only": true,
+        "early_stop_after_s": null,
+        "sufficient_assumptions": 0,
+        "solve_log_tail": ""
+      },
+      "resultado_e24": {
+        "status": "UNKNOWN",
+        "tiene_layout": false,
+        "reason": "sin solución en el tiempo",
+        "pre_solver_reject": null
+      },
+      "runtime_total_s": 147.14
+    },
+    {
+      "brief": "EQUILIBRADO",
+      "alt": "A",
+      "nombre": "EFICIENTE",
+      "solicitud": {
+        "puestos": 40,
+        "privados": 4,
+        "modulos": {
+          "workstation_cluster": 7,
+          "private_office": 4,
+          "meeting_4": 3,
+          "meeting_8": 1,
+          "boardroom_12": 1,
+          "phone_booth": 3,
+          "reception": 1,
+          "kitchenette": 1,
+          "dining": 1,
+          "lounge": 1
+        },
+        "area_nominal_por_modulo_m2": {
+          "workstation_cluster": 107.52,
+          "private_office": 48.0,
+          "meeting_4": 31.5,
+          "meeting_8": 20.0,
+          "boardroom_12": 36.0,
+          "phone_booth": 5.04,
+          "reception": 13.5,
+          "kitchenette": 12.0,
+          "dining": 20.0,
+          "lounge": 17.5
+        },
+        "area_nominal_programa_m2": 311.06
+      },
+      "estrategia": {
+        "spine": "A_PERIMETER_WORK",
+        "bench_cfgs": [
+          6,
+          5,
+          4
+        ],
+        "solver_extra": {
+          "max_bench_blocks": 7,
+          "max_facade_closed_rooms": 5,
+          "module_max_path": {
+            "boardroom_12": 16.0
+          }
+        }
+      },
+      "generacion": {
+        "brutos_total": 2762,
+        "brutos_por_modulo": {
+          "boardroom_12": 15,
+          "reception": 230,
+          "meeting_8": 100,
+          "dining": 100,
+          "private_office": 255,
+          "meeting_4": 316,
+          "lounge": 135,
+          "kitchenette": 255,
+          "phone_booth": 702,
+          "workstation_cluster": 251,
+          "workstation_row": 403
+        },
+        "intentos": 24892,
+        "causas_de_descarte": {
+          "fuera_de_bbox": 6599,
+          "duplicado": 1206,
+          "fuera_del_usable": 5760,
+          "invade_zona_de_acceso": 84,
+          "choca_elemento_fijo": 8041,
+          "choca_pilar": 431,
+          "no_toca_circulacion": 9
+        },
+        "causas_por_modulo": {
+          "boardroom_12": {
+            "intentos": 2036,
+            "fuera_de_bbox": 795,
+            "choca_elemento_fijo": 470,
+            "fuera_del_usable": 624,
+            "aceptado": 15,
+            "invade_zona_de_acceso": 6,
+            "choca_pilar": 7,
+            "duplicado": 119
+          },
+          "reception": {
+            "intentos": 1564,
+            "fuera_de_bbox": 304,
+            "choca_elemento_fijo": 624,
+            "fuera_del_usable": 336,
+            "aceptado": 230,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 19,
+            "duplicado": 45,
+            "invade_zona_de_acceso": 5
+          },
+          "meeting_8": {
+            "intentos": 1714,
+            "fuera_de_bbox": 467,
+            "aceptado": 100,
+            "fuera_del_usable": 382,
+            "choca_elemento_fijo": 650,
+            "choca_pilar": 22,
+            "duplicado": 88,
+            "invade_zona_de_acceso": 5
+          },
+          "dining": {
+            "intentos": 1714,
+            "fuera_de_bbox": 467,
+            "aceptado": 100,
+            "fuera_del_usable": 382,
+            "choca_elemento_fijo": 650,
+            "choca_pilar": 22,
+            "duplicado": 88,
+            "invade_zona_de_acceso": 5
+          },
+          "private_office": {
+            "intentos": 1514,
+            "fuera_de_bbox": 287,
+            "aceptado": 255,
+            "fuera_del_usable": 270,
+            "choca_elemento_fijo": 603,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 18,
+            "duplicado": 75,
+            "invade_zona_de_acceso": 5
+          },
+          "meeting_4": {
+            "intentos": 1492,
+            "fuera_de_bbox": 248,
+            "aceptado": 316,
+            "fuera_del_usable": 274,
+            "choca_elemento_fijo": 607,
+            "no_toca_circulacion": 3,
+            "choca_pilar": 19,
+            "invade_zona_de_acceso": 5,
+            "duplicado": 20
+          },
+          "lounge": {
+            "intentos": 1692,
+            "fuera_de_bbox": 427,
+            "aceptado": 135,
+            "fuera_del_usable": 392,
+            "choca_elemento_fijo": 669,
+            "choca_pilar": 27,
+            "invade_zona_de_acceso": 5,
+            "duplicado": 36,
+            "no_toca_circulacion": 1
+          },
+          "kitchenette": {
+            "intentos": 1514,
+            "fuera_de_bbox": 287,
+            "aceptado": 255,
+            "fuera_del_usable": 270,
+            "choca_elemento_fijo": 603,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 18,
+            "duplicado": 75,
+            "invade_zona_de_acceso": 5
+          },
+          "phone_booth": {
+            "intentos": 1080,
+            "no_toca_circulacion": 2,
+            "aceptado": 702,
+            "choca_elemento_fijo": 225,
+            "fuera_del_usable": 89,
+            "invade_zona_de_acceso": 4,
+            "fuera_de_bbox": 36,
+            "duplicado": 22
+          },
+          "workstation_cluster": {
+            "intentos": 5286,
+            "fuera_de_bbox": 1665,
+            "choca_elemento_fijo": 1358,
+            "fuera_del_usable": 1528,
+            "choca_pilar": 135,
+            "aceptado": 251,
+            "duplicado": 331,
+            "invade_zona_de_acceso": 18
+          },
+          "workstation_row": {
+            "intentos": 5286,
+            "fuera_de_bbox": 1616,
+            "choca_elemento_fijo": 1582,
+            "choca_pilar": 144,
+            "aceptado": 403,
+            "fuera_del_usable": 1213,
+            "invade_zona_de_acceso": 21,
+            "duplicado": 307
+          }
+        },
+        "bench_cfgs": [
+          6,
+          5,
+          4
+        ],
+        "step": 1.0,
+        "modulos_sin_candidatos": []
+      },
+      "poda": {
+        "por_modulo": {
+          "boardroom_12": {
+            "brutos": 15,
+            "tras_dominancia": 15,
+            "descartados_por_dominancia": 0,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 15,
+            "descartados_por_cap": 0
+          },
+          "dining": {
+            "brutos": 100,
+            "tras_dominancia": 88,
+            "descartados_por_dominancia": 12,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 88,
+            "descartados_por_cap": 0
+          },
+          "kitchenette": {
+            "brutos": 255,
+            "tras_dominancia": 233,
+            "descartados_por_dominancia": 22,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 33
+          },
+          "lounge": {
+            "brutos": 135,
+            "tras_dominancia": 117,
+            "descartados_por_dominancia": 18,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 117,
+            "descartados_por_cap": 0
+          },
+          "meeting_4": {
+            "brutos": 316,
+            "tras_dominancia": 280,
+            "descartados_por_dominancia": 36,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 80
+          },
+          "meeting_8": {
+            "brutos": 100,
+            "tras_dominancia": 88,
+            "descartados_por_dominancia": 12,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 88,
+            "descartados_por_cap": 0
+          },
+          "phone_booth": {
+            "brutos": 702,
+            "tras_dominancia": 600,
+            "descartados_por_dominancia": 102,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 400
+          },
+          "private_office": {
+            "brutos": 255,
+            "tras_dominancia": 233,
+            "descartados_por_dominancia": 22,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 33
+          },
+          "reception": {
+            "brutos": 230,
+            "tras_dominancia": 206,
+            "descartados_por_dominancia": 24,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 6
+          },
+          "workstation_cluster": {
+            "brutos": 251,
+            "tras_dominancia": 98,
+            "descartados_por_dominancia": 153,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 98,
+            "descartados_por_cap": 0
+          },
+          "workstation_row": {
+            "brutos": 403,
+            "tras_dominancia": 150,
+            "descartados_por_dominancia": 253,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 150,
+            "descartados_por_cap": 0
+          }
+        },
+        "cap": 200,
+        "brutos": 2762,
+        "finales": 1556,
+        "descartados_pct": 43.66,
+        "modulos_con_cap_activo": [
+          "kitchenette",
+          "meeting_4",
+          "phone_booth",
+          "private_office",
+          "reception"
+        ]
+      },
+      "generacion_runtime_s": 19.58,
+      "n_elementos_circulacion": 9,
+      "n_ramales_candidatos": 41,
+      "warm": {
+        "status": "FEASIBLE",
+        "n_variables": 2443,
+        "n_constraints": 9020,
+        "n_candidatos_en_modelo": 1386,
+        "candidatos_por_modulo_en_modelo": {
+          "boardroom_12": 12,
+          "dining": 88,
+          "kitchenette": 200,
+          "lounge": 117,
+          "meeting_4": 200,
+          "meeting_8": 88,
+          "phone_booth": 200,
+          "private_office": 200,
+          "reception": 33,
+          "workstation_cluster": 98,
+          "workstation_row": 150
+        },
+        "n_ramales": 41,
+        "wall_time_s": 22.003,
+        "deterministic_time": 14.45,
+        "num_branches_explorados": 77339,
+        "num_conflicts": 7225,
+        "best_objective": 800.57,
+        "best_bound": 809.45,
+        "solutions_found": null,
+        "workers": 2,
+        "seed": 1,
+        "time_limit_s": 22.0,
+        "max_deterministic_time": Infinity,
+        "seats_mode": "max",
+        "feasibility_only": false,
+        "early_stop_after_s": null,
+        "sufficient_assumptions": 0,
+        "solve_log_tail": ""
+      },
+      "warm_seats": 40,
+      "feasibility": {
+        "status": "OPTIMAL",
+        "n_variables": 2443,
+        "n_constraints": 9020,
+        "n_candidatos_en_modelo": 1386,
+        "candidatos_por_modulo_en_modelo": {
+          "boardroom_12": 12,
+          "dining": 88,
+          "kitchenette": 200,
+          "lounge": 117,
+          "meeting_4": 200,
+          "meeting_8": 88,
+          "phone_booth": 200,
+          "private_office": 200,
+          "reception": 33,
+          "workstation_cluster": 98,
+          "workstation_row": 150
+        },
+        "n_ramales": 41,
+        "wall_time_s": 1.316,
+        "deterministic_time": 0.2614,
+        "num_branches_explorados": 76,
+        "num_conflicts": 0,
+        "best_objective": null,
+        "best_bound": null,
+        "solutions_found": null,
+        "workers": 2,
+        "seed": 1,
+        "time_limit_s": 25.0,
+        "max_deterministic_time": Infinity,
+        "seats_mode": "exact",
+        "feasibility_only": true,
+        "early_stop_after_s": null,
+        "sufficient_assumptions": 0,
+        "solve_log_tail": ""
+      },
+      "feasibility_retry": false,
+      "feasibility_retry_stats": null,
+      "resultado_e24": {
+        "status": "OPTIMAL",
+        "tiene_layout": true,
+        "reason": null,
+        "pre_solver_reject": null
+      },
+      "runtime_total_s": 69.63
+    },
+    {
+      "brief": "EQUILIBRADO",
+      "alt": "B",
+      "nombre": "BALANCEADO",
+      "solicitud": {
+        "puestos": 40,
+        "privados": 4,
+        "modulos": {
+          "workstation_cluster": 7,
+          "private_office": 4,
+          "meeting_4": 3,
+          "meeting_8": 1,
+          "boardroom_12": 1,
+          "phone_booth": 3,
+          "reception": 1,
+          "kitchenette": 1,
+          "dining": 1,
+          "lounge": 1
+        },
+        "area_nominal_por_modulo_m2": {
+          "workstation_cluster": 107.52,
+          "private_office": 48.0,
+          "meeting_4": 31.5,
+          "meeting_8": 20.0,
+          "boardroom_12": 36.0,
+          "phone_booth": 5.04,
+          "reception": 13.5,
+          "kitchenette": 12.0,
+          "dining": 20.0,
+          "lounge": 17.5
+        },
+        "area_nominal_programa_m2": 311.06
+      },
+      "estrategia": {
+        "spine": "B_CLIENT_FRONT",
+        "bench_cfgs": [
+          6,
+          4,
+          3
+        ],
+        "solver_extra": {
+          "module_max_path": {
+            "boardroom_12": 14.0
+          },
+          "max_facade_closed_rooms": 4
+        }
+      },
+      "generacion": {
+        "brutos_total": 2696,
+        "brutos_por_modulo": {
+          "boardroom_12": 15,
+          "reception": 230,
+          "meeting_8": 100,
+          "dining": 100,
+          "private_office": 255,
+          "meeting_4": 316,
+          "lounge": 135,
+          "kitchenette": 255,
+          "phone_booth": 702,
+          "workstation_cluster": 228,
+          "workstation_row": 360
+        },
+        "intentos": 24284,
+        "causas_de_descarte": {
+          "fuera_de_bbox": 6074,
+          "duplicado": 2478,
+          "fuera_del_usable": 5063,
+          "invade_zona_de_acceso": 77,
+          "choca_elemento_fijo": 7508,
+          "choca_pilar": 379,
+          "no_toca_circulacion": 9
+        },
+        "causas_por_modulo": {
+          "boardroom_12": {
+            "intentos": 2036,
+            "fuera_de_bbox": 795,
+            "choca_elemento_fijo": 470,
+            "fuera_del_usable": 624,
+            "aceptado": 15,
+            "invade_zona_de_acceso": 6,
+            "choca_pilar": 7,
+            "duplicado": 119
+          },
+          "reception": {
+            "intentos": 1564,
+            "fuera_de_bbox": 304,
+            "choca_elemento_fijo": 624,
+            "fuera_del_usable": 336,
+            "aceptado": 230,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 19,
+            "duplicado": 45,
+            "invade_zona_de_acceso": 5
+          },
+          "meeting_8": {
+            "intentos": 1714,
+            "fuera_de_bbox": 467,
+            "aceptado": 100,
+            "fuera_del_usable": 382,
+            "choca_elemento_fijo": 650,
+            "choca_pilar": 22,
+            "duplicado": 88,
+            "invade_zona_de_acceso": 5
+          },
+          "dining": {
+            "intentos": 1714,
+            "fuera_de_bbox": 467,
+            "aceptado": 100,
+            "fuera_del_usable": 382,
+            "choca_elemento_fijo": 650,
+            "choca_pilar": 22,
+            "duplicado": 88,
+            "invade_zona_de_acceso": 5
+          },
+          "private_office": {
+            "intentos": 1514,
+            "fuera_de_bbox": 287,
+            "aceptado": 255,
+            "fuera_del_usable": 270,
+            "choca_elemento_fijo": 603,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 18,
+            "duplicado": 75,
+            "invade_zona_de_acceso": 5
+          },
+          "meeting_4": {
+            "intentos": 1492,
+            "fuera_de_bbox": 248,
+            "aceptado": 316,
+            "fuera_del_usable": 274,
+            "choca_elemento_fijo": 607,
+            "no_toca_circulacion": 3,
+            "choca_pilar": 19,
+            "invade_zona_de_acceso": 5,
+            "duplicado": 20
+          },
+          "lounge": {
+            "intentos": 1692,
+            "fuera_de_bbox": 427,
+            "aceptado": 135,
+            "fuera_del_usable": 392,
+            "choca_elemento_fijo": 669,
+            "choca_pilar": 27,
+            "invade_zona_de_acceso": 5,
+            "duplicado": 36,
+            "no_toca_circulacion": 1
+          },
+          "kitchenette": {
+            "intentos": 1514,
+            "fuera_de_bbox": 287,
+            "aceptado": 255,
+            "fuera_del_usable": 270,
+            "choca_elemento_fijo": 603,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 18,
+            "duplicado": 75,
+            "invade_zona_de_acceso": 5
+          },
+          "phone_booth": {
+            "intentos": 1080,
+            "no_toca_circulacion": 2,
+            "aceptado": 702,
+            "choca_elemento_fijo": 225,
+            "fuera_del_usable": 89,
+            "invade_zona_de_acceso": 4,
+            "fuera_de_bbox": 36,
+            "duplicado": 22
+          },
+          "workstation_cluster": {
+            "intentos": 4982,
+            "fuera_de_bbox": 1402,
+            "choca_elemento_fijo": 1120,
+            "fuera_del_usable": 1145,
+            "choca_pilar": 111,
+            "aceptado": 228,
+            "duplicado": 961,
+            "invade_zona_de_acceso": 15
+          },
+          "workstation_row": {
+            "intentos": 4982,
+            "fuera_de_bbox": 1354,
+            "choca_elemento_fijo": 1287,
+            "choca_pilar": 116,
+            "aceptado": 360,
+            "duplicado": 949,
+            "fuera_del_usable": 899,
+            "invade_zona_de_acceso": 17
+          }
+        },
+        "bench_cfgs": [
+          6,
+          4,
+          3
+        ],
+        "step": 1.0,
+        "modulos_sin_candidatos": []
+      },
+      "poda": {
+        "por_modulo": {
+          "boardroom_12": {
+            "brutos": 15,
+            "tras_dominancia": 15,
+            "descartados_por_dominancia": 0,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 15,
+            "descartados_por_cap": 0
+          },
+          "dining": {
+            "brutos": 100,
+            "tras_dominancia": 88,
+            "descartados_por_dominancia": 12,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 88,
+            "descartados_por_cap": 0
+          },
+          "kitchenette": {
+            "brutos": 255,
+            "tras_dominancia": 233,
+            "descartados_por_dominancia": 22,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 33
+          },
+          "lounge": {
+            "brutos": 135,
+            "tras_dominancia": 117,
+            "descartados_por_dominancia": 18,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 117,
+            "descartados_por_cap": 0
+          },
+          "meeting_4": {
+            "brutos": 316,
+            "tras_dominancia": 280,
+            "descartados_por_dominancia": 36,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 80
+          },
+          "meeting_8": {
+            "brutos": 100,
+            "tras_dominancia": 88,
+            "descartados_por_dominancia": 12,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 88,
+            "descartados_por_cap": 0
+          },
+          "phone_booth": {
+            "brutos": 702,
+            "tras_dominancia": 600,
+            "descartados_por_dominancia": 102,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 400
+          },
+          "private_office": {
+            "brutos": 255,
+            "tras_dominancia": 233,
+            "descartados_por_dominancia": 22,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 33
+          },
+          "reception": {
+            "brutos": 230,
+            "tras_dominancia": 206,
+            "descartados_por_dominancia": 24,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 6
+          },
+          "workstation_cluster": {
+            "brutos": 228,
+            "tras_dominancia": 98,
+            "descartados_por_dominancia": 130,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 98,
+            "descartados_por_cap": 0
+          },
+          "workstation_row": {
+            "brutos": 360,
+            "tras_dominancia": 150,
+            "descartados_por_dominancia": 210,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 150,
+            "descartados_por_cap": 0
+          }
+        },
+        "cap": 200,
+        "brutos": 2696,
+        "finales": 1556,
+        "descartados_pct": 42.28,
+        "modulos_con_cap_activo": [
+          "kitchenette",
+          "meeting_4",
+          "phone_booth",
+          "private_office",
+          "reception"
+        ]
+      },
+      "generacion_runtime_s": 17.39,
+      "n_elementos_circulacion": 9,
+      "n_ramales_candidatos": 41,
+      "warm": {
+        "status": "FEASIBLE",
+        "n_variables": 1892,
+        "n_constraints": 7915,
+        "n_candidatos_en_modelo": 1386,
+        "candidatos_por_modulo_en_modelo": {
+          "boardroom_12": 12,
+          "dining": 88,
+          "kitchenette": 200,
+          "lounge": 117,
+          "meeting_4": 200,
+          "meeting_8": 88,
+          "phone_booth": 200,
+          "private_office": 200,
+          "reception": 33,
+          "workstation_cluster": 98,
+          "workstation_row": 150
+        },
+        "n_ramales": 41,
+        "wall_time_s": 22.003,
+        "deterministic_time": 12.5733,
+        "num_branches_explorados": 70511,
+        "num_conflicts": 15931,
+        "best_objective": 761.89,
+        "best_bound": 804.22,
+        "solutions_found": null,
+        "workers": 2,
+        "seed": 1,
+        "time_limit_s": 22.0,
+        "max_deterministic_time": Infinity,
+        "seats_mode": "max",
+        "feasibility_only": false,
+        "early_stop_after_s": null,
+        "sufficient_assumptions": 0,
+        "solve_log_tail": ""
+      },
+      "warm_seats": 38,
+      "feasibility": {
+        "status": "OPTIMAL",
+        "n_variables": 1892,
+        "n_constraints": 7915,
+        "n_candidatos_en_modelo": 1386,
+        "candidatos_por_modulo_en_modelo": {
+          "boardroom_12": 12,
+          "dining": 88,
+          "kitchenette": 200,
+          "lounge": 117,
+          "meeting_4": 200,
+          "meeting_8": 88,
+          "phone_booth": 200,
+          "private_office": 200,
+          "reception": 33,
+          "workstation_cluster": 98,
+          "workstation_row": 150
+        },
+        "n_ramales": 41,
+        "wall_time_s": 9.591,
+        "deterministic_time": 6.957,
+        "num_branches_explorados": 51519,
+        "num_conflicts": 6454,
+        "best_objective": null,
+        "best_bound": null,
+        "solutions_found": null,
+        "workers": 2,
+        "seed": 1,
+        "time_limit_s": 25.0,
+        "max_deterministic_time": Infinity,
+        "seats_mode": "exact",
+        "feasibility_only": true,
+        "early_stop_after_s": null,
+        "sufficient_assumptions": 0,
+        "solve_log_tail": ""
+      },
+      "feasibility_retry": false,
+      "feasibility_retry_stats": null,
+      "resultado_e24": {
+        "status": "OPTIMAL",
+        "tiene_layout": true,
+        "reason": null,
+        "pre_solver_reject": null
+      },
+      "runtime_total_s": 62.73
+    },
+    {
+      "brief": "EQUILIBRADO",
+      "alt": "C",
+      "nombre": "COLABORATIVO",
+      "solicitud": {
+        "puestos": 40,
+        "privados": 4,
+        "modulos": {
+          "workstation_cluster": 7,
+          "private_office": 4,
+          "meeting_4": 3,
+          "meeting_8": 1,
+          "boardroom_12": 1,
+          "phone_booth": 3,
+          "reception": 1,
+          "kitchenette": 1,
+          "dining": 1,
+          "lounge": 1
+        },
+        "area_nominal_por_modulo_m2": {
+          "workstation_cluster": 107.52,
+          "private_office": 48.0,
+          "meeting_4": 31.5,
+          "meeting_8": 20.0,
+          "boardroom_12": 36.0,
+          "phone_booth": 5.04,
+          "reception": 13.5,
+          "kitchenette": 12.0,
+          "dining": 20.0,
+          "lounge": 17.5
+        },
+        "area_nominal_programa_m2": 311.06
+      },
+      "estrategia": {
+        "spine": "C_DUAL_NEIGHBORHOOD",
+        "bench_cfgs": [
+          4,
+          3,
+          2
+        ],
+        "solver_extra": {
+          "min_bench_blocks": 8,
+          "max_facade_closed_rooms": 4,
+          "module_max_path": {
+            "boardroom_12": 18.0
+          }
+        }
+      },
+      "generacion": {
+        "brutos_total": 2466,
+        "brutos_por_modulo": {
+          "boardroom_12": 14,
+          "reception": 209,
+          "meeting_8": 89,
+          "dining": 89,
+          "private_office": 237,
+          "meeting_4": 301,
+          "lounge": 121,
+          "kitchenette": 237,
+          "phone_booth": 681,
+          "workstation_cluster": 197,
+          "workstation_row": 291
+        },
+        "intentos": 21708,
+        "causas_de_descarte": {
+          "fuera_de_bbox": 4764,
+          "duplicado": 3352,
+          "fuera_del_usable": 4320,
+          "invade_zona_de_acceso": 64,
+          "choca_elemento_fijo": 6461,
+          "choca_pilar": 275,
+          "no_toca_circulacion": 6
+        },
+        "causas_por_modulo": {
+          "boardroom_12": {
+            "intentos": 1946,
+            "fuera_de_bbox": 764,
+            "choca_elemento_fijo": 444,
+            "fuera_del_usable": 615,
+            "aceptado": 14,
+            "invade_zona_de_acceso": 6,
+            "duplicado": 103
+          },
+          "reception": {
+            "intentos": 1474,
+            "fuera_de_bbox": 291,
+            "choca_elemento_fijo": 571,
+            "fuera_del_usable": 333,
+            "aceptado": 209,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 22,
+            "invade_zona_de_acceso": 5,
+            "duplicado": 42
+          },
+          "meeting_8": {
+            "intentos": 1624,
+            "fuera_de_bbox": 441,
+            "choca_elemento_fijo": 611,
+            "fuera_del_usable": 391,
+            "aceptado": 89,
+            "choca_pilar": 13,
+            "duplicado": 74,
+            "invade_zona_de_acceso": 5
+          },
+          "dining": {
+            "intentos": 1624,
+            "fuera_de_bbox": 441,
+            "choca_elemento_fijo": 611,
+            "fuera_del_usable": 391,
+            "aceptado": 89,
+            "choca_pilar": 13,
+            "duplicado": 74,
+            "invade_zona_de_acceso": 5
+          },
+          "private_office": {
+            "intentos": 1424,
+            "fuera_de_bbox": 261,
+            "choca_elemento_fijo": 552,
+            "fuera_del_usable": 282,
+            "aceptado": 237,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 20,
+            "duplicado": 66,
+            "invade_zona_de_acceso": 5
+          },
+          "meeting_4": {
+            "intentos": 1394,
+            "fuera_de_bbox": 224,
+            "choca_elemento_fijo": 542,
+            "fuera_del_usable": 278,
+            "aceptado": 301,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 22,
+            "duplicado": 21,
+            "invade_zona_de_acceso": 5
+          },
+          "lounge": {
+            "intentos": 1594,
+            "fuera_de_bbox": 400,
+            "choca_elemento_fijo": 620,
+            "fuera_del_usable": 394,
+            "aceptado": 121,
+            "choca_pilar": 19,
+            "duplicado": 35,
+            "invade_zona_de_acceso": 5
+          },
+          "kitchenette": {
+            "intentos": 1424,
+            "fuera_de_bbox": 261,
+            "choca_elemento_fijo": 552,
+            "fuera_del_usable": 282,
+            "aceptado": 237,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 20,
+            "duplicado": 66,
+            "invade_zona_de_acceso": 5
+          },
+          "phone_booth": {
+            "intentos": 996,
+            "no_toca_circulacion": 2,
+            "aceptado": 681,
+            "choca_elemento_fijo": 172,
+            "fuera_del_usable": 89,
+            "invade_zona_de_acceso": 4,
+            "fuera_de_bbox": 36,
+            "duplicado": 12
+          },
+          "workstation_cluster": {
+            "intentos": 4104,
+            "fuera_de_bbox": 845,
+            "choca_elemento_fijo": 841,
+            "fuera_del_usable": 721,
+            "choca_pilar": 63,
+            "aceptado": 197,
+            "duplicado": 1429,
+            "invade_zona_de_acceso": 8
+          },
+          "workstation_row": {
+            "intentos": 4104,
+            "fuera_de_bbox": 800,
+            "choca_elemento_fijo": 945,
+            "choca_pilar": 83,
+            "aceptado": 291,
+            "duplicado": 1430,
+            "fuera_del_usable": 544,
+            "invade_zona_de_acceso": 11
+          }
+        },
+        "bench_cfgs": [
+          4,
+          3,
+          2
+        ],
+        "step": 1.0,
+        "modulos_sin_candidatos": []
+      },
+      "poda": {
+        "por_modulo": {
+          "boardroom_12": {
+            "brutos": 14,
+            "tras_dominancia": 14,
+            "descartados_por_dominancia": 0,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 14,
+            "descartados_por_cap": 0
+          },
+          "dining": {
+            "brutos": 89,
+            "tras_dominancia": 77,
+            "descartados_por_dominancia": 12,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 77,
+            "descartados_por_cap": 0
+          },
+          "kitchenette": {
+            "brutos": 237,
+            "tras_dominancia": 217,
+            "descartados_por_dominancia": 20,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 17
+          },
+          "lounge": {
+            "brutos": 121,
+            "tras_dominancia": 104,
+            "descartados_por_dominancia": 17,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 104,
+            "descartados_por_cap": 0
+          },
+          "meeting_4": {
+            "brutos": 301,
+            "tras_dominancia": 268,
+            "descartados_por_dominancia": 33,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 68
+          },
+          "meeting_8": {
+            "brutos": 89,
+            "tras_dominancia": 77,
+            "descartados_por_dominancia": 12,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 77,
+            "descartados_por_cap": 0
+          },
+          "phone_booth": {
+            "brutos": 681,
+            "tras_dominancia": 583,
+            "descartados_por_dominancia": 98,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 383
+          },
+          "private_office": {
+            "brutos": 237,
+            "tras_dominancia": 217,
+            "descartados_por_dominancia": 20,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 17
+          },
+          "reception": {
+            "brutos": 209,
+            "tras_dominancia": 185,
+            "descartados_por_dominancia": 24,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 185,
+            "descartados_por_cap": 0
+          },
+          "workstation_cluster": {
+            "brutos": 197,
+            "tras_dominancia": 89,
+            "descartados_por_dominancia": 108,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 89,
+            "descartados_por_cap": 0
+          },
+          "workstation_row": {
+            "brutos": 291,
+            "tras_dominancia": 134,
+            "descartados_por_dominancia": 157,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 134,
+            "descartados_por_cap": 0
+          }
+        },
+        "cap": 200,
+        "brutos": 2466,
+        "finales": 1480,
+        "descartados_pct": 39.98,
+        "modulos_con_cap_activo": [
+          "kitchenette",
+          "meeting_4",
+          "phone_booth",
+          "private_office"
+        ]
+      },
+      "generacion_runtime_s": 15.29,
+      "n_elementos_circulacion": 9,
+      "n_ramales_candidatos": 41,
+      "warm": {
+        "status": "FEASIBLE",
+        "n_variables": 2214,
+        "n_constraints": 8117,
+        "n_candidatos_en_modelo": 1326,
+        "candidatos_por_modulo_en_modelo": {
+          "boardroom_12": 12,
+          "dining": 77,
+          "kitchenette": 200,
+          "lounge": 104,
+          "meeting_4": 200,
+          "meeting_8": 77,
+          "phone_booth": 200,
+          "private_office": 200,
+          "reception": 33,
+          "workstation_cluster": 89,
+          "workstation_row": 134
+        },
+        "n_ramales": 41,
+        "wall_time_s": 22.003,
+        "deterministic_time": 13.8199,
+        "num_branches_explorados": 71768,
+        "num_conflicts": 10926,
+        "best_objective": 801.93,
+        "best_bound": 807.89,
+        "solutions_found": null,
+        "workers": 2,
+        "seed": 1,
+        "time_limit_s": 22.0,
+        "max_deterministic_time": Infinity,
+        "seats_mode": "max",
+        "feasibility_only": false,
+        "early_stop_after_s": null,
+        "sufficient_assumptions": 0,
+        "solve_log_tail": ""
+      },
+      "warm_seats": 40,
+      "feasibility": {
+        "status": "OPTIMAL",
+        "n_variables": 2214,
+        "n_constraints": 8117,
+        "n_candidatos_en_modelo": 1326,
+        "candidatos_por_modulo_en_modelo": {
+          "boardroom_12": 12,
+          "dining": 77,
+          "kitchenette": 200,
+          "lounge": 104,
+          "meeting_4": 200,
+          "meeting_8": 77,
+          "phone_booth": 200,
+          "private_office": 200,
+          "reception": 33,
+          "workstation_cluster": 89,
+          "workstation_row": 134
+        },
+        "n_ramales": 41,
+        "wall_time_s": 1.241,
+        "deterministic_time": 0.2499,
+        "num_branches_explorados": 46,
+        "num_conflicts": 0,
+        "best_objective": null,
+        "best_bound": null,
+        "solutions_found": null,
+        "workers": 2,
+        "seed": 1,
+        "time_limit_s": 25.0,
+        "max_deterministic_time": Infinity,
+        "seats_mode": "exact",
+        "feasibility_only": true,
+        "early_stop_after_s": null,
+        "sufficient_assumptions": 0,
+        "solve_log_tail": ""
+      },
+      "feasibility_retry": false,
+      "feasibility_retry_stats": null,
+      "resultado_e24": {
+        "status": "OPTIMAL",
+        "tiene_layout": true,
+        "reason": null,
+        "pre_solver_reject": null
+      },
+      "runtime_total_s": 62.56
+    },
+    {
+      "brief": "EJECUTIVO",
+      "alt": "A",
+      "nombre": "EFICIENTE",
+      "solicitud": {
+        "puestos": 24,
+        "privados": 8,
+        "modulos": {
+          "workstation_cluster": 4,
+          "private_office": 8,
+          "meeting_4": 4,
+          "meeting_8": 2,
+          "boardroom_12": 1,
+          "phone_booth": 3,
+          "reception": 1,
+          "kitchenette": 1,
+          "dining": 1,
+          "lounge": 1
+        },
+        "area_nominal_por_modulo_m2": {
+          "workstation_cluster": 61.44,
+          "private_office": 96.0,
+          "meeting_4": 42.0,
+          "meeting_8": 40.0,
+          "boardroom_12": 36.0,
+          "phone_booth": 5.04,
+          "reception": 13.5,
+          "kitchenette": 12.0,
+          "dining": 20.0,
+          "lounge": 17.5
+        },
+        "area_nominal_programa_m2": 343.48
+      },
+      "estrategia": {
+        "spine": "A_PERIMETER_WORK",
+        "bench_cfgs": [
+          6,
+          5,
+          4
+        ],
+        "solver_extra": {
+          "max_bench_blocks": 7,
+          "max_facade_closed_rooms": 5,
+          "module_max_path": {
+            "boardroom_12": 16.0
+          }
+        }
+      },
+      "generacion": {
+        "brutos_total": 2762,
+        "brutos_por_modulo": {
+          "boardroom_12": 15,
+          "reception": 230,
+          "meeting_8": 100,
+          "dining": 100,
+          "private_office": 255,
+          "meeting_4": 316,
+          "lounge": 135,
+          "kitchenette": 255,
+          "phone_booth": 702,
+          "workstation_cluster": 251,
+          "workstation_row": 403
+        },
+        "intentos": 24892,
+        "causas_de_descarte": {
+          "fuera_de_bbox": 6599,
+          "duplicado": 1206,
+          "fuera_del_usable": 5760,
+          "invade_zona_de_acceso": 84,
+          "choca_elemento_fijo": 8041,
+          "choca_pilar": 431,
+          "no_toca_circulacion": 9
+        },
+        "causas_por_modulo": {
+          "boardroom_12": {
+            "intentos": 2036,
+            "fuera_de_bbox": 795,
+            "choca_elemento_fijo": 470,
+            "fuera_del_usable": 624,
+            "aceptado": 15,
+            "invade_zona_de_acceso": 6,
+            "choca_pilar": 7,
+            "duplicado": 119
+          },
+          "reception": {
+            "intentos": 1564,
+            "fuera_de_bbox": 304,
+            "choca_elemento_fijo": 624,
+            "fuera_del_usable": 336,
+            "aceptado": 230,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 19,
+            "duplicado": 45,
+            "invade_zona_de_acceso": 5
+          },
+          "meeting_8": {
+            "intentos": 1714,
+            "fuera_de_bbox": 467,
+            "aceptado": 100,
+            "fuera_del_usable": 382,
+            "choca_elemento_fijo": 650,
+            "choca_pilar": 22,
+            "duplicado": 88,
+            "invade_zona_de_acceso": 5
+          },
+          "dining": {
+            "intentos": 1714,
+            "fuera_de_bbox": 467,
+            "aceptado": 100,
+            "fuera_del_usable": 382,
+            "choca_elemento_fijo": 650,
+            "choca_pilar": 22,
+            "duplicado": 88,
+            "invade_zona_de_acceso": 5
+          },
+          "private_office": {
+            "intentos": 1514,
+            "fuera_de_bbox": 287,
+            "aceptado": 255,
+            "fuera_del_usable": 270,
+            "choca_elemento_fijo": 603,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 18,
+            "duplicado": 75,
+            "invade_zona_de_acceso": 5
+          },
+          "meeting_4": {
+            "intentos": 1492,
+            "fuera_de_bbox": 248,
+            "aceptado": 316,
+            "fuera_del_usable": 274,
+            "choca_elemento_fijo": 607,
+            "no_toca_circulacion": 3,
+            "choca_pilar": 19,
+            "invade_zona_de_acceso": 5,
+            "duplicado": 20
+          },
+          "lounge": {
+            "intentos": 1692,
+            "fuera_de_bbox": 427,
+            "aceptado": 135,
+            "fuera_del_usable": 392,
+            "choca_elemento_fijo": 669,
+            "choca_pilar": 27,
+            "invade_zona_de_acceso": 5,
+            "duplicado": 36,
+            "no_toca_circulacion": 1
+          },
+          "kitchenette": {
+            "intentos": 1514,
+            "fuera_de_bbox": 287,
+            "aceptado": 255,
+            "fuera_del_usable": 270,
+            "choca_elemento_fijo": 603,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 18,
+            "duplicado": 75,
+            "invade_zona_de_acceso": 5
+          },
+          "phone_booth": {
+            "intentos": 1080,
+            "no_toca_circulacion": 2,
+            "aceptado": 702,
+            "choca_elemento_fijo": 225,
+            "fuera_del_usable": 89,
+            "invade_zona_de_acceso": 4,
+            "fuera_de_bbox": 36,
+            "duplicado": 22
+          },
+          "workstation_cluster": {
+            "intentos": 5286,
+            "fuera_de_bbox": 1665,
+            "choca_elemento_fijo": 1358,
+            "fuera_del_usable": 1528,
+            "choca_pilar": 135,
+            "aceptado": 251,
+            "duplicado": 331,
+            "invade_zona_de_acceso": 18
+          },
+          "workstation_row": {
+            "intentos": 5286,
+            "fuera_de_bbox": 1616,
+            "choca_elemento_fijo": 1582,
+            "choca_pilar": 144,
+            "aceptado": 403,
+            "fuera_del_usable": 1213,
+            "invade_zona_de_acceso": 21,
+            "duplicado": 307
+          }
+        },
+        "bench_cfgs": [
+          6,
+          5,
+          4
+        ],
+        "step": 1.0,
+        "modulos_sin_candidatos": []
+      },
+      "poda": {
+        "por_modulo": {
+          "boardroom_12": {
+            "brutos": 15,
+            "tras_dominancia": 15,
+            "descartados_por_dominancia": 0,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 15,
+            "descartados_por_cap": 0
+          },
+          "dining": {
+            "brutos": 100,
+            "tras_dominancia": 88,
+            "descartados_por_dominancia": 12,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 88,
+            "descartados_por_cap": 0
+          },
+          "kitchenette": {
+            "brutos": 255,
+            "tras_dominancia": 233,
+            "descartados_por_dominancia": 22,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 33
+          },
+          "lounge": {
+            "brutos": 135,
+            "tras_dominancia": 117,
+            "descartados_por_dominancia": 18,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 117,
+            "descartados_por_cap": 0
+          },
+          "meeting_4": {
+            "brutos": 316,
+            "tras_dominancia": 280,
+            "descartados_por_dominancia": 36,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 80
+          },
+          "meeting_8": {
+            "brutos": 100,
+            "tras_dominancia": 88,
+            "descartados_por_dominancia": 12,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 88,
+            "descartados_por_cap": 0
+          },
+          "phone_booth": {
+            "brutos": 702,
+            "tras_dominancia": 600,
+            "descartados_por_dominancia": 102,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 400
+          },
+          "private_office": {
+            "brutos": 255,
+            "tras_dominancia": 233,
+            "descartados_por_dominancia": 22,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 33
+          },
+          "reception": {
+            "brutos": 230,
+            "tras_dominancia": 206,
+            "descartados_por_dominancia": 24,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 6
+          },
+          "workstation_cluster": {
+            "brutos": 251,
+            "tras_dominancia": 98,
+            "descartados_por_dominancia": 153,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 98,
+            "descartados_por_cap": 0
+          },
+          "workstation_row": {
+            "brutos": 403,
+            "tras_dominancia": 150,
+            "descartados_por_dominancia": 253,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 150,
+            "descartados_por_cap": 0
+          }
+        },
+        "cap": 200,
+        "brutos": 2762,
+        "finales": 1556,
+        "descartados_pct": 43.66,
+        "modulos_con_cap_activo": [
+          "kitchenette",
+          "meeting_4",
+          "phone_booth",
+          "private_office",
+          "reception"
+        ]
+      },
+      "generacion_runtime_s": 18.08,
+      "n_elementos_circulacion": 9,
+      "n_ramales_candidatos": 41,
+      "warm": {
+        "status": "INFEASIBLE",
+        "n_variables": 2443,
+        "n_constraints": 9020,
+        "n_candidatos_en_modelo": 1386,
+        "candidatos_por_modulo_en_modelo": {
+          "boardroom_12": 12,
+          "dining": 88,
+          "kitchenette": 200,
+          "lounge": 117,
+          "meeting_4": 200,
+          "meeting_8": 88,
+          "phone_booth": 200,
+          "private_office": 200,
+          "reception": 33,
+          "workstation_cluster": 98,
+          "workstation_row": 150
+        },
+        "n_ramales": 41,
+        "wall_time_s": 14.988,
+        "deterministic_time": 8.3859,
+        "num_branches_explorados": 72618,
+        "num_conflicts": 4064,
+        "best_objective": null,
+        "best_bound": null,
+        "solutions_found": null,
+        "workers": 2,
+        "seed": 1,
+        "time_limit_s": 22.0,
+        "max_deterministic_time": Infinity,
+        "seats_mode": "max",
+        "feasibility_only": false,
+        "early_stop_after_s": null,
+        "sufficient_assumptions": 0,
+        "solve_log_tail": ""
+      },
+      "warm_seats": null,
+      "feasibility": {
+        "status": "INFEASIBLE",
+        "n_variables": 2443,
+        "n_constraints": 9020,
+        "n_candidatos_en_modelo": 1386,
+        "candidatos_por_modulo_en_modelo": {
+          "boardroom_12": 12,
+          "dining": 88,
+          "kitchenette": 200,
+          "lounge": 117,
+          "meeting_4": 200,
+          "meeting_8": 88,
+          "phone_booth": 200,
+          "private_office": 200,
+          "reception": 33,
+          "workstation_cluster": 98,
+          "workstation_row": 150
+        },
+        "n_ramales": 41,
+        "wall_time_s": 3.83,
+        "deterministic_time": 1.5751,
+        "num_branches_explorados": 16795,
+        "num_conflicts": 698,
+        "best_objective": null,
+        "best_bound": null,
+        "solutions_found": null,
+        "workers": 2,
+        "seed": 1,
+        "time_limit_s": 25.0,
+        "max_deterministic_time": Infinity,
+        "seats_mode": "exact",
+        "feasibility_only": true,
+        "early_stop_after_s": null,
+        "sufficient_assumptions": 0,
+        "solve_log_tail": ""
+      },
+      "feasibility_retry": false,
+      "feasibility_retry_stats": null,
+      "resultado_e24": {
+        "status": "INFEASIBLE",
+        "tiene_layout": false,
+        "reason": "CP-SAT: sin asignación que cumpla las restricciones duras",
+        "pre_solver_reject": null
+      },
+      "runtime_total_s": 63.36
+    },
+    {
+      "brief": "EJECUTIVO",
+      "alt": "B",
+      "nombre": "BALANCEADO",
+      "solicitud": {
+        "puestos": 24,
+        "privados": 8,
+        "modulos": {
+          "workstation_cluster": 4,
+          "private_office": 8,
+          "meeting_4": 4,
+          "meeting_8": 2,
+          "boardroom_12": 1,
+          "phone_booth": 3,
+          "reception": 1,
+          "kitchenette": 1,
+          "dining": 1,
+          "lounge": 1
+        },
+        "area_nominal_por_modulo_m2": {
+          "workstation_cluster": 61.44,
+          "private_office": 96.0,
+          "meeting_4": 42.0,
+          "meeting_8": 40.0,
+          "boardroom_12": 36.0,
+          "phone_booth": 5.04,
+          "reception": 13.5,
+          "kitchenette": 12.0,
+          "dining": 20.0,
+          "lounge": 17.5
+        },
+        "area_nominal_programa_m2": 343.48
+      },
+      "estrategia": {
+        "spine": "B_CLIENT_FRONT",
+        "bench_cfgs": [
+          6,
+          4,
+          3
+        ],
+        "solver_extra": {
+          "module_max_path": {
+            "boardroom_12": 14.0
+          },
+          "max_facade_closed_rooms": 4
+        }
+      },
+      "generacion": {
+        "brutos_total": 2696,
+        "brutos_por_modulo": {
+          "boardroom_12": 15,
+          "reception": 230,
+          "meeting_8": 100,
+          "dining": 100,
+          "private_office": 255,
+          "meeting_4": 316,
+          "lounge": 135,
+          "kitchenette": 255,
+          "phone_booth": 702,
+          "workstation_cluster": 228,
+          "workstation_row": 360
+        },
+        "intentos": 24284,
+        "causas_de_descarte": {
+          "fuera_de_bbox": 6074,
+          "duplicado": 2478,
+          "fuera_del_usable": 5063,
+          "invade_zona_de_acceso": 77,
+          "choca_elemento_fijo": 7508,
+          "choca_pilar": 379,
+          "no_toca_circulacion": 9
+        },
+        "causas_por_modulo": {
+          "boardroom_12": {
+            "intentos": 2036,
+            "fuera_de_bbox": 795,
+            "choca_elemento_fijo": 470,
+            "fuera_del_usable": 624,
+            "aceptado": 15,
+            "invade_zona_de_acceso": 6,
+            "choca_pilar": 7,
+            "duplicado": 119
+          },
+          "reception": {
+            "intentos": 1564,
+            "fuera_de_bbox": 304,
+            "choca_elemento_fijo": 624,
+            "fuera_del_usable": 336,
+            "aceptado": 230,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 19,
+            "duplicado": 45,
+            "invade_zona_de_acceso": 5
+          },
+          "meeting_8": {
+            "intentos": 1714,
+            "fuera_de_bbox": 467,
+            "aceptado": 100,
+            "fuera_del_usable": 382,
+            "choca_elemento_fijo": 650,
+            "choca_pilar": 22,
+            "duplicado": 88,
+            "invade_zona_de_acceso": 5
+          },
+          "dining": {
+            "intentos": 1714,
+            "fuera_de_bbox": 467,
+            "aceptado": 100,
+            "fuera_del_usable": 382,
+            "choca_elemento_fijo": 650,
+            "choca_pilar": 22,
+            "duplicado": 88,
+            "invade_zona_de_acceso": 5
+          },
+          "private_office": {
+            "intentos": 1514,
+            "fuera_de_bbox": 287,
+            "aceptado": 255,
+            "fuera_del_usable": 270,
+            "choca_elemento_fijo": 603,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 18,
+            "duplicado": 75,
+            "invade_zona_de_acceso": 5
+          },
+          "meeting_4": {
+            "intentos": 1492,
+            "fuera_de_bbox": 248,
+            "aceptado": 316,
+            "fuera_del_usable": 274,
+            "choca_elemento_fijo": 607,
+            "no_toca_circulacion": 3,
+            "choca_pilar": 19,
+            "invade_zona_de_acceso": 5,
+            "duplicado": 20
+          },
+          "lounge": {
+            "intentos": 1692,
+            "fuera_de_bbox": 427,
+            "aceptado": 135,
+            "fuera_del_usable": 392,
+            "choca_elemento_fijo": 669,
+            "choca_pilar": 27,
+            "invade_zona_de_acceso": 5,
+            "duplicado": 36,
+            "no_toca_circulacion": 1
+          },
+          "kitchenette": {
+            "intentos": 1514,
+            "fuera_de_bbox": 287,
+            "aceptado": 255,
+            "fuera_del_usable": 270,
+            "choca_elemento_fijo": 603,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 18,
+            "duplicado": 75,
+            "invade_zona_de_acceso": 5
+          },
+          "phone_booth": {
+            "intentos": 1080,
+            "no_toca_circulacion": 2,
+            "aceptado": 702,
+            "choca_elemento_fijo": 225,
+            "fuera_del_usable": 89,
+            "invade_zona_de_acceso": 4,
+            "fuera_de_bbox": 36,
+            "duplicado": 22
+          },
+          "workstation_cluster": {
+            "intentos": 4982,
+            "fuera_de_bbox": 1402,
+            "choca_elemento_fijo": 1120,
+            "fuera_del_usable": 1145,
+            "choca_pilar": 111,
+            "aceptado": 228,
+            "duplicado": 961,
+            "invade_zona_de_acceso": 15
+          },
+          "workstation_row": {
+            "intentos": 4982,
+            "fuera_de_bbox": 1354,
+            "choca_elemento_fijo": 1287,
+            "choca_pilar": 116,
+            "aceptado": 360,
+            "duplicado": 949,
+            "fuera_del_usable": 899,
+            "invade_zona_de_acceso": 17
+          }
+        },
+        "bench_cfgs": [
+          6,
+          4,
+          3
+        ],
+        "step": 1.0,
+        "modulos_sin_candidatos": []
+      },
+      "poda": {
+        "por_modulo": {
+          "boardroom_12": {
+            "brutos": 15,
+            "tras_dominancia": 15,
+            "descartados_por_dominancia": 0,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 15,
+            "descartados_por_cap": 0
+          },
+          "dining": {
+            "brutos": 100,
+            "tras_dominancia": 88,
+            "descartados_por_dominancia": 12,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 88,
+            "descartados_por_cap": 0
+          },
+          "kitchenette": {
+            "brutos": 255,
+            "tras_dominancia": 233,
+            "descartados_por_dominancia": 22,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 33
+          },
+          "lounge": {
+            "brutos": 135,
+            "tras_dominancia": 117,
+            "descartados_por_dominancia": 18,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 117,
+            "descartados_por_cap": 0
+          },
+          "meeting_4": {
+            "brutos": 316,
+            "tras_dominancia": 280,
+            "descartados_por_dominancia": 36,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 80
+          },
+          "meeting_8": {
+            "brutos": 100,
+            "tras_dominancia": 88,
+            "descartados_por_dominancia": 12,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 88,
+            "descartados_por_cap": 0
+          },
+          "phone_booth": {
+            "brutos": 702,
+            "tras_dominancia": 600,
+            "descartados_por_dominancia": 102,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 400
+          },
+          "private_office": {
+            "brutos": 255,
+            "tras_dominancia": 233,
+            "descartados_por_dominancia": 22,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 33
+          },
+          "reception": {
+            "brutos": 230,
+            "tras_dominancia": 206,
+            "descartados_por_dominancia": 24,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 6
+          },
+          "workstation_cluster": {
+            "brutos": 228,
+            "tras_dominancia": 98,
+            "descartados_por_dominancia": 130,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 98,
+            "descartados_por_cap": 0
+          },
+          "workstation_row": {
+            "brutos": 360,
+            "tras_dominancia": 150,
+            "descartados_por_dominancia": 210,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 150,
+            "descartados_por_cap": 0
+          }
+        },
+        "cap": 200,
+        "brutos": 2696,
+        "finales": 1556,
+        "descartados_pct": 42.28,
+        "modulos_con_cap_activo": [
+          "kitchenette",
+          "meeting_4",
+          "phone_booth",
+          "private_office",
+          "reception"
+        ]
+      },
+      "generacion_runtime_s": 17.45,
+      "n_elementos_circulacion": 9,
+      "n_ramales_candidatos": 41,
+      "warm": {
+        "status": "INFEASIBLE",
+        "n_variables": 1892,
+        "n_constraints": 7915,
+        "n_candidatos_en_modelo": 1386,
+        "candidatos_por_modulo_en_modelo": {
+          "boardroom_12": 12,
+          "dining": 88,
+          "kitchenette": 200,
+          "lounge": 117,
+          "meeting_4": 200,
+          "meeting_8": 88,
+          "phone_booth": 200,
+          "private_office": 200,
+          "reception": 33,
+          "workstation_cluster": 98,
+          "workstation_row": 150
+        },
+        "n_ramales": 41,
+        "wall_time_s": 5.304,
+        "deterministic_time": 2.7183,
+        "num_branches_explorados": 31237,
+        "num_conflicts": 1674,
+        "best_objective": null,
+        "best_bound": null,
+        "solutions_found": null,
+        "workers": 2,
+        "seed": 1,
+        "time_limit_s": 22.0,
+        "max_deterministic_time": Infinity,
+        "seats_mode": "max",
+        "feasibility_only": false,
+        "early_stop_after_s": null,
+        "sufficient_assumptions": 0,
+        "solve_log_tail": ""
+      },
+      "warm_seats": null,
+      "feasibility": {
+        "status": "INFEASIBLE",
+        "n_variables": 1892,
+        "n_constraints": 7915,
+        "n_candidatos_en_modelo": 1386,
+        "candidatos_por_modulo_en_modelo": {
+          "boardroom_12": 12,
+          "dining": 88,
+          "kitchenette": 200,
+          "lounge": 117,
+          "meeting_4": 200,
+          "meeting_8": 88,
+          "phone_booth": 200,
+          "private_office": 200,
+          "reception": 33,
+          "workstation_cluster": 98,
+          "workstation_row": 150
+        },
+        "n_ramales": 41,
+        "wall_time_s": 4.401,
+        "deterministic_time": 1.8617,
+        "num_branches_explorados": 31477,
+        "num_conflicts": 1131,
+        "best_objective": null,
+        "best_bound": null,
+        "solutions_found": null,
+        "workers": 2,
+        "seed": 1,
+        "time_limit_s": 25.0,
+        "max_deterministic_time": Infinity,
+        "seats_mode": "exact",
+        "feasibility_only": true,
+        "early_stop_after_s": null,
+        "sufficient_assumptions": 0,
+        "solve_log_tail": ""
+      },
+      "feasibility_retry": false,
+      "feasibility_retry_stats": null,
+      "resultado_e24": {
+        "status": "INFEASIBLE",
+        "tiene_layout": false,
+        "reason": "CP-SAT: sin asignación que cumpla las restricciones duras",
+        "pre_solver_reject": null
+      },
+      "runtime_total_s": 39.93
+    },
+    {
+      "brief": "EJECUTIVO",
+      "alt": "C",
+      "nombre": "COLABORATIVO",
+      "solicitud": {
+        "puestos": 24,
+        "privados": 8,
+        "modulos": {
+          "workstation_cluster": 4,
+          "private_office": 8,
+          "meeting_4": 4,
+          "meeting_8": 2,
+          "boardroom_12": 1,
+          "phone_booth": 3,
+          "reception": 1,
+          "kitchenette": 1,
+          "dining": 1,
+          "lounge": 1
+        },
+        "area_nominal_por_modulo_m2": {
+          "workstation_cluster": 61.44,
+          "private_office": 96.0,
+          "meeting_4": 42.0,
+          "meeting_8": 40.0,
+          "boardroom_12": 36.0,
+          "phone_booth": 5.04,
+          "reception": 13.5,
+          "kitchenette": 12.0,
+          "dining": 20.0,
+          "lounge": 17.5
+        },
+        "area_nominal_programa_m2": 343.48
+      },
+      "estrategia": {
+        "spine": "C_DUAL_NEIGHBORHOOD",
+        "bench_cfgs": [
+          4,
+          3,
+          2
+        ],
+        "solver_extra": {
+          "min_bench_blocks": 8,
+          "max_facade_closed_rooms": 4,
+          "module_max_path": {
+            "boardroom_12": 18.0
+          }
+        }
+      },
+      "generacion": {
+        "brutos_total": 2466,
+        "brutos_por_modulo": {
+          "boardroom_12": 14,
+          "reception": 209,
+          "meeting_8": 89,
+          "dining": 89,
+          "private_office": 237,
+          "meeting_4": 301,
+          "lounge": 121,
+          "kitchenette": 237,
+          "phone_booth": 681,
+          "workstation_cluster": 197,
+          "workstation_row": 291
+        },
+        "intentos": 21708,
+        "causas_de_descarte": {
+          "fuera_de_bbox": 4764,
+          "duplicado": 3352,
+          "fuera_del_usable": 4320,
+          "invade_zona_de_acceso": 64,
+          "choca_elemento_fijo": 6461,
+          "choca_pilar": 275,
+          "no_toca_circulacion": 6
+        },
+        "causas_por_modulo": {
+          "boardroom_12": {
+            "intentos": 1946,
+            "fuera_de_bbox": 764,
+            "choca_elemento_fijo": 444,
+            "fuera_del_usable": 615,
+            "aceptado": 14,
+            "invade_zona_de_acceso": 6,
+            "duplicado": 103
+          },
+          "reception": {
+            "intentos": 1474,
+            "fuera_de_bbox": 291,
+            "choca_elemento_fijo": 571,
+            "fuera_del_usable": 333,
+            "aceptado": 209,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 22,
+            "invade_zona_de_acceso": 5,
+            "duplicado": 42
+          },
+          "meeting_8": {
+            "intentos": 1624,
+            "fuera_de_bbox": 441,
+            "choca_elemento_fijo": 611,
+            "fuera_del_usable": 391,
+            "aceptado": 89,
+            "choca_pilar": 13,
+            "duplicado": 74,
+            "invade_zona_de_acceso": 5
+          },
+          "dining": {
+            "intentos": 1624,
+            "fuera_de_bbox": 441,
+            "choca_elemento_fijo": 611,
+            "fuera_del_usable": 391,
+            "aceptado": 89,
+            "choca_pilar": 13,
+            "duplicado": 74,
+            "invade_zona_de_acceso": 5
+          },
+          "private_office": {
+            "intentos": 1424,
+            "fuera_de_bbox": 261,
+            "choca_elemento_fijo": 552,
+            "fuera_del_usable": 282,
+            "aceptado": 237,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 20,
+            "duplicado": 66,
+            "invade_zona_de_acceso": 5
+          },
+          "meeting_4": {
+            "intentos": 1394,
+            "fuera_de_bbox": 224,
+            "choca_elemento_fijo": 542,
+            "fuera_del_usable": 278,
+            "aceptado": 301,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 22,
+            "duplicado": 21,
+            "invade_zona_de_acceso": 5
+          },
+          "lounge": {
+            "intentos": 1594,
+            "fuera_de_bbox": 400,
+            "choca_elemento_fijo": 620,
+            "fuera_del_usable": 394,
+            "aceptado": 121,
+            "choca_pilar": 19,
+            "duplicado": 35,
+            "invade_zona_de_acceso": 5
+          },
+          "kitchenette": {
+            "intentos": 1424,
+            "fuera_de_bbox": 261,
+            "choca_elemento_fijo": 552,
+            "fuera_del_usable": 282,
+            "aceptado": 237,
+            "no_toca_circulacion": 1,
+            "choca_pilar": 20,
+            "duplicado": 66,
+            "invade_zona_de_acceso": 5
+          },
+          "phone_booth": {
+            "intentos": 996,
+            "no_toca_circulacion": 2,
+            "aceptado": 681,
+            "choca_elemento_fijo": 172,
+            "fuera_del_usable": 89,
+            "invade_zona_de_acceso": 4,
+            "fuera_de_bbox": 36,
+            "duplicado": 12
+          },
+          "workstation_cluster": {
+            "intentos": 4104,
+            "fuera_de_bbox": 845,
+            "choca_elemento_fijo": 841,
+            "fuera_del_usable": 721,
+            "choca_pilar": 63,
+            "aceptado": 197,
+            "duplicado": 1429,
+            "invade_zona_de_acceso": 8
+          },
+          "workstation_row": {
+            "intentos": 4104,
+            "fuera_de_bbox": 800,
+            "choca_elemento_fijo": 945,
+            "choca_pilar": 83,
+            "aceptado": 291,
+            "duplicado": 1430,
+            "fuera_del_usable": 544,
+            "invade_zona_de_acceso": 11
+          }
+        },
+        "bench_cfgs": [
+          4,
+          3,
+          2
+        ],
+        "step": 1.0,
+        "modulos_sin_candidatos": []
+      },
+      "poda": {
+        "por_modulo": {
+          "boardroom_12": {
+            "brutos": 14,
+            "tras_dominancia": 14,
+            "descartados_por_dominancia": 0,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 14,
+            "descartados_por_cap": 0
+          },
+          "dining": {
+            "brutos": 89,
+            "tras_dominancia": 77,
+            "descartados_por_dominancia": 12,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 77,
+            "descartados_por_cap": 0
+          },
+          "kitchenette": {
+            "brutos": 237,
+            "tras_dominancia": 217,
+            "descartados_por_dominancia": 20,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 17
+          },
+          "lounge": {
+            "brutos": 121,
+            "tras_dominancia": 104,
+            "descartados_por_dominancia": 17,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 104,
+            "descartados_por_cap": 0
+          },
+          "meeting_4": {
+            "brutos": 301,
+            "tras_dominancia": 268,
+            "descartados_por_dominancia": 33,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 68
+          },
+          "meeting_8": {
+            "brutos": 89,
+            "tras_dominancia": 77,
+            "descartados_por_dominancia": 12,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 77,
+            "descartados_por_cap": 0
+          },
+          "phone_booth": {
+            "brutos": 681,
+            "tras_dominancia": 583,
+            "descartados_por_dominancia": 98,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 383
+          },
+          "private_office": {
+            "brutos": 237,
+            "tras_dominancia": 217,
+            "descartados_por_dominancia": 20,
+            "cap_activo": true,
+            "cap": 200,
+            "finales": 200,
+            "descartados_por_cap": 17
+          },
+          "reception": {
+            "brutos": 209,
+            "tras_dominancia": 185,
+            "descartados_por_dominancia": 24,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 185,
+            "descartados_por_cap": 0
+          },
+          "workstation_cluster": {
+            "brutos": 197,
+            "tras_dominancia": 89,
+            "descartados_por_dominancia": 108,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 89,
+            "descartados_por_cap": 0
+          },
+          "workstation_row": {
+            "brutos": 291,
+            "tras_dominancia": 134,
+            "descartados_por_dominancia": 157,
+            "cap_activo": false,
+            "cap": 200,
+            "finales": 134,
+            "descartados_por_cap": 0
+          }
+        },
+        "cap": 200,
+        "brutos": 2466,
+        "finales": 1480,
+        "descartados_pct": 39.98,
+        "modulos_con_cap_activo": [
+          "kitchenette",
+          "meeting_4",
+          "phone_booth",
+          "private_office"
+        ]
+      },
+      "generacion_runtime_s": 15.73,
+      "n_elementos_circulacion": 9,
+      "n_ramales_candidatos": 41,
+      "warm": {
+        "status": "FEASIBLE",
+        "n_variables": 2214,
+        "n_constraints": 8117,
+        "n_candidatos_en_modelo": 1326,
+        "candidatos_por_modulo_en_modelo": {
+          "boardroom_12": 12,
+          "dining": 77,
+          "kitchenette": 200,
+          "lounge": 104,
+          "meeting_4": 200,
+          "meeting_8": 77,
+          "phone_booth": 200,
+          "private_office": 200,
+          "reception": 33,
+          "workstation_cluster": 89,
+          "workstation_row": 134
+        },
+        "n_ramales": 41,
+        "wall_time_s": 22.086,
+        "deterministic_time": 13.6743,
+        "num_branches_explorados": 131567,
+        "num_conflicts": 9557,
+        "best_objective": 375.45,
+        "best_bound": 488.06,
+        "solutions_found": null,
+        "workers": 2,
+        "seed": 1,
+        "time_limit_s": 22.0,
+        "max_deterministic_time": Infinity,
+        "seats_mode": "max",
+        "feasibility_only": false,
+        "early_stop_after_s": null,
+        "sufficient_assumptions": 0,
+        "solve_log_tail": ""
+      },
+      "warm_seats": 19,
+      "feasibility": {
+        "status": "UNKNOWN",
+        "n_variables": 2214,
+        "n_constraints": 8117,
+        "n_candidatos_en_modelo": 1326,
+        "candidatos_por_modulo_en_modelo": {
+          "boardroom_12": 12,
+          "dining": 77,
+          "kitchenette": 200,
+          "lounge": 104,
+          "meeting_4": 200,
+          "meeting_8": 77,
+          "phone_booth": 200,
+          "private_office": 200,
+          "reception": 33,
+          "workstation_cluster": 89,
+          "workstation_row": 134
+        },
+        "n_ramales": 41,
+        "wall_time_s": 25.003,
+        "deterministic_time": 23.2359,
+        "num_branches_explorados": 306159,
+        "num_conflicts": 11260,
+        "best_objective": null,
+        "best_bound": null,
+        "solutions_found": null,
+        "workers": 2,
+        "seed": 1,
+        "time_limit_s": 25.0,
+        "max_deterministic_time": Infinity,
+        "seats_mode": "exact",
+        "feasibility_only": true,
+        "early_stop_after_s": null,
+        "sufficient_assumptions": 0,
+        "solve_log_tail": ""
+      },
+      "feasibility_retry": true,
+      "feasibility_retry_stats": {
+        "status": "UNKNOWN",
+        "n_variables": 2214,
+        "n_constraints": 8117,
+        "n_candidatos_en_modelo": 1326,
+        "candidatos_por_modulo_en_modelo": {
+          "boardroom_12": 12,
+          "dining": 77,
+          "kitchenette": 200,
+          "lounge": 104,
+          "meeting_4": 200,
+          "meeting_8": 77,
+          "phone_booth": 200,
+          "private_office": 200,
+          "reception": 33,
+          "workstation_cluster": 89,
+          "workstation_row": 134
+        },
+        "n_ramales": 41,
+        "wall_time_s": 50.003,
+        "deterministic_time": 56.2012,
+        "num_branches_explorados": 679341,
+        "num_conflicts": 21524,
+        "best_objective": null,
+        "best_bound": null,
+        "solutions_found": null,
+        "workers": 2,
+        "seed": 1,
+        "time_limit_s": 50.0,
+        "max_deterministic_time": Infinity,
+        "seats_mode": "exact",
+        "feasibility_only": true,
+        "early_stop_after_s": null,
+        "sufficient_assumptions": 0,
+        "solve_log_tail": ""
+      },
+      "resultado_e24": {
+        "status": "UNKNOWN",
+        "tiene_layout": false,
+        "reason": "sin solución en el tiempo",
+        "pre_solver_reject": null
+      },
+      "runtime_total_s": 148.29
+    }
+  ]
+}

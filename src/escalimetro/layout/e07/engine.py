@@ -26,6 +26,7 @@ from ..e05.bands import build_spine
 from ..e05.critic import RuleBasedCritic
 from ..e05.features import ShellFeatures, extract_features
 from ..e05.strategy import generate_strategies
+from ..search_status import CandidateSpace, classify, explicacion, puede_decir_que_no_cabe
 from ..e06 import freeplace as F
 from .strategies import AlternativeSpec
 
@@ -77,6 +78,23 @@ class AlternativeResult:
                 "spine_strategy": self.spine_strategy, "layout_id": self.layout.layout_id}
 
 
+class NoSolution(RuntimeError):
+    """El motor no devolvió layout. Lleva consigo POR QUÉ, con la semántica de E25 §8."""
+
+    def __init__(self, alt: str, solver_status: str, reason, space, profile=None):
+        self.alt, self.solver_status, self.reason = alt, solver_status, reason
+        self.space, self.profile = space, profile
+        self.status = classify(solver_status, has_solution=False, space=space)
+        super().__init__(f"{alt}: {self.status} ({solver_status}: {reason})")
+
+    def to_dict(self) -> Dict:
+        return {"alt": self.alt, "status": self.status, "solver_status": self.solver_status,
+                "reason": self.reason, "candidate_space": self.space.to_dict(),
+                "explicacion": explicacion(self.status, self.space),
+                "puede_decir_que_no_cabe": puede_decir_que_no_cabe(self.status),
+                "runtime_s": getattr(self.profile, "total_s", None)}
+
+
 class Engine:
     """Mantiene el shell, la rejilla y una caché de geometría de candidatos por espina, para que dos
     alternativas que comparten estrategia de circulación no repitan la generación."""
@@ -94,6 +112,15 @@ class Engine:
                                generate_strategies(self.feats, int(program["open_workstations_exact"]))}
         self.critic = RuleBasedCritic()
         self._geom_cache: Dict[Tuple[str, tuple], Tuple[list, list, float]] = {}
+        self.candidate_stats: Dict[str, Dict] = {}
+        # E25 §8 — descriptor de completitud del espacio de candidatos. En V1 SIEMPRE es incompleto:
+        # las posiciones se muestrean y la poda colapsa candidatos. Por eso `complete` es False y el
+        # motor no puede producir PROVEN_INFEASIBLE ni por accidente.
+        self.candidate_space = CandidateSpace(sampled_positions=True, dominance_pruned=True,
+                                              capped=True, step_m=1.0, cap=0,
+                                              note="generación anclada a elementos de circulación con "
+                                                   "posiciones muestreadas; poda por dominancia y tope "
+                                                   "por módulo escalado con la demanda del programa")
 
     # ---------- geometría común (espina + ramales + candidatos podados) ----------------------------
     def geometry_for(self, spec: AlternativeSpec, cap: int = 200, log=None):
@@ -106,9 +133,20 @@ class Engine:
         plan = build_spine(self.shell, self.feats, strat, self.grid)
         els = F.spine_elements(plan)
         brs = F.branch_candidates(self.shell, self.feats, els, grid=self.grid)
+        gen_stats, prune_stats = {}, {}
         raw, _ = F.generate_candidates(self.shell, self.grid, self.feats, els + brs, self.modules, self.program,
-                                       spec.bench_cfgs, step=1.0)
-        cands = F.prune(raw, per_module_cap=cap, log=log)
+                                       spec.bench_cfgs, step=1.0, stats=gen_stats)
+        # E25 §11 · D2 — el tope escala con las instancias que pide el programa compilado
+        demanda = {p["module"]: int(p["count"]) for p in self.program["program"]}
+        cands = F.prune(raw, per_module_cap=cap, log=log, demand=demanda, stats=prune_stats)
+        self.candidate_stats[spec.alt] = {
+            "brutos": gen_stats.get("brutos_total"), "finales": prune_stats.get("finales"),
+            "descartados_pct": prune_stats.get("descartados_pct"),
+            "refinamientos": gen_stats.get("refinamientos"),
+            "por_modulo": prune_stats.get("por_modulo"),
+            "causas_de_descarte": gen_stats.get("causas_de_descarte"),
+            "modulos_sin_candidatos": gen_stats.get("modulos_sin_candidatos"),
+            "bench_cfgs": list(spec.bench_cfgs), "cap_base": cap}
         gen_s = round(time.time() - t0, 2)
         self._geom_cache[key] = (els + brs, cands, gen_s)
         return els + brs, cands, gen_s, False, len(raw), len(brs)
@@ -150,7 +188,10 @@ class Engine:
         prof.status_feasibility = res["status"]
         if "layout" not in res:
             prof.total_s = round(time.time() - t_all, 2)
-            raise RuntimeError(f"{spec.alt}: sin solución factible ({res['status']}: {res.get('reason')})")
+            # E25 §8 — el estado de producto se DERIVA del estado del solver y de la completitud del
+            # espacio de candidatos. Nunca se llama NO_FIT a una búsqueda incompleta.
+            raise NoSolution(spec.alt, res.get("status", "UNKNOWN"), res.get("reason"),
+                             self.candidate_space, prof)
         # 2) optimización con la solución factible como pista y corte anticipado
         t = time.time()
         extra_opt = dict(extra); extra_opt["early_stop_after_s"] = early_stop_s

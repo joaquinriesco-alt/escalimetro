@@ -1,0 +1,773 @@
+{
+  "geometry_locked": true,
+  "geometry_lock_note": "La geometría está validada y cerrada. Cualquier capa de presentación puede cambiar color, trazo, tipografía, etiquetas, iconografía, composición y narrativa; NO puede mover, redibujar ni reinterpretar muros, shell, recintos, puestos, mobiliario, puertas, pilares ni circulación. Prohibido usar image generation para redibujar la planta.",
+  "alternative": {
+    "id": "A",
+    "name": "EFICIENTE",
+    "intent": "La forma más eficiente de hacer funcionar el programa completo.",
+    "copy_short": "Máxima eficiencia espacial con circulación compacta y alto aprovechamiento del área útil.",
+    "strengths": [
+      "Menor superficie de circulación",
+      "Recintos agrupados en pocos bloques",
+      "Menor fragmentación del open office",
+      "Fachada liberada para puestos"
+    ],
+    "ideal_for": "Empresas que priorizan costo por puesto y operación simple.",
+    "graph_id": "A_EFICIENTE",
+    "spine_strategy": "A_PERIMETER_WORK"
+  },
+  "shell_geometry": {
+    "perimeter": [
+      [
+        0.0,
+        19.745
+      ],
+      [
+        0.0,
+        3.052
+      ],
+      [
+        2.393,
+        3.052
+      ],
+      [
+        2.393,
+        0.0
+      ],
+      [
+        16.993,
+        0.0
+      ],
+      [
+        17.112,
+        0.718
+      ],
+      [
+        25.669,
+        0.718
+      ],
+      [
+        25.669,
+        0.06
+      ],
+      [
+        40.328,
+        0.06
+      ],
+      [
+        40.328,
+        3.59
+      ],
+      [
+        42.362,
+        3.59
+      ],
+      [
+        42.362,
+        13.522
+      ],
+      [
+        29.797,
+        13.522
+      ],
+      [
+        29.797,
+        8.437
+      ],
+      [
+        12.685,
+        8.437
+      ],
+      [
+        12.685,
+        19.865
+      ],
+      [
+        3.829,
+        19.865
+      ],
+      [
+        3.351,
+        18.608
+      ],
+      [
+        1.795,
+        19.745
+      ],
+      [
+        0.0,
+        19.745
+      ]
+    ],
+    "core": [
+      [
+        [
+          13.044,
+          19.805
+        ],
+        [
+          15.198,
+          19.925
+        ],
+        [
+          18.189,
+          23.754
+        ],
+        [
+          21.061,
+          22.557
+        ],
+        [
+          21.42,
+          23.515
+        ],
+        [
+          25.609,
+          23.515
+        ],
+        [
+          26.925,
+          22.438
+        ],
+        [
+          27.164,
+          19.925
+        ],
+        [
+          29.199,
+          19.566
+        ],
+        [
+          29.079,
+          9.155
+        ],
+        [
+          13.163,
+          8.796
+        ],
+        [
+          13.044,
+          19.805
+        ]
+      ]
+    ],
+    "columns": [
+      [
+        2.543,
+        18.905,
+        3.343,
+        19.705
+      ],
+      [
+        10.736,
+        18.905,
+        11.536,
+        19.705
+      ],
+      [
+        10.764,
+        13.15,
+        11.564,
+        13.95
+      ],
+      [
+        30.931,
+        13.058,
+        31.731,
+        13.858
+      ],
+      [
+        39.188,
+        13.058,
+        39.988,
+        13.858
+      ],
+      [
+        2.359,
+        12.967,
+        3.159,
+        13.767
+      ],
+      [
+        30.931,
+        3.5,
+        31.731,
+        4.3
+      ],
+      [
+        2.451,
+        3.457,
+        3.251,
+        4.257
+      ],
+      [
+        10.707,
+        3.414,
+        11.507,
+        4.214
+      ],
+      [
+        39.569,
+        3.609,
+        40.369,
+        4.409
+      ]
+    ],
+    "entrance": [
+      29.797,
+      12.326
+    ],
+    "usable_area_m2": 539.2,
+    "scale_px_per_m": 8.3565
+  },
+  "layout_geometry": [
+    {
+      "id": "boardroom_12_1",
+      "module": "boardroom_12",
+      "x": 34.8,
+      "y": 6.0,
+      "w": 7.2,
+      "d": 5.0,
+      "rot": 90,
+      "seats": 0,
+      "zone": "SEMI_PUBLIC"
+    },
+    {
+      "id": "reception_1",
+      "module": "reception",
+      "x": 31.6,
+      "y": 7.1,
+      "w": 3.0,
+      "d": 4.5,
+      "rot": 90,
+      "seats": 0,
+      "zone": "PUBLIC"
+    },
+    {
+      "id": "meeting_8_1",
+      "module": "meeting_8",
+      "x": 26.4,
+      "y": 0.8,
+      "w": 5.0,
+      "d": 4.0,
+      "rot": 0,
+      "seats": 0,
+      "zone": "SEMI_PUBLIC"
+    },
+    {
+      "id": "dining_1",
+      "module": "dining",
+      "x": 1.2,
+      "y": 13.4,
+      "w": 4.0,
+      "d": 5.0,
+      "rot": 0,
+      "seats": 0,
+      "zone": "SUPPORT"
+    },
+    {
+      "id": "private_office_1",
+      "module": "private_office",
+      "x": 3.0,
+      "y": 1.2,
+      "w": 3.0,
+      "d": 4.0,
+      "rot": 90,
+      "seats": 0,
+      "zone": "WORK"
+    },
+    {
+      "id": "private_office_2",
+      "module": "private_office",
+      "x": 14.4,
+      "y": 0.8,
+      "w": 3.0,
+      "d": 4.0,
+      "rot": 90,
+      "seats": 0,
+      "zone": "WORK"
+    },
+    {
+      "id": "private_office_3",
+      "module": "private_office",
+      "x": 31.4,
+      "y": 0.8,
+      "w": 3.0,
+      "d": 4.0,
+      "rot": 90,
+      "seats": 0,
+      "zone": "WORK"
+    },
+    {
+      "id": "private_office_4",
+      "module": "private_office",
+      "x": 10.4,
+      "y": 0.0,
+      "w": 4.0,
+      "d": 3.0,
+      "rot": 90,
+      "seats": 0,
+      "zone": "WORK"
+    },
+    {
+      "id": "meeting_4_1",
+      "module": "meeting_4",
+      "x": 23.4,
+      "y": 1.3,
+      "w": 3.0,
+      "d": 3.5,
+      "rot": 90,
+      "seats": 0,
+      "zone": "SEMI_PUBLIC"
+    },
+    {
+      "id": "meeting_4_2",
+      "module": "meeting_4",
+      "x": 20.4,
+      "y": 1.3,
+      "w": 3.0,
+      "d": 3.5,
+      "rot": 90,
+      "seats": 0,
+      "zone": "SEMI_PUBLIC"
+    },
+    {
+      "id": "meeting_4_3",
+      "module": "meeting_4",
+      "x": 17.4,
+      "y": 1.3,
+      "w": 3.0,
+      "d": 3.5,
+      "rot": 90,
+      "seats": 0,
+      "zone": "SEMI_PUBLIC"
+    },
+    {
+      "id": "lounge_1",
+      "module": "lounge",
+      "x": 34.4,
+      "y": 1.3,
+      "w": 5.0,
+      "d": 3.5,
+      "rot": 0,
+      "seats": 0,
+      "zone": "SEMI_PUBLIC"
+    },
+    {
+      "id": "kitchenette_1",
+      "module": "kitchenette",
+      "x": 1.2,
+      "y": 10.4,
+      "w": 4.0,
+      "d": 3.0,
+      "rot": 90,
+      "seats": 0,
+      "zone": "SUPPORT"
+    },
+    {
+      "id": "phone_booth_1",
+      "module": "phone_booth",
+      "x": 10.4,
+      "y": 3.6,
+      "w": 1.2,
+      "d": 1.4,
+      "rot": 0,
+      "seats": 0,
+      "zone": "SUPPORT"
+    },
+    {
+      "id": "phone_booth_2",
+      "module": "phone_booth",
+      "x": 10.8,
+      "y": 13.0,
+      "w": 1.2,
+      "d": 1.4,
+      "rot": 0,
+      "seats": 0,
+      "zone": "SUPPORT"
+    },
+    {
+      "id": "phone_booth_3",
+      "module": "phone_booth",
+      "x": 10.8,
+      "y": 16.0,
+      "w": 1.4,
+      "d": 1.2,
+      "rot": 90,
+      "seats": 0,
+      "zone": "SUPPORT"
+    },
+    {
+      "id": "workstation_cluster_1",
+      "module": "workstation_cluster",
+      "x": 0.4,
+      "y": 6.4,
+      "w": 4.8,
+      "d": 3.2,
+      "rot": 0,
+      "seats": 6,
+      "zone": "WORK"
+    },
+    {
+      "id": "workstation_cluster_2",
+      "module": "workstation_cluster",
+      "x": 6.4,
+      "y": 11.2,
+      "w": 3.2,
+      "d": 8.0,
+      "rot": 0,
+      "seats": 10,
+      "zone": "WORK"
+    },
+    {
+      "id": "workstation_cluster_3",
+      "module": "workstation_cluster",
+      "x": 6.4,
+      "y": 6.4,
+      "w": 3.2,
+      "d": 4.8,
+      "rot": 0,
+      "seats": 6,
+      "zone": "WORK"
+    },
+    {
+      "id": "workstation_cluster_4",
+      "module": "workstation_cluster",
+      "x": 6.0,
+      "y": 0.0,
+      "w": 3.2,
+      "d": 4.8,
+      "rot": 0,
+      "seats": 6,
+      "zone": "WORK"
+    },
+    {
+      "id": "workstation_row_5",
+      "module": "workstation_row",
+      "x": 21.6,
+      "y": 6.0,
+      "w": 8.0,
+      "d": 1.6,
+      "rot": 0,
+      "seats": 5,
+      "zone": "WORK"
+    },
+    {
+      "id": "workstation_row_6",
+      "module": "workstation_row",
+      "x": 15.2,
+      "y": 6.0,
+      "w": 6.4,
+      "d": 1.6,
+      "rot": 0,
+      "seats": 4,
+      "zone": "WORK"
+    },
+    {
+      "id": "workstation_row_7",
+      "module": "workstation_row",
+      "x": 10.8,
+      "y": 7.4,
+      "w": 1.6,
+      "d": 4.8,
+      "rot": 0,
+      "seats": 3,
+      "zone": "WORK"
+    }
+  ],
+  "svg": {
+    "technical": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1800\" height=\"1212\" viewBox=\"0 0 1800 1212\" font-family=\"Helvetica,Arial,sans-serif\">\n<rect width=\"100%\" height=\"100%\" fill=\"#ffffff\"/>\n<polygon points=\"60.0,219.0 60.0,881.0 154.9,881.0 154.9,1002.0 733.9,1002.0 738.6,973.6 1078.0,973.6 1078.0,999.7 1659.3,999.7 1659.3,859.7 1740.0,859.7 1740.0,465.8 1241.7,465.8 1241.7,667.5 563.1,667.5 563.1,214.2 211.9,214.2 192.9,264.1 131.2,219.0 60.0,219.0\" fill=\"#ffffff\" stroke=\"none\"/>\n<rect x=\"583.5\" y=\"859.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"599.3\" y=\"859.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"615.2\" y=\"859.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"583.5\" y=\"843.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"599.3\" y=\"843.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"615.2\" y=\"843.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"583.5\" y=\"827.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"599.3\" y=\"827.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"615.2\" y=\"827.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"583.5\" y=\"811.7\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"599.3\" y=\"811.7\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"615.2\" y=\"811.7\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"424.9\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"520.0\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"535.9\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"551.8\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"567.6\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"583.5\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"599.3\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"615.2\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"631.1\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"646.9\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"662.8\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"678.7\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"694.5\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"710.4\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"726.3\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"742.1\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"758.0\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"773.8\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"789.7\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"805.6\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"821.4\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"837.3\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"853.2\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"869.0\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"884.9\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"900.8\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"916.6\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"932.5\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"948.3\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"964.2\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"980.1\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"995.9\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1011.8\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1027.7\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1043.5\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1059.4\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1075.2\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1091.1\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1107.0\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1122.8\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1138.7\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1154.6\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1170.4\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1186.3\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1202.2\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1218.0\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1233.9\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1249.7\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1265.6\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1281.5\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1297.3\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1376.6\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1392.5\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1408.4\" y=\"795.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"266.2\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"282.1\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"297.9\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"313.8\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"329.7\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"345.5\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"361.4\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"377.3\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"393.1\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"409.0\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"424.9\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"488.3\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"504.2\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"520.0\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"535.9\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"551.8\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"567.6\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"583.5\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"599.3\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"615.2\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"631.1\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"646.9\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"662.8\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"678.7\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"694.5\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"710.4\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"726.3\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"742.1\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"758.0\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"773.8\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"789.7\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"805.6\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"821.4\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"837.3\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"853.2\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"869.0\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"884.9\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"900.8\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"916.6\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"932.5\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"948.3\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"964.2\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"980.1\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"995.9\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1011.8\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1027.7\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1043.5\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1059.4\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1075.2\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1091.1\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1107.0\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1122.8\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1138.7\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1154.6\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1170.4\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1186.3\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1202.2\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1218.0\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1233.9\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1249.7\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1265.6\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1281.5\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1297.3\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1360.8\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1376.6\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1392.5\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1408.4\" y=\"779.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"266.2\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"282.1\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"297.9\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"313.8\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"329.7\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"345.5\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"361.4\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"377.3\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"393.1\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"409.0\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"424.9\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"488.3\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"504.2\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"520.0\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"535.9\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"551.8\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"567.6\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"583.5\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"599.3\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"615.2\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"631.1\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"646.9\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"662.8\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"678.7\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"694.5\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"710.4\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"726.3\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"742.1\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"758.0\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"773.8\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"789.7\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"805.6\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"821.4\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"837.3\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"853.2\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"869.0\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"884.9\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"900.8\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"916.6\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"932.5\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"948.3\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"964.2\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"980.1\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"995.9\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1011.8\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1027.7\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1043.5\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1059.4\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1075.2\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1091.1\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1107.0\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1122.8\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1138.7\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1154.6\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1170.4\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1186.3\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1202.2\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1218.0\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1233.9\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1249.7\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1265.6\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1281.5\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1297.3\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1344.9\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1360.8\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1376.6\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1392.5\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1408.4\" y=\"764.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"266.2\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"282.1\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"297.9\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"313.8\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"329.7\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"345.5\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"361.4\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"377.3\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"393.1\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"409.0\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"424.9\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"488.3\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"504.2\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"520.0\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"535.9\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"567.6\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"583.5\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"599.3\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"615.2\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"631.1\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1233.9\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1249.7\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1265.6\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1281.5\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1297.3\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1313.2\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1329.1\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1344.9\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1360.8\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1376.6\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1392.5\" y=\"748.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"266.2\" y=\"732.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"282.1\" y=\"732.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"297.9\" y=\"732.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"732.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"732.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"732.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"488.3\" y=\"732.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"504.2\" y=\"732.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"551.8\" y=\"732.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"567.6\" y=\"732.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"583.5\" y=\"732.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"599.3\" y=\"732.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"615.2\" y=\"732.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1233.9\" y=\"732.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1249.7\" y=\"732.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1265.6\" y=\"732.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1281.5\" y=\"732.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1297.3\" y=\"732.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1313.2\" y=\"732.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1329.1\" y=\"732.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1344.9\" y=\"732.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1360.8\" y=\"732.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1376.6\" y=\"732.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"266.2\" y=\"716.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"282.1\" y=\"716.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"297.9\" y=\"716.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"716.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"716.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"716.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"488.3\" y=\"716.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"551.8\" y=\"716.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"567.6\" y=\"716.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"583.5\" y=\"716.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"599.3\" y=\"716.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1233.9\" y=\"716.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1249.7\" y=\"716.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1265.6\" y=\"716.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1281.5\" y=\"716.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1297.3\" y=\"716.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1313.2\" y=\"716.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1329.1\" y=\"716.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1344.9\" y=\"716.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1360.8\" y=\"716.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"266.2\" y=\"700.6\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"282.1\" y=\"700.6\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"297.9\" y=\"700.6\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"700.6\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"700.6\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"700.6\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"551.8\" y=\"700.6\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"567.6\" y=\"700.6\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"583.5\" y=\"700.6\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1233.9\" y=\"700.6\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1249.7\" y=\"700.6\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1265.6\" y=\"700.6\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1281.5\" y=\"700.6\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1297.3\" y=\"700.6\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"266.2\" y=\"684.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"282.1\" y=\"684.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"297.9\" y=\"684.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"684.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"684.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"684.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1233.9\" y=\"684.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1249.7\" y=\"684.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1265.6\" y=\"684.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1281.5\" y=\"684.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"266.2\" y=\"668.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"282.1\" y=\"668.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"297.9\" y=\"668.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"668.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"668.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"668.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1233.9\" y=\"668.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1249.7\" y=\"668.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1265.6\" y=\"668.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"266.2\" y=\"653.0\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"282.1\" y=\"653.0\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"297.9\" y=\"653.0\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"653.0\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"653.0\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"653.0\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1233.9\" y=\"653.0\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1249.7\" y=\"653.0\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1265.6\" y=\"653.0\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"266.2\" y=\"637.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"282.1\" y=\"637.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"297.9\" y=\"637.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"637.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"637.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"637.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1233.9\" y=\"637.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1249.7\" y=\"637.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1265.6\" y=\"637.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"266.2\" y=\"621.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"282.1\" y=\"621.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"297.9\" y=\"621.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"621.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"621.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"621.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1233.9\" y=\"621.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1249.7\" y=\"621.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1265.6\" y=\"621.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"266.2\" y=\"605.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"282.1\" y=\"605.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"297.9\" y=\"605.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"605.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"605.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"605.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1233.9\" y=\"605.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1249.7\" y=\"605.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1265.6\" y=\"605.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"266.2\" y=\"589.6\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"282.1\" y=\"589.6\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"297.9\" y=\"589.6\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"589.6\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"589.6\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"589.6\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1233.9\" y=\"589.6\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1249.7\" y=\"589.6\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1265.6\" y=\"589.6\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"266.2\" y=\"573.7\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"282.1\" y=\"573.7\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"297.9\" y=\"573.7\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"573.7\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"573.7\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"573.7\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1233.9\" y=\"573.7\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1249.7\" y=\"573.7\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1265.6\" y=\"573.7\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"266.2\" y=\"557.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"282.1\" y=\"557.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"297.9\" y=\"557.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"557.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"557.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"557.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1233.9\" y=\"557.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1249.7\" y=\"557.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1265.6\" y=\"557.9\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"266.2\" y=\"542.0\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"282.1\" y=\"542.0\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"297.9\" y=\"542.0\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"542.0\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"542.0\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"542.0\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1233.9\" y=\"542.0\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1249.7\" y=\"542.0\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1265.6\" y=\"542.0\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1440.1\" y=\"542.0\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1456.0\" y=\"542.0\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1471.8\" y=\"542.0\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"266.2\" y=\"526.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"282.1\" y=\"526.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"297.9\" y=\"526.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"526.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"526.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"526.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1233.9\" y=\"526.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1249.7\" y=\"526.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1265.6\" y=\"526.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1281.5\" y=\"526.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1297.3\" y=\"526.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1313.2\" y=\"526.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1329.1\" y=\"526.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1344.9\" y=\"526.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1360.8\" y=\"526.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1376.6\" y=\"526.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1392.5\" y=\"526.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1408.4\" y=\"526.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1424.2\" y=\"526.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1440.1\" y=\"526.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1456.0\" y=\"526.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1471.8\" y=\"526.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"266.2\" y=\"510.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"282.1\" y=\"510.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"297.9\" y=\"510.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"510.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"510.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"510.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1233.9\" y=\"510.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1249.7\" y=\"510.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1265.6\" y=\"510.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1281.5\" y=\"510.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1297.3\" y=\"510.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1313.2\" y=\"510.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1329.1\" y=\"510.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1344.9\" y=\"510.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1360.8\" y=\"510.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1376.6\" y=\"510.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1392.5\" y=\"510.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1408.4\" y=\"510.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1424.2\" y=\"510.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1440.1\" y=\"510.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1456.0\" y=\"510.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1471.8\" y=\"510.3\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"266.2\" y=\"494.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"282.1\" y=\"494.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"297.9\" y=\"494.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"494.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"494.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"494.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1233.9\" y=\"494.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1249.7\" y=\"494.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1265.6\" y=\"494.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1281.5\" y=\"494.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1297.3\" y=\"494.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1313.2\" y=\"494.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1329.1\" y=\"494.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1344.9\" y=\"494.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1360.8\" y=\"494.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1376.6\" y=\"494.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1392.5\" y=\"494.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1408.4\" y=\"494.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1424.2\" y=\"494.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1440.1\" y=\"494.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1456.0\" y=\"494.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"266.2\" y=\"478.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"282.1\" y=\"478.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"297.9\" y=\"478.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"478.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"478.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"478.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"266.2\" y=\"462.7\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"282.1\" y=\"462.7\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"297.9\" y=\"462.7\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"462.7\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"462.7\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"462.7\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"446.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"446.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"446.8\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"431.0\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"431.0\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"431.0\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"415.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"415.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"415.1\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"399.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"399.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"399.2\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"383.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"383.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"383.4\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"440.7\" y=\"367.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"456.6\" y=\"367.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"472.4\" y=\"367.5\" width=\"16.4\" height=\"16.4\" fill=\"#fff2cc\" stroke=\"none\"/>\n<rect x=\"1440.1\" y=\"565.8\" width=\"285.5\" height=\"198.3\" fill=\"#eaf5ee\" stroke=\"#222\" stroke-width=\"1.4\"/>\n<rect x=\"1499.6\" y=\"637.2\" width=\"166.6\" height=\"55.5\" rx=\"3\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1513.5\" cy=\"623.3\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1513.5\" cy=\"706.6\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1541.2\" cy=\"623.3\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1541.2\" cy=\"706.6\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1569.0\" cy=\"623.3\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1569.0\" cy=\"706.6\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1596.8\" cy=\"623.3\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1596.8\" cy=\"706.6\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1624.5\" cy=\"623.3\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1624.5\" cy=\"706.6\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1652.3\" cy=\"623.3\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1652.3\" cy=\"706.6\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1463.9\" cy=\"565.8\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#222\" stroke-width=\"1\"/>\n<line x1=\"1446.0\" y1=\"565.8\" x2=\"1481.7\" y2=\"565.8\" stroke=\"#222\" stroke-width=\"1\"/>\n<text x=\"1582.9\" y=\"720.5\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">boardroom_12_1 · 7.2×5.0</text>\n<rect x=\"1313.2\" y=\"542.0\" width=\"119.0\" height=\"178.5\" fill=\"#fbf1e6\" stroke=\"#222\" stroke-width=\"1.4\"/>\n<rect x=\"1325.1\" y=\"553.9\" width=\"27.8\" height=\"95.2\" rx=\"6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1.2\"/>\n<rect x=\"1396.5\" y=\"557.9\" width=\"23.8\" height=\"23.8\" rx=\"3\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"1396.5\" y=\"589.6\" width=\"23.8\" height=\"23.8\" rx=\"3\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"1396.5\" y=\"621.3\" width=\"23.8\" height=\"23.8\" rx=\"3\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1313.2\" cy=\"542.0\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#222\" stroke-width=\"1\"/>\n<line x1=\"1295.3\" y1=\"542.0\" x2=\"1331.0\" y2=\"542.0\" stroke=\"#222\" stroke-width=\"1\"/>\n<text x=\"1372.7\" y=\"681.2\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">reception_1 · 3.0×4.5</text>\n<rect x=\"1107.0\" y=\"811.7\" width=\"198.3\" height=\"158.6\" fill=\"#eaf5ee\" stroke=\"#222\" stroke-width=\"1.4\"/>\n<rect x=\"1158.5\" y=\"871.2\" width=\"95.2\" height=\"39.7\" rx=\"3\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1170.4\" cy=\"857.3\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1170.4\" cy=\"924.7\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1194.2\" cy=\"857.3\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1194.2\" cy=\"924.7\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1218.0\" cy=\"857.3\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1218.0\" cy=\"924.7\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1241.8\" cy=\"857.3\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1241.8\" cy=\"924.7\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1257.7\" cy=\"811.7\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#222\" stroke-width=\"1\"/>\n<line x1=\"1239.8\" y1=\"811.7\" x2=\"1275.5\" y2=\"811.7\" stroke=\"#222\" stroke-width=\"1\"/>\n<text x=\"1206.1\" y=\"935.4\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">meeting_8_1 · 5.0×4.0</text>\n<rect x=\"107.6\" y=\"272.3\" width=\"158.6\" height=\"198.3\" fill=\"#f5f0ea\" stroke=\"#222\" stroke-width=\"1.4\"/>\n<rect x=\"123.5\" y=\"306.0\" width=\"47.6\" height=\"31.7\" rx=\"2\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"202.8\" y=\"306.0\" width=\"47.6\" height=\"31.7\" rx=\"2\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"123.5\" y=\"405.2\" width=\"47.6\" height=\"31.7\" rx=\"2\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"202.8\" y=\"405.2\" width=\"47.6\" height=\"31.7\" rx=\"2\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"266.2\" cy=\"470.6\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#222\" stroke-width=\"1\"/>\n<line x1=\"248.4\" y1=\"470.6\" x2=\"284.1\" y2=\"470.6\" stroke=\"#222\" stroke-width=\"1\"/>\n<text x=\"186.9\" y=\"427.0\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">dining_1 · 4.0×5.0</text>\n<rect x=\"179.0\" y=\"795.8\" width=\"119.0\" height=\"158.6\" fill=\"#eef3fb\" stroke=\"#222\" stroke-width=\"1.4\"/>\n<rect x=\"222.6\" y=\"839.4\" width=\"31.7\" height=\"71.4\" rx=\"2\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"238.5\" cy=\"875.1\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"297.9\" cy=\"795.8\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#222\" stroke-width=\"1\"/>\n<line x1=\"280.1\" y1=\"795.8\" x2=\"315.8\" y2=\"795.8\" stroke=\"#222\" stroke-width=\"1\"/>\n<text x=\"238.5\" y=\"919.5\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">private_office_1 · 3.0×4.0</text>\n<rect x=\"631.1\" y=\"811.7\" width=\"119.0\" height=\"158.6\" fill=\"#eef3fb\" stroke=\"#222\" stroke-width=\"1.4\"/>\n<rect x=\"674.7\" y=\"855.3\" width=\"31.7\" height=\"71.4\" rx=\"2\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"690.6\" cy=\"891.0\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"750.1\" cy=\"811.7\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#222\" stroke-width=\"1\"/>\n<line x1=\"732.2\" y1=\"811.7\" x2=\"767.9\" y2=\"811.7\" stroke=\"#222\" stroke-width=\"1\"/>\n<text x=\"690.6\" y=\"935.4\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">private_office_2 · 3.0×4.0</text>\n<rect x=\"1305.3\" y=\"811.7\" width=\"119.0\" height=\"158.6\" fill=\"#eef3fb\" stroke=\"#222\" stroke-width=\"1.4\"/>\n<rect x=\"1348.9\" y=\"855.3\" width=\"31.7\" height=\"71.4\" rx=\"2\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1364.8\" cy=\"891.0\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1305.3\" cy=\"811.7\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#222\" stroke-width=\"1\"/>\n<line x1=\"1287.4\" y1=\"811.7\" x2=\"1323.1\" y2=\"811.7\" stroke=\"#222\" stroke-width=\"1\"/>\n<text x=\"1364.8\" y=\"935.4\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">private_office_3 · 3.0×4.0</text>\n<rect x=\"472.4\" y=\"883.1\" width=\"158.6\" height=\"119.0\" fill=\"#eef3fb\" stroke=\"#222\" stroke-width=\"1.4\"/>\n<rect x=\"516.1\" y=\"926.7\" width=\"71.4\" height=\"31.7\" rx=\"2\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"551.8\" cy=\"972.3\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"607.3\" cy=\"883.1\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#222\" stroke-width=\"1\"/>\n<line x1=\"589.4\" y1=\"883.1\" x2=\"625.1\" y2=\"883.1\" stroke=\"#222\" stroke-width=\"1\"/>\n<text x=\"551.8\" y=\"975.9\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">private_office_4 · 4.0×3.0</text>\n<rect x=\"988.0\" y=\"811.7\" width=\"119.0\" height=\"138.8\" fill=\"#eaf5ee\" stroke=\"#222\" stroke-width=\"1.4\"/>\n<rect x=\"1031.6\" y=\"849.4\" width=\"31.7\" height=\"63.5\" rx=\"3\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1017.7\" cy=\"865.2\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1077.2\" cy=\"865.2\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1017.7\" cy=\"896.9\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1077.2\" cy=\"896.9\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1107.0\" cy=\"811.7\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#222\" stroke-width=\"1\"/>\n<line x1=\"1089.1\" y1=\"811.7\" x2=\"1124.8\" y2=\"811.7\" stroke=\"#222\" stroke-width=\"1\"/>\n<text x=\"1047.5\" y=\"919.9\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">meeting_4_1 · 3.0×3.5</text>\n<rect x=\"869.0\" y=\"811.7\" width=\"119.0\" height=\"138.8\" fill=\"#eaf5ee\" stroke=\"#222\" stroke-width=\"1.4\"/>\n<rect x=\"912.6\" y=\"849.4\" width=\"31.7\" height=\"63.5\" rx=\"3\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"898.8\" cy=\"865.2\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"958.3\" cy=\"865.2\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"898.8\" cy=\"896.9\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"958.3\" cy=\"896.9\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"988.0\" cy=\"811.7\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#222\" stroke-width=\"1\"/>\n<line x1=\"970.2\" y1=\"811.7\" x2=\"1005.8\" y2=\"811.7\" stroke=\"#222\" stroke-width=\"1\"/>\n<text x=\"928.5\" y=\"919.9\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">meeting_4_2 · 3.0×3.5</text>\n<rect x=\"750.1\" y=\"811.7\" width=\"119.0\" height=\"138.8\" fill=\"#eaf5ee\" stroke=\"#222\" stroke-width=\"1.4\"/>\n<rect x=\"793.7\" y=\"849.4\" width=\"31.7\" height=\"63.5\" rx=\"3\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"779.8\" cy=\"865.2\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"839.3\" cy=\"865.2\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"779.8\" cy=\"896.9\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"839.3\" cy=\"896.9\" r=\"8.7\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"869.0\" cy=\"811.7\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#222\" stroke-width=\"1\"/>\n<line x1=\"851.2\" y1=\"811.7\" x2=\"886.9\" y2=\"811.7\" stroke=\"#222\" stroke-width=\"1\"/>\n<text x=\"809.5\" y=\"919.9\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">meeting_4_3 · 3.0×3.5</text>\n<rect x=\"1424.2\" y=\"811.7\" width=\"198.3\" height=\"138.8\" fill=\"#eaf5ee\" stroke=\"#222\" stroke-width=\"1.4\"/>\n<rect x=\"1440.1\" y=\"827.5\" width=\"79.3\" height=\"31.7\" rx=\"6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"1440.1\" y=\"902.9\" width=\"79.3\" height=\"31.7\" rx=\"6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"1539.2\" y=\"865.2\" width=\"35.7\" height=\"31.7\" rx=\"6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1424.2\" cy=\"811.7\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#222\" stroke-width=\"1\"/>\n<line x1=\"1406.4\" y1=\"811.7\" x2=\"1442.1\" y2=\"811.7\" stroke=\"#222\" stroke-width=\"1\"/>\n<text x=\"1523.4\" y=\"919.9\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">lounge_1 · 5.0×3.5</text>\n<rect x=\"107.6\" y=\"470.6\" width=\"158.6\" height=\"119.0\" fill=\"#f5f0ea\" stroke=\"#222\" stroke-width=\"1.4\"/>\n<rect x=\"111.6\" y=\"474.6\" width=\"150.7\" height=\"23.8\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"266.2\" cy=\"589.6\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#222\" stroke-width=\"1\"/>\n<line x1=\"248.4\" y1=\"589.6\" x2=\"284.1\" y2=\"589.6\" stroke=\"#222\" stroke-width=\"1\"/>\n<text x=\"186.9\" y=\"563.4\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">kitchenette_1 · 4.0×3.0</text>\n<rect x=\"472.4\" y=\"803.7\" width=\"47.6\" height=\"55.5\" fill=\"#f5f0ea\" stroke=\"#222\" stroke-width=\"1.4\"/>\n<rect x=\"484.3\" y=\"823.6\" width=\"23.8\" height=\"15.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"520.0\" cy=\"803.7\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#222\" stroke-width=\"1\"/>\n<line x1=\"502.2\" y1=\"803.7\" x2=\"537.9\" y2=\"803.7\" stroke=\"#222\" stroke-width=\"1\"/>\n<text x=\"496.2\" y=\"831.5\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">phone_booth_1 · 1.2×1.4</text>\n<rect x=\"488.3\" y=\"431.0\" width=\"47.6\" height=\"55.5\" fill=\"#f5f0ea\" stroke=\"#222\" stroke-width=\"1.4\"/>\n<rect x=\"500.2\" y=\"450.8\" width=\"23.8\" height=\"15.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"488.3\" cy=\"486.5\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#222\" stroke-width=\"1\"/>\n<line x1=\"470.5\" y1=\"486.5\" x2=\"506.2\" y2=\"486.5\" stroke=\"#222\" stroke-width=\"1\"/>\n<text x=\"512.1\" y=\"458.7\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">phone_booth_2 · 1.2×1.4</text>\n<rect x=\"488.3\" y=\"319.9\" width=\"55.5\" height=\"47.6\" fill=\"#f5f0ea\" stroke=\"#222\" stroke-width=\"1.4\"/>\n<rect x=\"504.2\" y=\"335.8\" width=\"23.8\" height=\"15.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"488.3\" cy=\"367.5\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#222\" stroke-width=\"1\"/>\n<line x1=\"470.5\" y1=\"367.5\" x2=\"506.2\" y2=\"367.5\" stroke=\"#222\" stroke-width=\"1\"/>\n<text x=\"516.1\" y=\"343.7\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">phone_booth_3 · 1.4×1.2</text>\n<rect x=\"75.9\" y=\"621.3\" width=\"190.4\" height=\"126.9\" fill=\"#eef3fb\" stroke=\"#7a8aa6\" stroke-width=\"1\"/>\n<rect x=\"75.9\" y=\"684.8\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"79.0\" y=\"687.9\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"107.6\" cy=\"732.4\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"139.3\" y=\"684.8\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"142.5\" y=\"687.9\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"171.0\" cy=\"732.4\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"202.8\" y=\"684.8\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"205.9\" y=\"687.9\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"234.5\" cy=\"732.4\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"75.9\" y=\"621.3\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"79.0\" y=\"624.5\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"107.6\" cy=\"668.9\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"139.3\" y=\"621.3\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"142.5\" y=\"624.5\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"171.0\" cy=\"668.9\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"202.8\" y=\"621.3\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"205.9\" y=\"624.5\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"234.5\" cy=\"668.9\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"313.8\" y=\"240.6\" width=\"126.9\" height=\"317.3\" fill=\"#eef3fb\" stroke=\"#7a8aa6\" stroke-width=\"1\"/>\n<rect x=\"313.8\" y=\"494.4\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"317.0\" y=\"497.6\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"345.5\" cy=\"542.0\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"377.3\" y=\"494.4\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"380.4\" y=\"497.6\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"409.0\" cy=\"542.0\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"313.8\" y=\"431.0\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"317.0\" y=\"434.1\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"345.5\" cy=\"478.5\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"377.3\" y=\"431.0\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"380.4\" y=\"434.1\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"409.0\" cy=\"478.5\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"313.8\" y=\"367.5\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"317.0\" y=\"370.7\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"345.5\" cy=\"415.1\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"377.3\" y=\"367.5\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"380.4\" y=\"370.7\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"409.0\" cy=\"415.1\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"313.8\" y=\"304.1\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"317.0\" y=\"307.2\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"345.5\" cy=\"351.6\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"377.3\" y=\"304.1\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"380.4\" y=\"307.2\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"409.0\" cy=\"351.6\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"313.8\" y=\"240.6\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"317.0\" y=\"243.8\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"345.5\" cy=\"288.2\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"377.3\" y=\"240.6\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"380.4\" y=\"243.8\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"409.0\" cy=\"288.2\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"313.8\" y=\"557.9\" width=\"126.9\" height=\"190.4\" fill=\"#eef3fb\" stroke=\"#7a8aa6\" stroke-width=\"1\"/>\n<rect x=\"313.8\" y=\"684.8\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"317.0\" y=\"687.9\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"345.5\" cy=\"732.4\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"377.3\" y=\"684.8\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"380.4\" y=\"687.9\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"409.0\" cy=\"732.4\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"313.8\" y=\"621.3\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"317.0\" y=\"624.5\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"345.5\" cy=\"668.9\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"377.3\" y=\"621.3\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"380.4\" y=\"624.5\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"409.0\" cy=\"668.9\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"313.8\" y=\"557.9\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"317.0\" y=\"561.0\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"345.5\" cy=\"605.5\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"377.3\" y=\"557.9\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"380.4\" y=\"561.0\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"409.0\" cy=\"605.5\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"297.9\" y=\"811.7\" width=\"126.9\" height=\"190.4\" fill=\"#eef3fb\" stroke=\"#7a8aa6\" stroke-width=\"1\"/>\n<rect x=\"297.9\" y=\"938.6\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"301.1\" y=\"941.8\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"329.7\" cy=\"986.2\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"361.4\" y=\"938.6\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"364.6\" y=\"941.8\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"393.1\" cy=\"986.2\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"297.9\" y=\"875.1\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"301.1\" y=\"878.3\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"329.7\" cy=\"922.7\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"361.4\" y=\"875.1\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"364.6\" y=\"878.3\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"393.1\" cy=\"922.7\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"297.9\" y=\"811.7\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"301.1\" y=\"814.8\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"329.7\" cy=\"859.3\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"361.4\" y=\"811.7\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"364.6\" y=\"814.8\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"393.1\" cy=\"859.3\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"916.6\" y=\"700.6\" width=\"317.3\" height=\"63.5\" fill=\"#eef3fb\" stroke=\"#7a8aa6\" stroke-width=\"1\"/>\n<rect x=\"916.6\" y=\"700.6\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"919.8\" y=\"703.8\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"948.3\" cy=\"748.2\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"980.1\" y=\"700.6\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"983.2\" y=\"703.8\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1011.8\" cy=\"748.2\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"1043.5\" y=\"700.6\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"1046.7\" y=\"703.8\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1075.2\" cy=\"748.2\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"1107.0\" y=\"700.6\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"1110.1\" y=\"703.8\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1138.7\" cy=\"748.2\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"1170.4\" y=\"700.6\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"1173.6\" y=\"703.8\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"1202.2\" cy=\"748.2\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"662.8\" y=\"700.6\" width=\"253.8\" height=\"63.5\" fill=\"#eef3fb\" stroke=\"#7a8aa6\" stroke-width=\"1\"/>\n<rect x=\"662.8\" y=\"700.6\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"666.0\" y=\"703.8\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"694.5\" cy=\"748.2\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"726.3\" y=\"700.6\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"729.4\" y=\"703.8\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"758.0\" cy=\"748.2\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"789.7\" y=\"700.6\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"792.9\" y=\"703.8\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"821.4\" cy=\"748.2\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"853.2\" y=\"700.6\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"856.3\" y=\"703.8\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"884.9\" cy=\"748.2\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"488.3\" y=\"518.2\" width=\"63.5\" height=\"190.4\" fill=\"#eef3fb\" stroke=\"#7a8aa6\" stroke-width=\"1\"/>\n<rect x=\"488.3\" y=\"645.1\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"491.5\" y=\"648.3\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"520.0\" cy=\"692.7\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"488.3\" y=\"581.7\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"491.5\" y=\"584.8\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"520.0\" cy=\"629.2\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<rect x=\"488.3\" y=\"518.2\" width=\"63.5\" height=\"63.5\" fill=\"none\" stroke=\"#7a8aa6\" stroke-width=\"0.8\" stroke-dasharray=\"3,2\"/>\n<rect x=\"491.5\" y=\"521.4\" width=\"57.1\" height=\"28.6\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<circle cx=\"520.0\" cy=\"565.8\" r=\"8.9\" fill=\"none\" stroke=\"#33415c\" stroke-width=\"1\"/>\n<polygon points=\"577.3,216.6 662.7,211.9 781.4,60.0 895.3,107.5 909.5,69.5 1075.6,69.5 1127.8,112.2 1137.3,211.9 1218.0,226.1 1213.2,639.0 582.0,653.2 577.3,216.6\" fill=\"#d9d9d9\" stroke=\"#444\" stroke-width=\"1.6\"/>\n<text x=\"899.9\" y=\"381.6\" font-size=\"13\" text-anchor=\"middle\" fill=\"#555\">NÚCLEO</text>\n<polygon points=\"192.6,252.3 192.6,220.6 160.9,220.6 160.9,252.3 192.6,252.3\" fill=\"#222\" stroke=\"none\"/>\n<polygon points=\"517.5,252.3 517.5,220.6 485.8,220.6 485.8,252.3 517.5,252.3\" fill=\"#222\" stroke=\"none\"/>\n<polygon points=\"518.6,480.5 518.6,448.8 486.9,448.8 486.9,480.5 518.6,480.5\" fill=\"#222\" stroke=\"none\"/>\n<polygon points=\"1318.4,484.2 1318.4,452.5 1286.7,452.5 1286.7,484.2 1318.4,484.2\" fill=\"#222\" stroke=\"none\"/>\n<polygon points=\"1645.8,484.2 1645.8,452.5 1614.1,452.5 1614.1,484.2 1645.8,484.2\" fill=\"#222\" stroke=\"none\"/>\n<polygon points=\"185.3,487.8 185.3,456.1 153.5,456.1 153.5,487.8 185.3,487.8\" fill=\"#222\" stroke=\"none\"/>\n<polygon points=\"1318.4,863.2 1318.4,831.5 1286.7,831.5 1286.7,863.2 1318.4,863.2\" fill=\"#222\" stroke=\"none\"/>\n<polygon points=\"188.9,864.9 188.9,833.2 157.2,833.2 157.2,864.9 188.9,864.9\" fill=\"#222\" stroke=\"none\"/>\n<polygon points=\"516.4,866.6 516.4,834.9 484.6,834.9 484.6,866.6 516.4,866.6\" fill=\"#222\" stroke=\"none\"/>\n<polygon points=\"1660.9,858.9 1660.9,827.2 1629.2,827.2 1629.2,858.9 1660.9,858.9\" fill=\"#222\" stroke=\"none\"/>\n<polygon points=\"60.0,219.0 60.0,881.0 154.9,881.0 154.9,1002.0 733.9,1002.0 738.6,973.6 1078.0,973.6 1078.0,999.7 1659.3,999.7 1659.3,859.7 1740.0,859.7 1740.0,465.8 1241.7,465.8 1241.7,667.5 563.1,667.5 563.1,214.2 211.9,214.2 192.9,264.1 131.2,219.0 60.0,219.0\" fill=\"none\" stroke=\"#111\" stroke-width=\"2.6\"/>\n<circle cx=\"1241.7\" cy=\"513.2\" r=\"9\" fill=\"#ffffff\" stroke=\"#c0392b\" stroke-width=\"3\"/>\n<text x=\"1253.7\" y=\"503.2\" font-size=\"12\" fill=\"#c0392b\" font-weight=\"bold\">ACCESO</text>\n<line x1=\"1241.7\" y1=\"513.2\" x2=\"1463.9\" y2=\"565.8\" stroke=\"#c9a227\" stroke-width=\"0.6\" opacity=\"0.5\"/>\n<line x1=\"1241.7\" y1=\"513.2\" x2=\"1313.2\" y2=\"542.0\" stroke=\"#c9a227\" stroke-width=\"0.6\" opacity=\"0.5\"/>\n<line x1=\"1241.7\" y1=\"513.2\" x2=\"1257.7\" y2=\"811.7\" stroke=\"#c9a227\" stroke-width=\"0.6\" opacity=\"0.5\"/>\n<line x1=\"1241.7\" y1=\"513.2\" x2=\"266.2\" y2=\"470.6\" stroke=\"#c9a227\" stroke-width=\"0.6\" opacity=\"0.5\"/>\n<line x1=\"1241.7\" y1=\"513.2\" x2=\"297.9\" y2=\"795.8\" stroke=\"#c9a227\" stroke-width=\"0.6\" opacity=\"0.5\"/>\n<line x1=\"1241.7\" y1=\"513.2\" x2=\"750.1\" y2=\"811.7\" stroke=\"#c9a227\" stroke-width=\"0.6\" opacity=\"0.5\"/>\n<line x1=\"1241.7\" y1=\"513.2\" x2=\"1305.3\" y2=\"811.7\" stroke=\"#c9a227\" stroke-width=\"0.6\" opacity=\"0.5\"/>\n<line x1=\"1241.7\" y1=\"513.2\" x2=\"607.3\" y2=\"883.1\" stroke=\"#c9a227\" stroke-width=\"0.6\" opacity=\"0.5\"/>\n<line x1=\"1241.7\" y1=\"513.2\" x2=\"1107.0\" y2=\"811.7\" stroke=\"#c9a227\" stroke-width=\"0.6\" opacity=\"0.5\"/>\n<line x1=\"1241.7\" y1=\"513.2\" x2=\"988.0\" y2=\"811.7\" stroke=\"#c9a227\" stroke-width=\"0.6\" opacity=\"0.5\"/>\n<line x1=\"1241.7\" y1=\"513.2\" x2=\"869.0\" y2=\"811.7\" stroke=\"#c9a227\" stroke-width=\"0.6\" opacity=\"0.5\"/>\n<line x1=\"1241.7\" y1=\"513.2\" x2=\"1424.2\" y2=\"811.7\" stroke=\"#c9a227\" stroke-width=\"0.6\" opacity=\"0.5\"/>\n<line x1=\"1241.7\" y1=\"513.2\" x2=\"266.2\" y2=\"589.6\" stroke=\"#c9a227\" stroke-width=\"0.6\" opacity=\"0.5\"/>\n<line x1=\"1241.7\" y1=\"513.2\" x2=\"520.0\" y2=\"803.7\" stroke=\"#c9a227\" stroke-width=\"0.6\" opacity=\"0.5\"/>\n<line x1=\"1241.7\" y1=\"513.2\" x2=\"488.3\" y2=\"486.5\" stroke=\"#c9a227\" stroke-width=\"0.6\" opacity=\"0.5\"/>\n<line x1=\"1241.7\" y1=\"513.2\" x2=\"488.3\" y2=\"367.5\" stroke=\"#c9a227\" stroke-width=\"0.6\" opacity=\"0.5\"/>\n<line x1=\"1241.7\" y1=\"513.2\" x2=\"266.2\" y2=\"748.2\" stroke=\"#c9a227\" stroke-width=\"0.6\" opacity=\"0.5\"/>\n<line x1=\"1241.7\" y1=\"513.2\" x2=\"440.7\" y2=\"557.9\" stroke=\"#c9a227\" stroke-width=\"0.6\" opacity=\"0.5\"/>\n<line x1=\"1241.7\" y1=\"513.2\" x2=\"440.7\" y2=\"748.2\" stroke=\"#c9a227\" stroke-width=\"0.6\" opacity=\"0.5\"/>\n<line x1=\"1241.7\" y1=\"513.2\" x2=\"424.9\" y2=\"811.7\" stroke=\"#c9a227\" stroke-width=\"0.6\" opacity=\"0.5\"/>\n<line x1=\"1241.7\" y1=\"513.2\" x2=\"1233.9\" y2=\"700.6\" stroke=\"#c9a227\" stroke-width=\"0.6\" opacity=\"0.5\"/>\n<line x1=\"1241.7\" y1=\"513.2\" x2=\"916.6\" y2=\"764.1\" stroke=\"#c9a227\" stroke-width=\"0.6\" opacity=\"0.5\"/>\n<line x1=\"1241.7\" y1=\"513.2\" x2=\"551.8\" y2=\"708.6\" stroke=\"#c9a227\" stroke-width=\"0.6\" opacity=\"0.5\"/>\n<text x=\"60\" y=\"1086\" font-size=\"16\" fill=\"#111\">A — EFICIENTE — planta técnica (metros, escala 8.36 px/m LOW)</text>\n<text x=\"60\" y=\"1106\" font-size=\"11\" fill=\"#555\">Franjas: gris = puestos · verde = recintos · amarillo = pasillo/conector · sombreado = pasillos usados por el grafo · líneas finas = grafo acceso→puerta</text>\n<text x=\"60\" y=\"1124\" font-size=\"11\" fill=\"#555\">Score 0.5557 · violaciones duras: 0 · seed 1 · Dimensiones sujetas a confirmación de escala.</text>\n<line x1=\"1541.7\" y1=\"1146\" x2=\"1740.0\" y2=\"1146\" stroke=\"#111\" stroke-width=\"3\"/>\n<text x=\"1541.7\" y=\"1140\" font-size=\"11\" fill=\"#111\">5 m</text>\n</svg>",
+    "commercial_base": "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"1800\" height=\"1252\" viewBox=\"0 0 1800 1252\" font-family=\"Helvetica,Arial,sans-serif\">\n<rect width=\"100%\" height=\"100%\" fill=\"#ffffff\"/>\n<polygon points=\"60.0,219.0 60.0,881.0 154.9,881.0 154.9,1002.0 733.9,1002.0 738.6,973.6 1078.0,973.6 1078.0,999.7 1659.3,999.7 1659.3,859.7 1740.0,859.7 1740.0,465.8 1241.7,465.8 1241.7,667.5 563.1,667.5 563.1,214.2 211.9,214.2 192.9,264.1 131.2,219.0 60.0,219.0\" fill=\"#fbfbfb\" stroke=\"none\"/>\n<rect x=\"1440.1\" y=\"565.8\" width=\"285.5\" height=\"198.3\" fill=\"#dfeae3\" stroke=\"#3a3a3a\" stroke-width=\"1.6\"/>\n<rect x=\"1499.6\" y=\"637.2\" width=\"166.6\" height=\"55.5\" rx=\"3\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1513.5\" cy=\"623.3\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1513.5\" cy=\"706.6\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1541.2\" cy=\"623.3\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1541.2\" cy=\"706.6\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1569.0\" cy=\"623.3\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1569.0\" cy=\"706.6\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1596.8\" cy=\"623.3\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1596.8\" cy=\"706.6\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1624.5\" cy=\"623.3\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1624.5\" cy=\"706.6\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1652.3\" cy=\"623.3\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1652.3\" cy=\"706.6\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1463.9\" cy=\"565.8\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<line x1=\"1446.0\" y1=\"565.8\" x2=\"1481.7\" y2=\"565.8\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<text x=\"1582.9\" y=\"720.5\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">Directorio 12</text>\n<rect x=\"1313.2\" y=\"542.0\" width=\"119.0\" height=\"178.5\" fill=\"#f6efe6\" stroke=\"#3a3a3a\" stroke-width=\"1.6\"/>\n<rect x=\"1325.1\" y=\"553.9\" width=\"27.8\" height=\"95.2\" rx=\"6\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1.2\"/>\n<rect x=\"1396.5\" y=\"557.9\" width=\"23.8\" height=\"23.8\" rx=\"3\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"1396.5\" y=\"589.6\" width=\"23.8\" height=\"23.8\" rx=\"3\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"1396.5\" y=\"621.3\" width=\"23.8\" height=\"23.8\" rx=\"3\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1313.2\" cy=\"542.0\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<line x1=\"1295.3\" y1=\"542.0\" x2=\"1331.0\" y2=\"542.0\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<text x=\"1372.7\" y=\"681.2\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">Recepción</text>\n<rect x=\"1107.0\" y=\"811.7\" width=\"198.3\" height=\"158.6\" fill=\"#e6f0ea\" stroke=\"#3a3a3a\" stroke-width=\"1.6\"/>\n<rect x=\"1158.5\" y=\"871.2\" width=\"95.2\" height=\"39.7\" rx=\"3\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1170.4\" cy=\"857.3\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1170.4\" cy=\"924.7\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1194.2\" cy=\"857.3\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1194.2\" cy=\"924.7\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1218.0\" cy=\"857.3\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1218.0\" cy=\"924.7\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1241.8\" cy=\"857.3\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1241.8\" cy=\"924.7\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1257.7\" cy=\"811.7\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<line x1=\"1239.8\" y1=\"811.7\" x2=\"1275.5\" y2=\"811.7\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<text x=\"1206.1\" y=\"935.4\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">Sala 8</text>\n<rect x=\"107.6\" y=\"272.3\" width=\"158.6\" height=\"198.3\" fill=\"#f3ede8\" stroke=\"#3a3a3a\" stroke-width=\"1.6\"/>\n<rect x=\"123.5\" y=\"306.0\" width=\"47.6\" height=\"31.7\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"202.8\" y=\"306.0\" width=\"47.6\" height=\"31.7\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"123.5\" y=\"405.2\" width=\"47.6\" height=\"31.7\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"202.8\" y=\"405.2\" width=\"47.6\" height=\"31.7\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"266.2\" cy=\"470.6\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<line x1=\"248.4\" y1=\"470.6\" x2=\"284.1\" y2=\"470.6\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<text x=\"186.9\" y=\"427.0\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">Comedor</text>\n<rect x=\"179.0\" y=\"795.8\" width=\"119.0\" height=\"158.6\" fill=\"#e8eef6\" stroke=\"#3a3a3a\" stroke-width=\"1.6\"/>\n<rect x=\"222.6\" y=\"839.4\" width=\"31.7\" height=\"71.4\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"238.5\" cy=\"875.1\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"297.9\" cy=\"795.8\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<line x1=\"280.1\" y1=\"795.8\" x2=\"315.8\" y2=\"795.8\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<text x=\"238.5\" y=\"919.5\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">Oficina privada</text>\n<rect x=\"631.1\" y=\"811.7\" width=\"119.0\" height=\"158.6\" fill=\"#e8eef6\" stroke=\"#3a3a3a\" stroke-width=\"1.6\"/>\n<rect x=\"674.7\" y=\"855.3\" width=\"31.7\" height=\"71.4\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"690.6\" cy=\"891.0\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"750.1\" cy=\"811.7\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<line x1=\"732.2\" y1=\"811.7\" x2=\"767.9\" y2=\"811.7\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<text x=\"690.6\" y=\"935.4\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">Oficina privada</text>\n<rect x=\"1305.3\" y=\"811.7\" width=\"119.0\" height=\"158.6\" fill=\"#e8eef6\" stroke=\"#3a3a3a\" stroke-width=\"1.6\"/>\n<rect x=\"1348.9\" y=\"855.3\" width=\"31.7\" height=\"71.4\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1364.8\" cy=\"891.0\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1305.3\" cy=\"811.7\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<line x1=\"1287.4\" y1=\"811.7\" x2=\"1323.1\" y2=\"811.7\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<text x=\"1364.8\" y=\"935.4\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">Oficina privada</text>\n<rect x=\"472.4\" y=\"883.1\" width=\"158.6\" height=\"119.0\" fill=\"#e8eef6\" stroke=\"#3a3a3a\" stroke-width=\"1.6\"/>\n<rect x=\"516.1\" y=\"926.7\" width=\"71.4\" height=\"31.7\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"551.8\" cy=\"972.3\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"607.3\" cy=\"883.1\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<line x1=\"589.4\" y1=\"883.1\" x2=\"625.1\" y2=\"883.1\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<text x=\"551.8\" y=\"975.9\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">Oficina privada</text>\n<rect x=\"988.0\" y=\"811.7\" width=\"119.0\" height=\"138.8\" fill=\"#e6f0ea\" stroke=\"#3a3a3a\" stroke-width=\"1.6\"/>\n<rect x=\"1031.6\" y=\"849.4\" width=\"31.7\" height=\"63.5\" rx=\"3\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1017.7\" cy=\"865.2\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1077.2\" cy=\"865.2\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1017.7\" cy=\"896.9\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1077.2\" cy=\"896.9\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1107.0\" cy=\"811.7\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<line x1=\"1089.1\" y1=\"811.7\" x2=\"1124.8\" y2=\"811.7\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<text x=\"1047.5\" y=\"919.9\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">Sala 4</text>\n<rect x=\"869.0\" y=\"811.7\" width=\"119.0\" height=\"138.8\" fill=\"#e6f0ea\" stroke=\"#3a3a3a\" stroke-width=\"1.6\"/>\n<rect x=\"912.6\" y=\"849.4\" width=\"31.7\" height=\"63.5\" rx=\"3\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"898.8\" cy=\"865.2\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"958.3\" cy=\"865.2\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"898.8\" cy=\"896.9\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"958.3\" cy=\"896.9\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"988.0\" cy=\"811.7\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<line x1=\"970.2\" y1=\"811.7\" x2=\"1005.8\" y2=\"811.7\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<text x=\"928.5\" y=\"919.9\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">Sala 4</text>\n<rect x=\"750.1\" y=\"811.7\" width=\"119.0\" height=\"138.8\" fill=\"#e6f0ea\" stroke=\"#3a3a3a\" stroke-width=\"1.6\"/>\n<rect x=\"793.7\" y=\"849.4\" width=\"31.7\" height=\"63.5\" rx=\"3\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"779.8\" cy=\"865.2\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"839.3\" cy=\"865.2\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"779.8\" cy=\"896.9\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"839.3\" cy=\"896.9\" r=\"8.7\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"869.0\" cy=\"811.7\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<line x1=\"851.2\" y1=\"811.7\" x2=\"886.9\" y2=\"811.7\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<text x=\"809.5\" y=\"919.9\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">Sala 4</text>\n<rect x=\"1424.2\" y=\"811.7\" width=\"198.3\" height=\"138.8\" fill=\"#f0e9ef\" stroke=\"#3a3a3a\" stroke-width=\"1.6\"/>\n<rect x=\"1440.1\" y=\"827.5\" width=\"79.3\" height=\"31.7\" rx=\"6\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"1440.1\" y=\"902.9\" width=\"79.3\" height=\"31.7\" rx=\"6\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"1539.2\" y=\"865.2\" width=\"35.7\" height=\"31.7\" rx=\"6\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1424.2\" cy=\"811.7\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<line x1=\"1406.4\" y1=\"811.7\" x2=\"1442.1\" y2=\"811.7\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<text x=\"1523.4\" y=\"919.9\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">Lounge</text>\n<rect x=\"107.6\" y=\"470.6\" width=\"158.6\" height=\"119.0\" fill=\"#f3ede8\" stroke=\"#3a3a3a\" stroke-width=\"1.6\"/>\n<rect x=\"111.6\" y=\"474.6\" width=\"150.7\" height=\"23.8\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"266.2\" cy=\"589.6\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<line x1=\"248.4\" y1=\"589.6\" x2=\"284.1\" y2=\"589.6\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<text x=\"186.9\" y=\"563.4\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">Kitchenette</text>\n<rect x=\"472.4\" y=\"803.7\" width=\"47.6\" height=\"55.5\" fill=\"#f1ede4\" stroke=\"#3a3a3a\" stroke-width=\"1.6\"/>\n<rect x=\"484.3\" y=\"823.6\" width=\"23.8\" height=\"15.9\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"520.0\" cy=\"803.7\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<line x1=\"502.2\" y1=\"803.7\" x2=\"537.9\" y2=\"803.7\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<text x=\"496.2\" y=\"831.5\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">Phone booth</text>\n<rect x=\"488.3\" y=\"431.0\" width=\"47.6\" height=\"55.5\" fill=\"#f1ede4\" stroke=\"#3a3a3a\" stroke-width=\"1.6\"/>\n<rect x=\"500.2\" y=\"450.8\" width=\"23.8\" height=\"15.9\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"488.3\" cy=\"486.5\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<line x1=\"470.5\" y1=\"486.5\" x2=\"506.2\" y2=\"486.5\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<text x=\"512.1\" y=\"458.7\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">Phone booth</text>\n<rect x=\"488.3\" y=\"319.9\" width=\"55.5\" height=\"47.6\" fill=\"#f1ede4\" stroke=\"#3a3a3a\" stroke-width=\"1.6\"/>\n<rect x=\"504.2\" y=\"335.8\" width=\"23.8\" height=\"15.9\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"488.3\" cy=\"367.5\" r=\"17.8\" fill=\"#ffffff\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<line x1=\"470.5\" y1=\"367.5\" x2=\"506.2\" y2=\"367.5\" stroke=\"#3a3a3a\" stroke-width=\"1\"/>\n<text x=\"516.1\" y=\"343.7\" font-size=\"13\" text-anchor=\"middle\" fill=\"#333\" opacity=\"0.9\">Phone booth</text>\n<rect x=\"79.0\" y=\"687.9\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"107.6\" cy=\"732.4\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"142.5\" y=\"687.9\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"171.0\" cy=\"732.4\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"205.9\" y=\"687.9\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"234.5\" cy=\"732.4\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"79.0\" y=\"624.5\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"107.6\" cy=\"668.9\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"142.5\" y=\"624.5\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"171.0\" cy=\"668.9\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"205.9\" y=\"624.5\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"234.5\" cy=\"668.9\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"317.0\" y=\"497.6\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"345.5\" cy=\"542.0\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"380.4\" y=\"497.6\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"409.0\" cy=\"542.0\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"317.0\" y=\"434.1\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"345.5\" cy=\"478.5\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"380.4\" y=\"434.1\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"409.0\" cy=\"478.5\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"317.0\" y=\"370.7\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"345.5\" cy=\"415.1\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"380.4\" y=\"370.7\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"409.0\" cy=\"415.1\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"317.0\" y=\"307.2\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"345.5\" cy=\"351.6\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"380.4\" y=\"307.2\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"409.0\" cy=\"351.6\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"317.0\" y=\"243.8\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"345.5\" cy=\"288.2\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"380.4\" y=\"243.8\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"409.0\" cy=\"288.2\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"317.0\" y=\"687.9\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"345.5\" cy=\"732.4\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"380.4\" y=\"687.9\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"409.0\" cy=\"732.4\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"317.0\" y=\"624.5\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"345.5\" cy=\"668.9\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"380.4\" y=\"624.5\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"409.0\" cy=\"668.9\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"317.0\" y=\"561.0\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"345.5\" cy=\"605.5\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"380.4\" y=\"561.0\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"409.0\" cy=\"605.5\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"301.1\" y=\"941.8\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"329.7\" cy=\"986.2\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"364.6\" y=\"941.8\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"393.1\" cy=\"986.2\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"301.1\" y=\"878.3\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"329.7\" cy=\"922.7\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"364.6\" y=\"878.3\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"393.1\" cy=\"922.7\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"301.1\" y=\"814.8\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"329.7\" cy=\"859.3\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"364.6\" y=\"814.8\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"393.1\" cy=\"859.3\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"919.8\" y=\"703.8\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"948.3\" cy=\"748.2\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"983.2\" y=\"703.8\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1011.8\" cy=\"748.2\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"1046.7\" y=\"703.8\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1075.2\" cy=\"748.2\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"1110.1\" y=\"703.8\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1138.7\" cy=\"748.2\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"1173.6\" y=\"703.8\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"1202.2\" cy=\"748.2\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"666.0\" y=\"703.8\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"694.5\" cy=\"748.2\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"729.4\" y=\"703.8\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"758.0\" cy=\"748.2\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"792.9\" y=\"703.8\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"821.4\" cy=\"748.2\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"856.3\" y=\"703.8\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"884.9\" cy=\"748.2\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"491.5\" y=\"648.3\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"520.0\" cy=\"692.7\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"491.5\" y=\"584.8\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"520.0\" cy=\"629.2\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<rect x=\"491.5\" y=\"521.4\" width=\"57.1\" height=\"28.6\" rx=\"2\" fill=\"#ffffff\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<circle cx=\"520.0\" cy=\"565.8\" r=\"8.9\" fill=\"#c9d2df\" stroke=\"#8a94a6\" stroke-width=\"1\"/>\n<polygon points=\"577.3,216.6 662.7,211.9 781.4,60.0 895.3,107.5 909.5,69.5 1075.6,69.5 1127.8,112.2 1137.3,211.9 1218.0,226.1 1213.2,639.0 582.0,653.2 577.3,216.6\" fill=\"#d9d9d9\" stroke=\"#444\" stroke-width=\"1.6\"/>\n<text x=\"899.9\" y=\"381.6\" font-size=\"13\" text-anchor=\"middle\" fill=\"#555\">NÚCLEO</text>\n<polygon points=\"192.6,252.3 192.6,220.6 160.9,220.6 160.9,252.3 192.6,252.3\" fill=\"#222\" stroke=\"none\"/>\n<polygon points=\"517.5,252.3 517.5,220.6 485.8,220.6 485.8,252.3 517.5,252.3\" fill=\"#222\" stroke=\"none\"/>\n<polygon points=\"518.6,480.5 518.6,448.8 486.9,448.8 486.9,480.5 518.6,480.5\" fill=\"#222\" stroke=\"none\"/>\n<polygon points=\"1318.4,484.2 1318.4,452.5 1286.7,452.5 1286.7,484.2 1318.4,484.2\" fill=\"#222\" stroke=\"none\"/>\n<polygon points=\"1645.8,484.2 1645.8,452.5 1614.1,452.5 1614.1,484.2 1645.8,484.2\" fill=\"#222\" stroke=\"none\"/>\n<polygon points=\"185.3,487.8 185.3,456.1 153.5,456.1 153.5,487.8 185.3,487.8\" fill=\"#222\" stroke=\"none\"/>\n<polygon points=\"1318.4,863.2 1318.4,831.5 1286.7,831.5 1286.7,863.2 1318.4,863.2\" fill=\"#222\" stroke=\"none\"/>\n<polygon points=\"188.9,864.9 188.9,833.2 157.2,833.2 157.2,864.9 188.9,864.9\" fill=\"#222\" stroke=\"none\"/>\n<polygon points=\"516.4,866.6 516.4,834.9 484.6,834.9 484.6,866.6 516.4,866.6\" fill=\"#222\" stroke=\"none\"/>\n<polygon points=\"1660.9,858.9 1660.9,827.2 1629.2,827.2 1629.2,858.9 1660.9,858.9\" fill=\"#222\" stroke=\"none\"/>\n<polygon points=\"60.0,219.0 60.0,881.0 154.9,881.0 154.9,1002.0 733.9,1002.0 738.6,973.6 1078.0,973.6 1078.0,999.7 1659.3,999.7 1659.3,859.7 1740.0,859.7 1740.0,465.8 1241.7,465.8 1241.7,667.5 563.1,667.5 563.1,214.2 211.9,214.2 192.9,264.1 131.2,219.0 60.0,219.0\" fill=\"none\" stroke=\"#111\" stroke-width=\"2.6\"/>\n<circle cx=\"1241.7\" cy=\"513.2\" r=\"9\" fill=\"#ffffff\" stroke=\"#c0392b\" stroke-width=\"3\"/>\n<text x=\"1253.7\" y=\"503.2\" font-size=\"12\" fill=\"#c0392b\" font-weight=\"bold\">ACCESO</text>\n<text x=\"60\" y=\"1086\" font-size=\"22\" fill=\"#111\" font-weight=\"bold\">OFICINA 403 · A EFICIENTE</text>\n<text x=\"60\" y=\"1112\" font-size=\"13\" fill=\"#333\">Capacidad: 40 puestos open + 4 oficinas privadas · 5 salas · comedor, lounge, 3 phone booths</text>\n<text x=\"60\" y=\"1132\" font-size=\"12\" fill=\"#555\">Superficie útil 543 m² (escala inferida de la superficie publicada) · circulación 78.2 m² · programa neto 305.9 m²</text>\n<text x=\"60\" y=\"1152\" font-size=\"11\" fill=\"#8a1f1f\">Dimensiones sujetas a confirmación de escala. Test-fit conceptual, no proyecto de arquitectura.</text>\n<text x=\"1740\" y=\"1086\" font-size=\"14\" text-anchor=\"end\" fill=\"#111\" font-weight=\"bold\">ESCALÍMETRO</text>\n<text x=\"1740\" y=\"1104\" font-size=\"10\" text-anchor=\"end\" fill=\"#777\">pre-design · feasibility · test-fit</text>\n<line x1=\"1541.7\" y1=\"1186\" x2=\"1740.0\" y2=\"1186\" stroke=\"#111\" stroke-width=\"3\"/>\n<text x=\"1541.7\" y=\"1180\" font-size=\"11\" fill=\"#111\">5 m</text>\n</svg>"
+  },
+  "program": {
+    "brief_id": "BRIEF_EQUILIBRADO",
+    "target_headcount": 48,
+    "open_workstations": 40,
+    "rooms": {
+      "boardroom_12": 1,
+      "reception": 1,
+      "meeting_8": 1,
+      "dining": 1,
+      "private_office": 4,
+      "meeting_4": 3,
+      "lounge": 1,
+      "kitchenette": 1,
+      "phone_booth": 3,
+      "workstation_cluster": 4,
+      "workstation_row": 3
+    },
+    "requested_vs_delivered": {
+      "requested": {
+        "open_workstations": 40,
+        "rooms": {
+          "private_office": 4,
+          "meeting_4": 3,
+          "meeting_8": 1,
+          "boardroom_12": 1,
+          "phone_booth": 3,
+          "reception": 1,
+          "kitchenette": 1,
+          "dining": 1,
+          "lounge": 1
+        },
+        "rooms_total": 16,
+        "target_headcount": 48
+      },
+      "delivered": {
+        "open_workstations": 40,
+        "rooms": {
+          "boardroom_12": 1,
+          "reception": 1,
+          "meeting_8": 1,
+          "dining": 1,
+          "private_office": 4,
+          "meeting_4": 3,
+          "lounge": 1,
+          "kitchenette": 1,
+          "phone_booth": 3
+        },
+        "rooms_total": 16
+      },
+      "shortfall": {
+        "open_workstations": 0,
+        "rooms": {}
+      },
+      "complete": true
+    },
+    "brief_semantics": {
+      "brief_id": "BRIEF_EQUILIBRADO",
+      "target_headcount": 48,
+      "open_workstations": 40,
+      "permanent_seats": 45,
+      "meeting_seats": 32,
+      "support_capacity": 24,
+      "unseated_headcount": 3,
+      "cluster_count": 7,
+      "rooms": {
+        "private_office": 4,
+        "meeting_4": 3,
+        "meeting_8": 1,
+        "boardroom_12": 1,
+        "phone_booth": 3,
+        "reception": 1,
+        "kitchenette": 1,
+        "dining": 1,
+        "lounge": 1
+      }
+    }
+  },
+  "metrics": {
+    "alt": "A",
+    "name": "EFICIENTE",
+    "technical_validity": "PASS",
+    "architectural_score": 0.751,
+    "geometric_score": 0.5557,
+    "daylight": 0.262,
+    "circulation_m2": 78.2,
+    "residual_m2": 65.9,
+    "unallocated_m2": 151.8,
+    "net_programmed_m2": 305.9,
+    "facade_closed_rooms": 2,
+    "facade_consumption_pct": 62.0,
+    "client_route": 1.0,
+    "boardroom_path_m": 5.4,
+    "reception_path_m": 0.8,
+    "fragmentation": 0.92,
+    "compactness": 0.632,
+    "work_blocks": 7,
+    "bench_seat_pct": 70.0,
+    "internal_qa_minutes": 1.5,
+    "internal_qa_ops": 0,
+    "generation_s": 111.21
+  },
+  "critique": {
+    "candidate_id": "OFFICE_403_A_EFICIENTE_optimized",
+    "hard_valid": true,
+    "scores": {
+      "arrival_sequence": 1.0,
+      "reception": 1.0,
+      "client_access_to_rooms": 1.0,
+      "privacy": 1.0,
+      "open_office_quality": 0.481,
+      "facade_use": 0.356,
+      "kitchenette_dining": 1.0,
+      "lounge_location": 0.5,
+      "circulation": 1.0,
+      "residual_spaces": 0.0,
+      "fragmentation": 0.92,
+      "architectural_plausibility": 0.751
+    },
+    "verdicts": {
+      "arrival_sequence": "recepción a 0.8 m de ruta del acceso",
+      "reception": "en la región del acceso, a 0.8 m",
+      "client_access_to_rooms": "meeting_accessibility 1.00 (rutas acceso→salas junto a puestos)",
+      "privacy": "gradiente 1.00; 0 privados pegados a recepción",
+      "open_office_quality": "70% de puestos en benches; daylight 0.26",
+      "facade_use": "62% de la fachada con luz frente a recintos cerrados (tolerancia 30 %)",
+      "kitchenette_dining": "adyacentes",
+      "lounge_location": "lejos de puestos",
+      "circulation": "eficiencia 1.00; 0 conectores; pasillos 78.2 m²",
+      "residual_spaces": "65.9 m² en bolsillos; 151.8 m² sin asignar",
+      "fragmentation": "puestos en 3 bandas; 1 bloques de ≤ 3 puestos",
+      "architectural_plausibility": "media de aspectos 0.75"
+    },
+    "architectural_score": 0.751,
+    "broker_showable": false,
+    "repair_suggestions": [
+      {
+        "type": "min_seats_on_facade",
+        "args": {
+          "seats": 24
+        },
+        "reason": "daylight 0.26 < 0.5"
+      },
+      {
+        "type": "forbid_on_facade",
+        "args": {
+          "module": "private_office"
+        },
+        "reason": "privados consumen fachada"
+      }
+    ],
+    "provider": "rule_based"
+  },
+  "gates": {
+    "E1-T": {
+      "gate": "E1-T",
+      "status": "PASS",
+      "checks": {
+        "programa_completo": true,
+        "40_puestos": true,
+        "0_hard_violations": true,
+        "0_colisiones": true,
+        "circulacion_conectada": true,
+        "shell_exacto": true
+      }
+    },
+    "E1-A": {
+      "gate": "E1-A",
+      "status": "PASS_PROVISIONAL",
+      "checks": {
+        "critic_score ≥ 0.65": true,
+        "sin_aspecto_critico (≤0.2)": true,
+        "qa_interno ≤ 5.0 min": true,
+        "geometria_preservada ≥ 90.0 %": true,
+        "sin_redisenio": true
+      },
+      "critical_aspects": [],
+      "shell_dominated_aspects": {
+        "residual_spaces": 0.0
+      },
+      "thresholds": {
+        "critic": 0.65,
+        "qa_minutes": 5.0,
+        "geometry_preserved_pct": 90.0
+      },
+      "note": "Umbrales = hipótesis de producto documentadas; no provienen de norma ni de terceros."
+    },
+    "E1-C": {
+      "gate": "E1-C",
+      "status": "READY_FOR_BROKER_REVIEW",
+      "note": "El PASS comercial requiere que un broker o arquitecto externo declare que enviaría esta lámina a un cliente. Ningún crítico interno puede otorgarlo (broker_showable del crítico NO se usa aquí)."
+    }
+  },
+  "internal_qa": {
+    "alternative": "A",
+    "operations": [],
+    "operation_count": 0,
+    "geometry_preserved_pct": 100.0,
+    "geometry_changed_pct": 0.0,
+    "estimated_minutes": 1.5,
+    "minutes_are_estimated": true,
+    "reason": "sin errores evidentes del motor: el revisor sólo acepta la propuesta",
+    "reason_for_correction": "sin errores evidentes del motor: el revisor sólo acepta la propuesta",
+    "final_validation": {
+      "hard_valid": true,
+      "violations": [],
+      "architectural_score": 0.751
+    },
+    "redesign_required": false
+  },
+  "fit_verdict": {
+    "unit": "Oficina 403 (GPS Property)",
+    "published_area_m2": 543.0,
+    "technical_fit": "FIT",
+    "robustness": "ROBUST_FIT",
+    "freshness": "STALE",
+    "fit": "STALE",
+    "fit_label": "REQUIERE RECÁLCULO",
+    "scale": "UNCONFIRMED",
+    "scale_confidence": "LOW",
+    "headcount": 48,
+    "program": "OFFICE_BALANCED_48",
+    "recommendation": "Confirma una dimensión real antes de comprometer capacidad.",
+    "reason": "La evidencia guardada no corresponde al floorplate, al programa o a una versión compatible del motor: program_sha256 cambió respecto del pinchado en EVIDENCE_LEGACY.json",
+    "note": "Test-fit conceptual de space planning. No constituye proyecto de arquitectura.",
+    "source": "evidencia computada: cases/001_gps_403/layouts/E07/gates.json, cases/001_gps_403/layouts/E07/alternatives/A/metrics.json, cases/001_gps_403/layouts/E06/fit_robustness_report.json, cases/001_gps_403/layouts/E06/fit_verdict.json"
+  },
+  "case": {
+    "case_id": "001_gps_403",
+    "unit_label": "Oficina 403",
+    "slug": "403",
+    "display_name": null,
+    "source_name": "GPS Property",
+    "published_area_m2": 543.0,
+    "published_area_kind": "unknown",
+    "scale_px_per_m": 8.35652390128259,
+    "scale_status": "inferred",
+    "scale_confidence": "LOW",
+    "scale_semantic_validity": null,
+    "unit_title": "OFICINA 403",
+    "title": "OFICINA 403 · GPS PROPERTY",
+    "published_area_label": "543 m²",
+    "layout_id_example": "OFFICE_403_A_EJEMPLO"
+  },
+  "scale_status": {
+    "state": "UNCONFIRMED",
+    "confidence": "LOW",
+    "source": "published_area_inferred = 543 m²",
+    "disclaimer": "Dimensiones sujetas a confirmación de escala."
+  },
+  "brand_guidelines": {
+    "name": "ESCALÍMETRO",
+    "tagline": "pre-design · feasibility · test-fit",
+    "palette": {
+      "ink": "#1d2430",
+      "muted": "#6b7480",
+      "line": "#c8ccd4",
+      "work": "#dfe7f5",
+      "meeting": "#dfeee2",
+      "support": "#f2e7db",
+      "public": "#f7e3d3",
+      "lounge": "#ece0ef",
+      "circulation": "#fbf3dd",
+      "core": "#e3e5e8",
+      "accent": "#b5452f"
+    },
+    "type": "Helvetica/Arial; títulos 600; cuerpo 400; etiquetas discretas"
+  },
+  "presentation_standard": "ESCALIMETRO_PRESENTATION_STANDARD_01",
+  "allowed_changes": [
+    "color",
+    "stroke",
+    "typography",
+    "labels",
+    "icons",
+    "composition",
+    "narrative",
+    "visual hierarchy"
+  ],
+  "forbidden_changes": [
+    "walls",
+    "shell",
+    "rooms",
+    "desks",
+    "furniture",
+    "doors",
+    "columns",
+    "circulation",
+    "coordinates",
+    "scale",
+    "program counts"
+  ]
+}

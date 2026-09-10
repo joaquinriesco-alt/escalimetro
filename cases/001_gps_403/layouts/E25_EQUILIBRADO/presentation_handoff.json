@@ -1,0 +1,136 @@
+{
+  "geometry_locked": true,
+  "presentation_standard": "ESCALIMETRO_PRESENTATION_STANDARD_01",
+  "fit_verdict": {
+    "unit": "Oficina 403 (GPS Property)",
+    "published_area_m2": 543.0,
+    "technical_fit": "FIT",
+    "robustness": "ROBUST_FIT",
+    "freshness": "STALE",
+    "fit": "STALE",
+    "fit_label": "REQUIERE RECÁLCULO",
+    "scale": "UNCONFIRMED",
+    "scale_confidence": "LOW",
+    "headcount": 48,
+    "program": "OFFICE_BALANCED_48",
+    "recommendation": "Confirma una dimensión real antes de comprometer capacidad.",
+    "reason": "La evidencia guardada no corresponde al floorplate, al programa o a una versión compatible del motor: program_sha256 cambió respecto del pinchado en EVIDENCE_LEGACY.json",
+    "note": "Test-fit conceptual de space planning. No constituye proyecto de arquitectura.",
+    "source": "evidencia computada: cases/001_gps_403/layouts/E07/gates.json, cases/001_gps_403/layouts/E07/alternatives/A/metrics.json, cases/001_gps_403/layouts/E06/fit_robustness_report.json, cases/001_gps_403/layouts/E06/fit_verdict.json"
+  },
+  "alternatives": {
+    "A": {
+      "handoff": "alternatives/A/presentation_handoff.json"
+    },
+    "B": {
+      "handoff": "alternatives/B/presentation_handoff.json"
+    },
+    "C": {
+      "handoff": "alternatives/C/presentation_handoff.json"
+    }
+  },
+  "comparison": {
+    "rows": [
+      {
+        "alt": "A",
+        "name": "EFICIENTE",
+        "technical_validity": "PASS",
+        "architectural_score": 0.751,
+        "geometric_score": 0.5557,
+        "daylight": 0.262,
+        "circulation_m2": 78.2,
+        "residual_m2": 65.9,
+        "unallocated_m2": 151.8,
+        "net_programmed_m2": 305.9,
+        "facade_closed_rooms": 2,
+        "facade_consumption_pct": 62.0,
+        "client_route": 1.0,
+        "boardroom_path_m": 5.4,
+        "reception_path_m": 0.8,
+        "fragmentation": 0.92,
+        "compactness": 0.632,
+        "work_blocks": 7,
+        "bench_seat_pct": 70.0,
+        "internal_qa_minutes": 1.5,
+        "internal_qa_ops": 0,
+        "generation_s": 111.21
+      },
+      {
+        "alt": "B",
+        "name": "BALANCEADO",
+        "technical_validity": "PASS",
+        "architectural_score": 0.668,
+        "geometric_score": 0.7132,
+        "daylight": 0.562,
+        "circulation_m2": 86.4,
+        "residual_m2": 72.0,
+        "unallocated_m2": 142.2,
+        "net_programmed_m2": 305.9,
+        "facade_closed_rooms": 3,
+        "facade_consumption_pct": 39.0,
+        "client_route": 0.964,
+        "boardroom_path_m": 0.6,
+        "reception_path_m": 6.8,
+        "fragmentation": 0.5,
+        "compactness": 0.609,
+        "work_blocks": 11,
+        "bench_seat_pct": 50.0,
+        "internal_qa_minutes": 1.5,
+        "internal_qa_ops": 0,
+        "generation_s": 83.59
+      },
+      {
+        "alt": "C",
+        "name": "COLABORATIVO",
+        "technical_validity": "PASS",
+        "architectural_score": 0.81,
+        "geometric_score": 0.7637,
+        "daylight": 0.355,
+        "circulation_m2": 77.9,
+        "residual_m2": 76.2,
+        "unallocated_m2": 148.5,
+        "net_programmed_m2": 305.9,
+        "facade_closed_rooms": 2,
+        "facade_consumption_pct": 45.0,
+        "client_route": 0.929,
+        "boardroom_path_m": 5.4,
+        "reception_path_m": 0.8,
+        "fragmentation": 0.76,
+        "compactness": 0.7,
+        "work_blocks": 10,
+        "bench_seat_pct": 70.0,
+        "internal_qa_minutes": 1.5,
+        "internal_qa_ops": 0,
+        "generation_s": 102.72
+      }
+    ],
+    "best_for": {
+      "menor circulación": "C",
+      "menor residual": "A",
+      "mejor luz en puestos": "B",
+      "mejor recorrido de cliente": "A",
+      "directorio más cerca del acceso": "B",
+      "menos fragmentación": "A",
+      "score arquitectónico": "C",
+      "más barrios de trabajo": "B"
+    },
+    "note": "No hay ganador absoluto: cada alternativa optimiza objetivos de space planning distintos sobre el mismo programa y el mismo shell."
+  },
+  "geometric_difference": {
+    "AvsB": {
+      "identical_placements": 3,
+      "n": 27,
+      "different_pct": 88.9
+    },
+    "AvsC": {
+      "identical_placements": 2,
+      "n": 26,
+      "different_pct": 92.3
+    },
+    "BvsC": {
+      "identical_placements": 4,
+      "n": 27,
+      "different_pct": 85.2
+    }
+  }
+}

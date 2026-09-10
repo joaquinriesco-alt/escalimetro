@@ -1,0 +1,530 @@
+{
+  "A": {
+    "brutos": 3055,
+    "finales": 1950,
+    "descartados_pct": 36.17,
+    "refinamientos": [
+      {
+        "ronda": 1,
+        "step": 0.5,
+        "modulos": [
+          "private_office",
+          "boardroom_12"
+        ],
+        "puestos": false,
+        "candidatos_tras_ronda": 3030
+      },
+      {
+        "ronda": 2,
+        "step": 0.25,
+        "modulos": [
+          "boardroom_12"
+        ],
+        "puestos": false,
+        "candidatos_tras_ronda": 3055
+      }
+    ],
+    "por_modulo": {
+      "boardroom_12": {
+        "brutos": 56,
+        "tras_dominancia": 22,
+        "descartados_por_dominancia": 34,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 22,
+        "descartados_por_cap": 0
+      },
+      "dining": {
+        "brutos": 100,
+        "tras_dominancia": 91,
+        "descartados_por_dominancia": 9,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 91,
+        "descartados_por_cap": 0
+      },
+      "kitchenette": {
+        "brutos": 255,
+        "tras_dominancia": 237,
+        "descartados_por_dominancia": 18,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": true,
+        "cap": 200,
+        "finales": 200,
+        "descartados_por_cap": 37
+      },
+      "lounge": {
+        "brutos": 135,
+        "tras_dominancia": 122,
+        "descartados_por_dominancia": 13,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 122,
+        "descartados_por_cap": 0
+      },
+      "meeting_4": {
+        "brutos": 316,
+        "tras_dominancia": 288,
+        "descartados_por_dominancia": 28,
+        "instancias_pedidas": 4,
+        "cap_base": 200,
+        "cap_efectivo": 320,
+        "cap_activo": false,
+        "cap": 320,
+        "finales": 288,
+        "descartados_por_cap": 0
+      },
+      "meeting_8": {
+        "brutos": 100,
+        "tras_dominancia": 91,
+        "descartados_por_dominancia": 9,
+        "instancias_pedidas": 2,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 91,
+        "descartados_por_cap": 0
+      },
+      "phone_booth": {
+        "brutos": 702,
+        "tras_dominancia": 609,
+        "descartados_por_dominancia": 93,
+        "instancias_pedidas": 3,
+        "cap_base": 200,
+        "cap_efectivo": 240,
+        "cap_activo": true,
+        "cap": 240,
+        "finales": 240,
+        "descartados_por_cap": 369
+      },
+      "private_office": {
+        "brutos": 507,
+        "tras_dominancia": 285,
+        "descartados_por_dominancia": 222,
+        "instancias_pedidas": 8,
+        "cap_base": 200,
+        "cap_efectivo": 640,
+        "cap_activo": false,
+        "cap": 640,
+        "finales": 285,
+        "descartados_por_cap": 0
+      },
+      "reception": {
+        "brutos": 230,
+        "tras_dominancia": 212,
+        "descartados_por_dominancia": 18,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": true,
+        "cap": 200,
+        "finales": 200,
+        "descartados_por_cap": 12
+      },
+      "workstation_cluster": {
+        "brutos": 251,
+        "tras_dominancia": 211,
+        "descartados_por_dominancia": 40,
+        "instancias_pedidas": 4,
+        "cap_base": 200,
+        "cap_efectivo": 320,
+        "cap_activo": false,
+        "cap": 320,
+        "finales": 211,
+        "descartados_por_cap": 0
+      },
+      "workstation_row": {
+        "brutos": 403,
+        "tras_dominancia": 344,
+        "descartados_por_dominancia": 59,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": true,
+        "cap": 200,
+        "finales": 200,
+        "descartados_por_cap": 144
+      }
+    },
+    "causas_de_descarte": {
+      "fuera_de_bbox": 11612,
+      "duplicado": 6369,
+      "fuera_del_usable": 7900,
+      "invade_zona_de_acceso": 109,
+      "choca_elemento_fijo": 10029,
+      "choca_pilar": 463,
+      "no_toca_circulacion": 9
+    },
+    "modulos_sin_candidatos": [],
+    "bench_cfgs": [
+      6,
+      5,
+      4
+    ],
+    "cap_base": 200
+  },
+  "B": {
+    "brutos": 2989,
+    "finales": 1930,
+    "descartados_pct": 35.43,
+    "refinamientos": [
+      {
+        "ronda": 1,
+        "step": 0.5,
+        "modulos": [
+          "private_office",
+          "boardroom_12"
+        ],
+        "puestos": false,
+        "candidatos_tras_ronda": 2964
+      },
+      {
+        "ronda": 2,
+        "step": 0.25,
+        "modulos": [
+          "boardroom_12"
+        ],
+        "puestos": false,
+        "candidatos_tras_ronda": 2989
+      }
+    ],
+    "por_modulo": {
+      "boardroom_12": {
+        "brutos": 56,
+        "tras_dominancia": 22,
+        "descartados_por_dominancia": 34,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 22,
+        "descartados_por_cap": 0
+      },
+      "dining": {
+        "brutos": 100,
+        "tras_dominancia": 91,
+        "descartados_por_dominancia": 9,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 91,
+        "descartados_por_cap": 0
+      },
+      "kitchenette": {
+        "brutos": 255,
+        "tras_dominancia": 237,
+        "descartados_por_dominancia": 18,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": true,
+        "cap": 200,
+        "finales": 200,
+        "descartados_por_cap": 37
+      },
+      "lounge": {
+        "brutos": 135,
+        "tras_dominancia": 122,
+        "descartados_por_dominancia": 13,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 122,
+        "descartados_por_cap": 0
+      },
+      "meeting_4": {
+        "brutos": 316,
+        "tras_dominancia": 288,
+        "descartados_por_dominancia": 28,
+        "instancias_pedidas": 4,
+        "cap_base": 200,
+        "cap_efectivo": 320,
+        "cap_activo": false,
+        "cap": 320,
+        "finales": 288,
+        "descartados_por_cap": 0
+      },
+      "meeting_8": {
+        "brutos": 100,
+        "tras_dominancia": 91,
+        "descartados_por_dominancia": 9,
+        "instancias_pedidas": 2,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 91,
+        "descartados_por_cap": 0
+      },
+      "phone_booth": {
+        "brutos": 702,
+        "tras_dominancia": 609,
+        "descartados_por_dominancia": 93,
+        "instancias_pedidas": 3,
+        "cap_base": 200,
+        "cap_efectivo": 240,
+        "cap_activo": true,
+        "cap": 240,
+        "finales": 240,
+        "descartados_por_cap": 369
+      },
+      "private_office": {
+        "brutos": 507,
+        "tras_dominancia": 285,
+        "descartados_por_dominancia": 222,
+        "instancias_pedidas": 8,
+        "cap_base": 200,
+        "cap_efectivo": 640,
+        "cap_activo": false,
+        "cap": 640,
+        "finales": 285,
+        "descartados_por_cap": 0
+      },
+      "reception": {
+        "brutos": 230,
+        "tras_dominancia": 212,
+        "descartados_por_dominancia": 18,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": true,
+        "cap": 200,
+        "finales": 200,
+        "descartados_por_cap": 12
+      },
+      "workstation_cluster": {
+        "brutos": 228,
+        "tras_dominancia": 191,
+        "descartados_por_dominancia": 37,
+        "instancias_pedidas": 4,
+        "cap_base": 200,
+        "cap_efectivo": 320,
+        "cap_activo": false,
+        "cap": 320,
+        "finales": 191,
+        "descartados_por_cap": 0
+      },
+      "workstation_row": {
+        "brutos": 360,
+        "tras_dominancia": 307,
+        "descartados_por_dominancia": 53,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": true,
+        "cap": 200,
+        "finales": 200,
+        "descartados_por_cap": 107
+      }
+    },
+    "causas_de_descarte": {
+      "fuera_de_bbox": 11087,
+      "duplicado": 7641,
+      "fuera_del_usable": 7203,
+      "invade_zona_de_acceso": 102,
+      "choca_elemento_fijo": 9496,
+      "choca_pilar": 411,
+      "no_toca_circulacion": 9
+    },
+    "modulos_sin_candidatos": [],
+    "bench_cfgs": [
+      6,
+      4,
+      3
+    ],
+    "cap_base": 200
+  },
+  "C": {
+    "brutos": 2742,
+    "finales": 1822,
+    "descartados_pct": 33.55,
+    "refinamientos": [
+      {
+        "ronda": 1,
+        "step": 0.5,
+        "modulos": [
+          "private_office",
+          "boardroom_12"
+        ],
+        "puestos": false,
+        "candidatos_tras_ronda": 2718
+      },
+      {
+        "ronda": 2,
+        "step": 0.25,
+        "modulos": [
+          "boardroom_12"
+        ],
+        "puestos": false,
+        "candidatos_tras_ronda": 2742
+      }
+    ],
+    "por_modulo": {
+      "boardroom_12": {
+        "brutos": 53,
+        "tras_dominancia": 19,
+        "descartados_por_dominancia": 34,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 19,
+        "descartados_por_cap": 0
+      },
+      "dining": {
+        "brutos": 89,
+        "tras_dominancia": 80,
+        "descartados_por_dominancia": 9,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 80,
+        "descartados_por_cap": 0
+      },
+      "kitchenette": {
+        "brutos": 237,
+        "tras_dominancia": 221,
+        "descartados_por_dominancia": 16,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": true,
+        "cap": 200,
+        "finales": 200,
+        "descartados_por_cap": 21
+      },
+      "lounge": {
+        "brutos": 121,
+        "tras_dominancia": 109,
+        "descartados_por_dominancia": 12,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 109,
+        "descartados_por_cap": 0
+      },
+      "meeting_4": {
+        "brutos": 301,
+        "tras_dominancia": 275,
+        "descartados_por_dominancia": 26,
+        "instancias_pedidas": 4,
+        "cap_base": 200,
+        "cap_efectivo": 320,
+        "cap_activo": false,
+        "cap": 320,
+        "finales": 275,
+        "descartados_por_cap": 0
+      },
+      "meeting_8": {
+        "brutos": 89,
+        "tras_dominancia": 80,
+        "descartados_por_dominancia": 9,
+        "instancias_pedidas": 2,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 80,
+        "descartados_por_cap": 0
+      },
+      "phone_booth": {
+        "brutos": 681,
+        "tras_dominancia": 594,
+        "descartados_por_dominancia": 87,
+        "instancias_pedidas": 3,
+        "cap_base": 200,
+        "cap_efectivo": 240,
+        "cap_activo": true,
+        "cap": 240,
+        "finales": 240,
+        "descartados_por_cap": 354
+      },
+      "private_office": {
+        "brutos": 474,
+        "tras_dominancia": 266,
+        "descartados_por_dominancia": 208,
+        "instancias_pedidas": 8,
+        "cap_base": 200,
+        "cap_efectivo": 640,
+        "cap_activo": false,
+        "cap": 640,
+        "finales": 266,
+        "descartados_por_cap": 0
+      },
+      "reception": {
+        "brutos": 209,
+        "tras_dominancia": 190,
+        "descartados_por_dominancia": 19,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": false,
+        "cap": 200,
+        "finales": 190,
+        "descartados_por_cap": 0
+      },
+      "workstation_cluster": {
+        "brutos": 197,
+        "tras_dominancia": 163,
+        "descartados_por_dominancia": 34,
+        "instancias_pedidas": 4,
+        "cap_base": 200,
+        "cap_efectivo": 320,
+        "cap_activo": false,
+        "cap": 320,
+        "finales": 163,
+        "descartados_por_cap": 0
+      },
+      "workstation_row": {
+        "brutos": 291,
+        "tras_dominancia": 247,
+        "descartados_por_dominancia": 44,
+        "instancias_pedidas": 1,
+        "cap_base": 200,
+        "cap_efectivo": 200,
+        "cap_activo": true,
+        "cap": 200,
+        "finales": 200,
+        "descartados_por_cap": 47
+      }
+    },
+    "causas_de_descarte": {
+      "fuera_de_bbox": 9530,
+      "duplicado": 8260,
+      "fuera_del_usable": 6444,
+      "invade_zona_de_acceso": 89,
+      "choca_elemento_fijo": 8284,
+      "choca_pilar": 295,
+      "no_toca_circulacion": 6
+    },
+    "modulos_sin_candidatos": [],
+    "bench_cfgs": [
+      4,
+      3,
+      2
+    ],
+    "cap_base": 200
+  }
+}

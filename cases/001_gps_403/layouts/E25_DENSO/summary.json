@@ -1,0 +1,109 @@
+{
+  "brief_id": "BRIEF_DENSO",
+  "no_fit": {
+    "A": {
+      "alt": "A",
+      "status": "SEARCH_EXHAUSTED",
+      "solver_status": "INFEASIBLE",
+      "reason": "CP-SAT: sin asignación que cumpla las restricciones duras",
+      "candidate_space": {
+        "complete": false,
+        "sampled_positions": true,
+        "dominance_pruned": true,
+        "capped": true,
+        "step_m": 1.0,
+        "cap": null,
+        "por_que_incompleto": "posiciones muestreadas cada 1.0 m; candidatos colapsados por dominancia; tope de None candidatos por módulo",
+        "note": "generación anclada a elementos de circulación con posiciones muestreadas; poda por dominancia y tope por módulo escalado con la demanda del programa"
+      },
+      "explicacion": "el solver probó que no hay solución DENTRO del espacio de candidatos considerado, que es incompleto (posiciones muestreadas cada 1.0 m; candidatos colapsados por dominancia; tope de None candidatos por módulo). No es una demostración de que no quepa.",
+      "puede_decir_que_no_cabe": false,
+      "runtime_s": 72.56,
+      "name": "EFICIENTE",
+      "brief_id": "BRIEF_DENSO",
+      "open_workstations_requested": 56,
+      "bench_cfgs": [
+        6,
+        5,
+        4
+      ],
+      "cap_base": 200,
+      "presupuesto_producto_s": {
+        "warm": 22.0,
+        "feas": 25.0,
+        "feas_retry": 50.0,
+        "opt": 34.0
+      }
+    },
+    "B": {
+      "alt": "B",
+      "status": "TIMEOUT_NO_SOLUTION",
+      "solver_status": "UNKNOWN",
+      "reason": "sin solución en el tiempo",
+      "candidate_space": {
+        "complete": false,
+        "sampled_positions": true,
+        "dominance_pruned": true,
+        "capped": true,
+        "step_m": 1.0,
+        "cap": null,
+        "por_que_incompleto": "posiciones muestreadas cada 1.0 m; candidatos colapsados por dominancia; tope de None candidatos por módulo",
+        "note": "generación anclada a elementos de circulación con posiciones muestreadas; poda por dominancia y tope por módulo escalado con la demanda del programa"
+      },
+      "explicacion": "se agotó el presupuesto de tiempo sin encontrar solución: no dice nada sobre factibilidad",
+      "puede_decir_que_no_cabe": false,
+      "runtime_s": 138.04,
+      "name": "BALANCEADO",
+      "brief_id": "BRIEF_DENSO",
+      "open_workstations_requested": 56,
+      "bench_cfgs": [
+        6,
+        4,
+        3
+      ],
+      "cap_base": 200,
+      "presupuesto_producto_s": {
+        "warm": 22.0,
+        "feas": 25.0,
+        "feas_retry": 50.0,
+        "opt": 34.0
+      }
+    },
+    "C": {
+      "alt": "C",
+      "status": "TIMEOUT_NO_SOLUTION",
+      "solver_status": "UNKNOWN",
+      "reason": "sin solución en el tiempo",
+      "candidate_space": {
+        "complete": false,
+        "sampled_positions": true,
+        "dominance_pruned": true,
+        "capped": true,
+        "step_m": 1.0,
+        "cap": null,
+        "por_que_incompleto": "posiciones muestreadas cada 1.0 m; candidatos colapsados por dominancia; tope de None candidatos por módulo",
+        "note": "generación anclada a elementos de circulación con posiciones muestreadas; poda por dominancia y tope por módulo escalado con la demanda del programa"
+      },
+      "explicacion": "se agotó el presupuesto de tiempo sin encontrar solución: no dice nada sobre factibilidad",
+      "puede_decir_que_no_cabe": false,
+      "runtime_s": 157.6,
+      "name": "COLABORATIVO",
+      "brief_id": "BRIEF_DENSO",
+      "open_workstations_requested": 56,
+      "bench_cfgs": [
+        4,
+        3,
+        2
+      ],
+      "cap_base": 200,
+      "presupuesto_producto_s": {
+        "warm": 22.0,
+        "feas": 25.0,
+        "feas_retry": 50.0,
+        "opt": 34.0
+      }
+    }
+  },
+  "alternatives_solved": 0,
+  "total_runtime_s": 368.5
+}

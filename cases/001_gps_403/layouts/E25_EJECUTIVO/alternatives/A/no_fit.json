@@ -1,0 +1,34 @@
+{
+  "alt": "A",
+  "status": "SEARCH_EXHAUSTED",
+  "solver_status": "INFEASIBLE",
+  "reason": "CP-SAT: sin asignación que cumpla las restricciones duras",
+  "candidate_space": {
+    "complete": false,
+    "sampled_positions": true,
+    "dominance_pruned": true,
+    "capped": true,
+    "step_m": 1.0,
+    "cap": null,
+    "por_que_incompleto": "posiciones muestreadas cada 1.0 m; candidatos colapsados por dominancia; tope de None candidatos por módulo",
+    "note": "generación anclada a elementos de circulación con posiciones muestreadas; poda por dominancia y tope por módulo escalado con la demanda del programa"
+  },
+  "explicacion": "el solver probó que no hay solución DENTRO del espacio de candidatos considerado, que es incompleto (posiciones muestreadas cada 1.0 m; candidatos colapsados por dominancia; tope de None candidatos por módulo). No es una demostración de que no quepa.",
+  "puede_decir_que_no_cabe": false,
+  "runtime_s": 175.32,
+  "name": "EFICIENTE",
+  "brief_id": "BRIEF_EJECUTIVO",
+  "open_workstations_requested": 24,
+  "bench_cfgs": [
+    6,
+    5,
+    4
+  ],
+  "cap_base": 200,
+  "presupuesto_producto_s": {
+    "warm": 22.0,
+    "feas": 25.0,
+    "feas_retry": 50.0,
+    "opt": 34.0
+  }
+}

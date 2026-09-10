@@ -1,0 +1,51 @@
+{
+  "combinacion": "EQUILIBRADO/B",
+  "corridas": {
+    "PRODUCTO": {
+      "runs": [
+        {
+          "status": "OPTIMAL",
+          "seats": 40,
+          "geometry_hash": "8f181d7658d9c7ef",
+          "wall_time_s": 3.619,
+          "det_time": 0.9393,
+          "runtime_s": 10.83,
+          "modo": "PRODUCTO"
+        },
+        {
+          "status": "OPTIMAL",
+          "seats": 40,
+          "geometry_hash": "8f181d7658d9c7ef",
+          "wall_time_s": 3.507,
+          "det_time": 0.9393,
+          "runtime_s": 10.98,
+          "modo": "PRODUCTO"
+        }
+      ],
+      "reproducible": true
+    },
+    "DETERMINISTA": {
+      "runs": [
+        {
+          "status": "OPTIMAL",
+          "seats": 40,
+          "geometry_hash": "c1c0ae4894e928da",
+          "wall_time_s": 5.219,
+          "det_time": 2.2872,
+          "runtime_s": 12.5,
+          "modo": "DETERMINISTA"
+        },
+        {
+          "status": "OPTIMAL",
+          "seats": 40,
+          "geometry_hash": "c1c0ae4894e928da",
+          "wall_time_s": 5.403,
+          "det_time": 2.2872,
+          "runtime_s": 12.51,
+          "modo": "DETERMINISTA"
+        }
+      ],
+      "reproducible": true
+    }
+  }
+}

@@ -399,13 +399,19 @@ def test_los_hashes_ABC_se_recomputan_desde_la_geometria_guardada():
 # 8 — alcance: qué movió E24 y qué no
 # ===================================================================================================
 def test_e24_movio_el_motor_a_proposito_y_nada_mas():
+    """E25 — mismo arreglo que se le hizo a los ciclos anteriores: el literal ENGINE_E24 es el motor
+    DE ESTE CICLO y vive en la cadena de baselines; lo que se comprueba hoy es que el motor está en el
+    baseline VIGENTE, que un ciclo posterior puede mover declarando baseline nuevo."""
+    import engine_baseline
     r = producer_freeze.read_worktree(str(RAIZ))
     eng = freeze.manifest(str(RAIZ))["engine_hash"]
-    assert eng != ENGINE_E23, "E24 §6 exige tocar el motor: si el hash no se movió, no se quitó nada"
-    assert eng == ENGINE_E24
     base = json.loads((RAIZ / "cases/generalization/E24/GENERIC_ENGINE_BASELINE.json").read_text(encoding="utf-8"))
-    assert base["engine_hash"] == eng, "el motor cambió sin actualizar el baseline declarado de E24"
+    assert base["engine_hash"] == ENGINE_E24, "el baseline de E24 dejó de declarar el motor de E24"
+    assert base["engine_hash"] != ENGINE_E23, "E24 §6 exige tocar el motor"
     assert base["diff_vs_previous"]["previous_engine_hash"] == ENGINE_E23
+    assert engine_baseline.esta_en_la_cadena(ENGINE_E24), "el motor de E24 salió de la cadena"
+    assert eng == engine_baseline.engine_hash(), \
+        "el motor cambió sin declarar un GENERIC_ENGINE_BASELINE.json nuevo"
     assert producer_freeze.producer_hash(r) == PRODUCER, "E24 no toca el productor semántico"
     assert scope_guard.hashes(r) == SCOPE, "E24 no toca contrato/wall evidence/semantic hint/downstream"
 

@@ -1,0 +1,1028 @@
+[
+  {
+    "brief": "DENSO",
+    "alt": "A",
+    "bench_cfgs": [
+      6,
+      5,
+      4
+    ],
+    "module_max_path": {
+      "boardroom_12": 16.0
+    },
+    "modulos": {
+      "boardroom_12": {
+        "instancias_pedidas": 1,
+        "brutos": 15,
+        "tras_dominancia": 15,
+        "tras_cap": 15,
+        "cap_activo": false,
+        "filtrados_por_ruta": 3,
+        "en_modelo": 12,
+        "candidatos_por_instancia": 12.0
+      },
+      "dining": {
+        "instancias_pedidas": 1,
+        "brutos": 100,
+        "tras_dominancia": 88,
+        "tras_cap": 88,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 88,
+        "candidatos_por_instancia": 88.0
+      },
+      "kitchenette": {
+        "instancias_pedidas": 1,
+        "brutos": 255,
+        "tras_dominancia": 233,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 200.0
+      },
+      "lounge": {
+        "instancias_pedidas": 1,
+        "brutos": 135,
+        "tras_dominancia": 117,
+        "tras_cap": 117,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 117,
+        "candidatos_por_instancia": 117.0
+      },
+      "meeting_4": {
+        "instancias_pedidas": 2,
+        "brutos": 316,
+        "tras_dominancia": 280,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 100.0
+      },
+      "meeting_8": {
+        "instancias_pedidas": 1,
+        "brutos": 100,
+        "tras_dominancia": 88,
+        "tras_cap": 88,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 88,
+        "candidatos_por_instancia": 88.0
+      },
+      "phone_booth": {
+        "instancias_pedidas": 4,
+        "brutos": 702,
+        "tras_dominancia": 600,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 50.0
+      },
+      "private_office": {
+        "instancias_pedidas": 2,
+        "brutos": 255,
+        "tras_dominancia": 233,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 100.0
+      },
+      "reception": {
+        "instancias_pedidas": 1,
+        "brutos": 230,
+        "tras_dominancia": 206,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 167,
+        "en_modelo": 33,
+        "candidatos_por_instancia": 33.0
+      },
+      "workstation_cluster": {
+        "instancias_pedidas": 10,
+        "brutos": 251,
+        "tras_dominancia": 98,
+        "tras_cap": 98,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 98,
+        "candidatos_por_instancia": 9.8
+      }
+    }
+  },
+  {
+    "brief": "DENSO",
+    "alt": "B",
+    "bench_cfgs": [
+      6,
+      4,
+      3
+    ],
+    "module_max_path": {
+      "boardroom_12": 14.0
+    },
+    "modulos": {
+      "boardroom_12": {
+        "instancias_pedidas": 1,
+        "brutos": 15,
+        "tras_dominancia": 15,
+        "tras_cap": 15,
+        "cap_activo": false,
+        "filtrados_por_ruta": 3,
+        "en_modelo": 12,
+        "candidatos_por_instancia": 12.0
+      },
+      "dining": {
+        "instancias_pedidas": 1,
+        "brutos": 100,
+        "tras_dominancia": 88,
+        "tras_cap": 88,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 88,
+        "candidatos_por_instancia": 88.0
+      },
+      "kitchenette": {
+        "instancias_pedidas": 1,
+        "brutos": 255,
+        "tras_dominancia": 233,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 200.0
+      },
+      "lounge": {
+        "instancias_pedidas": 1,
+        "brutos": 135,
+        "tras_dominancia": 117,
+        "tras_cap": 117,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 117,
+        "candidatos_por_instancia": 117.0
+      },
+      "meeting_4": {
+        "instancias_pedidas": 2,
+        "brutos": 316,
+        "tras_dominancia": 280,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 100.0
+      },
+      "meeting_8": {
+        "instancias_pedidas": 1,
+        "brutos": 100,
+        "tras_dominancia": 88,
+        "tras_cap": 88,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 88,
+        "candidatos_por_instancia": 88.0
+      },
+      "phone_booth": {
+        "instancias_pedidas": 4,
+        "brutos": 702,
+        "tras_dominancia": 600,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 50.0
+      },
+      "private_office": {
+        "instancias_pedidas": 2,
+        "brutos": 255,
+        "tras_dominancia": 233,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 100.0
+      },
+      "reception": {
+        "instancias_pedidas": 1,
+        "brutos": 230,
+        "tras_dominancia": 206,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 167,
+        "en_modelo": 33,
+        "candidatos_por_instancia": 33.0
+      },
+      "workstation_cluster": {
+        "instancias_pedidas": 10,
+        "brutos": 228,
+        "tras_dominancia": 98,
+        "tras_cap": 98,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 98,
+        "candidatos_por_instancia": 9.8
+      }
+    }
+  },
+  {
+    "brief": "DENSO",
+    "alt": "C",
+    "bench_cfgs": [
+      4,
+      3,
+      2
+    ],
+    "module_max_path": {
+      "boardroom_12": 18.0
+    },
+    "modulos": {
+      "boardroom_12": {
+        "instancias_pedidas": 1,
+        "brutos": 14,
+        "tras_dominancia": 14,
+        "tras_cap": 14,
+        "cap_activo": false,
+        "filtrados_por_ruta": 2,
+        "en_modelo": 12,
+        "candidatos_por_instancia": 12.0
+      },
+      "dining": {
+        "instancias_pedidas": 1,
+        "brutos": 89,
+        "tras_dominancia": 77,
+        "tras_cap": 77,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 77,
+        "candidatos_por_instancia": 77.0
+      },
+      "kitchenette": {
+        "instancias_pedidas": 1,
+        "brutos": 237,
+        "tras_dominancia": 217,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 200.0
+      },
+      "lounge": {
+        "instancias_pedidas": 1,
+        "brutos": 121,
+        "tras_dominancia": 104,
+        "tras_cap": 104,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 104,
+        "candidatos_por_instancia": 104.0
+      },
+      "meeting_4": {
+        "instancias_pedidas": 2,
+        "brutos": 301,
+        "tras_dominancia": 268,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 100.0
+      },
+      "meeting_8": {
+        "instancias_pedidas": 1,
+        "brutos": 89,
+        "tras_dominancia": 77,
+        "tras_cap": 77,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 77,
+        "candidatos_por_instancia": 77.0
+      },
+      "phone_booth": {
+        "instancias_pedidas": 4,
+        "brutos": 681,
+        "tras_dominancia": 583,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 50.0
+      },
+      "private_office": {
+        "instancias_pedidas": 2,
+        "brutos": 237,
+        "tras_dominancia": 217,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 100.0
+      },
+      "reception": {
+        "instancias_pedidas": 1,
+        "brutos": 209,
+        "tras_dominancia": 185,
+        "tras_cap": 185,
+        "cap_activo": false,
+        "filtrados_por_ruta": 152,
+        "en_modelo": 33,
+        "candidatos_por_instancia": 33.0
+      },
+      "workstation_cluster": {
+        "instancias_pedidas": 10,
+        "brutos": 197,
+        "tras_dominancia": 89,
+        "tras_cap": 89,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 89,
+        "candidatos_por_instancia": 8.9
+      }
+    }
+  },
+  {
+    "brief": "EQUILIBRADO",
+    "alt": "A",
+    "bench_cfgs": [
+      6,
+      5,
+      4
+    ],
+    "module_max_path": {
+      "boardroom_12": 16.0
+    },
+    "modulos": {
+      "boardroom_12": {
+        "instancias_pedidas": 1,
+        "brutos": 15,
+        "tras_dominancia": 15,
+        "tras_cap": 15,
+        "cap_activo": false,
+        "filtrados_por_ruta": 3,
+        "en_modelo": 12,
+        "candidatos_por_instancia": 12.0
+      },
+      "dining": {
+        "instancias_pedidas": 1,
+        "brutos": 100,
+        "tras_dominancia": 88,
+        "tras_cap": 88,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 88,
+        "candidatos_por_instancia": 88.0
+      },
+      "kitchenette": {
+        "instancias_pedidas": 1,
+        "brutos": 255,
+        "tras_dominancia": 233,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 200.0
+      },
+      "lounge": {
+        "instancias_pedidas": 1,
+        "brutos": 135,
+        "tras_dominancia": 117,
+        "tras_cap": 117,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 117,
+        "candidatos_por_instancia": 117.0
+      },
+      "meeting_4": {
+        "instancias_pedidas": 3,
+        "brutos": 316,
+        "tras_dominancia": 280,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 66.7
+      },
+      "meeting_8": {
+        "instancias_pedidas": 1,
+        "brutos": 100,
+        "tras_dominancia": 88,
+        "tras_cap": 88,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 88,
+        "candidatos_por_instancia": 88.0
+      },
+      "phone_booth": {
+        "instancias_pedidas": 3,
+        "brutos": 702,
+        "tras_dominancia": 600,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 66.7
+      },
+      "private_office": {
+        "instancias_pedidas": 4,
+        "brutos": 255,
+        "tras_dominancia": 233,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 50.0
+      },
+      "reception": {
+        "instancias_pedidas": 1,
+        "brutos": 230,
+        "tras_dominancia": 206,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 167,
+        "en_modelo": 33,
+        "candidatos_por_instancia": 33.0
+      },
+      "workstation_cluster": {
+        "instancias_pedidas": 7,
+        "brutos": 251,
+        "tras_dominancia": 98,
+        "tras_cap": 98,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 98,
+        "candidatos_por_instancia": 14.0
+      }
+    }
+  },
+  {
+    "brief": "EQUILIBRADO",
+    "alt": "B",
+    "bench_cfgs": [
+      6,
+      4,
+      3
+    ],
+    "module_max_path": {
+      "boardroom_12": 14.0
+    },
+    "modulos": {
+      "boardroom_12": {
+        "instancias_pedidas": 1,
+        "brutos": 15,
+        "tras_dominancia": 15,
+        "tras_cap": 15,
+        "cap_activo": false,
+        "filtrados_por_ruta": 3,
+        "en_modelo": 12,
+        "candidatos_por_instancia": 12.0
+      },
+      "dining": {
+        "instancias_pedidas": 1,
+        "brutos": 100,
+        "tras_dominancia": 88,
+        "tras_cap": 88,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 88,
+        "candidatos_por_instancia": 88.0
+      },
+      "kitchenette": {
+        "instancias_pedidas": 1,
+        "brutos": 255,
+        "tras_dominancia": 233,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 200.0
+      },
+      "lounge": {
+        "instancias_pedidas": 1,
+        "brutos": 135,
+        "tras_dominancia": 117,
+        "tras_cap": 117,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 117,
+        "candidatos_por_instancia": 117.0
+      },
+      "meeting_4": {
+        "instancias_pedidas": 3,
+        "brutos": 316,
+        "tras_dominancia": 280,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 66.7
+      },
+      "meeting_8": {
+        "instancias_pedidas": 1,
+        "brutos": 100,
+        "tras_dominancia": 88,
+        "tras_cap": 88,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 88,
+        "candidatos_por_instancia": 88.0
+      },
+      "phone_booth": {
+        "instancias_pedidas": 3,
+        "brutos": 702,
+        "tras_dominancia": 600,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 66.7
+      },
+      "private_office": {
+        "instancias_pedidas": 4,
+        "brutos": 255,
+        "tras_dominancia": 233,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 50.0
+      },
+      "reception": {
+        "instancias_pedidas": 1,
+        "brutos": 230,
+        "tras_dominancia": 206,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 167,
+        "en_modelo": 33,
+        "candidatos_por_instancia": 33.0
+      },
+      "workstation_cluster": {
+        "instancias_pedidas": 7,
+        "brutos": 228,
+        "tras_dominancia": 98,
+        "tras_cap": 98,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 98,
+        "candidatos_por_instancia": 14.0
+      }
+    }
+  },
+  {
+    "brief": "EQUILIBRADO",
+    "alt": "C",
+    "bench_cfgs": [
+      4,
+      3,
+      2
+    ],
+    "module_max_path": {
+      "boardroom_12": 18.0
+    },
+    "modulos": {
+      "boardroom_12": {
+        "instancias_pedidas": 1,
+        "brutos": 14,
+        "tras_dominancia": 14,
+        "tras_cap": 14,
+        "cap_activo": false,
+        "filtrados_por_ruta": 2,
+        "en_modelo": 12,
+        "candidatos_por_instancia": 12.0
+      },
+      "dining": {
+        "instancias_pedidas": 1,
+        "brutos": 89,
+        "tras_dominancia": 77,
+        "tras_cap": 77,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 77,
+        "candidatos_por_instancia": 77.0
+      },
+      "kitchenette": {
+        "instancias_pedidas": 1,
+        "brutos": 237,
+        "tras_dominancia": 217,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 200.0
+      },
+      "lounge": {
+        "instancias_pedidas": 1,
+        "brutos": 121,
+        "tras_dominancia": 104,
+        "tras_cap": 104,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 104,
+        "candidatos_por_instancia": 104.0
+      },
+      "meeting_4": {
+        "instancias_pedidas": 3,
+        "brutos": 301,
+        "tras_dominancia": 268,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 66.7
+      },
+      "meeting_8": {
+        "instancias_pedidas": 1,
+        "brutos": 89,
+        "tras_dominancia": 77,
+        "tras_cap": 77,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 77,
+        "candidatos_por_instancia": 77.0
+      },
+      "phone_booth": {
+        "instancias_pedidas": 3,
+        "brutos": 681,
+        "tras_dominancia": 583,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 66.7
+      },
+      "private_office": {
+        "instancias_pedidas": 4,
+        "brutos": 237,
+        "tras_dominancia": 217,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 50.0
+      },
+      "reception": {
+        "instancias_pedidas": 1,
+        "brutos": 209,
+        "tras_dominancia": 185,
+        "tras_cap": 185,
+        "cap_activo": false,
+        "filtrados_por_ruta": 152,
+        "en_modelo": 33,
+        "candidatos_por_instancia": 33.0
+      },
+      "workstation_cluster": {
+        "instancias_pedidas": 7,
+        "brutos": 197,
+        "tras_dominancia": 89,
+        "tras_cap": 89,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 89,
+        "candidatos_por_instancia": 12.7
+      }
+    }
+  },
+  {
+    "brief": "EJECUTIVO",
+    "alt": "A",
+    "bench_cfgs": [
+      6,
+      5,
+      4
+    ],
+    "module_max_path": {
+      "boardroom_12": 16.0
+    },
+    "modulos": {
+      "boardroom_12": {
+        "instancias_pedidas": 1,
+        "brutos": 15,
+        "tras_dominancia": 15,
+        "tras_cap": 15,
+        "cap_activo": false,
+        "filtrados_por_ruta": 3,
+        "en_modelo": 12,
+        "candidatos_por_instancia": 12.0
+      },
+      "dining": {
+        "instancias_pedidas": 1,
+        "brutos": 100,
+        "tras_dominancia": 88,
+        "tras_cap": 88,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 88,
+        "candidatos_por_instancia": 88.0
+      },
+      "kitchenette": {
+        "instancias_pedidas": 1,
+        "brutos": 255,
+        "tras_dominancia": 233,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 200.0
+      },
+      "lounge": {
+        "instancias_pedidas": 1,
+        "brutos": 135,
+        "tras_dominancia": 117,
+        "tras_cap": 117,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 117,
+        "candidatos_por_instancia": 117.0
+      },
+      "meeting_4": {
+        "instancias_pedidas": 4,
+        "brutos": 316,
+        "tras_dominancia": 280,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 50.0
+      },
+      "meeting_8": {
+        "instancias_pedidas": 2,
+        "brutos": 100,
+        "tras_dominancia": 88,
+        "tras_cap": 88,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 88,
+        "candidatos_por_instancia": 44.0
+      },
+      "phone_booth": {
+        "instancias_pedidas": 3,
+        "brutos": 702,
+        "tras_dominancia": 600,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 66.7
+      },
+      "private_office": {
+        "instancias_pedidas": 8,
+        "brutos": 255,
+        "tras_dominancia": 233,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 25.0
+      },
+      "reception": {
+        "instancias_pedidas": 1,
+        "brutos": 230,
+        "tras_dominancia": 206,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 167,
+        "en_modelo": 33,
+        "candidatos_por_instancia": 33.0
+      },
+      "workstation_cluster": {
+        "instancias_pedidas": 4,
+        "brutos": 251,
+        "tras_dominancia": 98,
+        "tras_cap": 98,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 98,
+        "candidatos_por_instancia": 24.5
+      }
+    }
+  },
+  {
+    "brief": "EJECUTIVO",
+    "alt": "B",
+    "bench_cfgs": [
+      6,
+      4,
+      3
+    ],
+    "module_max_path": {
+      "boardroom_12": 14.0
+    },
+    "modulos": {
+      "boardroom_12": {
+        "instancias_pedidas": 1,
+        "brutos": 15,
+        "tras_dominancia": 15,
+        "tras_cap": 15,
+        "cap_activo": false,
+        "filtrados_por_ruta": 3,
+        "en_modelo": 12,
+        "candidatos_por_instancia": 12.0
+      },
+      "dining": {
+        "instancias_pedidas": 1,
+        "brutos": 100,
+        "tras_dominancia": 88,
+        "tras_cap": 88,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 88,
+        "candidatos_por_instancia": 88.0
+      },
+      "kitchenette": {
+        "instancias_pedidas": 1,
+        "brutos": 255,
+        "tras_dominancia": 233,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 200.0
+      },
+      "lounge": {
+        "instancias_pedidas": 1,
+        "brutos": 135,
+        "tras_dominancia": 117,
+        "tras_cap": 117,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 117,
+        "candidatos_por_instancia": 117.0
+      },
+      "meeting_4": {
+        "instancias_pedidas": 4,
+        "brutos": 316,
+        "tras_dominancia": 280,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 50.0
+      },
+      "meeting_8": {
+        "instancias_pedidas": 2,
+        "brutos": 100,
+        "tras_dominancia": 88,
+        "tras_cap": 88,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 88,
+        "candidatos_por_instancia": 44.0
+      },
+      "phone_booth": {
+        "instancias_pedidas": 3,
+        "brutos": 702,
+        "tras_dominancia": 600,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 66.7
+      },
+      "private_office": {
+        "instancias_pedidas": 8,
+        "brutos": 255,
+        "tras_dominancia": 233,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 25.0
+      },
+      "reception": {
+        "instancias_pedidas": 1,
+        "brutos": 230,
+        "tras_dominancia": 206,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 167,
+        "en_modelo": 33,
+        "candidatos_por_instancia": 33.0
+      },
+      "workstation_cluster": {
+        "instancias_pedidas": 4,
+        "brutos": 228,
+        "tras_dominancia": 98,
+        "tras_cap": 98,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 98,
+        "candidatos_por_instancia": 24.5
+      }
+    }
+  },
+  {
+    "brief": "EJECUTIVO",
+    "alt": "C",
+    "bench_cfgs": [
+      4,
+      3,
+      2
+    ],
+    "module_max_path": {
+      "boardroom_12": 18.0
+    },
+    "modulos": {
+      "boardroom_12": {
+        "instancias_pedidas": 1,
+        "brutos": 14,
+        "tras_dominancia": 14,
+        "tras_cap": 14,
+        "cap_activo": false,
+        "filtrados_por_ruta": 2,
+        "en_modelo": 12,
+        "candidatos_por_instancia": 12.0
+      },
+      "dining": {
+        "instancias_pedidas": 1,
+        "brutos": 89,
+        "tras_dominancia": 77,
+        "tras_cap": 77,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 77,
+        "candidatos_por_instancia": 77.0
+      },
+      "kitchenette": {
+        "instancias_pedidas": 1,
+        "brutos": 237,
+        "tras_dominancia": 217,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 200.0
+      },
+      "lounge": {
+        "instancias_pedidas": 1,
+        "brutos": 121,
+        "tras_dominancia": 104,
+        "tras_cap": 104,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 104,
+        "candidatos_por_instancia": 104.0
+      },
+      "meeting_4": {
+        "instancias_pedidas": 4,
+        "brutos": 301,
+        "tras_dominancia": 268,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 50.0
+      },
+      "meeting_8": {
+        "instancias_pedidas": 2,
+        "brutos": 89,
+        "tras_dominancia": 77,
+        "tras_cap": 77,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 77,
+        "candidatos_por_instancia": 38.5
+      },
+      "phone_booth": {
+        "instancias_pedidas": 3,
+        "brutos": 681,
+        "tras_dominancia": 583,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 66.7
+      },
+      "private_office": {
+        "instancias_pedidas": 8,
+        "brutos": 237,
+        "tras_dominancia": 217,
+        "tras_cap": 200,
+        "cap_activo": true,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 200,
+        "candidatos_por_instancia": 25.0
+      },
+      "reception": {
+        "instancias_pedidas": 1,
+        "brutos": 209,
+        "tras_dominancia": 185,
+        "tras_cap": 185,
+        "cap_activo": false,
+        "filtrados_por_ruta": 152,
+        "en_modelo": 33,
+        "candidatos_por_instancia": 33.0
+      },
+      "workstation_cluster": {
+        "instancias_pedidas": 4,
+        "brutos": 197,
+        "tras_dominancia": 89,
+        "tras_cap": 89,
+        "cap_activo": false,
+        "filtrados_por_ruta": 0,
+        "en_modelo": 89,
+        "candidatos_por_instancia": 22.2
+      }
+    }
+  }
+]

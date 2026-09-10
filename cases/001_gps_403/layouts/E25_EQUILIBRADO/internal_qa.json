@@ -1,0 +1,53 @@
+{
+  "A": {
+    "alternative": "A",
+    "operations": [],
+    "operation_count": 0,
+    "geometry_preserved_pct": 100.0,
+    "geometry_changed_pct": 0.0,
+    "estimated_minutes": 1.5,
+    "minutes_are_estimated": true,
+    "reason": "sin errores evidentes del motor: el revisor sólo acepta la propuesta",
+    "reason_for_correction": "sin errores evidentes del motor: el revisor sólo acepta la propuesta",
+    "final_validation": {
+      "hard_valid": true,
+      "violations": [],
+      "architectural_score": 0.751
+    },
+    "redesign_required": false
+  },
+  "B": {
+    "alternative": "B",
+    "operations": [],
+    "operation_count": 0,
+    "geometry_preserved_pct": 100.0,
+    "geometry_changed_pct": 0.0,
+    "estimated_minutes": 1.5,
+    "minutes_are_estimated": true,
+    "reason": "sin errores evidentes del motor: el revisor sólo acepta la propuesta",
+    "reason_for_correction": "sin errores evidentes del motor: el revisor sólo acepta la propuesta",
+    "final_validation": {
+      "hard_valid": true,
+      "violations": [],
+      "architectural_score": 0.668
+    },
+    "redesign_required": false
+  },
+  "C": {
+    "alternative": "C",
+    "operations": [],
+    "operation_count": 0,
+    "geometry_preserved_pct": 100.0,
+    "geometry_changed_pct": 0.0,
+    "estimated_minutes": 1.5,
+    "minutes_are_estimated": true,
+    "reason": "sin errores evidentes del motor: el revisor sólo acepta la propuesta",
+    "reason_for_correction": "sin errores evidentes del motor: el revisor sólo acepta la propuesta",
+    "final_validation": {
+      "hard_valid": true,
+      "violations": [],
+      "architectural_score": 0.81
+    },
+    "redesign_required": false
+  }
+}
