@@ -28,8 +28,12 @@ ENV PYTHONPATH=/app/src \
 
 # /data es el VOLUMEN persistente: uploads, cases, briefs, runs y reviews viven acá, nunca en la
 # imagen. Un redeploy reemplaza el código y no toca el trabajo de Joaquín.
+#
+# NO se declara `VOLUME ["/data"]`: Railway rechaza esa instrucción ("docker VOLUME is not
+# supported, use Railway Volumes") porque el montaje lo gestiona la plataforma. El `mkdir` alcanza:
+# si hay volumen montado en /data lo sombrea, y si no lo hay el directorio existe igual y la app
+# arranca (con estado efímero, que es lo correcto para una prueba local del contenedor).
 RUN mkdir -p /data
-VOLUME ["/data"]
 EXPOSE 8080
 
 # Un solo worker a propósito: la cola de generación es un hilo dentro del proceso, y dos workers
