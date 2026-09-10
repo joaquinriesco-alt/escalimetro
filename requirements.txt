@@ -12,3 +12,7 @@ cairosvg>=2.7
 jsonschema>=4
 openai>=1.30
 anthropic>=0.30
+
+# --- E27: servicio web interno ---------------------------------------------------------------
+flask>=3.0
+gunicorn>=21.2

@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block body %}
+<h1>Subida</h1>
+{% if ok %}<p class="ok">{{ ok|length }} planta(s) subida(s).</p>
+<ul>{% for c in ok %}<li><a href="{{ url_for('case_view', case_id=c) }}">Abrir {{ c }}</a></li>{% endfor %}</ul>{% endif %}
+{% if errs %}<p class="bad">No entraron:</p><ul>{% for e in errs %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+<p><a href="{{ url_for('library') }}">← Volver a la biblioteca</a></p>
+{% endblock %}

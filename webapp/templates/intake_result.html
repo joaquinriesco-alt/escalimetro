@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block body %}
+<h1>Preparación del shell</h1>
+{% if res.ready %}
+  <p class="ok">La planta quedó lista para generar layouts.</p>
+{% else %}
+  <p class="bad">Todavía no alcanza para generar. Falta, según el motor:</p>
+  <ul>{% for m in res.missing %}<li>{{ m }}</li>{% endfor %}</ul>
+  <p class="hint">No se inventa geometría: esto es lo que el pipeline declara que no pudo resolver.</p>
+{% endif %}
+<details><summary>Log de normalización</summary><pre>{{ res.log }}</pre></details>
+<p><a href="{{ url_for('case_view', case_id=case_id) }}">← Volver al caso</a></p>
+{% endblock %}

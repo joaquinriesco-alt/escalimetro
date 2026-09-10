@@ -1,0 +1,136 @@
+{% extends "base.html" %}{% block title %}{{ c.title }} · Escalímetro{% endblock %}
+{% block body %}
+<p class="crumb"><a href="{{ url_for('library') }}">Plantas</a> / {{ c.title }}</p>
+<h1>{{ c.title }} <span class="chip s-{{ c.status }}">{{ c.status }}</span></h1>
+
+<section class="two">
+  <div>
+    <h2>1 · La planta</h2>
+    <div class="planbox">
+      <img id="plan" src="{{ url_for('preview', case_id=c.case_id) }}" alt="planta subida">
+      <div id="pins"></div>
+    </div>
+    <p class="sub">{{ c.original_filename }} · <a href="{{ url_for('original', case_id=c.case_id) }}" target="_blank">ver original</a>{% if preview_w %} · {{ preview_w }}×{{ preview_h }} px{% endif %}</p>
+    {% if has_shell %}
+      <h3>Shell leído</h3>
+      <img class="shell" src="{{ url_for('shell_svg', case_id=c.case_id) }}" alt="shell">
+      <p class="sub">Perímetro, núcleo, pilares y acceso tal como los consume el motor.</p>
+    {% endif %}
+  </div>
+
+  <div>
+    <h2>2 · Preparar el shell</h2>
+    {% if missing %}<p class="bad">Falta: {{ missing|join(', ') }}</p>{% endif %}
+    <form method="post" action="{{ url_for('save_intake', case_id=c.case_id) }}" id="intake">
+      <label>Nombre de la unidad
+        <input name="title" value="{{ c.title }}" required></label>
+      <label>Fuente (opcional)
+        <input name="source_name" value="{{ c.source_name or '' }}" placeholder="p. ej. GPS Property"></label>
+      <label>Superficie publicada m² (opcional)
+        <input name="published_area_m2" type="number" step="0.1" value="{{ c.published_area_m2 or '' }}"></label>
+
+      <fieldset><legend>¿Esta planta está limpia / sin layout previo?</legend>
+        <label class="rad"><input type="radio" name="declared_clean" value="yes" {% if it and it.declared_clean=='yes' %}checked{% endif %}> Sí</label>
+        <label class="rad"><input type="radio" name="declared_clean" value="no" {% if it and it.declared_clean=='no' %}checked{% endif %}> No</label>
+        <p class="hint">V1 sólo acepta plantas libres. Si trae mobiliario o un layout previo, el input queda fuera de contrato: no se limpia automáticamente.</p>
+      </fieldset>
+
+      <fieldset><legend>Escala</legend>
+        <p class="hint">Marcá dos puntos sobre el plano y escribí la distancia real entre ellos.</p>
+        <button type="button" class="pick" data-mode="scale1">1er punto</button>
+        <button type="button" class="pick" data-mode="scale2">2º punto</button>
+        <label>Distancia real (m) <input name="scale_m" type="number" step="0.01" placeholder="p. ej. 12.5"></label>
+        <input type="hidden" name="scale_x1" id="scale_x1"><input type="hidden" name="scale_y1" id="scale_y1">
+        <input type="hidden" name="scale_x2" id="scale_x2"><input type="hidden" name="scale_y2" id="scale_y2">
+        {% if existing_scale %}<p class="sub">Escala ya leída del artefacto:
+          <b>{{ '%.3f'|format(existing_scale.px_per_m) }} px/m</b>
+          {% if existing_scale.method %}({{ existing_scale.method }}{% if existing_scale.confidence %}, confianza {{ existing_scale.confidence }}{% endif %}){% endif %}.
+          Marcá dos puntos sólo si querés reemplazarla.</p>{% endif %}
+        <p class="sub" id="scaleout">{% if it and it.scale_px_per_m %}Actual: {{ '%.3f'|format(it.scale_px_per_m) }} px/m ({{ it.scale_note }}){% else %}Sin escala confirmada.{% endif %}</p>
+      </fieldset>
+
+      <fieldset><legend>Puntos sobre el plano</legend>
+        <button type="button" class="pick" data-mode="seed">Marcar un punto DENTRO de la unidad</button>
+        <button type="button" class="pick" data-mode="entrance">Marcar el ACCESO principal</button>
+        <input type="hidden" name="seed_x" id="seed_x"><input type="hidden" name="seed_y" id="seed_y">
+        <input type="hidden" name="entrance_x" id="entrance_x"><input type="hidden" name="entrance_y" id="entrance_y">
+      </fieldset>
+
+      <fieldset><legend>Elementos fijos — confirmar lo que el motor leyó</legend>
+        {% for k, lbl in [('perimeter','Perímetro'),('core','Núcleo'),('columns','Pilares'),('daylight','Fachada / ventanas'),('scale_assumption','Supuesto de escala')] %}
+        <label class="rad"><input type="checkbox" name="confirm" value="{{ k }}"> {{ lbl }}</label>
+        {% endfor %}
+      </fieldset>
+      <button type="submit">Preparar shell</button>
+    </form>
+
+    <h2>3 · Programa del cliente</h2>
+    <form method="post" action="{{ url_for('create_brief', case_id=c.case_id) }}">
+      <label>Nombre del brief <input name="brief_name" value="Brief {{ c.title }}" required></label>
+      <div class="row">
+        <label>Personas (headcount) <input name="headcount" type="number" min="1" value="48" required></label>
+        <label>Puestos open <input name="workstations" type="number" min="1" value="40" required></label>
+      </div>
+      <table class="rooms"><tbody>
+      {% for mod, lbl in modules %}
+        <tr><td>{{ lbl }}</td>
+            <td><input name="room_{{ mod }}" type="number" min="0" value="{{ defaults.get(mod, 0) }}"></td></tr>
+      {% endfor %}
+      </tbody></table>
+      <p class="hint">Vos decís QUÉ necesitás. Cómo se organiza en la planta lo decide el motor.</p>
+      <button type="submit" name="generate" value="1">Guardar y generar 3 alternativas</button>
+      <button type="submit" class="sec">Sólo guardar el brief</button>
+    </form>
+  </div>
+</section>
+
+<h2>4 · Historial</h2>
+<div class="two">
+  <div><h3>Briefs</h3>
+    {% if not briefs %}<p class="sub">Ninguno todavía.</p>{% endif %}
+    <ul class="hist">{% for b in briefs %}
+      <li><b>{{ b.name }}</b> — {{ b.workstations }} puestos · {{ b.headcount }} personas
+        <form method="post" action="{{ url_for('generate', case_id=c.case_id) }}" class="inline">
+          <input type="hidden" name="brief_id" value="{{ b.brief_id }}">
+          <button class="sec">Generar</button></form>
+        <span class="mono">{{ b.brief_sha256[:12] }}</span></li>
+    {% endfor %}</ul></div>
+  <div><h3>Corridas</h3>
+    {% if not runs %}<p class="sub">Ninguna todavía.</p>{% endif %}
+    <ul class="hist">{% for r in runs %}
+      <li><a href="{{ url_for('run_view', run_id=r.run_id) }}">{{ r.run_id }}</a>
+        <span class="chip s-{{ r.status }}">{{ r.status }}</span>
+        {% for a in r.alts %}<span class="chip a-{{ a.status }}">{{ a.alt }} {{ a.status }}</span>{% endfor %}
+        <span class="sub">{{ r.created_at }}</span></li>
+    {% endfor %}</ul></div>
+</div>
+
+<script>
+const img = document.getElementById('plan'), pins = document.getElementById('pins');
+let mode = null;
+document.querySelectorAll('.pick').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.pick').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); mode = b.dataset.mode;
+});
+img.addEventListener('click', e => {
+  if (!mode) { alert('Elegí antes qué querés marcar.'); return; }
+  const r = img.getBoundingClientRect();
+  // coordenadas en px de la imagen ORIGINAL, que es el sistema que usa overrides.json
+  const x = Math.round((e.clientX - r.left) * img.naturalWidth / r.width);
+  const y = Math.round((e.clientY - r.top) * img.naturalHeight / r.height);
+  const set = (a, b) => { document.getElementById(a).value = x; document.getElementById(b).value = y; };
+  if (mode === 'seed') set('seed_x', 'seed_y');
+  if (mode === 'entrance') set('entrance_x', 'entrance_y');
+  if (mode === 'scale1') set('scale_x1', 'scale_y1');
+  if (mode === 'scale2') set('scale_x2', 'scale_y2');
+  const d = document.createElement('div');
+  d.className = 'pin ' + mode;
+  d.style.left = (100 * (e.clientX - r.left) / r.width) + '%';
+  d.style.top = (100 * (e.clientY - r.top) / r.height) + '%';
+  d.title = mode + ' ' + x + ',' + y;
+  pins.appendChild(d);
+  document.querySelectorAll('.pick').forEach(x => x.classList.remove('on'));
+  mode = null;
+});
+</script>
+{% endblock %}

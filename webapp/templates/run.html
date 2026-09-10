@@ -1,0 +1,107 @@
+{% extends "base.html" %}{% block title %}{{ c.title }} · resultados{% endblock %}
+{% block body %}
+<p class="crumb"><a href="{{ url_for('library') }}">Plantas</a> /
+  <a href="{{ url_for('case_view', case_id=c.case_id) }}">{{ c.title }}</a> / {{ r.run_id }}</p>
+<h1>{{ c.title }} <span class="chip s-{{ r.status }}" id="runstate">{{ r.status }}</span></h1>
+<p class="sub">Brief <b>{{ b.name if b else r.brief_id }}</b> — {{ b.workstations if b }} puestos open ·
+  {{ b.headcount if b }} personas · {% for x in rooms %}{{ x.count }}×{{ x.module }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
+<p class="sub mono">engine {{ (r.engine_commit or '')[:12] }} · brief {{ (b.brief_sha256 or '')[:12] if b }}</p>
+
+<div class="abc">
+  <section class="col">
+    <h2>SHELL</h2>
+    <img class="plan" src="{{ url_for('shell_svg', case_id=c.case_id) }}" alt="shell"
+         onclick="zoomTo(this.src,'{{ c.title }} · shell')">
+    <p class="sub">La planta libre sobre la que se resolvieron las tres alternativas.</p>
+  </section>
+
+  {% for a in alts %}
+  <section class="col" id="alt{{ a.alt }}">
+    <h2>{{ a.alt }} <small>{{ a.name or '' }}</small></h2>
+    <p><span class="chip a-{{ a.status }}" data-alt="{{ a.alt }}">{{ a.status }}</span></p>
+
+    {% if a.status == 'FIT' and a.has_plan %}
+      <img class="plan" src="{{ url_for('alt_asset', run_id=r.run_id, alt=a.alt, kind='plan.png') }}"
+           alt="{{ a.alt }}" onclick="zoomTo(this.src,'{{ c.title }} · {{ a.alt }}')">
+      <p class="sub"><a href="{{ url_for('alt_asset', run_id=r.run_id, alt=a.alt, kind='technical.svg') }}"
+         target="_blank">ver planta técnica</a></p>
+      {% set q = a.quality %}
+      <table class="kpi">
+        <tr><td>Puestos entregados</td><td>{{ q.open_seats or '—' }}</td></tr>
+        <tr><td>Programa completo</td><td>{{ 'sí' if q.program_complete else 'no' }}</td></tr>
+        <tr><td>Circulación</td><td>{{ q.circulation_pct }} %</td></tr>
+        <tr><td>Sin asignar</td><td>{{ q.unallocated_pct }} %</td></tr>
+        <tr><td>Luz en puestos</td><td>{{ q.daylight_score }}</td></tr>
+        <tr><td>Uso de fachada</td><td>{{ q.facade_use }}</td></tr>
+        <tr><td>Fragmentación</td><td>{{ q.fragmentation }}</td></tr>
+      </table>
+      <details class="sub"><summary>dato secundario</summary>
+        architectural_score {{ q.architectural_score }} — instrumentación interna del motor,
+        no una evaluación arquitectónica. La evaluación la hacés vos abajo.</details>
+      <p class="mono sub">layout {{ (a.layout_sha256 or '')[:16] }}</p>
+    {% elif a.status == 'GENERATING' %}
+      <p class="work">Generando…</p>
+    {% else %}
+      <div class="nofit">
+        <p><b>No se produjo layout.</b></p>
+        <p>{{ a.detail.explicacion or a.detail.reason or 'Sin detalle.' }}</p>
+        {% if a.detail.puede_decir_que_no_cabe is defined and not a.detail.puede_decir_que_no_cabe %}
+          <p class="hint">Este estado <b>no</b> autoriza decir que el programa no cabe.</p>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    {% if a.status == 'FIT' %}
+    <form class="review" method="post" action="{{ url_for('save_review', run_id=r.run_id) }}">
+      <input type="hidden" name="alt" value="{{ a.alt }}">
+      <h3>Tu evaluación</h3>
+      {% if a.review %}<p class="ok">Ya evaluada: {{ a.review['grade'] }} · {{ a.review['reviewed_at'] }}. Podés volver a evaluar.</p>{% endif %}
+      <fieldset><legend>Veredicto</legend>
+        {% for g, lbl in grades %}
+        <label class="rad"><input type="radio" name="grade" value="{{ g }}" required> {{ lbl }}</label>
+        {% endfor %}
+      </fieldset>
+      <fieldset><legend>Qué está mal</legend>
+        <div class="tags">{% for t in tags %}
+          <label class="tag"><input type="checkbox" name="tags" value="{{ t }}"> {{ t }}</label>
+        {% endfor %}</div>
+      </fieldset>
+      <label>Comentario <textarea name="note" rows="4" placeholder="Lo que le dirías a un arquitecto."></textarea></label>
+      <label>Minutos que te llevó <input name="minutes" type="number" step="0.5" min="0" value="0"></label>
+      <button type="submit">Guardar evaluación</button>
+    </form>
+    {% endif %}
+  </section>
+  {% endfor %}
+</div>
+
+<form class="best" method="post" action="{{ url_for('save_best', run_id=r.run_id) }}">
+  <h3>Mejor alternativa de este caso</h3>
+  {% for opt in ['A','B','C','NINGUNA'] %}
+  <label class="rad"><input type="radio" name="best_alt" value="{{ opt }}"
+    {% if r.best_alt==opt %}checked{% endif %}> {{ opt }}</label>
+  {% endfor %}
+  <button type="submit" class="sec">Guardar</button>
+</form>
+
+<details><summary>Log del motor</summary><pre>{{ r.log }}</pre></details>
+
+<dialog id="zoom"><div class="zt"><span id="zlabel"></span>
+  <button onclick="document.getElementById('zoom').close()">cerrar</button></div>
+  <img id="zimg"></dialog>
+<script>
+function zoomTo(src, label){ zimg.src = src; zlabel.textContent = label; zoom.showModal(); }
+{% if r.status in ('QUEUED','RUNNING') %}
+// §9 — la request HTTP no espera minutos: la página pregunta el estado cada 5 s.
+setInterval(async () => {
+  const s = await (await fetch("{{ url_for('run_status', run_id=r.run_id) }}")).json();
+  document.getElementById('runstate').textContent = s.run;
+  for (const [alt, st] of Object.entries(s.alts)) {
+    const el = document.querySelector('[data-alt="' + alt + '"]');
+    if (el && el.textContent !== st) { location.reload(); return; }
+  }
+  if (s.run !== 'QUEUED' && s.run !== 'RUNNING') location.reload();
+}, 5000);
+{% endif %}
+</script>
+{% endblock %}

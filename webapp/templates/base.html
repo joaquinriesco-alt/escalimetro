@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}Escalímetro{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head><body>
+<header class="top">
+  <a class="brand" href="{{ url_for('library') }}">ESCALÍMETRO<span>herramienta interna</span></a>
+  <nav>
+    <a href="{{ url_for('library') }}">Plantas</a>
+    <a href="{{ url_for('reviews_export') }}">Revisiones (JSON)</a>
+    {% if pending_jobs %}<span class="chip work">{{ pending_jobs }} en cola</span>{% endif %}
+  </nav>
+</header>
+<main>{% block body %}{% endblock %}</main>
+<footer>Pre-diseño · factibilidad · test-fit. No constituye proyecto de arquitectura.</footer>
+</body></html>

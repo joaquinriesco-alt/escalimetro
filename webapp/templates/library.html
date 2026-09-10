@@ -1,0 +1,37 @@
+{% extends "base.html" %}{% block title %}Plantas · Escalímetro{% endblock %}
+{% block body %}
+<h1>Plantas</h1>
+<form class="upload" method="post" action="{{ url_for('upload') }}" enctype="multipart/form-data">
+  <label class="drop">
+    <input type="file" name="plantas" multiple accept=".pdf,.png,.jpg,.jpeg">
+    <span>Elegí una o varias plantas — PDF, PNG o JPG</span>
+  </label>
+  <button type="submit">Subir</button>
+  <p class="hint">Subir no procesa nada. Cada planta queda en la biblioteca hasta que vos la prepares.</p>
+</form>
+
+{% if not cases %}<p class="empty">Todavía no hay plantas. Subí la primera.</p>{% endif %}
+<div class="grid">
+  {% for c in cases %}
+  <article class="card">
+    <a href="{{ url_for('case_view', case_id=c.case_id) }}">
+      <img src="{{ url_for('preview', case_id=c.case_id) }}" alt="{{ c.title }}" loading="lazy">
+    </a>
+    <div class="meta">
+      <a class="t" href="{{ url_for('case_view', case_id=c.case_id) }}">{{ c.title }}</a>
+      <span class="chip s-{{ c.status }}">{{ c.status }}</span>
+      <span class="chip tr-{{ c.track }}">{{ c.track }}</span>
+      <p class="sub">{{ c.original_filename }}{% if c.published_area_m2 %} · {{ c.published_area_m2|round|int }} m² publicados{% endif %}</p>
+      <p class="sub">{{ c.runs }} corrida(s) · {{ c.reviews }} revisión(es)</p>
+      <form method="post" action="{{ url_for('set_track', case_id=c.case_id) }}" class="inline">
+        <input type="hidden" name="next" value="{{ url_for('library') }}">
+        <select name="track" onchange="this.form.submit()">
+          {% for t in tracks %}<option value="{{ t }}" {% if t==c.track %}selected{% endif %}>{{ t }}</option>{% endfor %}
+        </select>
+      </form>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+<p class="hint">DEVELOPMENT = la usás ahora para desarrollo y revisión. RESERVED = queda guardada como evaluación futura y no se toca.</p>
+{% endblock %}

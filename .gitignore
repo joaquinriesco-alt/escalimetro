@@ -23,6 +23,11 @@ dist/
 cases/900_synthetic_fixture/outputs/
 cases/*/outputs/*.png
 
+# --- E27: estado del servicio web -------------------------------------------
+# Todo lo que produce la app (uploads, cases, briefs, corridas, revisiones) vive en DATA_DIR.
+# En Railway es el volumen /data; en local, ./.data. Nunca entra al repo.
+.data/
+
 # --- sistema ---------------------------------------------------------------
 .DS_Store
 
