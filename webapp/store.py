@@ -143,6 +143,14 @@ def init() -> None:
                  "WHERE status IN ('RUNNING','QUEUED')", (now(),))
     conn.execute("UPDATE alternatives SET status='FAILED' WHERE status='GENERATING'")
     conn.execute("UPDATE cases SET status='READY' WHERE status='GENERATING'")
+    # E27.2 §6/§9 — reparación de estados heredados del bug que E27.2 corrige: un caso quedó en
+    # FAILED porque se pudo pulsar "generar" sin preparar el shell. Eso nunca fue un fallo técnico,
+    # era un intake incompleto. Si el caso no tiene geometría, su estado honesto es NEEDS_INPUT.
+    # Sólo toca casos SIN floorplate: uno que sí lo tiene y falló de verdad conserva su FAILED.
+    for row in conn.execute("SELECT case_id FROM cases WHERE status='FAILED'").fetchall():
+        fp = os.path.join(case_dir(row["case_id"]), "outputs", "floorplate.json")
+        if not os.path.exists(fp):
+            conn.execute("UPDATE cases SET status='NEEDS_INPUT' WHERE case_id=?", (row["case_id"],))
     conn.commit()
 
 

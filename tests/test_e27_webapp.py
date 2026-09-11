@@ -623,3 +623,23 @@ def test_una_planta_no_limpia_se_rechaza_con_su_razon():
     errs = intake.validate_intake_form(MultiDict(
         [(k, x) for k, v in datos.items() for x in (v if isinstance(v, list) else [v])]))
     assert "V1 sólo acepta plantas libres" in errs["declared_clean"]
+
+
+def test_un_caso_en_failed_sin_geometria_se_repara_a_needs_input(client):
+    """§9 — la planta que quedó en FAILED por el bug de E27 no era un fallo técnico: le faltaba
+    el intake. Al arrancar se le devuelve el estado honesto, sin borrar nada."""
+    from webapp import store
+    store.ex("INSERT INTO cases(case_id,title,original_filename,source_file,mime,uploaded_at,"
+             "status,track) VALUES ('roto','R','a.png','a.png','image/png','t','FAILED','DEVELOPMENT')")
+    store.init()
+    assert store.q1("SELECT status FROM cases WHERE case_id='roto'")["status"] == "NEEDS_INPUT"
+
+
+def test_un_failed_con_geometria_conserva_su_estado(client):
+    """La contracara: un caso que SÍ tiene shell y falló de verdad sigue diciendo FAILED."""
+    from webapp import store
+    store.ex("INSERT INTO cases(case_id,title,original_filename,source_file,mime,uploaded_at,"
+             "status,track) VALUES ('real','R','a.png','a.png','image/png','t','FAILED','DEVELOPMENT')")
+    _shell_listo(store, "real")
+    store.init()
+    assert store.q1("SELECT status FROM cases WHERE case_id='real'")["status"] == "FAILED"
