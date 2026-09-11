@@ -20,6 +20,7 @@ from . import auth, briefs as briefmod, engine, intake, store
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REVIEWER = os.environ.get("ESCALIMETRO_REVIEWER", "Joaquín Riesco")
+MODULES_PATH = os.path.join(REPO_ROOT, "program_templates", "modules_office.json")
 GRADES = [("A_GOOD", "A — LA MANDARÍA"), ("B_CORRECTABLE", "B — CORREGIBLE"),
           ("C_BAD", "C — NO SIRVE")]
 #: §12 — las etiquetas son las del contrato, leídas del contrato. No se redefinen aquí.
@@ -100,9 +101,9 @@ def create_app() -> Flask:
         return redirect(request.form.get("next") or url_for("library"))
 
     # ---------- caso --------------------------------------------------------------------------
-    @app.get("/case/<case_id>")
-    @auth.require
-    def case_view(case_id):
+    def _render_case(case_id, errors=None, form=None, brief_errors=None, code=200):
+        """Una sola función pinta el caso, con o sin errores. Así un POST rechazado vuelve a la
+        MISMA pantalla con los campos marcados y lo que el usuario ya había escrito (§2)."""
         c = case_or_404(case_id)
         it = store.q1("SELECT * FROM intake WHERE case_id=?", (case_id,))
         bs = store.q("SELECT * FROM briefs WHERE case_id=? ORDER BY created_at DESC", (case_id,))
@@ -114,14 +115,24 @@ def create_app() -> Flask:
                 "SELECT alt, status FROM alternatives WHERE run_id=? ORDER BY alt", (r["run_id"],))]
             runs.append(d)
         w, h = intake.preview_size(case_id)
-        return render_template(
+        codes = store.js(it["missing"] if it else None, []) or []
+        html = render_template(
             "case.html", c=c, it=it, briefs=[dict(b) for b in bs], runs=runs,
             modules=briefmod.MODULE_LABELS, defaults=briefmod.DEFAULT_ROOMS,
-            preview_w=w, preview_h=h, missing=store.js(it["missing"] if it else None, []),
+            preview_w=w, preview_h=h, missing=intake.humanize_missing(codes),
             existing_scale=intake.existing_scale(case_id),
             has_shell=os.path.exists(os.path.join(store.case_dir(case_id), "outputs",
                                                   "floorplate.json")),
-            tracks=store.TRACKS)
+            tracks=store.TRACKS, errors=errors or {}, brief_errors=brief_errors or {},
+            confirmed=store.js(it["confirmed"] if it else None, []) or [],
+            form=form, required_confirms=intake.REQUIRED_CONFIRMS,
+            blockers=intake.blockers_for_generate(case_id))
+        return (html, code) if code != 200 else html
+
+    @app.get("/case/<case_id>")
+    @auth.require
+    def case_view(case_id):
+        return _render_case(case_id)
 
     @app.get("/case/<case_id>/preview.png")
     @auth.require
@@ -158,18 +169,20 @@ def create_app() -> Flask:
     def save_intake(case_id):
         case_or_404(case_id)
         f = request.form
+        # §4 — el servidor decide, no el navegador. Un POST con campos faltantes vuelve a la misma
+        # pantalla con los errores marcados y NO llega al pipeline: por eso ya no puede haber un
+        # FAILED causado por un input omitido.
+        errs = intake.validate_intake_form(f)
+        if errs:
+            return _render_case(case_id, errors=errs, form=f, code=400)
         seed = _pair(f.get("seed_x"), f.get("seed_y"))
         ent = _pair(f.get("entrance_x"), f.get("entrance_y"))
         px_per_m, method, note = None, None, ""
         p1 = _pair(f.get("scale_x1"), f.get("scale_y1"))
         p2 = _pair(f.get("scale_x2"), f.get("scale_y2"))
-        try:
-            if p1 and p2 and f.get("scale_m"):
-                px_per_m = intake.px_per_m_from_two_points(p1, p2, float(f["scale_m"]))
-                method, note = "two_points", f'dos puntos + {f["scale_m"]} m declarados'
-        except (intake.IntakeError, ValueError) as e:
-            return render_template("error.html", msg=str(e),
-                                   back=url_for("case_view", case_id=case_id)), 400
+        if p1 and p2 and f.get("scale_m"):
+            px_per_m = intake.px_per_m_from_two_points(p1, p2, float(f["scale_m"]))
+            method, note = "two_points", f'dos puntos + {f["scale_m"]} m declarados'
         area = f.get("published_area_m2") or None
         store.ex("UPDATE cases SET published_area_m2=?, source_name=?, title=? WHERE case_id=?",
                  (float(area) if area else None, f.get("source_name") or None,
@@ -181,7 +194,8 @@ def create_app() -> Flask:
                   json.dumps(seed) if seed else None, json.dumps(ent) if ent else None,
                   json.dumps(f.getlist("confirm")), store.now(), case_id))
         res = intake.normalize(case_id)
-        return render_template("intake_result.html", case_id=case_id, res=res)
+        return render_template("intake_result.html", case_id=case_id, res=res,
+                               missing=intake.humanize_missing(res["missing"]))
 
     # ---------- brief y generación ------------------------------------------------------------
     @app.post("/case/<case_id>/brief")
@@ -190,14 +204,17 @@ def create_app() -> Flask:
         case_or_404(case_id)
         f = request.form
         rooms = {m: f.get(f"room_{m}") or 0 for m, _ in briefmod.MODULE_LABELS}
-        try:
-            b = briefmod.build(f.get("brief_name"), f.get("headcount"), f.get("workstations"),
-                               rooms)
-            briefmod.validate_against_engine(
-                b, os.path.join(REPO_ROOT, "program_templates", "modules_office.json"))
-        except briefmod.BriefFormError as e:
-            return render_template("error.html", msg=str(e),
-                                   back=url_for("case_view", case_id=case_id)), 400
+        errs = briefmod.field_errors(f.get("brief_name"), f.get("headcount"),
+                                     f.get("workstations"), rooms, MODULES_PATH)
+        # §3 — generar exige shell READY. Se comprueba ANTES de escribir nada: si el usuario pidió
+        # "guardar y generar" sobre un shell sin preparar, no se crea ni el brief a medias.
+        quiere_generar = bool(f.get("generate"))
+        bloqueos = intake.blockers_for_generate(case_id) if quiere_generar else []
+        if errs or bloqueos:
+            if bloqueos:
+                errs = dict(errs); errs["generate"] = " ".join(bloqueos)
+            return _render_case(case_id, brief_errors=errs, form=f, code=400)
+        b = briefmod.build(f.get("brief_name"), f.get("headcount"), f.get("workstations"), rooms)
         bid = f'{b["brief_id"]}_{uuid.uuid4().hex[:4].upper()}'
         b["brief_id"] = bid
         sha = briefmod.write(b, os.path.join(store.case_dir(case_id), "briefs", f"{bid}.json"))
@@ -206,7 +223,7 @@ def create_app() -> Flask:
                  (bid, case_id, (f.get("brief_name") or bid).strip()[:80], b["target_headcount"],
                   b["open_workstations"], json.dumps(b["rooms"], ensure_ascii=False), sha,
                   store.now()))
-        if f.get("generate"):
+        if quiere_generar:
             return _launch(case_id, bid)
         return redirect(url_for("case_view", case_id=case_id))
 
@@ -215,12 +232,20 @@ def create_app() -> Flask:
     def generate(case_id):
         case_or_404(case_id)
         bid = request.form.get("brief_id") or abort(400)
+        bloqueos = intake.blockers_for_generate(case_id)
+        if bloqueos:
+            return _render_case(case_id, brief_errors={"generate": " ".join(bloqueos)}, code=400)
         return _launch(case_id, bid)
 
     def _launch(case_id: str, brief_id: str):
+        """Última barrera antes de encolar. Si algo llegó hasta acá sin cumplir, no se crea run:
+        un run que nace condenado sólo sirve para producir un FAILED que confunde."""
         if store.q1("SELECT brief_id FROM briefs WHERE brief_id=? AND case_id=?",
                     (brief_id, case_id)) is None:
             abort(404)
+        bloqueos = intake.blockers_for_generate(case_id)
+        if bloqueos:
+            return _render_case(case_id, brief_errors={"generate": " ".join(bloqueos)}, code=400)
         run_id = "R_" + uuid.uuid4().hex[:10]
         store.ex("INSERT INTO runs(run_id, case_id, brief_id, status, created_at) "
                  "VALUES (?,?,?,'QUEUED',?)", (run_id, case_id, brief_id, store.now()))

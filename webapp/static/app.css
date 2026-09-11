@@ -87,3 +87,18 @@ dialog img{display:block;max-width:94vw;max-height:86vh}
 .zt{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px}
 .zt button{margin:0;padding:4px 12px}
 dialog::backdrop{background:rgba(20,24,30,.55)}
+
+/* --- E27.2: obligatorios y estado de error -------------------------------------------------
+   Regla de accesibilidad que se respeta acá: el color NUNCA es la única señal. Un campo con
+   problema lleva borde rojo + etiqueta roja + un mensaje escrito debajo. */
+.req{color:var(--acc);font-weight:700}
+.opt{color:var(--mut);font-weight:400;font-size:11.5px}
+.err{color:var(--acc);font-size:12.5px;margin:4px 0 2px;font-weight:500}
+.bad-field{border-color:var(--acc);background:#fdf7f6}
+.bad-field legend{color:var(--acc)}
+.bad-label{color:var(--acc)}
+.bad-input{border-color:var(--acc)!important;background:#fdf7f6}
+.panel-bad{border:1px solid var(--acc);background:#fdf7f6;border-radius:8px;padding:10px 14px;margin:10px 0;font-size:13.5px}
+.panel-bad ul{margin:6px 0 0;padding-left:18px}
+.panel-bad li{margin:2px 0}
+button:disabled{opacity:.45;cursor:not-allowed;border-color:#ccd2da;background:#eef0f3;color:var(--mut)}

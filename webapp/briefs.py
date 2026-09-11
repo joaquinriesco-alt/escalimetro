@@ -101,3 +101,46 @@ def summary(brief_dict: Dict) -> str:
     if salas:
         bits.append(f"{salas} salas")
     return " · ".join(bits)
+
+
+# ===================================================================================================
+# E27.2 §7 — errores POR CAMPO, para poder marcar el input que está mal
+# ===================================================================================================
+#: Campos obligatorios del BriefV1 (los que `BriefV1.from_dict` exige y `validate` juzga).
+#: `rooms` no es obligatorio como conjunto: un brief de sólo open space es legítimo.
+REQUIRED_BRIEF_FIELDS = ("brief_name", "headcount", "workstations")
+
+
+def field_errors(name, headcount, workstations, rooms: Dict[str, int],
+                 modules_path: str) -> Dict[str, str]:
+    """Devuelve {campo: mensaje}. Vacío = el brief es válido para el motor.
+
+    La última palabra la tiene `BriefV1.validate` del motor: acá sólo se traduce a qué input
+    pertenece cada queja para poder pintarlo en rojo."""
+    errs: Dict[str, str] = {}
+    if not (name or "").strip():
+        errs["brief_name"] = "Ponle un nombre al brief."
+    for campo, valor, etiqueta in (("headcount", headcount, "personas"),
+                                   ("workstations", workstations, "puestos open")):
+        try:
+            if int(valor) < 1:
+                errs[campo] = f"El número de {etiqueta} debe ser al menos 1."
+        except (TypeError, ValueError):
+            errs[campo] = f"Indica el número de {etiqueta}."
+    for mod, n in (rooms or {}).items():
+        try:
+            if int(n or 0) < 0:
+                errs[f"room_{mod}"] = "No puede ser negativo."
+        except (TypeError, ValueError):
+            errs[f"room_{mod}"] = "Tiene que ser un número."
+    if errs:
+        return errs
+    try:
+        b = build(name, headcount, workstations, rooms)
+        validate_against_engine(b, modules_path)
+    except BriefFormError as e:
+        msg = str(e)
+        # `target_headcount < puestos permanentes` es la única incoherencia cruzada que el motor
+        # reporta hoy; pertenece al campo de personas, que es el que hay que subir.
+        errs["headcount" if "target_headcount" in msg else "brief_name"] = msg
+    return errs

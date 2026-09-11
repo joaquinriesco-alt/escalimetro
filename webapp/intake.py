@@ -245,3 +245,123 @@ def shell_svg_for(case_id: str) -> Optional[str]:
         return shell_svg(shell)
     except Exception:                                         # noqa: BLE001
         return None
+
+
+# ===================================================================================================
+# E27.2 §5 — QUÉ ES OBLIGATORIO, Y POR QUÉ
+# ===================================================================================================
+# Nada de esto se inventó para la UI: cada obligatorio existe porque el runtime lo exige y falla sin
+# él. La prueba está en `layout/shell_adapter.py`, que es la puerta de entrada al motor:
+#
+#   :18  ValueError("El shell no está listo para layout (ready_for_layout = false)")
+#   :27  ValueError("sin escala")
+#   :42  ValueError("primary_entrance no confirmado")
+#
+# y `ready_for_layout` es `requires_confirmation == []`, que `semantics/shell.py:131-153` arma con
+# perimeter/core, primary_entrance, columns, daylight y scale_assumption.
+#
+# Lo que NO está acá es tan importante como lo que está: el punto semilla no aparece en
+# `requires_confirmation`, así que es OPCIONAL aunque ayude a la segmentación.
+
+#: Confirmaciones de elementos fijos que el runtime exige. Clave = valor en `overrides.confirm`
+#: (consumido por `pipeline.py:272` y `semantics/shell.py`); valor = etiqueta humana.
+REQUIRED_CONFIRMS = {
+    "perimeter": "Perímetro",
+    "core": "Núcleo",
+    "columns": "Pilares",
+    "daylight": "Fachada / ventanas",
+    "scale_assumption": "Supuesto de escala",
+}
+
+#: Traducción de los códigos que devuelve el runtime a algo que una persona pueda accionar.
+MISSING_LABELS = {
+    "perimeter/core": "Confirmá el perímetro y el núcleo.",
+    "primary_entrance": "Marcá el acceso principal sobre el plano.",
+    "columns": "Confirmá los pilares.",
+    "daylight": "Confirmá la fachada / ventanas.",
+    "scale_assumption": "Confirmá el supuesto de escala.",
+    "scale_semantics": ("La escala no es utilizable: la superficie publicada no corresponde a la "
+                        "región segmentada. No se arregla confirmando; hay que corregir el dato."),
+}
+
+
+def humanize_missing(codes: List[str]) -> List[str]:
+    return [MISSING_LABELS.get(c, c) for c in (codes or [])]
+
+
+def validate_intake_form(form) -> Dict[str, str]:
+    """§4 — validación de servidor del formulario de intake. Devuelve {campo: mensaje}.
+
+    Se ejecuta ANTES de tocar el pipeline: un intake incompleto no llega nunca al motor, así que no
+    puede terminar en un traceback disfrazado de FAILED."""
+    errs: Dict[str, str] = {}
+
+    if (form.get("declared_clean") or "") not in ("yes", "no"):
+        errs["declared_clean"] = "Debes confirmar si la planta está limpia."
+    elif form.get("declared_clean") == "no":
+        errs["declared_clean"] = ("V1 sólo acepta plantas libres. Una planta con mobiliario o layout "
+                                  "previo queda fuera de contrato: la limpieza automática es V2.")
+
+    # Escala: vale por dos puntos + distancia real, o por superficie publicada. Una de las dos.
+    p1 = _pair_of(form, "scale_x1", "scale_y1")
+    p2 = _pair_of(form, "scale_x2", "scale_y2")
+    metres = (form.get("scale_m") or "").strip()
+    area = (form.get("published_area_m2") or "").strip()
+    if p1 and p2 and metres:
+        try:
+            px_per_m_from_two_points(p1, p2, float(metres))
+        except (IntakeError, ValueError) as e:
+            errs["scale"] = str(e)
+    elif area:
+        try:
+            if float(area) <= 0:
+                errs["scale"] = "La superficie publicada debe ser mayor que cero."
+        except ValueError:
+            errs["scale"] = "La superficie publicada debe ser un número."
+    else:
+        errs["scale"] = ("Falta definir la escala: marcá dos puntos y su distancia real, o escribí "
+                         "la superficie publicada.")
+
+    if not _pair_of(form, "entrance_x", "entrance_y"):
+        errs["entrance"] = "Marca el acceso principal sobre el plano."
+
+    faltan = [lbl for k, lbl in REQUIRED_CONFIRMS.items() if k not in form.getlist("confirm")]
+    if faltan:
+        errs["confirm"] = "Falta confirmar: " + ", ".join(faltan) + "."
+    return errs
+
+
+def _pair_of(form, kx: str, ky: str):
+    x, y = form.get(kx), form.get(ky)
+    try:
+        return [float(x), float(y)] if x not in (None, "") and y not in (None, "") else None
+    except (TypeError, ValueError):
+        return None
+
+
+def blockers_for_generate(case_id: str) -> List[str]:
+    """§3/§4 — por qué NO se puede generar todavía. Lista vacía = adelante.
+
+    La fuente de verdad es el ARTEFACTO, no el estado en la base: se lee el mismo
+    `shell_readiness.ready_for_layout` que `layout/shell_adapter.py:18` exige antes de construir un
+    shell. Así la regla de la UI y la del motor no pueden separarse nunca, y un caso que ya produjo
+    layouts (COMPLETE / PARTIAL) puede volver a generar con otro brief sin pelearse con el estado."""
+    if store.q1("SELECT case_id FROM cases WHERE case_id=?", (case_id,)) is None:
+        return ["El caso no existe."]
+    fp = os.path.join(case_dir_of(case_id), "outputs", "floorplate.json")
+    if not os.path.exists(fp):
+        return ["Todavía no preparaste el shell. Completá los campos obligatorios y pulsá "
+                "«Preparar shell»."]
+    try:
+        with open(fp, encoding="utf-8") as fh:
+            sr = (json.load(fh).get("shell_readiness") or {})
+    except (OSError, ValueError):
+        return ["No se puede leer la geometría de esta planta. Volvé a preparar el shell."]
+    if sr.get("ready_for_layout"):
+        return []
+    return (humanize_missing(sr.get("requires_confirmation") or [])
+            or ["El shell todavía no está listo para generar layouts."])
+
+
+def case_dir_of(case_id: str) -> str:
+    return store.case_dir(case_id)

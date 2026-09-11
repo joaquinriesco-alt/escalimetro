@@ -1,4 +1,7 @@
 {% extends "base.html" %}{% block title %}{{ c.title }} · Escalímetro{% endblock %}
+{# `v()` devuelve lo enviado en un POST rechazado, y si no hay POST, el valor guardado. #}
+{% macro v(campo, guardado="") %}{{ form[campo] if form and form.get(campo) is not none else guardado }}{% endmacro %}
+{% macro err(campo) %}{% if errors.get(campo) %}<p class="err">{{ errors[campo] }}</p>{% endif %}{% endmacro %}
 {% block body %}
 <p class="crumb"><a href="{{ url_for('library') }}">Plantas</a> / {{ c.title }}</p>
 <h1>{{ c.title }} <span class="chip s-{{ c.status }}">{{ c.status }}</span></h1>
@@ -20,22 +23,31 @@
 
   <div>
     <h2>2 · Preparar el shell</h2>
-    {% if missing %}<p class="bad">Falta: {{ missing|join(', ') }}</p>{% endif %}
+    {% if missing %}
+      <div class="panel-bad"><b>Falta para poder generar layouts:</b>
+        <ul>{% for m in missing %}<li>{{ m }}</li>{% endfor %}</ul></div>
+    {% endif %}
+    {% if errors %}
+      <div class="panel-bad"><b>No se preparó el shell.</b> Revisá los campos marcados abajo.</div>
+    {% endif %}
     <form method="post" action="{{ url_for('save_intake', case_id=c.case_id) }}" id="intake">
-      <label>Nombre de la unidad
-        <input name="title" value="{{ c.title }}" required></label>
-      <label>Fuente (opcional)
-        <input name="source_name" value="{{ c.source_name or '' }}" placeholder="p. ej. GPS Property"></label>
-      <label>Superficie publicada m² (opcional)
-        <input name="published_area_m2" type="number" step="0.1" value="{{ c.published_area_m2 or '' }}"></label>
+      <label>Nombre de la unidad <span class="req">*</span>
+        <input name="title" value="{{ v('title', c.title) }}" required></label>
+      <label>Fuente <span class="opt">(opcional)</span>
+        <input name="source_name" value="{{ v('source_name', c.source_name or '') }}" placeholder="p. ej. GPS Property"></label>
+      <label>Superficie publicada m² <span class="opt">(opcional si definís la escala con dos puntos)</span>
+        <input name="published_area_m2" type="number" step="0.1" value="{{ v('published_area_m2', c.published_area_m2 or '') }}"></label>
 
-      <fieldset><legend>¿Esta planta está limpia / sin layout previo?</legend>
+      <fieldset class="{{ 'bad-field' if errors.get('declared_clean') }}">
+        <legend>¿Esta planta está limpia / sin layout previo? <span class="req">*</span></legend>
         <label class="rad"><input type="radio" name="declared_clean" value="yes" {% if it and it.declared_clean=='yes' %}checked{% endif %}> Sí</label>
         <label class="rad"><input type="radio" name="declared_clean" value="no" {% if it and it.declared_clean=='no' %}checked{% endif %}> No</label>
+        {{ err('declared_clean') }}
         <p class="hint">V1 sólo acepta plantas libres. Si trae mobiliario o un layout previo, el input queda fuera de contrato: no se limpia automáticamente.</p>
       </fieldset>
 
-      <fieldset><legend>Escala</legend>
+      <fieldset class="{{ 'bad-field' if errors.get('scale') }}">
+        <legend>Escala <span class="req">*</span></legend>
         <p class="hint">Marcá dos puntos sobre el plano y escribí la distancia real entre ellos.</p>
         <button type="button" class="pick" data-mode="scale1">1er punto</button>
         <button type="button" class="pick" data-mode="scale2">2º punto</button>
@@ -47,39 +59,66 @@
           {% if existing_scale.method %}({{ existing_scale.method }}{% if existing_scale.confidence %}, confianza {{ existing_scale.confidence }}{% endif %}){% endif %}.
           Marcá dos puntos sólo si querés reemplazarla.</p>{% endif %}
         <p class="sub" id="scaleout">{% if it and it.scale_px_per_m %}Actual: {{ '%.3f'|format(it.scale_px_per_m) }} px/m ({{ it.scale_note }}){% else %}Sin escala confirmada.{% endif %}</p>
+        {{ err('scale') }}
       </fieldset>
 
-      <fieldset><legend>Puntos sobre el plano</legend>
-        <button type="button" class="pick" data-mode="seed">Marcar un punto DENTRO de la unidad</button>
-        <button type="button" class="pick" data-mode="entrance">Marcar el ACCESO principal</button>
+      <fieldset class="{{ 'bad-field' if errors.get('entrance') }}">
+        <legend>Puntos sobre el plano</legend>
+        <button type="button" class="pick" data-mode="seed">Marcar un punto DENTRO de la unidad <span class="opt">(opcional)</span></button>
+        <button type="button" class="pick" data-mode="entrance">Marcar el ACCESO principal <span class="req">*</span></button>
+        {{ err('entrance') }}
         <input type="hidden" name="seed_x" id="seed_x"><input type="hidden" name="seed_y" id="seed_y">
         <input type="hidden" name="entrance_x" id="entrance_x"><input type="hidden" name="entrance_y" id="entrance_y">
       </fieldset>
 
-      <fieldset><legend>Elementos fijos — confirmar lo que el motor leyó</legend>
-        {% for k, lbl in [('perimeter','Perímetro'),('core','Núcleo'),('columns','Pilares'),('daylight','Fachada / ventanas'),('scale_assumption','Supuesto de escala')] %}
-        <label class="rad"><input type="checkbox" name="confirm" value="{{ k }}"> {{ lbl }}</label>
+      <fieldset class="{{ 'bad-field' if errors.get('confirm') }}">
+        <legend>Elementos fijos — confirmar lo que el motor leyó <span class="req">*</span></legend>
+        {% for k, lbl in required_confirms.items() %}
+        <label class="rad"><input type="checkbox" name="confirm" value="{{ k }}"
+          {% if form and k in form.getlist('confirm') %}checked{% elif not form and k in confirmed %}checked{% endif %}> {{ lbl }} <span class="req">*</span></label>
         {% endfor %}
+        {{ err('confirm') }}
+        <p class="hint">El motor no acepta un shell con elementos sin confirmar: <code>shell_adapter</code>
+          rechaza cualquier planta cuyo <code>ready_for_layout</code> sea falso.</p>
       </fieldset>
       <button type="submit">Preparar shell</button>
     </form>
 
     <h2>3 · Programa del cliente</h2>
+    {% if brief_errors.get('generate') %}
+      <div class="panel-bad"><b>No se puede generar todavía.</b> {{ brief_errors['generate'] }}</div>
+    {% endif %}
     <form method="post" action="{{ url_for('create_brief', case_id=c.case_id) }}">
-      <label>Nombre del brief <input name="brief_name" value="Brief {{ c.title }}" required></label>
+      <label class="{{ 'bad-label' if brief_errors.get('brief_name') }}">Nombre del brief <span class="req">*</span>
+        <input name="brief_name" value="{{ v('brief_name', 'Brief ' ~ c.title) }}"
+               class="{{ 'bad-input' if brief_errors.get('brief_name') }}" required></label>
+      {% if brief_errors.get('brief_name') %}<p class="err">{{ brief_errors['brief_name'] }}</p>{% endif %}
       <div class="row">
-        <label>Personas (headcount) <input name="headcount" type="number" min="1" value="48" required></label>
-        <label>Puestos open <input name="workstations" type="number" min="1" value="40" required></label>
+        <label class="{{ 'bad-label' if brief_errors.get('headcount') }}">Personas (headcount) <span class="req">*</span>
+          <input name="headcount" type="number" min="1" value="{{ v('headcount', 48) }}"
+                 class="{{ 'bad-input' if brief_errors.get('headcount') }}" required></label>
+        <label class="{{ 'bad-label' if brief_errors.get('workstations') }}">Puestos open <span class="req">*</span>
+          <input name="workstations" type="number" min="1" value="{{ v('workstations', 40) }}"
+                 class="{{ 'bad-input' if brief_errors.get('workstations') }}" required></label>
       </div>
+      {% if brief_errors.get('headcount') %}<p class="err">{{ brief_errors['headcount'] }}</p>{% endif %}
+      {% if brief_errors.get('workstations') %}<p class="err">{{ brief_errors['workstations'] }}</p>{% endif %}
       <table class="rooms"><tbody>
       {% for mod, lbl in modules %}
-        <tr><td>{{ lbl }}</td>
-            <td><input name="room_{{ mod }}" type="number" min="0" value="{{ defaults.get(mod, 0) }}"></td></tr>
+        <tr><td>{{ lbl }} <span class="opt">(opcional)</span></td>
+            <td><input name="room_{{ mod }}" type="number" min="0"
+                       value="{{ v('room_' ~ mod, defaults.get(mod, 0)) }}"></td></tr>
       {% endfor %}
       </tbody></table>
       <p class="hint">Vos decís QUÉ necesitás. Cómo se organiza en la planta lo decide el motor.</p>
-      <button type="submit" name="generate" value="1">Guardar y generar 3 alternativas</button>
-      <button type="submit" class="sec">Sólo guardar el brief</button>
+      {% if blockers %}
+        <button type="submit" name="generate" value="1" disabled>Guardar y generar 3 alternativas</button>
+        <p class="err">{{ blockers|join(' ') }}</p>
+        <button type="submit" class="sec">Sólo guardar el brief</button>
+      {% else %}
+        <button type="submit" name="generate" value="1">Guardar y generar 3 alternativas</button>
+        <button type="submit" class="sec">Sólo guardar el brief</button>
+      {% endif %}
     </form>
   </div>
 </section>
@@ -92,7 +131,7 @@
       <li><b>{{ b.name }}</b> — {{ b.workstations }} puestos · {{ b.headcount }} personas
         <form method="post" action="{{ url_for('generate', case_id=c.case_id) }}" class="inline">
           <input type="hidden" name="brief_id" value="{{ b.brief_id }}">
-          <button class="sec">Generar</button></form>
+          <button class="sec" {% if blockers %}disabled title="{{ blockers|join(' ') }}"{% endif %}>Generar</button></form>
         <span class="mono">{{ b.brief_sha256[:12] }}</span></li>
     {% endfor %}</ul></div>
   <div><h3>Corridas</h3>

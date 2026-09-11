@@ -1,11 +1,15 @@
 {% extends "base.html" %}{% block body %}
 <h1>Preparación del shell</h1>
 {% if res.ready %}
-  <p class="ok">La planta quedó lista para generar layouts.</p>
+  <p class="ok"><b>La planta quedó lista.</b> Ya podés definir el programa y generar alternativas.</p>
 {% else %}
-  <p class="bad">Todavía no alcanza para generar. Falta, según el motor:</p>
-  <ul>{% for m in res.missing %}<li>{{ m }}</li>{% endfor %}</ul>
-  <p class="hint">No se inventa geometría: esto es lo que el pipeline declara que no pudo resolver.</p>
+  <div class="panel-bad">
+    <b>Todavía no alcanza para generar layouts.</b>
+    <p class="sub">Esto no es un error del sistema: son datos que el motor necesita y aún no tiene.</p>
+    <ul>{% for m in missing %}<li>{{ m }}</li>{% endfor %}</ul>
+  </div>
+  <p class="hint">No se inventa geometría: la lista sale de <code>shell_readiness.requires_confirmation</code>,
+    que es lo que el propio runtime declara que le falta.</p>
 {% endif %}
 <details><summary>Log de normalización</summary><pre>{{ res.log }}</pre></details>
 <p><a href="{{ url_for('case_view', case_id=case_id) }}">← Volver al caso</a></p>

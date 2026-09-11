@@ -171,10 +171,19 @@ def test_la_ui_no_expone_design_policy(client):
 # ===================================================================================================
 # 4 — el job llama AL MOTOR EXISTENTE (§7)
 # ===================================================================================================
+def _shell_listo(store, case_id="x"):
+    """Deja un floorplate que declara `ready_for_layout`, que es la puerta que abre el motor."""
+    d = os.path.join(store.case_dir(case_id), "outputs")
+    os.makedirs(d, exist_ok=True)
+    with open(os.path.join(d, "floorplate.json"), "w", encoding="utf-8") as fh:
+        json.dump({"shell_readiness": {"ready_for_layout": True, "requires_confirmation": []}}, fh)
+
+
 def test_el_job_invoca_el_modulo_del_motor_y_no_una_reimplementacion(monkeypatch, client):
     from webapp import engine, store
     store.ex("INSERT INTO cases(case_id,title,original_filename,source_file,mime,uploaded_at,"
              "status,track) VALUES ('x','X','a.png','a.png','image/png','t','READY','DEVELOPMENT')")
+    _shell_listo(store)
     store.ex("INSERT INTO briefs(brief_id,case_id,name,headcount,workstations,rooms,brief_sha256,"
              "created_at) VALUES ('b','x','b',10,5,'[]','sha','t')")
     store.ex("INSERT INTO runs(run_id,case_id,brief_id,status,created_at) "
@@ -437,3 +446,180 @@ def test_subir_no_dispara_el_motor(client, monkeypatch):
     assert len(store.q("SELECT * FROM cases")) == 3
     assert llamado == []
     assert {r["status"] for r in store.q("SELECT status FROM cases")} == {"UPLOADED"}
+
+
+# ===================================================================================================
+# 10 — E27.2: inputs obligatorios, bloqueo del avance y fallas de usuario vs técnicas
+# ===================================================================================================
+INTAKE_COMPLETO = {
+    "title": "Unidad X", "declared_clean": "yes",
+    "scale_x1": "100", "scale_y1": "100", "scale_x2": "200", "scale_y2": "100", "scale_m": "12",
+    "entrance_x": "150", "entrance_y": "300",
+    "confirm": ["perimeter", "core", "columns", "daylight", "scale_assumption"],
+}
+
+
+def test_los_obligatorios_estan_marcados_con_asterisco(client):
+    """§1 — sin el `*` visible el usuario no puede saber qué le falta antes de intentarlo."""
+    from webapp import store
+    _upload(client, "planta.png", PNG_1PX)
+    cid = store.q1("SELECT case_id FROM cases")["case_id"]
+    html = client.get(f"/case/{cid}").get_data(as_text=True)
+    for obligatorio in ("¿Esta planta está limpia", "Escala", "Nombre del brief",
+                        "Personas (headcount)", "Puestos open"):
+        i = html.find(obligatorio)
+        assert i > 0, obligatorio
+        assert '<span class="req">*</span>' in html[i:i + 400], f"falta el * en: {obligatorio}"
+    # y los opcionales NO llevan asterisco
+    i = html.find("Fuente")
+    assert '<span class="opt">' in html[i:i + 120]
+
+
+def test_el_backend_rechaza_un_intake_incompleto_con_mensajes_por_campo(client):
+    """§2/§4 — no alcanza con deshabilitar el botón: un POST directo también se rechaza."""
+    from webapp import store
+    _upload(client, "planta.png", PNG_1PX)
+    cid = store.q1("SELECT case_id FROM cases")["case_id"]
+    r = client.post(f"/case/{cid}/intake", data={"title": "X"})
+    assert r.status_code == 400
+    html = r.get_data(as_text=True)
+    for msg in ("Debes confirmar si la planta está limpia.",
+                "Falta definir la escala",
+                "Marca el acceso principal",
+                "Falta confirmar:"):
+        assert msg in html, msg
+    # el color no es la única señal: hay texto para cada uno
+    assert html.count('class="err"') >= 4
+
+
+def test_un_intake_incompleto_no_deja_el_caso_en_failed(client):
+    """§6 — que falte un dato del usuario NO es un fallo técnico."""
+    from webapp import store
+    _upload(client, "planta.png", PNG_1PX)
+    cid = store.q1("SELECT case_id FROM cases")["case_id"]
+    client.post(f"/case/{cid}/intake", data={"title": "X"})
+    assert store.q1("SELECT status FROM cases WHERE case_id=?", (cid,))["status"] != "FAILED"
+
+
+def test_un_shell_sin_preparar_bloquea_la_generacion(client):
+    """§3 — la regresión concreta de E27: esto terminaba en FAILED con un traceback."""
+    from webapp import store
+    _upload(client, "planta.png", PNG_1PX)
+    cid = store.q1("SELECT case_id FROM cases")["case_id"]
+    r = client.post(f"/case/{cid}/brief", data={"brief_name": "B", "headcount": "48",
+                                                "workstations": "40", "generate": "1"})
+    assert r.status_code == 400
+    assert "Todavía no preparaste el shell" in r.get_data(as_text=True)
+    assert store.q("SELECT * FROM runs") == []        # no se creó una corrida condenada
+    assert store.q1("SELECT status FROM cases WHERE case_id=?", (cid,))["status"] != "FAILED"
+
+
+def test_un_shell_incompleto_lista_exactamente_lo_que_el_runtime_pide(client):
+    """Los bloqueos salen de `shell_readiness.requires_confirmation`, no de una lista inventada."""
+    from webapp import intake, store
+    store.ex("INSERT INTO cases(case_id,title,original_filename,source_file,mime,uploaded_at,"
+             "status,track) VALUES ('x','X','a.png','a.png','image/png','t','NEEDS_INPUT','DEVELOPMENT')")
+    d = os.path.join(store.case_dir("x"), "outputs")
+    os.makedirs(d, exist_ok=True)
+    with open(os.path.join(d, "floorplate.json"), "w", encoding="utf-8") as fh:
+        json.dump({"shell_readiness": {"ready_for_layout": False,
+                                       "requires_confirmation": ["primary_entrance", "columns"]}}, fh)
+    faltan = intake.blockers_for_generate("x")
+    assert faltan == ["Marcá el acceso principal sobre el plano.", "Confirmá los pilares."]
+
+
+def test_un_brief_invalido_bloquea_la_generacion_y_no_se_guarda(client):
+    """§7 — el juez sigue siendo `BriefV1.validate` del motor; acá sólo se marca el campo."""
+    from webapp import store
+    store.ex("INSERT INTO cases(case_id,title,original_filename,source_file,mime,uploaded_at,"
+             "status,track) VALUES ('x','X','a.png','a.png','image/png','t','READY','DEVELOPMENT')")
+    _shell_listo(store)
+    r = client.post("/case/x/brief", data={"brief_name": "B", "headcount": "5",
+                                           "workstations": "40", "room_private_office": "4",
+                                           "generate": "1"})
+    assert r.status_code == 400
+    assert "target_headcount" in r.get_data(as_text=True)
+    assert store.q("SELECT * FROM briefs") == []
+    assert store.q("SELECT * FROM runs") == []
+
+
+def test_el_job_no_llama_al_motor_si_faltan_datos_y_no_dice_failed_del_caso(monkeypatch, client):
+    """§4/§6 — cinturón: aunque un job quede encolado, no se gasta CPU ni se miente el estado."""
+    from webapp import engine, store
+    store.ex("INSERT INTO cases(case_id,title,original_filename,source_file,mime,uploaded_at,"
+             "status,track) VALUES ('x','X','a.png','a.png','image/png','t','UPLOADED','DEVELOPMENT')")
+    store.ex("INSERT INTO briefs(brief_id,case_id,name,headcount,workstations,rooms,brief_sha256,"
+             "created_at) VALUES ('b','x','b',10,5,'[]','sha','t')")
+    store.ex("INSERT INTO runs(run_id,case_id,brief_id,status,created_at) "
+             "VALUES ('r','x','b','QUEUED','t')")
+    llamadas = []
+    monkeypatch.setattr(engine.subprocess, "run", lambda *a, **k: llamadas.append(a))
+    engine._execute("r")
+    assert llamadas == [], "no se debe invocar el motor con el intake incompleto"
+    assert store.q1("SELECT status FROM cases WHERE case_id='x'")["status"] == "NEEDS_INPUT"
+    assert "faltan datos del intake" in store.q1("SELECT log FROM runs WHERE run_id='r'")["log"]
+
+
+def test_una_falla_tecnica_no_arrastra_al_caso(monkeypatch, client):
+    """§6 — si el motor revienta por un motivo técnico, la corrida falla; el caso sigue listo."""
+    from webapp import engine, store
+    store.ex("INSERT INTO cases(case_id,title,original_filename,source_file,mime,uploaded_at,"
+             "status,track) VALUES ('x','X','a.png','a.png','image/png','t','READY','DEVELOPMENT')")
+    store.ex("INSERT INTO briefs(brief_id,case_id,name,headcount,workstations,rooms,brief_sha256,"
+             "created_at) VALUES ('b','x','b',10,5,'[]','sha','t')")
+    store.ex("INSERT INTO runs(run_id,case_id,brief_id,status,created_at) "
+             "VALUES ('r','x','b','QUEUED','t')")
+    _shell_listo(store)
+
+    class R:
+        returncode, stdout, stderr = 1, "", "boom: el proceso murió"
+
+    monkeypatch.setattr(engine.subprocess, "run", lambda *a, **k: R())
+    engine._execute("r")
+    assert store.q1("SELECT status FROM runs WHERE run_id='r'")["status"] == "FAILED"
+    assert store.q1("SELECT status FROM cases WHERE case_id='x'")["status"] == "READY"
+
+
+def test_el_flujo_valido_sigue_pasando(client):
+    """§11 — la contracara: con todo completo, nada bloquea."""
+    from webapp import briefs, intake, store
+    store.ex("INSERT INTO cases(case_id,title,original_filename,source_file,mime,uploaded_at,"
+             "status,track) VALUES ('x','X','a.png','a.png','image/png','t','READY','DEVELOPMENT')")
+    _shell_listo(store)
+    assert intake.blockers_for_generate("x") == []
+    assert briefs.field_errors("Brief X", 48, 40, briefs.DEFAULT_ROOMS,
+                               os.path.join(ROOT, "program_templates", "modules_office.json")) == {}
+
+
+def test_un_intake_completo_pasa_la_validacion_de_formulario():
+    """El validador no puede ser tan estricto que nada pase: el caso bueno debe dar cero errores."""
+    from werkzeug.datastructures import MultiDict
+
+    from webapp import intake
+    assert intake.validate_intake_form(MultiDict(
+        [(k, x) for k, v in INTAKE_COMPLETO.items()
+         for x in (v if isinstance(v, list) else [v])])) == {}
+
+
+def test_la_escala_acepta_superficie_publicada_como_alternativa():
+    """Escala = dos puntos O superficie publicada. Exigir ambas sería inventar un requisito."""
+    from werkzeug.datastructures import MultiDict
+
+    from webapp import intake
+    datos = {k: v for k, v in INTAKE_COMPLETO.items()
+             if not k.startswith("scale_") or k == "scale_assumption"}
+    datos["published_area_m2"] = "543"
+    errs = intake.validate_intake_form(MultiDict(
+        [(k, x) for k, v in datos.items() for x in (v if isinstance(v, list) else [v])]))
+    assert "scale" not in errs, errs
+
+
+def test_una_planta_no_limpia_se_rechaza_con_su_razon():
+    """§2 de E27: V1 es shell-only y lo dice, en vez de fallar más adelante sin explicación."""
+    from werkzeug.datastructures import MultiDict
+
+    from webapp import intake
+    datos = dict(INTAKE_COMPLETO, declared_clean="no")
+    errs = intake.validate_intake_form(MultiDict(
+        [(k, x) for k, v in datos.items() for x in (v if isinstance(v, list) else [v])]))
+    assert "V1 sólo acepta plantas libres" in errs["declared_clean"]

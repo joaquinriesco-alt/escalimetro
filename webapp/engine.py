@@ -26,7 +26,7 @@ import sys
 import threading
 from typing import Dict, List, Optional
 
-from . import store
+from . import intake, store
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ALTS = ("A", "B", "C")
@@ -111,6 +111,25 @@ def _execute(run_id: str) -> None:
     case_id, brief_id = row["case_id"], row["brief_id"]
     cdir = store.case_dir(case_id)
     brief_path = os.path.join(cdir, "briefs", f"{brief_id}.json")
+    _c = store.q1("SELECT status FROM cases WHERE case_id=?", (case_id,))
+    prev_case = _c["status"] if _c else "NEEDS_INPUT"
+
+    # E27.2 §4/§6 — última verificación antes de gastar cinco minutos de CPU. Si al job le falta un
+    # input del usuario, NO se llama al motor: el resultado sería un traceback y el usuario vería
+    # FAILED por algo que es suyo y corregible. Se devuelve el caso a NEEDS_INPUT con la lista.
+    faltan = intake.blockers_for_generate(case_id)
+    if faltan:
+        store.ex("UPDATE runs SET status='FAILED', started_at=?, finished_at=?, log=? "
+                 "WHERE run_id=?",
+                 (store.now(), store.now(),
+                  "[web] no se ejecutó el motor porque faltan datos del intake:\n  - "
+                  + "\n  - ".join(faltan), run_id))
+        for alt in ALTS:
+            store.ex("INSERT OR REPLACE INTO alternatives(run_id, alt, status) "
+                     "VALUES (?,?,'FAILED')", (run_id, alt))
+        store.ex("UPDATE cases SET status='NEEDS_INPUT' WHERE case_id=?", (case_id,))
+        return
+
     store.ex("UPDATE runs SET status='RUNNING', started_at=?, engine_commit=? WHERE run_id=?",
              (store.now(), engine_commit(), run_id))
     store.ex("UPDATE cases SET status='GENERATING' WHERE case_id=?", (case_id,))
@@ -143,8 +162,12 @@ def _execute(run_id: str) -> None:
     n_fit = sum(1 for r in results if r["status"] == "FIT")
     # El estado del CASO no miente: si el motor corrió y ninguna alternativa dio layout, el caso
     # no es FAILED (el motor hizo su trabajo y respondió con un estado honesto), es PARTIAL.
+    #
+    # E27.2 §6 — y si la corrida revienta por un motivo TÉCNICO, la que falla es la corrida, no el
+    # caso: el shell sigue preparado y se puede reintentar. El caso vuelve a donde estaba.
     if failed and n_fit == 0 and all(r["status"] == "FAILED" for r in results):
-        run_status, case_status = "FAILED", "FAILED"
+        run_status = "FAILED"
+        case_status = prev_case if prev_case in ("READY", "COMPLETE", "PARTIAL") else "NEEDS_INPUT"
     elif n_fit == len(ALTS):
         run_status, case_status = "DONE", "COMPLETE"
     else:
