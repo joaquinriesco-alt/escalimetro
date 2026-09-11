@@ -357,6 +357,38 @@ def test_el_shell_se_dibuja_desde_el_floorplate_no_desde_un_png():
         assert svg.startswith("<svg") and "ACCESO" in svg
 
 
+def test_el_lienzo_del_shell_no_recorta_el_nucleo():
+    """E26.1 — segundo defecto, distinto del PNG ausente: el encuadre salía de
+    `perimeter.bounds`, y en los dos casos el núcleo cae ENTERO fuera del perímetro (403: 210.6 m²
+    de 543.0; 401: 206.9 m² de 252.0). Con ese encuadre el núcleo se dibujaba cortado contra el
+    borde; en el 401 quedaban fuera tres de sus cuatro esquinas. El lienzo debe cubrir todo lo
+    que se dibuja."""
+    import re as _re
+
+    from shapely.geometry import Point
+    from shapely.ops import unary_union
+
+    from escalimetro.case_context import from_case_dir
+    from escalimetro.layout.e06.scale import scaled_shell
+    from escalimetro.schemas.floorplate import Floorplate
+    from webapp.shellview import shell_svg
+    for case in ("cases/001_gps_403", "cases/002_gps_401"):
+        d = os.path.join(ROOT, case)
+        if not os.path.exists(os.path.join(d, "outputs", "floorplate.json")):
+            pytest.skip("caso no disponible")
+        sh = scaled_shell(Floorplate.load(from_case_dir(d).require_floorplate()), 1.0)
+        svg = shell_svg(sh)
+        W = int(_re.search(r'width="(\d+)"', svg).group(1))
+        H = int(_re.search(r'height="(\d+)"', svg).group(1))
+        todo = unary_union([sh.perimeter, *sh.core, *sh.columns, Point(sh.entrance).buffer(0.4)])
+        minx, miny, maxx, maxy = todo.bounds
+        assert sh.perimeter.bounds != todo.bounds, f"{case}: el test sólo aplica si algo cae fuera"
+        margin, s = 60, (W - 120) / (maxx - minx)
+        for x, y in ((minx, miny), (maxx, maxy), (minx, maxy), (maxx, miny)):
+            px, py = margin + (x - minx) * s, margin + (maxy - y) * s
+            assert 0 <= px <= W and 0 <= py <= H, f"{case}: el lienzo recorta ({x:.1f},{y:.1f})"
+
+
 def test_el_png_del_shell_sigue_ignorado_por_git():
     """Deja constancia de la CAUSA: si alguien vuelve a depender de ese PNG, este test lo explica."""
     import subprocess
