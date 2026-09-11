@@ -21,6 +21,9 @@ from . import auth, briefs as briefmod, engine, intake, store
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REVIEWER = os.environ.get("ESCALIMETRO_REVIEWER", "Joaquín Riesco")
 MODULES_PATH = os.path.join(REPO_ROOT, "program_templates", "modules_office.json")
+#: Etiqueta de la versión de la app que sirve `/healthz`. Es un rótulo nuestro, NO el commit: saber
+#: qué build está viva no debería exigir credenciales, y filtrar un SHA de git sí sería de más.
+APP_VERSION = "e27.2"
 GRADES = [("A_GOOD", "A — LA MANDARÍA"), ("B_CORRECTABLE", "B — CORREGIBLE"),
           ("C_BAD", "C — NO SIRVE")]
 #: §12 — las etiquetas son las del contrato, leídas del contrato. No se redefinen aquí.
@@ -370,7 +373,8 @@ def create_app() -> Flask:
 
     @app.get("/healthz")
     def healthz():
-        return jsonify({"ok": True, "cases": store.q1("SELECT COUNT(*) n FROM cases")["n"],
+        return jsonify({"ok": True, "version": APP_VERSION,
+                        "cases": store.q1("SELECT COUNT(*) n FROM cases")["n"],
                         "jobs_pending": engine.pending()})
 
     @app.errorhandler(413)

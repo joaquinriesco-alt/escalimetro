@@ -643,3 +643,10 @@ def test_un_failed_con_geometria_conserva_su_estado(client):
     _shell_listo(store, "real")
     store.init()
     assert store.q1("SELECT status FROM cases WHERE case_id='real'")["status"] == "FAILED"
+
+
+def test_healthz_declara_la_version_sin_exigir_credenciales(client):
+    """Saber qué build está desplegada no debería necesitar login; el commit NO se expone."""
+    d = client.get("/healthz").get_json()
+    assert d["ok"] is True and d["version"]
+    assert "commit" not in d and "sha" not in d
