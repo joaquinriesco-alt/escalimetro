@@ -76,9 +76,13 @@ def dom(app):
 
 
 def _lab(client, titulo="Prop", product="ONE_OFF"):
-    r = client.post("/lab/new", data={"title": titulo, "city": "Santiago", "product": product},
-                    follow_redirects=True)
-    return re.search(rb"p_[0-9a-f]{12}", r.data).group().decode()
+    """E33 saca «producto simulado» del flujo principal: se elige desde las herramientas
+    técnicas, que es donde corresponde. El derecho sigue siendo por propiedad."""
+    r = client.post("/lab/new", data={"title": titulo, "city": "Santiago"}, follow_redirects=True)
+    pid = re.search(rb"p_[0-9a-f]{12}", r.data).group().decode()
+    if product != "ONE_OFF":
+        client.post(f"/lab/debug/producto/{pid}", data={"product": product})
+    return pid
 
 
 # ===================================================================================================
@@ -249,19 +253,17 @@ def test_cada_propiedad_del_lab_trae_su_compra_simulada(client, dom):
 
 def test_el_operador_cambia_el_producto_de_una_propiedad_desde_la_web(client, dom):
     a, b = _lab(client, "A"), _lab(client, "B")
-    assert client.post(f"/lab/p/{a}/product", data={"product": "PRO"}).status_code == 302
+    assert client.post(f"/lab/debug/producto/{a}", data={"product": "PRO"}).status_code == 302
     assert dom["entitlements"].product_of(a) == "PRO"
     assert dom["entitlements"].product_of(b) == "ONE_OFF"
-    assert "Escalímetro Pro" in client.get(f"/lab/p/{a}").get_data(as_text=True)
-    # y la pestaña de prospectos de B explica el motivo correcto
-    html = client.get(f"/lab/p/{b}/prospectos").get_data(as_text=True)
-    assert "cubierta por un Pack de publicación" in html
-    assert "trabajo recurrente" in html
+    # el cambio se ve en las herramientas técnicas, no en el flujo de producto
+    html = client.get("/lab/debug").get_data(as_text=True)
+    assert "Escalímetro Pro" in html
 
 
 def test_el_lab_conserva_su_shell(client, dom):
     pid = _lab(client, "A")
-    for url in ("/lab/", "/lab/new", "/lab/config", f"/lab/p/{pid}"):
+    for url in ("/lab/", "/lab/new", "/lab/ajustes", f"/lab/p/{pid}"):
         html = client.get(url).get_data(as_text=True)
         assert 'href="/lab/"' in html and "herramienta interna" not in html
 

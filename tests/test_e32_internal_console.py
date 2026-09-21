@@ -123,6 +123,21 @@ def _foto(dom, pid, nombre="sala.png"):
         dom["assets"].PHOTO_ORIGINAL)
 
 
+def _case_listo(store, property_id, case_id="c_ok"):
+    """Un caso con geometría declarada lista, sin correr el motor."""
+    import json as _json
+    from webapp.domain import properties as _props
+    store.ex("INSERT OR IGNORE INTO cases(case_id,title,original_filename,source_file,mime,"
+             "uploaded_at,status,track) VALUES (?,?,?,?,?,?,?,'DEVELOPMENT')",
+             (case_id, "Caso", "a.png", "a.png", "image/png", store.now(), "READY"))
+    d = os.path.join(store.case_dir(case_id), "outputs")
+    os.makedirs(d, exist_ok=True)
+    with open(os.path.join(d, "floorplate.json"), "w", encoding="utf-8") as fh:
+        _json.dump({"shell_readiness": {"ready_for_layout": True, "requires_confirmation": []}}, fh)
+    _props.link_case(property_id, case_id)
+    return case_id
+
+
 def _material_base(dom, pid):
     """Lo que promete el pack, sin correr el motor."""
     from werkzeug.datastructures import FileStorage
@@ -148,7 +163,8 @@ def test_todas_las_pantallas_exigen_autenticacion(tmp_path, monkeypatch):
             importlib.reload(importlib.import_module(m))
     from webapp.app import create_app
     c = create_app().test_client()
-    for url in ("/lab/", "/lab/new", "/lab/config", "/lab/benchmark", "/lab/feedback.json"):
+    for url in ("/lab/", "/lab/new", "/lab/ajustes", "/lab/debug", "/lab/benchmark",
+                "/lab/feedback.json"):
         assert c.get(url).status_code == 401, url
 
 
@@ -156,16 +172,15 @@ def test_la_consola_abre_en_todas_sus_secciones(client, dom, fake):
     pid = _prop(dom, client)
     dom["entitlements"].set_product(pid, "PRO")
     fid = dom["fits"].create_prospect(pid, "Falabella", 40)
-    urls = ["/lab/", "/lab/new", "/lab/config", "/lab/benchmark", "/lab/feedback.json"]
-    urls += [f"/lab/p/{pid}{t}" for t in ("", "/plano", "/fotos", "/material", "/prospectos",
-                                          "/pack", "/actividad")]
-    urls.append(f"/lab/p/{pid}/prospectos/{fid}")
+    urls = ["/lab/", "/lab/new", "/lab/ajustes", "/lab/ajustes/evaluaciones", "/lab/debug",
+            "/lab/benchmark", "/lab/feedback.json", f"/lab/p/{pid}",
+            f"/lab/p/{pid}/status.json"]
     for u in urls:
         assert client.get(u).status_code == 200, u
 
 
 def test_una_propiedad_inexistente_da_404(client, dom):
-    for t in ("", "/plano", "/fotos", "/material", "/pack", "/actividad"):
+    for t in ("", "/status.json", "/revisar-plano"):
         assert client.get(f"/lab/p/p_noexiste{t}").status_code == 404
 
 
@@ -216,7 +231,7 @@ def test_el_panel_de_preparacion_no_expone_ninguna_credencial(client, dom, monke
     assert "SECRETO" not in texto and "sk-" not in texto and "gm-" not in texto
     assert any(p["name"] == "openai" and p["credential"] is True for p in prep["providers"])
     assert all("env" in p and p["env"].endswith("_API_KEY") for p in prep["providers"])
-    for url in ("/lab/config", "/lab/benchmark"):
+    for url in ("/lab/debug", "/lab/benchmark"):
         html = client.get(url).get_data(as_text=True)
         assert "SECRETO" not in html
         assert "OPENAI_API_KEY" in html          # el NOMBRE sí, para saber qué configurar
@@ -241,7 +256,7 @@ def test_bfl_esta_excluido_del_piloto_por_licencia(client, dom):
 
 def test_rechequear_entorno_no_revela_nada(client, dom, monkeypatch):
     monkeypatch.setenv("OPENAI_API_KEY", "sk-OTRO-SECRETO-XYZ")
-    assert client.post("/lab/config/recheck").status_code == 302
+    assert client.post("/lab/debug/recheck").status_code == 302
     ev = dom["pilot"].events("ENV_RECHECK")
     assert ev and "OTRO-SECRETO" not in json.dumps(ev)
     assert ev[0]["detail_obj"]["credentials"][0]["credential"] in (True, False)
@@ -394,8 +409,10 @@ def test_sin_proveedor_aprobado_el_producto_lo_dice_con_esas_palabras(client, do
     dom["staging"].set_hero(pid, _foto(dom, pid))
     st = dom["staging"].state(pid)
     assert st["state"] == "STAGING_PROVIDER_NOT_APPROVED"
-    html = client.get(f"/lab/p/{pid}/material").get_data(as_text=True)
-    assert "STAGING PROVIDER NOT YET APPROVED" in html
+    # E33: el LAB lo dice en lenguaje humano; el código técnico queda en el detalle
+    html = client.get(f"/lab/p/{pid}").get_data(as_text=True)
+    assert "pendiente de validar proveedor" in html
+    assert "STAGING_PROVIDER_NOT_APPROVED" not in html.split("Ver detalle")[0]
 
 
 def test_un_candidato_experimental_aprobado_no_llega_al_cliente(client, dom, fake):
@@ -452,7 +469,7 @@ def test_lo_experimental_de_antes_no_revive_al_aprobar(client, dom, fake):
 # ===================================================================================================
 def test_la_vista_previa_del_pack_no_contradice_al_zip(client, dom, fake):
     """§25 — «No permitir que "Pack listo" contradiga su contenido»."""
-    from webapp import lab as labmod
+    from webapp.domain import lab as labmod_lab
     pid = _prop(dom, client)
     foto = _foto(dom, pid)
     dom["staging"].set_hero(pid, foto)
@@ -460,8 +477,12 @@ def test_la_vista_previa_del_pack_no_contradice_al_zip(client, dom, fake):
     _aprobar(dom)
     a = dom["staging"].run_attempt(dom["staging"].create_attempt(pid, foto, "CONTEMPORARY"))
     dom["staging"].review(a["attempt_id"], "PASS", 4, "APPROVE")
-    with client.application.test_request_context():
-        previa = {c["n"] for c in labmod._contenido(pid) if c["ok"]}
+    p1 = labmod_lab.pack1(pid)
+    previa = {"Imagen ambientada aprobada" if s["name"] == "Ambientación" else
+              ("Alternativa representativa" if s["name"] == "Layout tipo" else s["name"])
+              for s in p1["steps"] if s["done"]}
+    if p1["before_after"]:
+        previa.add("Antes / después")
     z = dom["packs"].export_zip(pid)
     with zipfile.ZipFile(dom["assets"].path_of(dom["assets"].get(z["asset_id"], pid))) as zf:
         nombres = zf.namelist()
@@ -477,26 +498,37 @@ def test_la_vista_previa_del_pack_no_contradice_al_zip(client, dom, fake):
 def test_el_pack_no_se_arma_incompleto_desde_la_consola(client, dom, fake):
     pid = _prop(dom, client)
     _material_base(dom, pid)
-    r = client.post(f"/lab/p/{pid}/pack")
+    r = client.post(f"/lab/p/{pid}/pack1/descargar")
     assert r.status_code == 400 and "imagen ambientada" in r.get_data(as_text=True)
 
 
 def test_los_prospectos_no_se_pisan_entre_si(client, dom, fake):
+    from webapp import store
     pid = _prop(dom, client)
+    _material_base(dom, pid)
+    _case_listo(store, pid)                      # una propuesta exige el plano preparado
     dom["entitlements"].set_product(pid, "PRO")
-    a = client.post(f"/lab/p/{pid}/prospectos", data={"prospect_name": "Falabella",
-                                                      "headcount": "40"}, follow_redirects=True)
-    b = client.post(f"/lab/p/{pid}/prospectos", data={"prospect_name": "Cencosud",
-                                                      "headcount": "25"}, follow_redirects=True)
+    a = client.post(f"/lab/p/{pid}/pack2", data={"prospect_name": "Falabella",
+                                                 "headcount": "40"}, follow_redirects=True)
+    b = client.post(f"/lab/p/{pid}/pack2", data={"prospect_name": "Cencosud",
+                                                 "headcount": "25"}, follow_redirects=True)
     assert a.status_code == 200 and b.status_code == 200
     etiquetas = {f["label"] for f in dom["fits"].list_for(pid, include_base=False)}
     assert etiquetas == {"Falabella", "Cencosud"}
 
 
-def test_en_one_off_la_consola_no_deja_crear_prospectos(client, dom, fake):
+def test_en_el_lab_pedir_una_propuesta_habilita_el_producto_que_la_permite(client, dom, fake):
+    """E33 §21 — el LAB no obliga a pensar en ONE_OFF vs Pro para evaluar. El tope comercial de
+    verdad sigue vivo en la superficie de cliente, y lo prueba test_e32_2."""
+    from webapp import store
     pid = _prop(dom, client)
-    r = client.post(f"/lab/p/{pid}/prospectos", data={"prospect_name": "X", "headcount": "10"})
-    assert r.status_code == 403
+    _material_base(dom, pid)
+    _case_listo(store, pid)
+    assert dom["entitlements"].product_of(pid) == "ONE_OFF"
+    client.post(f"/lab/p/{pid}/pack2", data={"prospect_name": "X", "headcount": "10"},
+                follow_redirects=True)
+    assert dom["entitlements"].product_of(pid) == "PRO"
+    assert len(dom["fits"].list_for(pid, include_base=False)) == 1
 
 
 # ===================================================================================================
@@ -520,7 +552,7 @@ def test_las_notas_internas_no_salen_en_ningun_entregable(client, dom, fake):
     cliente = client.get(f"/properties/{pid}").get_data(as_text=True)
     assert "NOTA-DE-PRUEBA-INTERNA" not in cliente
     # pero adentro sí se ven
-    assert "NOTA-DE-PRUEBA-INTERNA" in client.get(f"/lab/p/{pid}/actividad").get_data(as_text=True)
+    assert "NOTA-DE-PRUEBA-INTERNA" in client.get(f"/lab/p/{pid}").get_data(as_text=True)
 
 
 def test_la_linea_de_tiempo_se_deriva_de_los_artefactos(client, dom, fake):
@@ -536,14 +568,14 @@ def test_la_linea_de_tiempo_se_deriva_de_los_artefactos(client, dom, fake):
 
 
 def test_la_valoracion_interna_se_guarda_y_se_exporta(client, dom, fake):
+    """E33 reemplaza la valoración de tres valores por las cuatro calificaciones de producto."""
+    from webapp.domain import reviews
     pid = _prop(dom, client)
-    client.post(f"/lab/p/{pid}/feedback", data={"value": "NEEDS_WORK"})
-    assert dom["properties"].require(pid)["lab_feedback"] == "NEEDS_WORK"
-    with pytest.raises(ValueError):
-        dom["lab"].set_feedback(pid, "EXCELENTISIMO")
+    client.post(f"/lab/p/{pid}/evaluar", data={"artifact_type": "PACK1", "rating": "MALO",
+                                               "tags": ["Incompleto"]})
+    assert reviews.history(pid)[0]["rating"] == "MALO"
     dom["lab"].add_note(pid, "el pilar quedó mal detectado")
     exp = client.get("/lab/feedback.json").get_json()
-    assert exp[0]["feedback"] == "NEEDS_WORK"
     assert exp[0]["notes"][0]["body"] == "el pilar quedó mal detectado"
 
 
