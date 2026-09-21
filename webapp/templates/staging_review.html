@@ -1,4 +1,4 @@
-{% extends "base.html" %}{% block title %}Revisión {{ a.attempt_id }}{% endblock %}
+{% extends "lab/base.html" %}{% block title %}Revisión {{ a.attempt_id }}{% endblock %}
 {% block body %}
 <p class="crumb"><a href="{{ url_for('staging.queue') }}">Ambientación</a> / {{ p.title }} / {{ a.attempt_id }}</p>
 <h1>{{ p.title }} — candidato {{ a.attempt_id }}</h1>

@@ -645,3 +645,28 @@ def test_el_tablero_cuenta_la_ambientacion_bloqueada_como_pendiente(client, dom,
     dom["staging"].set_hero(pid, _foto(dom, pid))
     assert dom["staging"].state(pid)["state"] == "STAGING_PROVIDER_NOT_APPROVED"
     assert dom["lab"].overview()["staging_pending"] == 1
+
+
+def test_la_ambientacion_se_abre_dentro_del_shell_del_lab(client, dom, fake):
+    """Salir a «Ambientación» no puede dejarte en otro shell con otra barra: desde ahí se llegaba
+    a la superficie de cliente y a un 403 sin relación con lo que estabas haciendo."""
+    pid = _prop(dom, client)
+    foto = _foto(dom, pid)
+    a = dom["staging"].create_attempt(pid, foto, "CONTEMPORARY", provider_name="fake")
+    for url in ("/staging/", "/staging/benchmark", f"/staging/attempt/{a}"):
+        html = client.get(url).get_data(as_text=True)
+        assert 'href="/lab/"' in html, url                 # la barra del LAB
+        assert "herramienta interna" not in html, url      # no la del shell viejo
+    # y desde la herramienta técnica siempre hay vuelta
+    assert 'href="/lab/"' in client.get("/").get_data(as_text=True)
+
+
+def test_el_lab_no_aplica_el_tope_de_propiedades_y_lo_dice(client, dom, fake):
+    """El tope de ONE_OFF sigue vigente en la superficie de cliente; la consola lo salta a
+    propósito para poder probar, y lo declara en pantalla."""
+    _prop(dom, client, "A")
+    assert client.post("/properties/new", data={"title": "B"}).status_code == 403
+    html = client.get("/lab/new").get_data(as_text=True)
+    assert "no aplica ese tope" in html
+    _prop(dom, client, "B")
+    assert len(dom["properties"].listing()) == 2

@@ -37,8 +37,11 @@ TABS = [("resumen", "Resumen"), ("plano", "Plano"), ("fotos", "Fotos"),
         ("actividad", "Actividad")]
 
 
-@bp.context_processor
+@bp.app_context_processor
 def _ctx():
+    """De toda la app, no sólo de este blueprint: las pantallas de ambientación se abren desde el
+    LAB y tienen que renderizar su misma cabecera. Sin esto, salir a «Ambientación» te dejaba en
+    otro shell, con otra barra, que llevaba a la superficie de cliente."""
     return {"producto": entitlements.summary(), "tabs": TABS,
             "modo_pro": entitlements.allows(entitlements.PROSPECT_FIT_REQUESTS),
             "cola": engine.pending() + staging.pending()}
@@ -85,7 +88,12 @@ def home():
 @bp.get("/new")
 @auth.require
 def new():
-    return render_template("lab/new.html", errors={}, form=None)
+    """El LAB NO aplica el tope de propiedades del modo vigente, y eso es deliberado: con ONE_OFF
+    el cliente tiene derecho a una sola, y si la consola respetara ese tope no se podría probar una
+    segunda planta sin borrar la primera. La pantalla lo dice en vez de que parezca un descuido; el
+    tope real sigue vigente donde importa, que es la superficie de cliente."""
+    return render_template("lab/new.html", errors={}, form=None, tope=entitlements.limit("properties"),
+                           n_props=len(properties.listing()))
 
 
 @bp.post("/new")
@@ -95,7 +103,8 @@ def create():
     f = request.form
     titulo = (f.get("title") or "").strip()
     if not titulo:
-        return render_template("lab/new.html", form=f,
+        return render_template("lab/new.html", form=f, tope=entitlements.limit("properties"),
+                               n_props=len(properties.listing()),
                                errors={"title": "Ponle un nombre o referencia."}), 400
     area = (f.get("published_area_m2") or "").strip()
     try:
@@ -103,7 +112,8 @@ def create():
         if area_v is not None and area_v <= 0:
             raise ValueError
     except ValueError:
-        return render_template("lab/new.html", form=f,
+        return render_template("lab/new.html", form=f, tope=entitlements.limit("properties"),
+                               n_props=len(properties.listing()),
                                errors={"published_area_m2": "Superficie inválida."}), 400
     try:
         pid = properties.create(titulo, "OFFICE", city=f.get("city") or "",

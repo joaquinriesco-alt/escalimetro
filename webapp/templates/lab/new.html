@@ -3,6 +3,12 @@
 <p class="crumb"><a href="{{ url_for('lab.home') }}">Propiedades</a> / Nueva</p>
 <h1>Nueva propiedad</h1>
 <p class="sub">Paso 1 de 6 — datos. Podés subir el plano y las fotos ahora o después.</p>
+{% if tope is not none and n_props >= tope %}
+<div class="nota">En modo <b>{{ producto.label }}</b> un cliente tendría derecho a {{ tope }} propiedad
+  y ya hay {{ n_props }}. La consola <b>no aplica ese tope</b> a propósito: si lo aplicara no podrías
+  probar otra planta sin borrar la anterior. El tope sigue vigente donde importa —la superficie de
+  cliente, en <span class="mono">/properties</span>, lo rechaza con un 403—.</div>
+{% endif %}
 <form method="post" enctype="multipart/form-data" class="upload">
   <label class="{{ 'bad-label' if errors.get('title') }}">Nombre o referencia *
     <input name="title" value="{{ form.title if form else '' }}" required
