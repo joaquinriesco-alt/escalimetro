@@ -10,6 +10,7 @@ import hashlib
 import json
 import os
 import re
+import uuid
 from typing import Dict, List, Tuple
 
 #: Nombre humano por módulo de la biblioteca OFFICE. El orden es el del formulario.
@@ -26,6 +27,11 @@ MODULE_LABELS: List[Tuple[str, str]] = [
     ("lounge", "Lounge"),
 ]
 LABEL_OF = dict(MODULE_LABELS)
+#: La biblioteca de módulos OFFICE del motor. Vive acá —y no en `app.py`— porque desde E30 hay dos
+#: caminos que validan un brief (el formulario del caso y un fit request) y ninguno debería tener
+#: que importar la aplicación web para saber dónde está el contrato del motor.
+MODULES_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                            "program_templates", "modules_office.json")
 VALID_MODULES = [m for m, _ in MODULE_LABELS]
 
 #: Punto de partida del formulario: el brief EQUILIBRADO, que es el que el motor resuelve hoy.
@@ -144,3 +150,24 @@ def field_errors(name, headcount, workstations, rooms: Dict[str, int],
         # reporta hoy; pertenece al campo de personas, que es el que hay que subir.
         errs["headcount" if "target_headcount" in msg else "brief_name"] = msg
     return errs
+
+
+# ===================================================================================================
+# E30 — registrar un brief. UN solo camino, para que el formulario avanzado y los presets express
+# produzcan exactamente la misma fila y el mismo archivo.
+# ===================================================================================================
+def register(case_id: str, brief_dict: Dict, name: str = "") -> Tuple[str, str]:
+    """Asigna un brief_id único, escribe el JSON dentro del caso y deja la fila en la base.
+
+    Devuelve (brief_id, sha256). El sha es el mismo que el motor pincha en traceability.json: es
+    lo que permite decir después, de una lámina concreta, con qué programa exacto se generó."""
+    from . import store                                       # noqa: PLC0415 (evita ciclo)
+    bid = f'{slug(brief_dict.get("brief_id") or name)}_{uuid.uuid4().hex[:4].upper()}'
+    brief_dict = dict(brief_dict, brief_id=bid)
+    sha = write(brief_dict, os.path.join(store.case_dir(case_id), "briefs", f"{bid}.json"))
+    store.ex("INSERT INTO briefs(brief_id, case_id, name, headcount, workstations, rooms, "
+             "brief_sha256, created_at) VALUES (?,?,?,?,?,?,?,?)",
+             (bid, case_id, (name or bid).strip()[:80], brief_dict["target_headcount"],
+              brief_dict["open_workstations"],
+              json.dumps(brief_dict["rooms"], ensure_ascii=False), sha, store.now()))
+    return bid, sha

@@ -24,6 +24,7 @@ import queue
 import subprocess
 import sys
 import threading
+import uuid
 from typing import Dict, List, Optional
 
 from . import intake, store
@@ -195,6 +196,23 @@ def start_worker() -> None:
         if _worker is None or not _worker.is_alive():
             _worker = threading.Thread(target=_loop, name="escalimetro-jobs", daemon=True)
             _worker.start()
+
+
+def launch(case_id: str, brief_id: str) -> str:
+    """Crea la corrida y la encola. E30 la extrae de `app.py` porque ahora hay dos caminos que
+    generan —el formulario del caso y un fit request— y una sola forma de nacer evita que uno de
+    los dos se olvide de marcar las alternativas o de encolar el job.
+
+    No valida nada: las compuertas del intake se comprueban ANTES de llamar acá (y otra vez dentro
+    de `_execute`, que es la que de verdad protege al motor)."""
+    run_id = "R_" + uuid.uuid4().hex[:10]
+    store.ex("INSERT INTO runs(run_id, case_id, brief_id, status, created_at) "
+             "VALUES (?,?,?,'QUEUED',?)", (run_id, case_id, brief_id, store.now()))
+    for a in ALTS:
+        store.ex("INSERT OR REPLACE INTO alternatives(run_id, alt, status) "
+                 "VALUES (?,?,'GENERATING')", (run_id, a))
+    enqueue(run_id)
+    return run_id
 
 
 def enqueue(run_id: str) -> None:
