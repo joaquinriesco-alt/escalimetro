@@ -432,8 +432,7 @@ def create_app() -> Flask:
         pendientes = dproperties.needing_review()
         return render_template("review.html", pendientes=pendientes,
                                todas=dproperties.listing(),
-                               producto_modo=dent.MODE_LABEL[dent.mode()],
-                               tope_layouts=dent.max_layouts_in_pack())
+                               producto_modo=dent.PRODUCT_LABEL[dent.default_product()])
 
     @app.post("/review/<property_id>/prepare")
     @auth.require
@@ -484,7 +483,7 @@ def create_app() -> Flask:
     @auth.require
     def set_product_mode():
         try:
-            dent.set_mode(request.form.get("mode", ""))
+            dent.set_default_product(request.form.get("mode", ""))
         except ValueError:
             abort(400)
         return redirect(url_for("settings_view"))
@@ -494,7 +493,7 @@ def create_app() -> Flask:
         return jsonify({"ok": True, "version": APP_VERSION,
                         "cases": store.q1("SELECT COUNT(*) n FROM cases")["n"],
                         "properties": store.q1("SELECT COUNT(*) n FROM properties")["n"],
-                        "product_mode": dent.mode(),
+                        "default_product": dent.default_product(),
                         "staging_provider": _pilot_name(),
                         "jobs_pending": engine.pending()})
 

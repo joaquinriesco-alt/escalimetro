@@ -25,8 +25,8 @@ from flask import (Blueprint, abort, jsonify, redirect, render_template, request
                    url_for)
 
 from . import auth, benchmark as bench, briefs as briefmod, engine, store
-from .domain import (assets, branding, entitlements, fits, floorplan, lab as labdom, packs, pilot,
-                     presets, properties, staging)
+from .domain import (assets, branding, entitlements, fits, floorplan, grants, lab as labdom,
+                     packs, pilot, presets, properties, staging)
 
 bp = Blueprint("lab", __name__, url_prefix="/lab")
 OPERATOR = os.environ.get("ESCALIMETRO_REVIEWER", "Joaquín Riesco")
@@ -42,8 +42,7 @@ def _ctx():
     """De toda la app, no sólo de este blueprint: las pantallas de ambientación se abren desde el
     LAB y tienen que renderizar su misma cabecera. Sin esto, salir a «Ambientación» te dejaba en
     otro shell, con otra barra, que llevaba a la superficie de cliente."""
-    return {"producto": entitlements.summary(), "tabs": TABS,
-            "modo_pro": entitlements.allows(entitlements.PROSPECT_FIT_REQUESTS),
+    return {"producto": entitlements.summary(), "tabs": TABS, "packs": grants.summary(),
             "cola": engine.pending() + staging.pending()}
 
 
@@ -67,12 +66,18 @@ def _err(msg, back, code=400):
 
 
 def _vista(property_id, tab, **extra):
-    """Todo lo que comparten las pestañas de una propiedad: quién es y cómo va."""
+    """Todo lo que comparten las pestañas de una propiedad: quién es, cómo va y —lo que E32.2
+    corrige— qué producto cubre a ESTA propiedad. `producto` pisa al de la cabecera a propósito:
+    dentro de una propiedad, lo que manda es su producto, no el default de la cuenta."""
     v = properties.view(property_id)
     return render_template(
         f"lab/{tab}.html", v=v, p=v["property"], tab=tab,
         avance=labdom.summary(property_id), staging_st=staging.state(property_id),
-        listo=packs.readiness(property_id), **extra)
+        listo=packs.readiness(property_id),
+        producto=entitlements.summary(property_id),
+        modo_pro=entitlements.allows(property_id, entitlements.PROSPECT_FIT_REQUESTS),
+        productos=entitlements.PRODUCTS, etiquetas=entitlements.PRODUCT_LABEL,
+        concesion=grants.of_property(property_id), **extra)
 
 
 # =================================================================================================
@@ -88,12 +93,12 @@ def home():
 @bp.get("/new")
 @auth.require
 def new():
-    """El LAB NO aplica el tope de propiedades del modo vigente, y eso es deliberado: con ONE_OFF
-    el cliente tiene derecho a una sola, y si la consola respetara ese tope no se podría probar una
-    segunda planta sin borrar la primera. La pantalla lo dice en vez de que parezca un descuido; el
-    tope real sigue vigente donde importa, que es la superficie de cliente."""
-    return render_template("lab/new.html", errors={}, form=None, tope=entitlements.limit("properties"),
-                           n_props=len(properties.listing()))
+    """En el LAB cada propiedad nueva representa una COMPRA propia: se crea su concesión simulada y
+    se le asigna. Por eso no hay tope y tampoco hace falta inventar una excepción — el operador
+    puede crear veinte propiedades ONE_OFF porque eso son veinte Packs, no una violación de plan."""
+    return render_template("lab/new.html", errors={}, form=None,
+                           productos=entitlements.PRODUCTS, etiquetas=entitlements.PRODUCT_LABEL,
+                           default=entitlements.default_product())
 
 
 @bp.post("/new")
@@ -103,8 +108,9 @@ def create():
     f = request.form
     titulo = (f.get("title") or "").strip()
     if not titulo:
-        return render_template("lab/new.html", form=f, tope=entitlements.limit("properties"),
-                               n_props=len(properties.listing()),
+        return render_template("lab/new.html", form=f, productos=entitlements.PRODUCTS,
+                               etiquetas=entitlements.PRODUCT_LABEL,
+                               default=entitlements.default_product(),
                                errors={"title": "Ponle un nombre o referencia."}), 400
     area = (f.get("published_area_m2") or "").strip()
     try:
@@ -112,15 +118,18 @@ def create():
         if area_v is not None and area_v <= 0:
             raise ValueError
     except ValueError:
-        return render_template("lab/new.html", form=f, tope=entitlements.limit("properties"),
-                               n_props=len(properties.listing()),
+        return render_template("lab/new.html", form=f, productos=entitlements.PRODUCTS,
+                               etiquetas=entitlements.PRODUCT_LABEL,
+                               default=entitlements.default_product(),
                                errors={"published_area_m2": "Superficie inválida."}), 400
-    try:
-        pid = properties.create(titulo, "OFFICE", city=f.get("city") or "",
-                                reference=f.get("reference") or "", published_area_m2=area_v,
-                                notes=f.get("notes") or "")
-    except entitlements.EntitlementError as e:
-        return _err(str(e), url_for("lab.home"), 403)
+    producto = f.get("product") or entitlements.default_product()
+    if producto not in entitlements.PRODUCTS:
+        producto = entitlements.DEFAULT_PRODUCT
+    pid = properties.create(titulo, "OFFICE", city=f.get("city") or "",
+                            reference=f.get("reference") or "", published_area_m2=area_v,
+                            notes=f.get("notes") or "")
+    grants.grant_and_assign(producto, pid, source="SIMULATED_LAB",
+                            note="compra simulada desde el LAB")
     errores = _recibir(pid, request)
     if errores:
         return _vista(pid, "plano", errores=errores, adjunto=_adjunto(pid)), 400
@@ -160,6 +169,18 @@ def resumen(property_id):
 def _adjunto(property_id):
     return {"plano": assets.first_of_kind(property_id, assets.FLOORPLAN_ORIGINAL),
             "case": floorplan.technical_state(property_id)}
+
+
+@bp.post("/p/<property_id>/product")
+@auth.require
+def set_product(property_id):
+    """§4 — el operador simula qué producto cubre a ESTA propiedad. No toca a ninguna otra."""
+    _p(property_id)
+    try:
+        entitlements.set_product(property_id, request.form.get("product", ""))
+    except (ValueError, LookupError) as e:
+        return _err(str(e), url_for("lab.resumen", property_id=property_id))
+    return redirect(request.form.get("next") or url_for("lab.resumen", property_id=property_id))
 
 
 @bp.get("/p/<property_id>/plano")
@@ -511,8 +532,9 @@ def feedback_json():
 @auth.require
 def config():
     return render_template("lab/config.html", preparacion=pilot.readiness(),
-                           marca=branding.brokerage(), modos=entitlements.PRODUCT_MODES,
-                           etiquetas=entitlements.MODE_LABEL,
+                           marca=branding.brokerage(), modos=entitlements.PRODUCTS,
+                           etiquetas=entitlements.PRODUCT_LABEL, packs=grants.summary(),
+                           default=entitlements.default_product(),
                            presets_wp=presets.CATALOG, estilos=presets.VISUAL_STYLES,
                            eventos=pilot.events(limit=15))
 
@@ -520,8 +542,11 @@ def config():
 @bp.post("/config/modo")
 @auth.require
 def set_modo():
+    """Cambia el producto por DEFECTO de las propiedades de prueba nuevas. Deliberadamente NO toca
+    las que ya existen: ése era el bug — un ajuste global que transformaba de golpe el derecho de
+    todas las propiedades."""
     try:
-        entitlements.set_mode(request.form.get("mode", ""))
+        entitlements.set_default_product(request.form.get("mode", ""))
     except ValueError:
         abort(400)
     return redirect(request.form.get("next") or url_for("lab.config"))

@@ -2,13 +2,16 @@
 {% block body %}
 <h1>Configuración</h1>
 
-<h2>Modo de producto</h2>
+<h2>Producto por defecto de una propiedad de prueba nueva</h2>
 <form method="post" action="{{ url_for('lab.set_modo') }}" class="inline">
   <input type="hidden" name="next" value="{{ url_for('lab.config') }}">
-  {% for m in modos %}<button name="mode" value="{{ m }}" class="{{ '' if producto.mode == m else 'sec' }}">{{ etiquetas[m] }}</button>{% endfor %}
+  {% for m in modos %}<button name="mode" value="{{ m }}" class="{{ '' if default == m else 'sec' }}">{{ etiquetas[m] }}</button>{% endfor %}
 </form>
-<p class="sub">{{ producto.label }} — {{ producto.pitch }}. Topes:
-  {% for k, v in producto.limits.items() %}{{ k }} = {{ v if v is not none else '∞' }}{% if not loop.last %} · {% endif %}{% endfor %}</p>
+<p class="sub">Es sólo el valor inicial del formulario de «Nueva propiedad».
+  <b>No cambia el producto de ninguna propiedad ya creada</b>: cada una tiene el suyo y se cambia
+  desde su Resumen.</p>
+<p class="sub">Packs: {{ packs.assigned }} asignado(s) · {{ packs.available }} sin usar
+  · {{ packs.total }} en total. Cada propiedad consume exactamente uno.</p>
 
 <h2>Marca de la corredora</h2>
 <p class="sub">{{ marca.name or 'sin nombre' }} · {{ marca.color }} · {{ 'con logo' if marca.has_logo else 'sin logo' }}

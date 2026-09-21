@@ -4,15 +4,17 @@
 <p class="sub">Qué puede hacer esta cuenta. Es una decisión comercial, no una técnica: el cliente
   no la ve ni la cambia. El día que haya facturación se conecta acá y nada más cambia.</p>
 
-<h2>Modo</h2>
+<h2>Producto por defecto de una propiedad nueva</h2>
 <form method="post" action="{{ url_for('set_product_mode') }}" class="inline">
   {% for m in modos %}
     <button name="mode" value="{{ m }}" class="{{ '' if producto.mode == m else 'sec' }}">{{ etiquetas[m] }}</button>
   {% endfor %}
 </form>
-<p class="sub">Vigente: <b>{{ producto.label }}</b> — {{ producto.pitch }}</p>
+<p class="sub">Por defecto: <b>{{ producto.label }}</b> — {{ producto.pitch }}</p>
+<p class="sub">Esto NO cambia el producto de las propiedades ya creadas: cada una lleva el suyo,
+  porque un Pack cubre una propiedad y una cuenta puede tener varios.</p>
 
-<h2>Qué permite</h2>
+<h2>Qué permite ese producto</h2>
 <table class="detect"><tbody>
 {% for cap, ok in producto.capabilities.items() %}
   <tr><td class="ic {{ 'listo' if ok }}">{{ '✓' if ok else '○' }}</td>

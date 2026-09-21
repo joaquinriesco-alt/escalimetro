@@ -6,7 +6,8 @@
     <p class="sub">{% if p.city %}{{ p.city }} · {% endif %}
       {% if p.reference %}{{ p.reference }} · {% endif %}
       {% if p.published_area_m2 %}{{ p.published_area_m2|round|int }} m²{% endif %}
-      <span class="chip s-{{ v.status }}">{{ v.status }}</span></p>
+      <span class="chip s-{{ v.status }}">{{ v.status }}</span>
+      <span class="chip plan">{{ producto.label }}</span></p>
   </div>
   <div class="avance">
     <div class="barra"><span style="width:{{ avance.pct }}%"></span></div>

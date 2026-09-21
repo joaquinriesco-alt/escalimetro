@@ -2,9 +2,12 @@
 {% block body %}{% include "lab/_head.html" %}
 <h2>Prospectos</h2>
 {% if not modo_pro %}
-  <div class="panel-bad"><b>El modo vigente es {{ producto.label }}.</b>
-    <p>Los prospectos son parte de Escalímetro Pro. Cambiá el modo en
-      <a href="{{ url_for('lab.config') }}">Configuración</a> para probarlos.</p></div>
+  <div class="panel-bad"><b>Esta propiedad está cubierta por un {{ producto.label }}.</b>
+    <p>Un Pack prepara la propiedad para publicarla;
+      las propuestas por prospecto son trabajo recurrente, y eso es Escalímetro Pro.
+      Para probarlo, cambiá el producto simulado
+      <b>de esta propiedad</b> en <a href="{{ url_for('lab.resumen', property_id=p.property_id) }}">Resumen</a>.
+      Las otras propiedades no cambian.</p></div>
 {% endif %}
 
 {% if lista %}
