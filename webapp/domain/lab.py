@@ -22,8 +22,8 @@ import os
 import uuid
 from typing import Dict, List, Optional
 
-from .. import store
-from . import assets, fits, floorplan, packs, pilot, presets, properties, staging
+from .. import intake, store
+from . import assets, fits, floorplan, ingest, packs, pilot, presets, properties, staging
 
 #: §17 — valoración interna. Tres estados y nada más: esto no es un CRM.
 PROPERTY_FEEDBACK = (("GOOD", "Funcionó"), ("NEEDS_WORK", "Hay que ajustar"),
@@ -325,8 +325,9 @@ def pack1(property_id: str) -> Dict:
                         "el plano que subiste no se puede leer en esta versión",
                         tecnico=t["case_status"])
     elif not t["ready"]:
+        inf = ingest.get(property_id) or {}
         p_plano = _paso("Plano comercial", REVISION,
-                        "necesitamos medir la escala y marcar el acceso",
+                        inf.get("review_reason") or "necesitamos revisar el plano",
                         accion="Revisar plano", ruta="revisar", tecnico=t["case_status"])
     else:
         p_plano = _paso("Plano comercial", PREPARANDO, "listo para generar")
@@ -382,19 +383,39 @@ def pack1(property_id: str) -> Dict:
 
 
 def pack1_advance(property_id: str) -> Dict:
-    """«GENERAR PACK 1»: hace TODO lo que se pueda hacer solo, y se detiene donde hace falta una
-    persona. No falla ruidosamente en el medio: devuelve lo que hizo y lo que quedó pendiente."""
+    """«GENERAR PACK 1»: hace TODO lo que se pueda hacer solo y se detiene donde hace falta una
+    persona. No falla ruidosamente en el medio: devuelve lo que hizo y lo que quedó pendiente.
+
+    E34 — la diferencia con E33 es que ya no manda a nadie a medir la escala ni a marcar el acceso.
+    Analiza la planta sin preguntar nada (`ingest.auto_prepare`), deja registrado qué dedujo y con
+    cuánta confianza, y sólo pide una persona cuando el motor mismo dice que le falta algo."""
     hecho: List[str] = []
     p = properties.require(property_id)
+    # La foto principal no depende del plano: si hay fotos, se elige una ya, aunque la geometría
+    # todavía necesite una vuelta. Atarla al avance del plano la dejaba sin elegir justo en los
+    # casos en que el usuario más necesita ver que algo pasó.
+    if staging.hero(property_id) is None:
+        elegida = propose_hero(property_id)
+        if elegida:
+            staging.set_hero(property_id, elegida["asset_id"])
+            hecho.append("elegimos una foto principal")
     if not assets.first_of_kind(property_id, assets.FLOORPLAN_ORIGINAL):
         return {"done": hecho, "blocked": "Subí el plano de la propiedad."}
     if not p["floorplan_case_id"]:
         floorplan.ensure_case(property_id)
         hecho.append("preparamos el plano")
     t = floorplan.technical_state(property_id)
+    case_id = properties.require(property_id)["floorplan_case_id"]
+    if not t["ready"] and intake.load_floorplate(case_id) is None:
+        # el motor todavía no miró esta planta: que la mire, sin preguntarle nada al usuario
+        ingest.auto_prepare(property_id)
+        hecho.append("analizamos el plano")
+        t = floorplan.technical_state(property_id)
     if not t["ready"]:
-        return {"done": hecho, "blocked": "Necesitamos medir la escala y marcar el acceso.",
-                "action": "revisar"}
+        inf = ingest.get(property_id) or {}
+        return {"done": hecho,
+                "blocked": "Necesitamos revisar el plano antes de continuar.",
+                "action": "revisar", "inference": inf}
     if not assets.first_of_kind(property_id, assets.FLOORPLAN_COMMERCIAL):
         floorplan.publish_commercial_floorplan(property_id)
         hecho.append("generamos el plano comercial")
@@ -419,6 +440,28 @@ def pack1_advance(property_id: str) -> Dict:
         hecho.append("empezamos a ambientar la foto")
     properties.touch(property_id)
     return {"done": hecho, "blocked": None}
+
+
+def propose_hero(property_id: str) -> Optional[Dict]:
+    """§10 — propone una foto principal sin pedirla.
+
+    Heurística deliberadamente simple: la foto de mayor superficie en píxeles entre las que tienen
+    una resolución decente, sin repetir un archivo idéntico. No hace falta visión por computador
+    para esto, y construirla sólo para elegir una foto sería gastar en el lugar equivocado. Si
+    ninguna destaca, la primera válida. El usuario puede cambiarla siempre."""
+    fotos = assets.list_of_kind(property_id, assets.PHOTO_ORIGINAL)
+    if not fotos:
+        return None
+    vistos, unicas = set(), []
+    for f in fotos:
+        if f["sha256"] in vistos:
+            continue
+        vistos.add(f["sha256"])
+        unicas.append(f)
+    con_medida = [f for f in unicas if (f["width_px"] or 0) * (f["height_px"] or 0) > 0]
+    if not con_medida:
+        return unicas[0]
+    return max(con_medida, key=lambda f: f["width_px"] * f["height_px"])
 
 
 def enable_pack2(property_id: str) -> None:
@@ -466,6 +509,7 @@ def property_view(property_id: str) -> Dict:
     # la base y no en pantalla. Verlo exigió abrir el navegador; ningún test de ruta lo habría dicho.
     clave = lambda t, a, f: f"{t}|{a or ''}|{f or ''}"        # noqa: E731
     return {"v": v, "p": v["property"], "pack1": p1, "pack2": pack2_list(property_id),
+            "inference": ingest.get(property_id),
             "reviews": hist,
             "revs": {clave(r["artifact_type"], r["artifact_id"], r["fit_id"]): r for r in hist},
             "presets": presets.CATALOG, "styles": presets.VISUAL_STYLES,

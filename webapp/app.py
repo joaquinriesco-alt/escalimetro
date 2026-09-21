@@ -26,7 +26,7 @@ REVIEWER = os.environ.get("ESCALIMETRO_REVIEWER", "Joaquín Riesco")
 MODULES_PATH = briefmod.MODULES_PATH
 #: Etiqueta de la versión de la app que sirve `/healthz`. Es un rótulo nuestro, NO el commit: saber
 #: qué build está viva no debería exigir credenciales, y filtrar un SHA de git sí sería de más.
-APP_VERSION = "e32"
+APP_VERSION = "e34"
 GRADES = [("A_GOOD", "A — LA MANDARÍA"), ("B_CORRECTABLE", "B — CORREGIBLE"),
           ("C_BAD", "C — NO SIRVE")]
 #: §12 — las etiquetas son las del contrato, leídas del contrato. No se redefinen aquí.

@@ -176,22 +176,14 @@
     <label>Cliente *<input name="prospect_name" required placeholder="Falabella"></label>
     <label>Personas *<input name="headcount" type="number" min="1" required placeholder="80"></label>
   </div>
-  <fieldset><legend>Forma de trabajo</legend>
-    <div class="opciones">
-    {% for k, wp in presets.items() %}
-      <label class="op"><input type="radio" name="workplace_preset" value="{{ k }}" {{ 'checked' if k == preset_default }}>
-        <b>{{ wp.label }}</b><span class="sub">{{ wp.goal }}</span></label>
-    {% endfor %}
-    </div></fieldset>
-  <fieldset><legend>Estilo visual</legend>
-    <div class="opciones">
-    {% for k, e in styles.items() %}
-      <label class="op"><input type="radio" name="visual_style" value="{{ k }}" {{ 'checked' if k == style_default }}>
-        <b>{{ e.label }}</b><span class="sub">{{ e.mood }}</span></label>
-    {% endfor %}
-    </div></fieldset>
+  <label>Tipo<select name="workplace_preset">
+    {% for k, wp in presets.items() %}<option value="{{ k }}" {{ 'selected' if k == preset_default }}>{{ wp.label }}</option>{% endfor %}
+  </select></label>
   <details><summary>Más opciones</summary>
     <div class="row">
+      <label>Estilo visual<select name="visual_style">
+        {% for k, e in styles.items() %}<option value="{{ k }}" {{ 'selected' if k == style_default }}>{{ e.label }}</option>{% endfor %}
+      </select></label>
       <label>Logo del cliente<input type="file" name="prospect_logo" accept=".png,.jpg,.jpeg"></label>
       <label>Color de marca<input name="prospect_color" placeholder="#1f4fd8"></label>
       <label>Puestos open <span class="opt">(programa detallado)</span><input name="workstations" type="number" min="1"></label>
@@ -231,6 +223,14 @@
   <p class="sub mono">{{ p.property_id }}{% if v.case %} · caso {{ v.case.case_id }} · {{ v.case.status }}{% endif %}
     · estado {{ v.status }} · pack {{ pack1.readiness }}</p>
   <p class="sub">Pack 1: {% for s in pack1.steps %}{{ s.name }}={{ s.tech or s.state }}{% if not loop.last %} · {% endif %}{% endfor %}</p>
+  {% if inference %}
+  <p class="sub mono">Escala: {{ inference.scale_source }}
+    {%- if inference.scale_value %} · {{ '%.3f'|format(inference.scale_value) }} px/m{% endif %}
+    · confianza {{ inference.scale_confidence }} · evidencias {{ inference.evidence_count }}</p>
+  <p class="sub mono">Acceso: {{ inference.access_source }} · confianza {{ inference.access_confidence }}
+    · Geometría: {{ inference.geometry_source }}</p>
+  <p class="sub mono">Contraste: {{ inference.cross_checks_obj }}</p>
+  {% endif %}
   <p class="sub"><a href="{{ url_for('lab.debug') }}">Herramientas técnicas</a></p>
 </details>
 </section>

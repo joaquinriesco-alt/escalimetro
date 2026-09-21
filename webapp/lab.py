@@ -24,9 +24,9 @@ from typing import Optional
 from flask import (Blueprint, abort, jsonify, redirect, render_template, request, send_file,
                    url_for)
 
-from . import auth, benchmark as bench, briefs as briefmod, engine, store
-from .domain import (assets, branding, entitlements, fits, floorplan, grants, lab as labdom,
-                     packs, pilot, presets, properties, reviews, staging)
+from . import auth, benchmark as bench, briefs as briefmod, engine, intake, store
+from .domain import (assets, branding, entitlements, fits, floorplan, grants, ingest,
+                     lab as labdom, packs, pilot, presets, properties, reviews, staging)
 
 bp = Blueprint("lab", __name__, url_prefix="/lab")
 OPERATOR = os.environ.get("ESCALIMETRO_REVIEWER", "Joaquín Riesco")
@@ -219,8 +219,11 @@ def generar_pack1(property_id):
 @bp.get("/p/<property_id>/revisar-plano")
 @auth.require
 def revisar_plano(property_id):
-    """§5 — la revisión técnica sigue siendo la de E27.3, que funciona. Se abre con un aviso de
-    que es una pantalla distinta y con la vuelta marcada, en vez de tragarse al usuario."""
+    """§6 — el fallback, no el paso normal.
+
+    E34 sólo trae acá cuando la deducción automática no alcanzó, y ofrece primero lo que una
+    persona puede resolver en un clic sin entender nada del motor. La medición manual de escala
+    sigue existiendo detrás, en la herramienta técnica, como último recurso."""
     _p(property_id)
     try:
         case_id = floorplan.ensure_case(property_id)
@@ -228,7 +231,32 @@ def revisar_plano(property_id):
         return _pagina(property_id, [str(e)], 400)
     return render_template("lab/revisar.html", property_id=property_id, case_id=case_id,
                            p=properties.require(property_id),
-                           tecnico=floorplan.technical_state(property_id))
+                           tecnico=floorplan.technical_state(property_id),
+                           inferencia=ingest.get(property_id))
+
+
+@bp.post("/p/<property_id>/plano-completo")
+@auth.require
+def plano_completo(property_id):
+    """«El dibujo completo es esta oficina.» Único hecho de la fuente que el motor no deduce."""
+    _p(property_id)
+    try:
+        ingest.declare_whole_drawing(property_id)
+    except (ValueError, intake.IntakeError) as e:
+        return _pagina(property_id, [str(e)], 400)
+    return redirect(url_for("lab.propiedad", property_id=property_id) + "#pack1")
+
+
+@bp.post("/p/<property_id>/reanalizar")
+@auth.require
+def reanalizar(property_id):
+    """Volver a mirar la planta después de una corrección en la herramienta técnica."""
+    _p(property_id)
+    try:
+        ingest.auto_prepare(property_id)
+    except ValueError as e:
+        return _pagina(property_id, [str(e)], 400)
+    return redirect(url_for("lab.propiedad", property_id=property_id) + "#pack1")
 
 
 @bp.post("/p/<property_id>/pack1/descargar")

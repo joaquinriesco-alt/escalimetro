@@ -3,17 +3,46 @@
 <p class="crumb"><a href="{{ url_for('lab.home') }}">Mis propiedades</a> /
   <a href="{{ url_for('lab.propiedad', property_id=property_id) }}">{{ p.title }}</a> / Revisar el plano</p>
 <h1>Revisar el plano</h1>
-<p class="sub">Para generar el material necesitamos dos cosas que sólo se pueden marcar mirando el
-  plano: <b>la escala</b> (dos puntos y su distancia real) y <b>el acceso</b>.</p>
+
+{% if inferencia and inferencia.notes %}
+<p class="sub">{{ inferencia.notes }}.</p>
+{% endif %}
+
+{% if inferencia and inferencia.scale_source == 'UNKNOWN' %}
+<h2>¿La lámina es de una sola oficina?</h2>
+<p class="sub">No pudimos identificar cuál de las oficinas del dibujo es ésta. Buscamos el nombre de
+  la propiedad sobre el plano: si la llamaras <b>«Oficina 403»</b> y ese número estuviera en la
+  lámina, la encontraríamos sola.</p>
+<form method="post" action="{{ url_for('lab.plano_completo', property_id=property_id) }}" class="inline">
+  <button>Sí, el dibujo completo es esta oficina</button></form>
+<p class="hint">Si la lámina tiene varias unidades, hay que señalar cuál es desde la herramienta de
+  medición.</p>
+{% else %}
+<h2>Falta confirmar algo de la planta</h2>
+<p class="sub">{{ 'Pendiente: ' ~ (tecnico.pending|join(', ')) if tecnico.pending else 'El plano ya está listo.' }}</p>
+{% endif %}
+
+<h2>Herramienta de medición</h2>
 <div class="nota">
-  <p>La pantalla que sigue es la herramienta de medición. Tiene otro aspecto a propósito: es de
-     trabajo, no de producto.</p>
-  <p><b>Cuando termines, volvé acá con el botón de abajo</b> y seguí con el Pack 1.</p>
+  <p>Acá se mide la escala a mano, se señala el acceso y se revisa lo detectado. Tiene otro aspecto
+     a propósito: es de trabajo, no de producto.</p>
+  <p><b>Cuando termines, volvé con el botón de abajo.</b></p>
 </div>
 <p>
-  <a class="btn" href="{{ url_for('case_view', case_id=case_id) }}">Abrir la herramienta de medición</a>
-  <a class="btn sec" href="{{ url_for('lab.propiedad', property_id=property_id) }}">Volver a la propiedad</a>
+  <a class="btn sec" href="{{ url_for('case_view', case_id=case_id) }}">Abrir la herramienta de medición</a>
+  <form method="post" action="{{ url_for('lab.reanalizar', property_id=property_id) }}" class="inline">
+    <button class="sec">Volver a analizar</button></form>
+  <a class="btn" href="{{ url_for('lab.propiedad', property_id=property_id) }}">Volver a la propiedad</a>
 </p>
-<p class="sub">{{ 'El plano ya está listo.' if tecnico.ready else
-   ('Falta: ' ~ (tecnico.pending|join(', ')) if tecnico.pending else 'Falta analizar la planta.') }}</p>
+
+{% if inferencia %}
+<details><summary>Ver detalle técnico</summary>
+  <p class="sub mono">escala: {{ inferencia.scale_source }}
+    {%- if inferencia.scale_value %} = {{ '%.3f'|format(inferencia.scale_value) }} px/m{% endif %}
+    · confianza {{ inferencia.scale_confidence }} · evidencias {{ inferencia.evidence_count }}</p>
+  <p class="sub mono">acceso: {{ inferencia.access_source }} · confianza {{ inferencia.access_confidence }}</p>
+  <p class="sub mono">geometría: {{ inferencia.geometry_source }}</p>
+  <p class="sub mono">{{ inferencia.cross_checks_obj }}</p>
+</details>
+{% endif %}
 {% endblock %}
