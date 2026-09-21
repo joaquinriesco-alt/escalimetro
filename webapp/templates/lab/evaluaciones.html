@@ -1,0 +1,42 @@
+{% extends "lab/base.html" %}{% block title %}Evaluaciones{% endblock %}
+{% block body %}
+<p class="crumb"><a href="{{ url_for('lab.config') }}">Ajustes</a> / Evaluaciones</p>
+<h1>Evaluaciones</h1>
+<p class="sub">Para qué sirve esto: saber qué partes del producto están funcionando y cuáles no,
+  con el suficiente detalle como para poder arreglarlas.</p>
+
+<div class="kpis">
+  <div><b>{{ stats.total }}</b><span>calificaciones</span></div>
+  <div><b>{{ stats.properties_rated }}</b><span>propiedades</span></div>
+  {% for k, n in stats.by_rating.items() %}
+    <div><b>{{ stats.pct[k] }}%</b><span>{{ stats.labels[k] }} ({{ n }})</span></div>
+  {% endfor %}
+</div>
+
+<h2>Por tipo de material</h2>
+<table class="detect"><tbody>
+<tr><td></td><td class="sub">total</td>{% for k in stats.by_rating %}<td class="sub">{{ stats.labels[k] }}</td>{% endfor %}</tr>
+{% for tipo, v in stats.by_artifact.items() %}
+  <tr><td><b>{{ stats.artifact_labels.get(tipo, tipo) }}</b></td><td>{{ v.total }}</td>
+    {% for k in stats.by_rating %}<td>{{ v[k] }}</td>{% endfor %}</tr>
+{% endfor %}
+</tbody></table>
+
+{% if stats.top_failures %}
+<h2>Motivos de rechazo más frecuentes</h2>
+<table class="detect"><tbody>
+{% for t, n in stats.top_failures.items() %}<tr><td>{{ t }}</td><td>{{ n }}</td></tr>{% endfor %}
+</tbody></table>
+{% endif %}
+
+<h2>Últimas</h2>
+<table class="detect"><tbody>
+{% for r in filas %}
+  <tr><td class="sub mono" style="width:120px">{{ r.created_at[:16] }}</td>
+      <td>{% if r.prop %}<a href="{{ url_for('lab.propiedad', property_id=r.property_id) }}">{{ r.prop.title }}</a>{% endif %}</td>
+      <td>{{ r.artifact_label }}{% if r.artifact_type == 'ALTERNATIVA' %} {{ r.artifact_id }}{% endif %}</td>
+      <td><span class="rate r-{{ r.rating|lower }} on">{{ r.rating_label }}</span></td>
+      <td class="sub">{{ r.tags|join(', ') }}{% if r.comment %} · {{ r.comment }}{% endif %}</td></tr>
+{% endfor %}
+</tbody></table>
+{% endblock %}

@@ -26,15 +26,13 @@ from flask import (Blueprint, abort, jsonify, redirect, render_template, request
 
 from . import auth, benchmark as bench, briefs as briefmod, engine, store
 from .domain import (assets, branding, entitlements, fits, floorplan, grants, lab as labdom,
-                     packs, pilot, presets, properties, staging)
+                     packs, pilot, presets, properties, reviews, staging)
 
 bp = Blueprint("lab", __name__, url_prefix="/lab")
 OPERATOR = os.environ.get("ESCALIMETRO_REVIEWER", "Joaquín Riesco")
 
-#: Las pestañas de una propiedad. Sin secciones vacías: cada una tiene contenido siempre.
-TABS = [("resumen", "Resumen"), ("plano", "Plano"), ("fotos", "Fotos"),
-        ("material", "Material base"), ("prospectos", "Prospectos"), ("pack", "Pack"),
-        ("actividad", "Actividad")]
+#: E33 — ya no hay pestañas. Una propiedad es UNA página: datos, insumos, Pack 1, Pack 2 y
+#: evaluaciones, en ese orden vertical. Las pestañas eran siete aplicaciones adentro de una.
 
 
 @bp.app_context_processor
@@ -42,16 +40,7 @@ def _ctx():
     """De toda la app, no sólo de este blueprint: las pantallas de ambientación se abren desde el
     LAB y tienen que renderizar su misma cabecera. Sin esto, salir a «Ambientación» te dejaba en
     otro shell, con otra barra, que llevaba a la superficie de cliente."""
-    return {"producto": entitlements.summary(), "tabs": TABS, "packs": grants.summary(),
-            "cola": engine.pending() + staging.pending()}
-
-
-def _preset_estilo(f):
-    """El preset y el estilo, ya con su valor por defecto aplicado. Se calculan UNA vez y se
-    reusan: pasar el valor crudo del formulario después de haberlo defaulteado es la forma
-    silenciosa de que un campo vacío llegue como None al dominio."""
-    return (presets.require_preset(f.get("workplace_preset") or presets.DEFAULT_PRESET),
-            presets.require_style(f.get("visual_style") or presets.DEFAULT_STYLE))
+    return {"cola": engine.pending() + staging.pending()}
 
 
 def _p(property_id):
@@ -65,29 +54,11 @@ def _err(msg, back, code=400):
     return render_template("error.html", msg=msg, back=back), code
 
 
-def _vista(property_id, tab, **extra):
-    """Todo lo que comparten las pestañas de una propiedad: quién es, cómo va y —lo que E32.2
-    corrige— qué producto cubre a ESTA propiedad. `producto` pisa al de la cabecera a propósito:
-    dentro de una propiedad, lo que manda es su producto, no el default de la cuenta."""
-    v = properties.view(property_id)
-    return render_template(
-        f"lab/{tab}.html", v=v, p=v["property"], tab=tab,
-        avance=labdom.summary(property_id), staging_st=staging.state(property_id),
-        listo=packs.readiness(property_id),
-        producto=entitlements.summary(property_id),
-        modo_pro=entitlements.allows(property_id, entitlements.PROSPECT_FIT_REQUESTS),
-        productos=entitlements.PRODUCTS, etiquetas=entitlements.PRODUCT_LABEL,
-        concesion=grants.of_property(property_id), **extra)
-
-
-# =================================================================================================
-# §4 — PORTADA
-# =================================================================================================
 @bp.get("/")
 @auth.require
 def home():
-    return render_template("lab/home.html", resumen=labdom.overview(), filas=labdom.rows(),
-                           preparacion=pilot.readiness())
+    """§3 — sólo mis propiedades. Ni contadores técnicos, ni bloqueos del piloto, ni case_id."""
+    return render_template("lab/home.html", filas=labdom.simple_rows())
 
 
 @bp.get("/new")
@@ -96,9 +67,7 @@ def new():
     """En el LAB cada propiedad nueva representa una COMPRA propia: se crea su concesión simulada y
     se le asigna. Por eso no hay tope y tampoco hace falta inventar una excepción — el operador
     puede crear veinte propiedades ONE_OFF porque eso son veinte Packs, no una violación de plan."""
-    return render_template("lab/new.html", errors={}, form=None,
-                           productos=entitlements.PRODUCTS, etiquetas=entitlements.PRODUCT_LABEL,
-                           default=entitlements.default_product())
+    return render_template("lab/new.html", errors={}, form=None, marca=branding.brokerage())
 
 
 @bp.post("/new")
@@ -108,9 +77,7 @@ def create():
     f = request.form
     titulo = (f.get("title") or "").strip()
     if not titulo:
-        return render_template("lab/new.html", form=f, productos=entitlements.PRODUCTS,
-                               etiquetas=entitlements.PRODUCT_LABEL,
-                               default=entitlements.default_product(),
+        return render_template("lab/new.html", form=f, marca=branding.brokerage(),
                                errors={"title": "Ponle un nombre o referencia."}), 400
     area = (f.get("published_area_m2") or "").strip()
     try:
@@ -118,22 +85,18 @@ def create():
         if area_v is not None and area_v <= 0:
             raise ValueError
     except ValueError:
-        return render_template("lab/new.html", form=f, productos=entitlements.PRODUCTS,
-                               etiquetas=entitlements.PRODUCT_LABEL,
-                               default=entitlements.default_product(),
+        return render_template("lab/new.html", form=f, marca=branding.brokerage(),
                                errors={"published_area_m2": "Superficie inválida."}), 400
-    producto = f.get("product") or entitlements.default_product()
-    if producto not in entitlements.PRODUCTS:
-        producto = entitlements.DEFAULT_PRODUCT
     pid = properties.create(titulo, "OFFICE", city=f.get("city") or "",
                             reference=f.get("reference") or "", published_area_m2=area_v,
                             notes=f.get("notes") or "")
-    grants.grant_and_assign(producto, pid, source="SIMULATED_LAB",
+    grants.grant_and_assign(entitlements.default_product(), pid, source="SIMULATED_LAB",
                             note="compra simulada desde el LAB")
     errores = _recibir(pid, request)
     if errores:
-        return _vista(pid, "plano", errores=errores, adjunto=_adjunto(pid)), 400
-    return redirect(url_for("lab.resumen", property_id=pid))
+        return render_template("lab/new.html", form=f, marca=branding.brokerage(),
+                               errors={"archivos": " · ".join(errores)}), 400
+    return redirect(url_for("lab.propiedad", property_id=pid))
 
 
 def _recibir(pid, req):
@@ -157,83 +120,49 @@ def _recibir(pid, req):
 # =================================================================================================
 # §5 — PESTAÑAS DE UNA PROPIEDAD
 # =================================================================================================
+def _pagina(property_id, errores=None, code=200):
+    """§6 — la ÚNICA página de una propiedad."""
+    datos = labdom.property_view(property_id)
+    html = render_template("lab/property.html", errores=errores or [],
+                           ratings=reviews.RATINGS, rating_label=reviews.RATING_LABEL,
+                           fail_tags=reviews.FAIL_TAGS, good_tags=reviews.GOOD_TAGS,
+                           modules=briefmod.MODULE_LABELS, **datos)
+    return (html, code) if code != 200 else html
+
+
 @bp.get("/p/<property_id>")
 @auth.require
-def resumen(property_id):
+def propiedad(property_id):
     _p(property_id)
-    return _vista(property_id, "resumen", linea=labdom.timeline(property_id)[:8],
-                  notas=labdom.notes(property_id)[:3],
-                  feedback_opts=labdom.PROPERTY_FEEDBACK)
+    return _pagina(property_id)
 
 
-def _adjunto(property_id):
-    return {"plano": assets.first_of_kind(property_id, assets.FLOORPLAN_ORIGINAL),
-            "case": floorplan.technical_state(property_id)}
-
-
-@bp.post("/p/<property_id>/product")
+@bp.get("/p/<property_id>/status.json")
 @auth.require
-def set_product(property_id):
-    """§4 — el operador simula qué producto cubre a ESTA propiedad. No toca a ninguna otra."""
+def propiedad_status(property_id):
+    """§25 — sondeo simple para no obligar a recargar mientras el motor trabaja."""
     _p(property_id)
-    try:
-        entitlements.set_product(property_id, request.form.get("product", ""))
-    except (ValueError, LookupError) as e:
-        return _err(str(e), url_for("lab.resumen", property_id=property_id))
-    return redirect(request.form.get("next") or url_for("lab.resumen", property_id=property_id))
+    p1 = labdom.pack1(property_id)
+    props = labdom.pack2_list(property_id)
+    return jsonify({
+        "pack1": [{"name": s["name"], "state": s["state"], "detail": s["detail"]}
+                  for s in p1["steps"]],
+        "pack1_ready": p1["ready"],
+        "pack2": [{"fit_id": x["fit"]["fit_id"], "label": x["fit"]["label"],
+                   "state": x["state"], "detail": x["detail"]} for x in props],
+        "working": any(s["state"] == labdom.PREPARANDO for s in p1["steps"])
+                   or any(x["state"] == labdom.PREPARANDO for x in props),
+    })
 
 
-@bp.get("/p/<property_id>/plano")
+# ---- insumos --------------------------------------------------------------------------------
+@bp.post("/p/<property_id>/archivos")
 @auth.require
-def plano(property_id):
-    _p(property_id)
-    return _vista(property_id, "plano", errores=[], adjunto=_adjunto(property_id))
-
-
-@bp.post("/p/<property_id>/plano")
-@auth.require
-def subir_plano(property_id):
+def archivos(property_id):
     _p(property_id)
     errores = _recibir(property_id, request)
-    if errores:
-        return _vista(property_id, "plano", errores=errores, adjunto=_adjunto(property_id)), 400
-    return redirect(url_for("lab.plano", property_id=property_id))
-
-
-@bp.post("/p/<property_id>/preparar")
-@auth.require
-def preparar(property_id):
-    """§5 paso 4 — crea el caso técnico y lleva al intake de E27.3, que ya hace bien esta parte:
-    escala medida sobre el plano, acceso, revisión de lo detectado. No se reimplementa acá."""
-    _p(property_id)
-    try:
-        case_id = floorplan.ensure_case(property_id)
-    except (LookupError, floorplan.FloorplanError) as e:
-        return _err(str(e), url_for("lab.plano", property_id=property_id))
-    return redirect(url_for("case_view", case_id=case_id) + f"?lab={property_id}")
-
-
-@bp.get("/p/<property_id>/fotos")
-@auth.require
-def fotos(property_id):
-    _p(property_id)
-    return _vista(property_id, "fotos", errores=[],
-                  fotos=assets.list_of_kind(property_id, assets.PHOTO_ORIGINAL),
-                  hero=staging.hero(property_id),
-                  en_dataset={r["asset_id"] for r in store.q(
-                      "SELECT asset_id FROM benchmark_photos WHERE property_id=?", (property_id,))})
-
-
-@bp.post("/p/<property_id>/fotos")
-@auth.require
-def subir_fotos(property_id):
-    _p(property_id)
-    errores = _recibir(property_id, request)
-    if errores:
-        return _vista(property_id, "fotos", errores=errores,
-                      fotos=assets.list_of_kind(property_id, assets.PHOTO_ORIGINAL),
-                      hero=staging.hero(property_id), en_dataset=set()), 400
-    return redirect(url_for("lab.fotos", property_id=property_id))
+    return _pagina(property_id, errores, 400) if errores else \
+        redirect(url_for("lab.propiedad", property_id=property_id))
 
 
 @bp.post("/p/<property_id>/hero")
@@ -243,8 +172,8 @@ def hero(property_id):
     try:
         staging.set_hero(property_id, request.form.get("asset_id", ""))
     except staging.StagingError as e:
-        return _err(str(e), url_for("lab.fotos", property_id=property_id))
-    return redirect(url_for("lab.fotos", property_id=property_id))
+        return _pagina(property_id, [str(e)], 400)
+    return redirect(url_for("lab.propiedad", property_id=property_id) + "#pack1")
 
 
 @bp.post("/p/<property_id>/foto/<asset_id>/borrar")
@@ -255,156 +184,106 @@ def borrar_foto(property_id, asset_id):
     if a is None or a["kind"] != assets.PHOTO_ORIGINAL:
         abort(404)
     if staging.list_for(property_id, asset_id, include_benchmark=True):
-        return _err("Esa foto ya tiene intentos de ambientación: es evidencia y no se borra.",
-                    url_for("lab.fotos", property_id=property_id))
+        return _pagina(property_id, ["Esa foto ya se usó para ambientar: se conserva."], 400)
     assets.delete(asset_id, property_id)
     bench.remove_photo(asset_id)
-    return redirect(url_for("lab.fotos", property_id=property_id))
+    return redirect(url_for("lab.propiedad", property_id=property_id))
 
 
-@bp.get("/p/<property_id>/material")
+# ---- PACK 1 ---------------------------------------------------------------------------------
+@bp.post("/p/<property_id>/pack1")
 @auth.require
-def material(property_id):
-    _p(property_id)
-    base = fits.base_of(property_id)
-    return _vista(property_id, "material", errores=[],
-                  plano_com=assets.first_of_kind(property_id, assets.FLOORPLAN_COMMERCIAL),
-                  layouts=packs.layout_assets(property_id),
-                  hero=staging.hero(property_id),
-                  staged=staging.approved_hero(property_id),
-                  antes=(packs.before_after_assets(property_id) or [None])[0],
-                  intentos=staging.list_for(property_id),
-                  base=fits.view(base["fit_id"], property_id) if base else None,
-                  presets_wp=presets.CATALOG, estilos=presets.VISUAL_STYLES,
-                  preset_default=presets.DEFAULT_PRESET, estilo_default=presets.DEFAULT_STYLE,
-                  aprobado=pilot.approved(), disclosure=staging.DISCLOSURE_LONG)
-
-
-@bp.post("/p/<property_id>/programa")
-@auth.require
-def programa(property_id):
-    """El programa base: personas + forma de trabajo. Igual que el producto, sin CAD."""
+def generar_pack1(property_id):
+    """§7 — un solo botón. Hace todo lo que puede y dice dónde hace falta una persona."""
     _p(property_id)
     f = request.form
     try:
-        preset, estilo = _preset_estilo(f)
-        fid = fits.ensure_base(property_id, f.get("headcount"), preset, estilo)
-        fits.set_express(fid, int(f.get("headcount")), preset, estilo,
-                         int(f["target_seats"]) if (f.get("target_seats") or "").strip() else None)
-        if f.get("generate"):
-            fits.generate(fid)
-    except (presets.PresetError, fits.FitError, briefmod.BriefFormError, ValueError,
-            entitlements.EntitlementError) as e:
-        return _err(str(e), url_for("lab.material", property_id=property_id))
-    return redirect(url_for("lab.material", property_id=property_id))
+        if (f.get("headcount") or "").strip():
+            fid = fits.ensure_base(property_id, f["headcount"],
+                                   presets.require_preset(f.get("workplace_preset")
+                                                          or presets.DEFAULT_PRESET),
+                                   presets.require_style(f.get("visual_style")
+                                                         or presets.DEFAULT_STYLE))
+            fits.set_express(fid, int(f["headcount"]),
+                             f.get("workplace_preset") or presets.DEFAULT_PRESET,
+                             f.get("visual_style") or presets.DEFAULT_STYLE)
+        res = labdom.pack1_advance(property_id)
+    except (fits.FitError, presets.PresetError, floorplan.FloorplanError,
+            entitlements.EntitlementError, briefmod.BriefFormError, ValueError) as e:
+        return _pagina(property_id, [str(e)], 400)
+    if res.get("action") == "revisar":
+        return redirect(url_for("lab.revisar_plano", property_id=property_id))
+    return redirect(url_for("lab.propiedad", property_id=property_id) + "#pack1")
 
 
-@bp.post("/p/<property_id>/publicar")
+@bp.get("/p/<property_id>/revisar-plano")
 @auth.require
-def publicar(property_id):
-    """Publica plano comercial y la alternativa que el producto entregue."""
+def revisar_plano(property_id):
+    """§5 — la revisión técnica sigue siendo la de E27.3, que funciona. Se abre con un aviso de
+    que es una pantalla distinta y con la vuelta marcada, en vez de tragarse al usuario."""
+    _p(property_id)
+    try:
+        case_id = floorplan.ensure_case(property_id)
+    except (LookupError, floorplan.FloorplanError) as e:
+        return _pagina(property_id, [str(e)], 400)
+    return render_template("lab/revisar.html", property_id=property_id, case_id=case_id,
+                           p=properties.require(property_id),
+                           tecnico=floorplan.technical_state(property_id))
+
+
+@bp.post("/p/<property_id>/pack1/descargar")
+@auth.require
+def armar_pack1(property_id):
     _p(property_id)
     base = fits.base_of(property_id)
     try:
         floorplan.publish_all(property_id, fit_id=(base or {}).get("fit_id"))
-    except (LookupError, floorplan.FloorplanError) as e:
-        return _err(str(e), url_for("lab.material", property_id=property_id))
-    return redirect(url_for("lab.material", property_id=property_id))
+        packs.export_zip(property_id)
+    except (floorplan.FloorplanError, packs.PackNotReady) as e:
+        return _pagina(property_id, [str(e)], 400)
+    return redirect(url_for("customer.download_pack", property_id=property_id))
 
 
-# ---- §11 STAGING LAB (por propiedad) ---------------------------------------------------------
-@bp.post("/p/<property_id>/staging")
+# ---- PACK 2 ---------------------------------------------------------------------------------
+@bp.post("/p/<property_id>/pack2")
 @auth.require
-def generar_staging(property_id):
-    """Genera un intento para la foto principal.
-
-    El proveedor NO se pregunta en el flujo de producto: se usa el aprobado (§J). El selector
-    interno existe sólo para experimentar, y lo que produce nace marcado como experimental y no
-    puede publicarse."""
-    _p(property_id)
-    h = staging.hero(property_id)
-    if h is None:
-        return _err("Primero elegí la foto principal.",
-                    url_for("lab.fotos", property_id=property_id))
-    f = request.form
-    prov = (f.get("provider") or "").strip() or None
-    estilo = f.get("visual_style") or (fits.base_of(property_id) or {}).get("visual_style") \
-        or presets.DEFAULT_STYLE
-    try:
-        aid = staging.create_attempt(property_id, h["asset_id"], estilo, provider_name=prov)
-    except (staging.StagingError, entitlements.EntitlementError,
-            staging.visual.VisualStagingError) as e:
-        return _err(str(e), url_for("lab.material", property_id=property_id))
-    staging.enqueue(aid)
-    return redirect(url_for("staging.review_page", attempt_id=aid))
-
-
-# ---- §8 PROSPECTOS ---------------------------------------------------------------------------
-@bp.get("/p/<property_id>/prospectos")
-@auth.require
-def prospectos(property_id):
-    _p(property_id)
-    return _vista(property_id, "prospectos", errores=[],
-                  lista=[fits.view(f["fit_id"], property_id)
-                         for f in fits.list_for(property_id, include_base=False)],
-                  presets_wp=presets.CATALOG, estilos=presets.VISUAL_STYLES,
-                  preset_default=presets.DEFAULT_PRESET, estilo_default=presets.DEFAULT_STYLE,
-                  feedback_opts=labdom.FIT_FEEDBACK)
-
-
-@bp.post("/p/<property_id>/prospectos")
-@auth.require
-def crear_prospecto(property_id):
+def generar_pack2(property_id):
+    """§9 — el formulario simple de una propuesta, dentro de la misma página."""
     _p(property_id)
     f = request.form
     logo_id = None
     archivo = request.files.get("prospect_logo")
+    # Se comprueba ANTES de crear nada: si el plano no está listo, generar va a fallar igual, y
+    # una propuesta a medias en la lista es peor que un mensaje claro.
+    if not floorplan.technical_state(property_id)["ready"]:
+        return _pagina(property_id, ["Para hacer una propuesta necesitamos el plano preparado. "
+                                     "Generá primero el Pack 1."], 400)
     try:
-        preset, estilo = _preset_estilo(f)
+        labdom.enable_pack2(property_id)
         if archivo and archivo.filename:
             logo_id = branding.save_logo(archivo, branding.PROSPECT)
+        preset = presets.require_preset(f.get("workplace_preset") or presets.DEFAULT_PRESET)
+        estilo = presets.require_style(f.get("visual_style") or presets.DEFAULT_STYLE)
         fid = fits.create_prospect(property_id, f.get("prospect_name") or "", f.get("headcount"),
                                    preset, estilo, f.get("prospect_color") or "", logo_id,
                                    notes=f.get("notes") or "")
-        fits.set_express(fid, int(f.get("headcount")), preset, estilo)
-    except (presets.PresetError, fits.FitError, branding.BrandError, ValueError,
-            entitlements.EntitlementError) as e:
-        return _err(str(e), url_for("lab.prospectos", property_id=property_id),
-                    403 if isinstance(e, entitlements.EntitlementError) else 400)
-    return redirect(url_for("lab.prospecto", property_id=property_id, fit_id=fid))
+        if (f.get("workstations") or "").strip():
+            rooms = {m: f.get(f"room_{m}") or 0 for m, _ in briefmod.MODULE_LABELS}
+            fits.set_advanced_brief(fid, briefmod.build(f.get("prospect_name") or "PROPUESTA",
+                                                        f.get("headcount"), f["workstations"],
+                                                        rooms))
+        else:
+            fits.set_express(fid, int(f.get("headcount")), preset, estilo)
+        fits.generate(fid)
+    except (fits.FitError, presets.PresetError, branding.BrandError, briefmod.BriefFormError,
+            entitlements.EntitlementError, ValueError) as e:
+        return _pagina(property_id, [str(e)], 400)
+    return redirect(url_for("lab.propiedad", property_id=property_id) + "#pack2")
 
 
-@bp.get("/p/<property_id>/prospectos/<fit_id>")
+@bp.post("/p/<property_id>/pack2/<fit_id>/descargar")
 @auth.require
-def prospecto(property_id, fit_id):
-    _p(property_id)
-    if fits.get(fit_id, property_id) is None:
-        abort(404)
-    fv = fits.view(fit_id, property_id)
-    return _vista(property_id, "prospecto", errores=[], fv=fv, f=fv["fit"],
-                  layouts=packs.layout_assets(property_id, fit_id),
-                  pack=packs.get(property_id, fit_id),
-                  notas=labdom.notes(property_id, fit_id),
-                  feedback_opts=labdom.FIT_FEEDBACK,
-                  presets_wp=presets.CATALOG, estilos=presets.VISUAL_STYLES)
-
-
-@bp.post("/p/<property_id>/prospectos/<fit_id>/generar")
-@auth.require
-def generar_fit(property_id, fit_id):
-    _p(property_id)
-    if fits.get(fit_id, property_id) is None:
-        abort(404)
-    try:
-        fits.generate(fit_id)
-    except (fits.FitError, entitlements.EntitlementError, briefmod.BriefFormError) as e:
-        return _err(str(e), url_for("lab.prospecto", property_id=property_id, fit_id=fit_id))
-    return redirect(url_for("lab.prospecto", property_id=property_id, fit_id=fit_id))
-
-
-@bp.post("/p/<property_id>/prospectos/<fit_id>/publicar")
-@auth.require
-def publicar_fit(property_id, fit_id):
+def armar_pack2(property_id, fit_id):
     _p(property_id)
     if fits.get(fit_id, property_id) is None:
         abort(404)
@@ -412,73 +291,55 @@ def publicar_fit(property_id, fit_id):
         floorplan.publish_all(property_id, fit_id=fit_id)
         packs.export_zip(property_id, fit_id)
     except (floorplan.FloorplanError, packs.PackNotReady, LookupError) as e:
-        return _err(str(e), url_for("lab.prospecto", property_id=property_id, fit_id=fit_id))
-    return redirect(url_for("lab.prospecto", property_id=property_id, fit_id=fit_id))
+        return _pagina(property_id, [str(e)], 400)
+    return redirect(url_for("customer.download_fit_pack", property_id=property_id, fit_id=fit_id))
 
 
-# ---- §25 PACK --------------------------------------------------------------------------------
-@bp.get("/p/<property_id>/pack")
+# ---- EVALUACIÓN -----------------------------------------------------------------------------
+@bp.post("/p/<property_id>/evaluar")
 @auth.require
-def pack(property_id):
+def evaluar(property_id):
+    """§12 — cuatro botones. Motivos y comentario, opcionales."""
     _p(property_id)
-    return _vista(property_id, "pack", errores=[], pack=packs.get(property_id),
-                  contenido=_contenido(property_id))
-
-
-def _contenido(property_id):
-    """§25 — qué entraría al ZIP HOY. Se calcula mirando los assets, no una lista escrita a mano:
-    así la vista previa no puede contradecir el archivo."""
-    st = staging.state(property_id)
-    return [
-        {"n": "Plano comercial",
-         "ok": assets.first_of_kind(property_id, assets.FLOORPLAN_COMMERCIAL) is not None,
-         "por_que": "se publica cuando la planta está confirmada"},
-        {"n": "Alternativa representativa", "ok": bool(packs.layout_assets(property_id)),
-         "por_que": "falta generar o publicar el layout"},
-        {"n": "Plano original",
-         "ok": assets.first_of_kind(property_id, assets.FLOORPLAN_ORIGINAL) is not None,
-         "por_que": "falta subir el plano"},
-        {"n": "Fotos originales",
-         "ok": bool(assets.list_of_kind(property_id, assets.PHOTO_ORIGINAL)),
-         "por_que": "falta subir fotos"},
-        {"n": "Imagen ambientada aprobada", "ok": st["state"] == "APPROVED",
-         "por_que": st["reason"]},
-        {"n": "Antes / después", "ok": bool(packs.before_after_assets(property_id)),
-         "por_que": "se arma junto con la imagen ambientada"},
-        {"n": "Propuesta", "ok": True, "por_que": ""},
-        {"n": "Manifiesto", "ok": True, "por_que": ""},
-    ]
-
-
-@bp.post("/p/<property_id>/pack")
-@auth.require
-def armar_pack(property_id):
-    _p(property_id)
-    base = fits.base_of(property_id)
+    f = request.form
     try:
-        floorplan.publish_all(property_id, fit_id=(base or {}).get("fit_id"))
-        packs.export_zip(property_id)
-    except (floorplan.FloorplanError, packs.PackNotReady) as e:
-        return _vista(property_id, "pack", errores=[str(e)], pack=packs.get(property_id),
-                      contenido=_contenido(property_id)), 400
-    return redirect(url_for("lab.pack", property_id=property_id))
+        reviews.save(property_id, f.get("artifact_type", ""), f.get("rating", ""),
+                     artifact_id=f.get("artifact_id") or None, fit_id=f.get("fit_id") or None,
+                     reason_tags=f.getlist("tags"), comment=f.get("comment") or "",
+                     provenance=_procedencia(property_id, f), author=OPERATOR)
+    except ValueError as e:
+        return _pagina(property_id, [str(e)], 400)
+    return redirect(url_for("lab.propiedad", property_id=property_id)
+                    + (f.get("anchor") or "#evaluaciones"))
 
 
-@bp.post("/p/<property_id>/pack/override")
-@auth.require
-def override(property_id):
-    _p(property_id)
-    packs.set_override(property_id, request.form.get("reason") or "")
-    return redirect(url_for("lab.pack", property_id=property_id))
-
-
-# ---- §15/§16/§17 ACTIVIDAD, NOTAS Y VALORACIÓN -----------------------------------------------
-@bp.get("/p/<property_id>/actividad")
-@auth.require
-def actividad(property_id):
-    _p(property_id)
-    return _vista(property_id, "actividad", linea=labdom.timeline(property_id),
-                  notas=labdom.notes(property_id), feedback_opts=labdom.PROPERTY_FEEDBACK)
+def _procedencia(property_id, f):
+    """§16 — lo que el artefacto sepa de sí mismo. Lo que no se sepa queda en None: no se inventa.
+    Nada de esto se le muestra al usuario; existe para poder saber QUÉ versión produjo un 'malo'."""
+    tipo, aid = f.get("artifact_type"), f.get("artifact_id") or None
+    pr = {"engine_version": engine.engine_commit()}
+    a = assets.get(aid, property_id) if aid else None
+    if a:
+        pr["artifact_sha256"] = a["sha256"]
+        meta = store.js(a["metadata"], {}) or {}
+        pr["run_id"] = meta.get("run_id")
+        pr["provider"] = meta.get("provider")
+        pr["model"] = meta.get("model")
+    if tipo == "ALTERNATIVA" and f.get("fit_id"):
+        r = fits.latest_run(f["fit_id"])
+        if r:
+            pr["run_id"] = r["run"]["run_id"]
+            pr["engine_version"] = r["run"]["engine_commit"] or pr["engine_version"]
+            alt = next((x for x in r["alternatives"] if x["alt"] == aid), None)
+            if alt:
+                pr["artifact_sha256"] = alt["layout_sha256"]
+    if tipo == "STAGING":
+        st = staging.approved_hero(property_id)
+        if st:
+            meta = store.js(st["metadata"], {}) or {}
+            pr.update({"artifact_sha256": st["sha256"], "provider": meta.get("provider"),
+                       "model": meta.get("model")})
+    return pr
 
 
 @bp.post("/p/<property_id>/nota")
@@ -486,82 +347,84 @@ def actividad(property_id):
 def nota(property_id):
     _p(property_id)
     try:
-        labdom.add_note(property_id, request.form.get("body", ""),
-                        request.form.get("scope") or "PROPERTY",
-                        request.form.get("fit_id") or None, author=OPERATOR)
+        labdom.add_note(property_id, request.form.get("body", ""), author=OPERATOR)
     except ValueError as e:
-        return _err(str(e), url_for("lab.actividad", property_id=property_id))
-    destino = request.form.get("next") or url_for("lab.actividad", property_id=property_id)
-    return redirect(destino)
+        return _pagina(property_id, [str(e)], 400)
+    return redirect(url_for("lab.propiedad", property_id=property_id) + "#evaluaciones")
 
 
-@bp.post("/p/<property_id>/nota/<note_id>/borrar")
+# =================================================================================================
+# §2/§22 — AJUSTES. Lo técnico existe y no se borra: deja de ser protagonista.
+# =================================================================================================
+@bp.get("/ajustes")
 @auth.require
-def borrar_nota(property_id, note_id):
-    _p(property_id)
-    labdom.delete_note(note_id, property_id)
-    return redirect(request.form.get("next") or url_for("lab.actividad", property_id=property_id))
+def config():
+    return render_template("lab/settings.html", marca=branding.brokerage(),
+                           preparacion=pilot.readiness(), stats=reviews.stats())
 
 
-@bp.post("/p/<property_id>/feedback")
+@bp.get("/ajustes/evaluaciones")
 @auth.require
-def feedback(property_id):
+def evaluaciones():
+    """§18 — el resumen de aprendizaje. Acá, no en la navegación principal."""
+    return render_template("lab/evaluaciones.html", stats=reviews.stats(),
+                           filas=[dict(r, prop=properties.get(r["property_id"]))
+                                  for r in (reviews._row(x) for x in store.q(
+                                      "SELECT * FROM product_reviews ORDER BY created_at DESC "
+                                      "LIMIT 200"))])
+
+
+@bp.get("/debug")
+@auth.require
+def debug():
+    """§22/§26 — la puerta de atrás. Todo el tooling de E27–E32 sigue vivo y accesible desde acá;
+    lo que cambia es que ya no está en el camino de nadie que quiera probar el producto."""
+    return render_template("lab/debug.html", preparacion=pilot.readiness(),
+                           packs=grants.summary(), producto=entitlements.summary(),
+                           modos=entitlements.PRODUCTS, etiquetas=entitlements.PRODUCT_LABEL,
+                           default=entitlements.default_product(),
+                           propiedades=properties.listing(),
+                           productos={v["property"]["property_id"]:
+                                      entitlements.product_of(v["property"]["property_id"])
+                                      for v in properties.listing()})
+
+
+@bp.post("/debug/modo")
+@auth.require
+def set_modo():
+    try:
+        entitlements.set_default_product(request.form.get("mode", ""))
+    except ValueError:
+        abort(400)
+    return redirect(url_for("lab.debug"))
+
+
+@bp.post("/debug/producto/<property_id>")
+@auth.require
+def set_product(property_id):
     _p(property_id)
     try:
-        if request.form.get("fit_id"):
-            labdom.set_fit_feedback(request.form["fit_id"], property_id,
-                                    request.form.get("value", ""))
-        else:
-            labdom.set_feedback(property_id, request.form.get("value", ""))
+        entitlements.set_product(property_id, request.form.get("product", ""))
     except (ValueError, LookupError) as e:
-        return _err(str(e), url_for("lab.resumen", property_id=property_id))
-    return redirect(request.form.get("next") or url_for("lab.resumen", property_id=property_id))
+        return _err(str(e), url_for("lab.debug"))
+    return redirect(url_for("lab.debug"))
+
+
+@bp.post("/debug/recheck")
+@auth.require
+def recheck():
+    """§A de E32 — sólo vuelve a detectar configuración. No revela ninguna clave."""
+    pilot.log_event("ENV_RECHECK", detail={"credentials": [
+        {"provider": p["name"], "credential": p["credential"]}
+        for p in pilot.readiness()["providers"]]}, author=OPERATOR)
+    return redirect(url_for("lab.benchmark") if request.form.get("from") == "benchmark"
+                    else url_for("lab.debug"))
 
 
 @bp.get("/feedback.json")
 @auth.require
 def feedback_json():
-    """§17 — el feedback estructurado, para analizarlo después. No entrena nada hoy."""
     return jsonify(labdom.feedback_export())
-
-
-# =================================================================================================
-# §24 — CONFIGURACIÓN + §A PANEL DE PREPARACIÓN
-# =================================================================================================
-@bp.get("/config")
-@auth.require
-def config():
-    return render_template("lab/config.html", preparacion=pilot.readiness(),
-                           marca=branding.brokerage(), modos=entitlements.PRODUCTS,
-                           etiquetas=entitlements.PRODUCT_LABEL, packs=grants.summary(),
-                           default=entitlements.default_product(),
-                           presets_wp=presets.CATALOG, estilos=presets.VISUAL_STYLES,
-                           eventos=pilot.events(limit=15))
-
-
-@bp.post("/config/modo")
-@auth.require
-def set_modo():
-    """Cambia el producto por DEFECTO de las propiedades de prueba nuevas. Deliberadamente NO toca
-    las que ya existen: ése era el bug — un ajuste global que transformaba de golpe el derecho de
-    todas las propiedades."""
-    try:
-        entitlements.set_default_product(request.form.get("mode", ""))
-    except ValueError:
-        abort(400)
-    return redirect(request.form.get("next") or url_for("lab.config"))
-
-
-@bp.post("/config/recheck")
-@auth.require
-def recheck():
-    """§A — «RECHEQUEAR ENTORNO». Sólo vuelve a detectar configuración. No revela ninguna clave:
-    lo único que cambia en pantalla son booleanos."""
-    pilot.log_event("ENV_RECHECK", detail={"credentials": [
-        {"provider": p["name"], "credential": p["credential"]}
-        for p in pilot.readiness()["providers"]]}, author=OPERATOR)
-    return redirect(url_for("lab.benchmark") if request.form.get("from") == "benchmark"
-                    else url_for("lab.config"))
 
 
 # =================================================================================================
@@ -699,3 +562,16 @@ def next_unreviewed():
     if not pend:
         return redirect(url_for("staging.queue"))
     return redirect(url_for("staging.review_page", attempt_id=pend[0]["attempt_id"]))
+
+
+# =================================================================================================
+# Rutas de E32 que ya no existen como pantalla. Se conservan como redirección para que ningún
+# enlace guardado muera: todas llevan a la única página de la propiedad.
+# =================================================================================================
+@bp.get("/p/<property_id>/<any(resumen, plano, fotos, material, prospectos, pack, actividad):seccion>")
+@auth.require
+def _vieja_pestana(property_id, seccion):
+    _p(property_id)
+    ancla = {"material": "#pack1", "prospectos": "#pack2", "pack": "#pack1",
+             "actividad": "#evaluaciones", "fotos": "#insumos", "plano": "#insumos"}.get(seccion, "")
+    return redirect(url_for("lab.propiedad", property_id=property_id) + ancla)

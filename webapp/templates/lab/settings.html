@@ -1,0 +1,31 @@
+{% extends "lab/base.html" %}{% block title %}Ajustes{% endblock %}
+{% block body %}
+<h1>Ajustes</h1>
+
+<h2>Mi marca</h2>
+<p class="sub">{{ marca.name or 'Sin configurar' }} · {{ marca.color }}
+  · {{ 'con logo' if marca.has_logo else 'sin logo' }}
+  · <a href="{{ url_for('customer.brand') }}">editar</a></p>
+<p class="hint">Se usa en el material de todas tus propiedades. No se pide en cada propiedad.</p>
+
+<h2>Evaluaciones</h2>
+<p class="sub">{{ stats.total }} calificación(es) sobre {{ stats.properties_rated }} propiedad(es).
+  <a href="{{ url_for('lab.evaluaciones') }}">Ver resumen</a></p>
+
+<h2>Ambientación</h2>
+<table class="detect"><tbody>
+{% for pr in preparacion.providers if pr.in_pilot %}
+  <tr><td class="ic {{ 'listo' if pr.credential }}">{{ '✓' if pr.credential else '○' }}</td>
+      <td>{{ pr.name }}</td>
+      <td class="sub">{{ 'configurado' if pr.credential else 'no configurado' }}</td></tr>
+{% endfor %}
+</tbody></table>
+<p class="sub">Proveedor aprobado: <b>{{ preparacion.approved_label }}</b>.
+  {% if not preparacion.approved %}Hasta que haya uno validado, la ambientación queda pendiente.{% endif %}</p>
+<p class="hint">Las claves se configuran fuera de la aplicación y nunca se muestran acá.</p>
+
+<h2>Herramientas técnicas</h2>
+<p class="sub">Todo el backstage —revisión de plantas, laboratorio de ambientación, benchmark de
+  proveedores, packs y trazabilidad— sigue estando. Está fuera del camino, no borrado.</p>
+<p><a class="btn sec" href="{{ url_for('lab.debug') }}">Abrir herramientas técnicas</a></p>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "lab/base.html" %}{% block title %}Herramientas técnicas{% endblock %}
+{% block body %}
+<p class="crumb"><a href="{{ url_for('lab.config') }}">Ajustes</a> / Herramientas técnicas</p>
+<h1>Herramientas técnicas</h1>
+<p class="sub">Backstage. Nada de esto hace falta para probar el producto.</p>
+
+<h2>Pantallas</h2>
+<table class="detect"><tbody>
+  <tr><td><a href="{{ url_for('library') }}">Plantas</a></td><td class="sub">los casos técnicos y su intake (E27.3)</td></tr>
+  <tr><td><a href="{{ url_for('review_queue') }}">Cola de revisión</a></td><td class="sub">propiedades que necesitan intervención</td></tr>
+  <tr><td><a href="{{ url_for('staging.queue') }}">Laboratorio de ambientación</a></td><td class="sub">candidatos, revisión con cortina, reintentos</td></tr>
+  <tr><td><a href="{{ url_for('lab.benchmark') }}">Benchmark de proveedores</a></td><td class="sub">dataset, smoke tests, bake-off, aprobación</td></tr>
+  <tr><td><a href="{{ url_for('customer.index') }}">Superficie de cliente</a></td><td class="sub">lo que vería un corredor, con sus topes de compra</td></tr>
+  <tr><td><a href="{{ url_for('reviews_export') }}">Revisiones de layout (JSON)</a></td><td class="sub">export del contrato de E26</td></tr>
+  <tr><td><a href="{{ url_for('lab.feedback_json') }}">Feedback interno (JSON)</a></td><td class="sub">notas y valoraciones del LAB</td></tr>
+  <tr><td><a href="{{ url_for('settings_view') }}">Producto (técnico)</a></td><td class="sub">capacidades, presets, compuertas del piloto</td></tr>
+</tbody></table>
+
+<h2>Producto simulado por propiedad</h2>
+<p class="sub">El LAB pone Pro automáticamente al crear una propuesta. Acá se puede forzar a mano.
+  Los topes comerciales de verdad viven en la superficie de cliente.</p>
+<table class="detect"><tbody>
+{% for v in propiedades %}
+  {% set pid = v.property.property_id %}
+  <tr><td>{{ v.property.title }}<span class="sub mono"> {{ pid }}</span></td>
+      <td><b>{{ etiquetas[productos[pid]] }}</b></td>
+      <td class="ans"><form method="post" action="{{ url_for('lab.set_product', property_id=pid) }}" class="inline">
+        {% for m in modos %}<button name="product" value="{{ m }}" class="sec">{{ etiquetas[m] }}</button>{% endfor %}
+      </form></td></tr>
+{% endfor %}
+</tbody></table>
+<p class="sub">Producto por defecto de una propiedad nueva: <b>{{ etiquetas[default] }}</b>
+  <form method="post" action="{{ url_for('lab.set_modo') }}" class="inline">
+    {% for m in modos %}<button name="mode" value="{{ m }}" class="sec">{{ etiquetas[m] }}</button>{% endfor %}
+  </form></p>
+<p class="sub">Packs: {{ packs.assigned }} asignado(s) · {{ packs.available }} sin usar.</p>
+
+<h2>Ambientación</h2>
+{% include "lab/_readiness.html" %}
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "lab/base.html" %}{% block title %}Revisar el plano{% endblock %}
+{% block body %}
+<p class="crumb"><a href="{{ url_for('lab.home') }}">Mis propiedades</a> /
+  <a href="{{ url_for('lab.propiedad', property_id=property_id) }}">{{ p.title }}</a> / Revisar el plano</p>
+<h1>Revisar el plano</h1>
+<p class="sub">Para generar el material necesitamos dos cosas que sólo se pueden marcar mirando el
+  plano: <b>la escala</b> (dos puntos y su distancia real) y <b>el acceso</b>.</p>
+<div class="nota">
+  <p>La pantalla que sigue es la herramienta de medición. Tiene otro aspecto a propósito: es de
+     trabajo, no de producto.</p>
+  <p><b>Cuando termines, volvé acá con el botón de abajo</b> y seguí con el Pack 1.</p>
+</div>
+<p>
+  <a class="btn" href="{{ url_for('case_view', case_id=case_id) }}">Abrir la herramienta de medición</a>
+  <a class="btn sec" href="{{ url_for('lab.propiedad', property_id=property_id) }}">Volver a la propiedad</a>
+</p>
+<p class="sub">{{ 'El plano ya está listo.' if tecnico.ready else
+   ('Falta: ' ~ (tecnico.pending|join(', ')) if tecnico.pending else 'Falta analizar la planta.') }}</p>
+{% endblock %}

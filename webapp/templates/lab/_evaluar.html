@@ -1,0 +1,34 @@
+{# Los cuatro botones. `tipo`, `aid`, `fitid`, `actual`, `ancla` vienen del que incluye. #}
+{% set r = actual %}
+<div class="evaluar">
+  <span class="q">¿Cómo quedó?</span>
+  {% for k in ratings %}
+    <form method="post" action="{{ url_for('lab.evaluar', property_id=p.property_id) }}" class="inline">
+      <input type="hidden" name="artifact_type" value="{{ tipo }}">
+      <input type="hidden" name="artifact_id" value="{{ aid or '' }}">
+      <input type="hidden" name="fit_id" value="{{ fitid or '' }}">
+      <input type="hidden" name="anchor" value="{{ ancla or '#evaluaciones' }}">
+      <button name="rating" value="{{ k }}"
+              class="rate r-{{ k|lower }} {{ 'on' if r and r.rating == k }}">{{ rating_label[k] }}</button>
+    </form>
+  {% endfor %}
+  {% if r %}<span class="sub">· {{ r.rating_label }}{% if r.tags %} · {{ r.tags|join(', ') }}{% endif %}</span>{% endif %}
+</div>
+{% if r %}
+<details class="motivos"><summary>{{ '¿Qué falló?' if r.rating in ('MALO','PESIMO') else '¿Qué funcionó?' }} <span class="opt">(opcional)</span></summary>
+  <form method="post" action="{{ url_for('lab.evaluar', property_id=p.property_id) }}" class="upload">
+    <input type="hidden" name="artifact_type" value="{{ tipo }}">
+    <input type="hidden" name="artifact_id" value="{{ aid or '' }}">
+    <input type="hidden" name="fit_id" value="{{ fitid or '' }}">
+    <input type="hidden" name="rating" value="{{ r.rating }}">
+    <input type="hidden" name="anchor" value="{{ ancla or '#evaluaciones' }}">
+    <div class="tags">
+    {% for t in (fail_tags.get(tipo, ['Otro']) if r.rating in ('MALO','PESIMO') else good_tags) %}
+      <label class="tag"><input type="checkbox" name="tags" value="{{ t }}" {{ 'checked' if t in r.tags }}> {{ t }}</label>
+    {% endfor %}
+    </div>
+    <input name="comment" value="{{ r.comment or '' }}" placeholder="Comentario (opcional)">
+    <button class="sec">Guardar</button>
+  </form>
+</details>
+{% endif %}

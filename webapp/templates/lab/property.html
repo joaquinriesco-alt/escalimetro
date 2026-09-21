@@ -1,0 +1,250 @@
+{% extends "lab/base.html" %}{% block title %}{{ p.title }}{% endblock %}
+{% block body %}
+<p class="crumb"><a href="{{ url_for('lab.home') }}">Mis propiedades</a> / {{ p.title }}</p>
+<h1>{{ p.title }}</h1>
+<p class="sub">{% if p.city %}{{ p.city }}{% endif %}{% if p.reference %} · {{ p.reference }}{% endif %}
+  {%- if p.published_area_m2 %} · {{ p.published_area_m2|round|int }} m²{% endif %}</p>
+
+{% if errores %}<div class="panel-bad"><ul>{% for e in errores %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+
+{# ============================================================ INSUMOS #}
+<section id="insumos">
+<h2>Insumos</h2>
+<table class="pasos"><tbody>
+  <tr><td class="ic {{ 'listo' if pack1.original }}">{{ '✓' if pack1.original else '○' }}</td>
+      <td><b>Plano</b></td><td class="sub">{{ pack1.original.original_filename if pack1.original else 'falta subirlo' }}</td></tr>
+  <tr><td class="ic {{ 'listo' if pack1.photos }}">{{ '✓' if pack1.photos else '○' }}</td>
+      <td><b>Fotos</b></td><td class="sub">{{ pack1.photos|length }} foto(s){% if pack1.hero %} · principal: {{ pack1.hero.original_filename }}{% endif %}</td></tr>
+</tbody></table>
+
+{% if pack1.photos %}
+<form method="post" action="{{ url_for('lab.hero', property_id=p.property_id) }}">
+<div class="grid3 mini">
+{% for f in pack1.photos %}
+  <figure>
+    <img src="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=f.asset_id) }}" alt="">
+    <figcaption><label class="op hero"><input type="radio" name="asset_id" value="{{ f.asset_id }}"
+      {{ 'checked' if pack1.hero and pack1.hero.asset_id == f.asset_id }}> Ambientar ésta</label></figcaption>
+  </figure>
+{% endfor %}
+</div>
+<button type="submit" class="sec">Guardar foto principal</button>
+</form>
+{% endif %}
+
+<details><summary>Agregar plano o fotos</summary>
+  <form method="post" action="{{ url_for('lab.archivos', property_id=p.property_id) }}" enctype="multipart/form-data" class="upload">
+    <div class="row">
+      <label>Plano<input type="file" name="floorplan" accept=".pdf,.png,.jpg,.jpeg"></label>
+      <label>Fotos<input type="file" name="photos" accept=".png,.jpg,.jpeg" multiple></label>
+    </div>
+    <button type="submit" class="sec">Subir</button>
+  </form>
+</details>
+</section>
+
+{# ============================================================ PACK 1 #}
+<section id="pack1">
+<div class="pack-head">
+  <div><h2>Pack 1 — Publicación</h2>
+    <p class="sub">Material base para presentar y publicar la propiedad.</p></div>
+  {% if pack1.downloadable %}
+    <a class="btn" href="{{ url_for('customer.download_pack', property_id=p.property_id) }}">Descargar Pack 1</a>
+  {% elif pack1.ready %}
+    <form method="post" action="{{ url_for('lab.armar_pack1', property_id=p.property_id) }}" class="inline">
+      <button>Descargar Pack 1</button></form>
+  {% endif %}
+</div>
+
+<table class="pasos" id="pack1-pasos"><tbody>
+{% for s in pack1.steps %}
+  <tr><td class="ic {{ 'listo' if s.done }}">{{ '✓' if s.done else '○' }}</td>
+      <td><b>{{ s.name }}</b></td>
+      <td><span class="estado e-{{ s.state|replace(' ','-')|lower }}">{{ s.state }}</span>
+        <span class="sub">{{ s.detail }}</span></td>
+      <td class="ans">{% if s.action == 'Revisar plano' %}
+        <a class="btn sec" href="{{ url_for('lab.revisar_plano', property_id=p.property_id) }}">Revisar plano</a>{% endif %}</td></tr>
+{% endfor %}
+</tbody></table>
+
+{% if not pack1.ready %}
+<form method="post" action="{{ url_for('lab.generar_pack1', property_id=p.property_id) }}" class="upload">
+  {% if not pack1.headcount %}
+  <div class="row">
+    <label>¿Cuántas personas trabajarían acá? *<input name="headcount" type="number" min="1" required></label>
+    <label>Forma de trabajo<select name="workplace_preset">
+      {% for k, wp in presets.items() %}<option value="{{ k }}" {{ 'selected' if k == preset_default }}>{{ wp.label }}</option>{% endfor %}</select></label>
+    <label>Estilo visual<select name="visual_style">
+      {% for k, e in styles.items() %}<option value="{{ k }}" {{ 'selected' if k == style_default }}>{{ e.label }}</option>{% endfor %}</select></label>
+  </div>
+  {% endif %}
+  <button type="submit" {{ 'disabled' if not pack1.original }}>Generar Pack 1</button>
+  {% if not pack1.original %}<p class="hint">Primero subí el plano.</p>{% endif %}
+</form>
+{% endif %}
+
+{% if pack1.floorplan %}
+  <h3>Plano comercial</h3>
+  <img class="big" src="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=pack1.floorplan.asset_id) }}" alt="plano comercial">
+  {% set tipo='PLANO' %}{% set aid=pack1.floorplan.asset_id %}{% set fitid=None %}{% set ancla='#pack1' %}
+  {% set actual=revs.get('PLANO|' ~ aid ~ '|') %}
+  {% include "lab/_evaluar.html" %}
+{% endif %}
+
+{% if pack1.layout %}
+  <h3>Layout tipo</h3>
+  <img class="big" src="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=pack1.layout.asset_id) }}" alt="layout tipo">
+  {% set tipo='LAYOUT' %}{% set aid=pack1.layout.asset_id %}{% set fitid=None %}{% set ancla='#pack1' %}
+  {% set actual=revs.get('LAYOUT|' ~ aid ~ '|') %}
+  {% include "lab/_evaluar.html" %}
+{% endif %}
+
+{% if pack1.staged %}
+  <h3>Ambientación</h3>
+  <div class="staged-pair">
+    {% if pack1.hero %}<figure><img src="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=pack1.hero.asset_id) }}" alt=""><figcaption>Foto real</figcaption></figure>{% endif %}
+    <figure><img src="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=pack1.staged.asset_id) }}" alt=""><figcaption><b>Ambientación referencial.</b></figcaption></figure>
+  </div>
+  {% if pack1.before_after %}<p><a class="btn sec" target="_blank" href="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=pack1.before_after.asset_id) }}">Ver antes / después</a></p>{% endif %}
+  {% set tipo='STAGING' %}{% set aid=pack1.staged.asset_id %}{% set fitid=None %}{% set ancla='#pack1' %}
+  {% set actual=revs.get('STAGING|' ~ aid ~ '|') %}
+  {% include "lab/_evaluar.html" %}
+{% endif %}
+
+{% if pack1.any %}
+  <h3>El Pack 1 en conjunto</h3>
+  {% set tipo='PACK1' %}{% set aid=None %}{% set fitid=None %}{% set ancla='#pack1' %}
+  {% set actual=revs.get('PACK1||') %}
+  {% include "lab/_evaluar.html" %}
+{% endif %}
+</section>
+
+{# ============================================================ PACK 2 #}
+<section id="pack2">
+<h2>Pack 2 — Propuesta para un cliente</h2>
+<p class="sub">La misma planta, trabajada para un interesado concreto.</p>
+
+{% for x in pack2 %}
+  <div class="propuesta">
+    <div class="pack-head">
+      <div><h3>{{ x.fit.label }}</h3>
+        <p class="sub"><span class="estado e-{{ x.state|replace(' ','-')|lower }}">{{ x.state }}</span>
+          {{ x.detail }} · {{ x.fit.headcount }} personas · {{ x.view.preset_label }} · {{ x.view.style_label }}</p></div>
+      {% if x.fit_alternatives %}
+        {% if x.pack and x.pack.export_name %}
+          <a class="btn sec" href="{{ url_for('customer.download_fit_pack', property_id=p.property_id, fit_id=x.fit.fit_id) }}">Descargar</a>
+        {% else %}
+        <form method="post" action="{{ url_for('lab.armar_pack2', property_id=p.property_id, fit_id=x.fit.fit_id) }}" class="inline">
+          <button class="sec">Descargar Pack 2</button></form>
+        {% endif %}
+      {% endif %}
+    </div>
+
+    {% if x.fit_alternatives %}
+    <div class="grid3">
+    {% for a in x.alternatives %}
+      <figure>
+        {% if a.status == 'FIT' %}
+          <a target="_blank" href="{{ url_for('alt_asset', run_id=x.run.run_id, alt=a.alt, kind='plan.png') }}">
+            <img src="{{ url_for('alt_asset', run_id=x.run.run_id, alt=a.alt, kind='plan.png') }}" alt=""></a>
+        {% else %}<div class="sin-layout">sin distribución</div>{% endif %}
+        <figcaption><b>Alternativa {{ a.alt }}</b>{% if a.name %} — {{ a.name|lower|capitalize }}{% endif %}
+          {% set m = a.metrics|from_json %}
+          {% if m %}<br><span class="sub">{{ m.get('open_seats_total') or '' }}</span>{% endif %}
+          {% if a.status == 'FIT' %}
+            {% set tipo='ALTERNATIVA' %}{% set aid=a.alt %}{% set fitid=x.fit.fit_id %}{% set ancla='#pack2' %}
+            {% set actual=revs.get('ALTERNATIVA|' ~ a.alt ~ '|' ~ x.fit.fit_id) %}
+            {% include "lab/_evaluar.html" %}
+          {% endif %}
+        </figcaption></figure>
+    {% endfor %}
+    </div>
+    <h4>La propuesta en conjunto</h4>
+    {% set tipo='PACK2' %}{% set aid=None %}{% set fitid=x.fit.fit_id %}{% set ancla='#pack2' %}
+    {% set actual=revs.get('PACK2||' ~ x.fit.fit_id) %}
+    {% include "lab/_evaluar.html" %}
+    {% elif x.state == 'No pudimos generarlo' %}
+      <div class="nota">No encontramos distribuciones válidas para ese programa en esta planta.
+        Podés probar con menos personas o con otra forma de trabajo.</div>
+    {% endif %}
+  </div>
+{% endfor %}
+
+<details {{ 'open' if not pack2 }}><summary>{{ '+ Nueva propuesta' if pack2 else 'Crear una propuesta' }}</summary>
+<form method="post" action="{{ url_for('lab.generar_pack2', property_id=p.property_id) }}" enctype="multipart/form-data" class="upload">
+  <div class="row">
+    <label>Cliente *<input name="prospect_name" required placeholder="Falabella"></label>
+    <label>Personas *<input name="headcount" type="number" min="1" required placeholder="80"></label>
+  </div>
+  <fieldset><legend>Forma de trabajo</legend>
+    <div class="opciones">
+    {% for k, wp in presets.items() %}
+      <label class="op"><input type="radio" name="workplace_preset" value="{{ k }}" {{ 'checked' if k == preset_default }}>
+        <b>{{ wp.label }}</b><span class="sub">{{ wp.goal }}</span></label>
+    {% endfor %}
+    </div></fieldset>
+  <fieldset><legend>Estilo visual</legend>
+    <div class="opciones">
+    {% for k, e in styles.items() %}
+      <label class="op"><input type="radio" name="visual_style" value="{{ k }}" {{ 'checked' if k == style_default }}>
+        <b>{{ e.label }}</b><span class="sub">{{ e.mood }}</span></label>
+    {% endfor %}
+    </div></fieldset>
+  <details><summary>Más opciones</summary>
+    <div class="row">
+      <label>Logo del cliente<input type="file" name="prospect_logo" accept=".png,.jpg,.jpeg"></label>
+      <label>Color de marca<input name="prospect_color" placeholder="#1f4fd8"></label>
+      <label>Puestos open <span class="opt">(programa detallado)</span><input name="workstations" type="number" min="1"></label>
+    </div>
+    <div class="row rooms">
+    {% for mod, label in modules %}
+      <label>{{ label }}<input name="room_{{ mod }}" type="number" min="0"></label>
+    {% endfor %}
+    </div>
+    <p class="hint">Si dejás «Puestos open» vacío, armamos el programa a partir del número de personas.</p>
+  </details>
+  <button type="submit">Generar Pack 2</button>
+</form>
+</details>
+</section>
+
+{# ============================================================ EVALUACIONES #}
+<section id="evaluaciones">
+<h2>Evaluaciones</h2>
+{% if reviews %}
+<table class="detect"><tbody>
+{% for r in reviews %}
+  <tr><td>{{ r.artifact_label }}{% if r.artifact_type == 'ALTERNATIVA' %} {{ r.artifact_id }}{% endif %}</td>
+      <td><span class="rate r-{{ r.rating|lower }} on">{{ r.rating_label }}</span></td>
+      <td class="sub">{{ r.tags|join(', ') }}{% if r.comment %} · {{ r.comment }}{% endif %}</td></tr>
+{% endfor %}
+</tbody></table>
+{% else %}<p class="sub">Todavía no calificaste nada de esta propiedad.</p>{% endif %}
+
+<form method="post" action="{{ url_for('lab.nota', property_id=p.property_id) }}" class="upload">
+  <label>Nota libre <span class="opt">(opcional)</span><input name="body" placeholder="lo que quieras recordar"></label>
+  <button class="sec">Guardar nota</button>
+</form>
+{% for n in notes %}<p class="sub">· {{ n.body }} <span class="mono">{{ n.created_at[:16] }}</span></p>{% endfor %}
+
+<details><summary>Ver detalle técnico</summary>
+  <p class="sub mono">{{ p.property_id }}{% if v.case %} · caso {{ v.case.case_id }} · {{ v.case.status }}{% endif %}
+    · estado {{ v.status }} · pack {{ pack1.readiness }}</p>
+  <p class="sub">Pack 1: {% for s in pack1.steps %}{{ s.name }}={{ s.tech or s.state }}{% if not loop.last %} · {% endif %}{% endfor %}</p>
+  <p class="sub"><a href="{{ url_for('lab.debug') }}">Herramientas técnicas</a></p>
+</details>
+</section>
+
+<script>
+(function(){
+  var url = "{{ url_for('lab.propiedad_status', property_id=p.property_id) }}";
+  function tick(){
+    fetch(url).then(function(r){return r.json();}).then(function(d){
+      if(d.working) setTimeout(tick, 4000); else location.reload();
+    }).catch(function(){ setTimeout(tick, 10000); });
+  }
+  if({{ 'true' if (pack1.steps | selectattr('state','equalto','Preparando') | list)
+        or (pack2 | selectattr('state','equalto','Preparando') | list) else 'false' }}) setTimeout(tick, 4000);
+})();
+</script>
+{% endblock %}
