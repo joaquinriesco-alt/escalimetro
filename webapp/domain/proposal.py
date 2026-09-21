@@ -63,7 +63,7 @@ code{font-size:11px;color:var(--suave);word-break:break-all}
 
 def render(prop: Dict, fitv: Dict, brokerage: Dict, floorplan_url: Optional[str],
            layout_urls: List[Dict], logo_url: Optional[str] = None,
-           technical: Optional[Dict] = None) -> str:
+           technical: Optional[Dict] = None, staged: Optional[Dict] = None) -> str:
     """Devuelve el HTML completo de la propuesta.
 
     `layout_urls` es [{"url","alt","name","representative","why","metrics"}] — ya filtrado por lo
@@ -125,6 +125,17 @@ def render(prop: Dict, fitv: Dict, brokerage: Dict, floorplan_url: Optional[str]
                       'layout para este programa. Cuando el motor no encuentra una distribución '
                       'válida con la búsqueda hecha, este documento lo dice en vez de mostrar '
                       'otra cosa.</div>')
+
+    if staged:
+        # §23 — la imagen ambientada SIEMPRE va con su foto real al lado y con la leyenda visible.
+        # No es una marca de agua gigante; es una frase que no se puede no ver.
+        partes.append("<h2>La imagen ambientada</h2><div class='grid'>")
+        if staged.get("original_url"):
+            partes.append(f'<figure><img src="{_e(staged["original_url"])}" alt="Foto real">'
+                          "<figcaption>Foto real de la propiedad</figcaption></figure>")
+        partes.append(f'<figure><img src="{_e(staged["staged_url"])}" alt="Ambientación referencial">'
+                      f'<figcaption><strong>{_e(staged["disclosure"])}</strong></figcaption></figure>')
+        partes.append("</div>")
 
     if technical:
         partes.append("<h2>Procedencia</h2><table>")

@@ -122,7 +122,7 @@ def facts(property_id: str) -> Dict:
         fit = store.q1(
             "SELECT COUNT(*) n FROM alternatives a JOIN runs r ON r.run_id=a.run_id "
             "WHERE r.case_id=? AND a.status='FIT'", (case["case_id"],))["n"]
-    return {
+    f = {
         "property": p,
         "case": case,
         "case_status": (case or {}).get("status"),
@@ -130,7 +130,15 @@ def facts(property_id: str) -> Dict:
         "n_photos": len(assets.list_of_kind(property_id, "PHOTO_ORIGINAL")),
         "n_fit_layouts": fit,
         "has_pack_export": packs.has_export(property_id),
+        "pack_readiness": None,
     }
+    # E31 §21 — la completitud del pack base es un hecho más, y el único que puede decir PACK_READY
+    if f["has_floorplan_asset"] and f["case_status"] not in ("INPUT_NOT_READY", "FAILED"):
+        try:
+            f["pack_readiness"] = packs.readiness(property_id)["state"]
+        except Exception:                                     # noqa: BLE001 — nunca rompe la lista
+            f["pack_readiness"] = None
+    return f
 
 
 def derive_status(f: Dict) -> str:
@@ -140,7 +148,9 @@ def derive_status(f: Dict) -> str:
         return "BLOCKED"
     if not f["has_floorplan_asset"]:
         return "DRAFT"
-    if f["has_pack_export"]:
+    # E31 §21 — PACK_READY exige lo prometido (plano + layout + imagen ambientada aprobada) o un
+    # override interno con motivo. Un ZIP viejo en el volumen no convierte a la propiedad en lista.
+    if f["has_pack_export"] and f.get("pack_readiness") in ("READY", "DEGRADED"):
         return "PACK_READY"
     if f["n_fit_layouts"]:
         return "LAYOUTS_READY"

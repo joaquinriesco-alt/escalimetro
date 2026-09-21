@@ -125,15 +125,37 @@
   <button type="submit">Subir</button>
 </form>
 {% if fotos %}
+<form method="post" action="{{ url_for('customer.set_hero', property_id=p.property_id) }}">
 <div class="grid3">
 {% for f in fotos %}
   <figure><img src="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=f.asset_id) }}" alt="foto">
-    <figcaption>{{ f.original_filename }}
-      <form method="post" action="{{ url_for('customer.delete_asset', property_id=p.property_id, asset_id=f.asset_id) }}" class="inline">
-        <button class="sec">Quitar</button></form></figcaption></figure>
+    <figcaption>
+      <label class="op hero"><input type="radio" name="asset_id" value="{{ f.asset_id }}" {{ 'checked' if hero and hero.asset_id == f.asset_id }}> Foto principal</label>
+      {{ f.original_filename }}</figcaption></figure>
 {% endfor %}
 </div>
+<button type="submit" class="sec">Guardar foto principal</button>
+<p class="hint">La foto principal es la que ambientamos. Elegí la que mejor muestre el espacio.</p>
+</form>
+{% for f in fotos %}
+  <form method="post" action="{{ url_for('customer.delete_asset', property_id=p.property_id, asset_id=f.asset_id) }}" class="inline">
+    <button class="sec">Quitar {{ f.original_filename }}</button></form>
+{% endfor %}
 {% else %}<p class="sub">Todavía no subiste fotos.</p>{% endif %}
+
+<h2>Imagen ambientada</h2>
+{% if staged and hero %}
+  <div class="staged-pair">
+    <figure><img src="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=hero.asset_id) }}" alt="foto real"><figcaption>Foto real de la propiedad</figcaption></figure>
+    <figure><img src="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=staged.asset_id) }}" alt="{{ disclosure }}"><figcaption><b>{{ disclosure }}</b></figcaption></figure>
+  </div>
+  <p class="disclosure">{{ disclosure_long }}</p>
+  {% if antes_despues %}<p><a class="btn sec" href="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=antes_despues.asset_id) }}" target="_blank">Ver antes / después</a></p>{% endif %}
+{% else %}
+  <p class="sub">{{ ambientacion.customer_text }}.
+    {% if ambientacion.state == 'NOT_REQUESTED' and fotos %}Marcá una foto como principal arriba.{% endif %}
+    {% if ambientacion.state in ('NEEDS_STAGING','GENERATING','STAGING_REVIEW','STAGING_NEEDS_MANUAL_REVIEW') %}Nuestro equipo revisa cada imagen antes de mostrártela: la ambientación nunca cambia la arquitectura real.{% endif %}</p>
+{% endif %}
 
 <h2>Pack de publicación</h2>
 {% if pack and pack.export_name %}
@@ -146,9 +168,14 @@
     · la propuesta lista para mandar.
     Las imágenes ambientadas todavía no forman parte de esta versión.</p>
 {% else %}
-  <p class="sub">El pack reúne el plano preparado, la alternativa representativa, tus fotos y una
-    propuesta con tu marca, en un solo archivo.</p>
+  <p class="sub">El pack reúne el plano preparado, la alternativa representativa, la imagen ambientada
+    de tu foto principal, tus fotos y una propuesta con tu marca, en un solo archivo.</p>
 {% endif %}
+{% if listo.state in ('READY', 'DEGRADED') %}
 <form method="post" action="{{ url_for('customer.build_pack', property_id=p.property_id) }}" class="inline">
   <button class="sec">{{ 'Volver a armar el pack' if pack and pack.export_name else 'Armar pack' }}</button></form>
+{% if listo.state == 'DEGRADED' %}<p class="sub">Este pack sale sin todo lo previsto: {{ listo.override }}.</p>{% endif %}
+{% else %}
+<p class="sub">Todavía falta: <b>{{ listo.missing|join(', ') }}</b>. El pack se arma cuando esté completo.</p>
+{% endif %}
 {% endblock %}

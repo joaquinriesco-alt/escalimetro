@@ -25,7 +25,8 @@ import os
 from flask import (Blueprint, abort, redirect, render_template, request, send_file, url_for)
 
 from . import auth, briefs as briefmod, store
-from .domain import (assets, branding, entitlements, fits, floorplan, packs, presets, properties)
+from .domain import (assets, branding, entitlements, fits, floorplan, packs, presets, properties,
+                     staging)
 
 bp = Blueprint("customer", __name__, url_prefix="/properties")
 
@@ -64,6 +65,8 @@ def _pasos(v):
     pack = packs.get(pid)
     base = fits.base_of(pid)
     una = not entitlements.allows(entitlements.ABC_ALTERNATIVES)
+    st = staging.state(pid)
+    listo = packs.readiness(pid)
     return [
         {"nombre": "Plano",
          "estado": "listo" if plano_com else ("preparando" if t["case_id"] else "pendiente"),
@@ -81,12 +84,15 @@ def _pasos(v):
          "estado": "listo" if fotos else "pendiente",
          "detalle": f"{len(fotos)} foto(s) recibidas" if fotos else "Todavía no subiste fotos"},
         {"nombre": "Imagen ambientada",
-         "estado": "pendiente",
-         "detalle": "Todavía no disponible en esta versión"},
+         "estado": "listo" if st["state"] == "APPROVED" else "pendiente",
+         "detalle": st["customer_text"]},
         {"nombre": "Pack de publicación",
-         "estado": "listo" if (pack and pack["export_name"]) else "pendiente",
-         "detalle": "Listo para descargar" if (pack and pack["export_name"])
-                    else "Se arma cuando el plano y la alternativa estén listos"},
+         "estado": "listo" if (pack and pack["export_name"] and listo["state"] in ("READY", "DEGRADED"))
+                   else "pendiente",
+         "detalle": ("Listo para descargar" if (pack and pack["export_name"]
+                                               and listo["state"] in ("READY", "DEGRADED"))
+                     else ("Falta: " + ", ".join(listo["missing"]) if listo["missing"]
+                           else "Se arma cuando todo lo anterior esté listo"))},
     ]
 
 
@@ -184,6 +190,10 @@ def _detalle(property_id, errores=None, code=200):
         fotos=assets.list_of_kind(property_id, assets.PHOTO_ORIGINAL),
         layouts=assets.list_of_kind(property_id, assets.LAYOUT_RENDER),
         pack=packs.get(property_id), errores=errores or [],
+        hero=staging.hero(property_id), staged=staging.approved_hero(property_id),
+        antes_despues=(packs.before_after_assets(property_id) or [None])[0],
+        ambientacion=staging.state(property_id), listo=packs.readiness(property_id),
+        disclosure=staging.DISCLOSURE, disclosure_long=staging.DISCLOSURE_LONG,
         base=fits.view(base["fit_id"], property_id) if base else None,
         prospectos=[fits.view(f["fit_id"], property_id)
                     for f in fits.list_for(property_id, include_base=False)],
@@ -208,6 +218,19 @@ def upload(property_id):
         redirect(url_for("customer.detail", property_id=property_id))
 
 
+@bp.post("/<property_id>/hero")
+@auth.require
+def set_hero(property_id):
+    """§18 — el cliente elige UNA foto principal. No se ambienta todo por defecto: es lo que mantiene
+    claros el costo, la revisión y la promesa del producto."""
+    _prop_or_404(property_id)
+    try:
+        staging.set_hero(property_id, request.form.get("asset_id", ""))
+    except staging.StagingError as e:
+        return _detalle(property_id, [str(e)], 400)
+    return redirect(url_for("customer.detail", property_id=property_id))
+
+
 @bp.post("/<property_id>/assets/<asset_id>/delete")
 @auth.require
 def delete_asset(property_id, asset_id):
@@ -220,6 +243,8 @@ def delete_asset(property_id, asset_id):
         abort(400)
     if a["kind"] == assets.FLOORPLAN_ORIGINAL and properties.require(property_id)["floorplan_case_id"]:
         abort(400)                                    # el plano ya entró al pipeline: no se borra
+    if a["kind"] == assets.PHOTO_ORIGINAL and staging.list_for(property_id, asset_id):
+        abort(400)                                    # ya tiene intentos de ambientación: es evidencia
     assets.delete(asset_id, property_id)
     properties.touch(property_id)
     return redirect(url_for("customer.detail", property_id=property_id))
@@ -400,9 +425,9 @@ def build_pack(property_id):
     base = fits.base_of(property_id)
     try:
         floorplan.publish_all(property_id, fit_id=(base or {}).get("fit_id"))
-    except floorplan.FloorplanError as e:
+        packs.export_zip(property_id)
+    except (floorplan.FloorplanError, packs.PackNotReady) as e:
         return _detalle(property_id, [str(e)], 400)
-    packs.export_zip(property_id)
     return redirect(url_for("customer.detail", property_id=property_id))
 
 
