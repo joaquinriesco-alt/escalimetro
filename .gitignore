@@ -27,6 +27,7 @@ cases/*/outputs/*.png
 # Todo lo que produce la app (uploads, cases, briefs, corridas, revisiones) vive en DATA_DIR.
 # En Railway es el volumen /data; en local, ./.data. Nunca entra al repo.
 .data/
+.data-*/
 
 # --- sistema ---------------------------------------------------------------
 .DS_Store

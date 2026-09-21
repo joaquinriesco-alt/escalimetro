@@ -108,8 +108,12 @@ def overview() -> Dict:
             listas += 1
         if v["needs_internal_review"]:
             necesitan += 1
-        if staging.state(pid)["state"] in ("NEEDS_STAGING", "STAGING_REVIEW",
-                                           "STAGING_NEEDS_MANUAL_REVIEW"):
+        # "pendiente" = la propiedad quiere una imagen ambientada y todavía no la tiene, sea
+        # porque falta generarla, porque falta revisarla o porque nadie aprobó un proveedor.
+        # Dejar fuera el último caso haría que el tablero dijera 0 justo cuando más falta.
+        if staging.state(pid)["state"] in ("NEEDS_STAGING", "STAGING_REVIEW", "GENERATING",
+                                           "STAGING_NEEDS_MANUAL_REVIEW",
+                                           "STAGING_PROVIDER_NOT_APPROVED"):
             staging_pend += 1
         n_fits += len(fits.list_for(pid, include_base=False))
     return {"properties": len(props), "ready": listas, "need_review": necesitan,

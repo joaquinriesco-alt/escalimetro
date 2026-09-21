@@ -102,7 +102,7 @@ def readiness(property_id: str) -> Dict:
     elif st["state"] in ("STAGING_REVIEW", "GENERATING"):
         estado = "STAGING_REVIEW"
     elif st["state"] in ("NOT_REQUESTED", "NEEDS_STAGING", "STAGING_UNAVAILABLE",
-                         "STAGING_NEEDS_MANUAL_REVIEW"):
+                         "STAGING_NEEDS_MANUAL_REVIEW", "STAGING_PROVIDER_NOT_APPROVED"):
         estado = "NEEDS_STAGING" if layouts else "PREPARING"
     else:
         estado = "PREPARING"
