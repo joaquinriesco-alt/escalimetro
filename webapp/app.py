@@ -129,7 +129,11 @@ def create_app() -> Flask:
             tracks=store.TRACKS, errors=errors or {}, brief_errors=brief_errors or {},
             confirmed=store.js(it["confirmed"] if it else None, []) or [],
             form=form, blockers=intake.blockers_for_generate(case_id),
-            analyzed=bool(it and it["analyzed_at"]), fp_ok=fp is not None,
+            # "analizada" lo dice el artefacto, no sólo la marca de tiempo: un caso
+            # importado de un ciclo anterior tiene geometría aunque nunca pasara por
+            # este formulario, y merece ver su paso 3 igual.
+            analyzed=bool((it and it["analyzed_at"]) or fp is not None),
+            fp_ok=fp is not None,
             detected=det.summary(fp) if fp else [],
             scale_info=det.scale_row(fp) if fp else None,
             answers=store.js(it["answers"] if it else None, {}) or {},

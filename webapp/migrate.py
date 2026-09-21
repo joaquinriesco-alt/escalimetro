@@ -90,10 +90,12 @@ def migrate_one(spec: Dict) -> Optional[str]:
                  (case_id, spec["title"], original or "(sin archivo)", original,
                   "image/png", store.now(), status, "DEVELOPMENT", spec["area"],
                   spec["source_name"], "Importado de E26 — resultados sin regenerar."))
-        store.ex("INSERT INTO intake(case_id, declared_clean, confirmed, missing, updated_at) "
-                 "VALUES (?,?,?,?,?)",
+        store.ex("INSERT INTO intake(case_id, declared_clean, confirmed, missing, analyzed_at, "
+                 "answers, updated_at) VALUES (?,?,?,?,?,?,?)",
                  (case_id, "yes", json.dumps(["perimeter", "core", "columns", "daylight",
-                                              "scale_assumption"]), json.dumps([]), store.now()))
+                                              "scale_assumption"]), json.dumps([]), store.now(),
+                  json.dumps({k: "ok" for k in ("perimeter", "core", "columns", "daylight",
+                                                "scale_assumption")}), store.now()))
     else:
         store.ex("UPDATE cases SET status=? WHERE case_id=?", (status, case_id))
 
