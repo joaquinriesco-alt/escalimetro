@@ -1,0 +1,20 @@
+{% extends "customer/base.html" %}{% block title %}No incluido{% endblock %}
+{% block body %}
+<h1>Esto es parte de otro producto</h1>
+<div class="panel-bad"><p>{{ msg }}</p></div>
+<h2>Qué tenés hoy</h2>
+<p class="sub"><b>{{ modo.label }}</b> — {{ modo.pitch }}</p>
+<table class="pasos"><tbody>
+  <tr><td class="ic {{ 'listo' if modo.capabilities.MULTIPLE_PROPERTIES }}">{{ '✓' if modo.capabilities.MULTIPLE_PROPERTIES else '○' }}</td>
+      <td>Varias propiedades a la vez</td><td class="sub">{{ modo.limits.properties or 'sin tope' }}</td></tr>
+  <tr><td class="ic {{ 'listo' if modo.capabilities.PROSPECT_FIT_REQUESTS }}">{{ '✓' if modo.capabilities.PROSPECT_FIT_REQUESTS else '○' }}</td>
+      <td>Propuestas por prospecto</td><td class="sub">una propuesta distinta para cada interesado</td></tr>
+  <tr><td class="ic {{ 'listo' if modo.capabilities.ABC_ALTERNATIVES }}">{{ '✓' if modo.capabilities.ABC_ALTERNATIVES else '○' }}</td>
+      <td>Tres alternativas</td><td class="sub">{{ modo.limits.layouts_per_pack }} por pack</td></tr>
+  <tr><td class="ic {{ 'listo' if modo.capabilities.REGENERATE }}">{{ '✓' if modo.capabilities.REGENERATE else '○' }}</td>
+      <td>Volver a generar</td><td class="sub">cambiar el programa y repetir</td></tr>
+  <tr><td class="ic {{ 'listo' if modo.capabilities.PROSPECT_BRANDING }}">{{ '✓' if modo.capabilities.PROSPECT_BRANDING else '○' }}</td>
+      <td>Marca del prospecto</td><td class="sub">logo y color en la propuesta</td></tr>
+</tbody></table>
+<p><a class="btn" href="{{ url_for('customer.index') }}">Volver</a></p>
+{% endblock %}

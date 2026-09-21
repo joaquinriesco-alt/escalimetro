@@ -1,0 +1,20 @@
+{% extends "customer/base.html" %}{% block title %}Mi marca{% endblock %}
+{% block body %}
+<h1>Mi marca</h1>
+<p class="sub">Se usa en el pack de publicación de tus propiedades. La marca de un prospecto se
+carga aparte, en su propuesta.</p>
+{% if errores %}<div class="panel-bad"><ul>{% for e in errores %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+<form method="post" enctype="multipart/form-data" class="upload">
+  <label>Nombre de la corredora
+    <input name="name" value="{{ marca.name }}" placeholder="p. ej. GPS Property"></label>
+  <label>Color de marca <span class="opt">(hexadecimal)</span>
+    <input name="color" value="{{ marca.color }}" placeholder="#1f4fd8"></label>
+  <fieldset><legend>Logo</legend>
+    {% if marca.has_logo %}
+      <p><img class="logo-prev" src="{{ url_for('customer.brand_logo') }}" alt="logo actual"></p>
+    {% endif %}
+    <input type="file" name="logo" accept=".png,.jpg,.jpeg">
+    <p class="hint">PNG o JPG, fondo transparente si tenés.</p></fieldset>
+  <button type="submit">Guardar</button>
+</form>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "base.html" %}{% block title %}Producto{% endblock %}
+{% block body %}
+<h1>Producto</h1>
+<p class="sub">Qué puede hacer esta cuenta. Es una decisión comercial, no una técnica: el cliente
+  no la ve ni la cambia. El día que haya facturación se conecta acá y nada más cambia.</p>
+
+<h2>Modo</h2>
+<form method="post" action="{{ url_for('set_product_mode') }}" class="inline">
+  {% for m in modos %}
+    <button name="mode" value="{{ m }}" class="{{ '' if producto.mode == m else 'sec' }}">{{ etiquetas[m] }}</button>
+  {% endfor %}
+</form>
+<p class="sub">Vigente: <b>{{ producto.label }}</b> — {{ producto.pitch }}</p>
+
+<h2>Qué permite</h2>
+<table class="detect"><tbody>
+{% for cap, ok in producto.capabilities.items() %}
+  <tr><td class="ic {{ 'listo' if ok }}">{{ '✓' if ok else '○' }}</td>
+      <td class="mono">{{ cap }}</td></tr>
+{% endfor %}
+</tbody></table>
+<p class="sub">Topes: {% for k, v in producto.limits.items() %}{{ k }} = {{ v if v is not none else 'sin tope' }}{% if not loop.last %} · {% endif %}{% endfor %}</p>
+
+<h2>Formas de trabajo</h2>
+<p class="sub">Un preset produce un BriefV1 y nada más: personas, puestos y recintos. No toca los
+  pesos del objetivo ni la zonificación — eso es política interna del motor y un preset comercial
+  no la mueve.</p>
+<table class="detect"><tbody>
+{% for k, wp in presets.items() %}
+  <tr><td><b>{{ wp.label }}</b> <span class="sub mono">{{ k }}</span></td>
+      <td class="sub">{{ wp.describe() }}</td></tr>
+{% endfor %}
+</tbody></table>
+
+<h2>Estilos visuales</h2>
+<p class="sub">Afectan mobiliario, materiales, luz decorativa y paleta. Nunca la geometría.</p>
+<table class="detect"><tbody>
+{% for k, st in estilos.items() %}
+  <tr><td><b>{{ st.label }}</b> <span class="sub mono">{{ k }}</span></td>
+      <td class="sub">{{ st.mood }} · {{ st.materials }}</td></tr>
+{% endfor %}
+</tbody></table>
+
+<h2>Motor de ambientación</h2>
+<div class="panel-bad">
+  <p><b>Sin proveedor integrado.</b> {{ staging.reason }}.</p>
+  <p class="sub">No existe un modo degradado que devuelva la foto original haciéndola pasar por
+    ambientada: el pack dice <span class="mono">{{ staging.status }}</span> y el ZIP no las trae.</p>
+</div>
+<p class="sub">Antes de integrar a nadie hay que comparar {{ piloto.min_providers }}–{{ piloto.max_providers }}
+  proveedores sobre las mismas fotos. Compuertas, en orden:</p>
+<table class="detect"><tbody>
+{% for c in piloto.criteria %}
+  <tr><td><b>{{ c.label }}</b>{% if c.key == piloto.eliminatory %} <span class="chip">eliminatoria</span>{% endif %}</td>
+      <td class="sub">{{ c.definition }}</td></tr>
+{% endfor %}
+</tbody></table>
+{% endblock %}

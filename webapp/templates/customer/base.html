@@ -7,8 +7,11 @@
 <header class="top">
   <a class="brand" href="{{ url_for('customer.index') }}">ESCALÍMETRO<span>tus propiedades</span></a>
   <nav><a href="{{ url_for('customer.index') }}">Mis propiedades</a>
-       <a href="{{ url_for('customer.new') }}">Nueva propiedad</a></nav>
+       {% if puede_crear %}
+       <a href="{{ url_for('customer.new') }}">Nueva propiedad</a>{% endif %}
+       <a href="{{ url_for('customer.brand') }}">Mi marca</a>
+       <span class="chip plan">{{ producto.label }}</span></nav>
 </header>
 <main>{% block body %}{% endblock %}</main>
-<footer>Material de pre-diseño para uso comercial. No constituye proyecto de arquitectura.</footer>
+<footer>{{ producto.pitch }} · Material de pre-diseño para uso comercial. No constituye proyecto de arquitectura.</footer>
 </body></html>

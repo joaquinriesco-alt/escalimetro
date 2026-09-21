@@ -10,22 +10,22 @@ from __future__ import annotations
 
 import json
 import os
-import uuid
 from typing import Dict, List
 
 from flask import (Flask, abort, jsonify, redirect, render_template, request,
                    send_file, send_from_directory, url_for)
 
 from . import auth, briefs as briefmod, customer, detected as det, engine, intake, store
-from .domain import assets as dassets, floorplan as dfloorplan, packs as dpacks, \
-    properties as dproperties
+from .domain import (assets as dassets, entitlements as dent, fits as dfits,
+                     floorplan as dfloorplan, packs as dpacks, presets as dpresets,
+                     properties as dproperties, visual as dvisual)
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REVIEWER = os.environ.get("ESCALIMETRO_REVIEWER", "Joaquín Riesco")
-MODULES_PATH = os.path.join(REPO_ROOT, "program_templates", "modules_office.json")
+MODULES_PATH = briefmod.MODULES_PATH
 #: Etiqueta de la versión de la app que sirve `/healthz`. Es un rótulo nuestro, NO el commit: saber
 #: qué build está viva no debería exigir credenciales, y filtrar un SHA de git sí sería de más.
-APP_VERSION = "e27.3"
+APP_VERSION = "e30"
 GRADES = [("A_GOOD", "A — LA MANDARÍA"), ("B_CORRECTABLE", "B — CORREGIBLE"),
           ("C_BAD", "C — NO SIRVE")]
 #: §12 — las etiquetas son las del contrato, leídas del contrato. No se redefinen aquí.
@@ -278,14 +278,7 @@ def create_app() -> Flask:
                 errs = dict(errs); errs["generate"] = " ".join(bloqueos)
             return _render_case(case_id, brief_errors=errs, form=f, code=400)
         b = briefmod.build(f.get("brief_name"), f.get("headcount"), f.get("workstations"), rooms)
-        bid = f'{b["brief_id"]}_{uuid.uuid4().hex[:4].upper()}'
-        b["brief_id"] = bid
-        sha = briefmod.write(b, os.path.join(store.case_dir(case_id), "briefs", f"{bid}.json"))
-        store.ex("INSERT INTO briefs(brief_id, case_id, name, headcount, workstations, rooms, "
-                 "brief_sha256, created_at) VALUES (?,?,?,?,?,?,?,?)",
-                 (bid, case_id, (f.get("brief_name") or bid).strip()[:80], b["target_headcount"],
-                  b["open_workstations"], json.dumps(b["rooms"], ensure_ascii=False), sha,
-                  store.now()))
+        bid, _ = briefmod.register(case_id, b, f.get("brief_name") or "")
         if quiere_generar:
             return _launch(case_id, bid)
         return redirect(url_for("case_view", case_id=case_id))
@@ -309,14 +302,7 @@ def create_app() -> Flask:
         bloqueos = intake.blockers_for_generate(case_id)
         if bloqueos:
             return _render_case(case_id, brief_errors={"generate": " ".join(bloqueos)}, code=400)
-        run_id = "R_" + uuid.uuid4().hex[:10]
-        store.ex("INSERT INTO runs(run_id, case_id, brief_id, status, created_at) "
-                 "VALUES (?,?,?,'QUEUED',?)", (run_id, case_id, brief_id, store.now()))
-        for a in engine.ALTS:
-            store.ex("INSERT OR REPLACE INTO alternatives(run_id, alt, status) "
-                     "VALUES (?,?,'GENERATING')", (run_id, a))
-        engine.enqueue(run_id)
-        return redirect(url_for("run_view", run_id=run_id))
+        return redirect(url_for("run_view", run_id=engine.launch(case_id, brief_id)))
 
     # ---------- resultados y revisión ---------------------------------------------------------
     @app.get("/run/<run_id>")
@@ -441,7 +427,9 @@ def create_app() -> Flask:
     def review_queue():
         pendientes = dproperties.needing_review()
         return render_template("review.html", pendientes=pendientes,
-                               todas=dproperties.listing())
+                               todas=dproperties.listing(),
+                               producto_modo=dent.MODE_LABEL[dent.mode()],
+                               tope_layouts=dent.max_layouts_in_pack())
 
     @app.post("/review/<property_id>/prepare")
     @auth.require
@@ -458,8 +446,9 @@ def create_app() -> Flask:
     @auth.require
     def publish_property(property_id):
         """Publica plano comercial y layouts como assets de la propiedad."""
+        base = dfits.base_of(property_id)
         try:
-            dfloorplan.publish_all(property_id)
+            dfloorplan.publish_all(property_id, fit_id=(base or {}).get("fit_id"))
         except (LookupError, dfloorplan.FloorplanError) as e:
             return render_template("error.html", msg=str(e),
                                    back=url_for("review_queue")), 400
@@ -475,10 +464,33 @@ def create_app() -> Flask:
             return render_template("error.html", msg=str(e), back=url_for("review_queue")), 400
         return redirect(url_for("review_queue"))
 
+    # ------------------------------------------------------------------------------------
+    # E30 §17 — el modo de producto de la cuenta. Interno: es una decisión comercial, no algo
+    # que el cliente cambie desde su propia pantalla.
+    # ------------------------------------------------------------------------------------
+    @app.get("/settings")
+    @auth.require
+    def settings_view():
+        return render_template("settings.html", producto=dent.summary(),
+                               modos=dent.PRODUCT_MODES, etiquetas=dent.MODE_LABEL,
+                               presets=dpresets.CATALOG, estilos=dpresets.VISUAL_STYLES,
+                               piloto=dvisual.pilot_sheet(), staging=dvisual.staging_status())
+
+    @app.post("/settings/product-mode")
+    @auth.require
+    def set_product_mode():
+        try:
+            dent.set_mode(request.form.get("mode", ""))
+        except ValueError:
+            abort(400)
+        return redirect(url_for("settings_view"))
+
     @app.get("/healthz")
     def healthz():
         return jsonify({"ok": True, "version": APP_VERSION,
                         "cases": store.q1("SELECT COUNT(*) n FROM cases")["n"],
+                        "properties": store.q1("SELECT COUNT(*) n FROM properties")["n"],
+                        "product_mode": dent.mode(),
                         "jobs_pending": engine.pending()})
 
     @app.errorhandler(413)

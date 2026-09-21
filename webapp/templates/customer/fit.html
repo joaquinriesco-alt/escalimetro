@@ -1,0 +1,91 @@
+{% extends "customer/base.html" %}{% block title %}{{ f.label }} · {{ p.title }}{% endblock %}
+{% block body %}
+<p class="crumb"><a href="{{ url_for('customer.index') }}">Mis propiedades</a> /
+  <a href="{{ url_for('customer.detail', property_id=p.property_id) }}">{{ p.title }}</a> / {{ f.label }}</p>
+<h1>{{ f.label }}</h1>
+<p class="sub">{{ f.headcount }} personas · {{ fv.preset_label }} · estilo {{ fv.style_label }}</p>
+
+{% if errores %}<div class="panel-bad"><ul>{% for e in errores %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+
+{% if fv.brief_summary %}<p class="sub">Programa: <b>{{ fv.brief_summary }}</b></p>{% endif %}
+
+<h2>Resultado</h2>
+{% if fv.run and fv.run.status in ('QUEUED','RUNNING') %}
+  <p class="sub">Estamos preparando las alternativas. Puede tardar unos minutos; volvé a cargar la página.</p>
+{% elif fv.fit_alternatives %}
+  <div class="grid3">
+  {% for l in layouts %}
+    {% set m = l.metadata|from_json %}
+    <figure><img src="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=l.asset_id) }}" alt="alternativa">
+      <figcaption>Alternativa {{ m.alt }}{% if m.name %} — {{ m.name|lower|capitalize }}{% endif %}
+        {% if m.representative and layouts|length == 1 %}<br><span class="sub">{{ fv.representative_why }}</span>{% endif %}</figcaption></figure>
+  {% endfor %}
+  </div>
+  {% if not layouts %}<p class="sub">Las alternativas están listas. Armá el pack para publicarlas acá.</p>{% endif %}
+{% elif fv.run %}
+  {# §22 — SEARCH_EXHAUSTED no se traduce como "no cabe". #}
+  <div class="panel-bad"><p>No encontramos una distribución válida para este programa en esta
+    planta con la búsqueda realizada. Eso <b>no</b> autoriza decir que el programa no cabe: podemos
+    probar con otra forma de trabajo o con menos puestos fijos.</p></div>
+{% else %}
+  <p class="sub">Todavía no generaste alternativas para este programa.</p>
+{% endif %}
+
+<h2>Cambiar el programa</h2>
+<form method="post" action="{{ url_for('customer.update_fit_program', property_id=p.property_id, fit_id=f.fit_id) }}" class="upload">
+  <input type="hidden" name="mode" value="EXPRESS">
+  <div class="row">
+    <label>Personas *<input name="headcount" type="number" min="1" required value="{{ f.headcount }}"></label>
+    <label>Puestos fijos <span class="opt">(opcional)</span><input name="target_seats" type="number" min="1"></label>
+  </div>
+  <fieldset><legend>Forma de trabajo</legend>
+    <div class="opciones">
+    {% for k, wp in presets_wp.items() %}
+      <label class="op"><input type="radio" name="workplace_preset" value="{{ k }}" {{ 'checked' if f.workplace_preset == k }}>
+        <b>{{ wp.label }}</b><span class="sub">{{ wp.goal }}</span></label>
+    {% endfor %}
+    </div></fieldset>
+  <label>Estilo visual<select name="visual_style">
+    {% for k, st in estilos.items() %}<option value="{{ k }}" {{ 'selected' if f.visual_style == k }}>{{ st.label }}</option>{% endfor %}
+  </select></label>
+  <button type="submit" name="generate" value="1">Guardar y generar</button>
+  <button type="submit" class="sec">Sólo guardar</button>
+</form>
+
+{% if producto.capabilities.ADVANCED_BRIEF %}
+<details><summary>Programa detallado</summary>
+  <p class="sub">Para cuando el prospecto ya te dijo exactamente qué necesita. Si no, dejá el
+    modo simple: el preset propone un programa razonable.</p>
+  <form method="post" action="{{ url_for('customer.update_fit_program', property_id=p.property_id, fit_id=f.fit_id) }}" class="upload">
+    <input type="hidden" name="mode" value="ADVANCED">
+    <input type="hidden" name="brief_name" value="{{ f.label }}">
+    <div class="row">
+      <label>Personas *<input name="headcount" type="number" min="1" required value="{{ f.headcount }}"></label>
+      <label>Puestos open *<input name="workstations" type="number" min="1" required
+             value="{{ fv.brief.open_workstations if fv.brief else '' }}"></label>
+    </div>
+    <div class="row rooms">
+    {% for mod, label in modules %}
+      <label>{{ label }}<input name="room_{{ mod }}" type="number" min="0"
+        value="{{ (fv.brief.rooms | selectattr('module','equalto',mod) | map(attribute='count') | first) if fv.brief else sugeridos.get(mod, 0) }}"></label>
+    {% endfor %}
+    </div>
+    <button type="submit" name="generate" value="1">Guardar y generar</button>
+  </form>
+</details>
+{% endif %}
+
+<h2>Propuesta</h2>
+<p class="sub">El mismo documento que va dentro del pack.</p>
+<p><a class="btn" href="{{ url_for('customer.fit_proposal', property_id=p.property_id, fit_id=f.fit_id) }}" target="_blank">Ver propuesta</a>
+{% if pack and pack.export_name %}
+  <a class="btn" href="{{ url_for('customer.download_fit_pack', property_id=p.property_id, fit_id=f.fit_id) }}">Descargar pack (.zip)</a>
+{% endif %}</p>
+<form method="post" action="{{ url_for('customer.build_fit_pack', property_id=p.property_id, fit_id=f.fit_id) }}" class="inline">
+  <button class="sec">{{ 'Volver a armar el pack' if pack and pack.export_name else 'Armar pack de esta propuesta' }}</button></form>
+{% if f.kind == 'PROSPECT' %}
+<form method="post" action="{{ url_for('customer.archive_fit', property_id=p.property_id, fit_id=f.fit_id) }}" class="inline">
+  <button class="sec">Archivar</button></form>
+<p class="sub">Archivar no borra nada: el material generado y su trazabilidad siguen existiendo.</p>
+{% endif %}
+{% endblock %}

@@ -31,6 +31,9 @@
 </tbody></table>
 
 <h2>Todas las propiedades</h2>
+<p class="sub">Modo de producto vigente: <b>{{ producto_modo }}</b>. Publicar material entrega
+  {{ tope_layouts if tope_layouts is not none else 'todas las' }} alternativa(s) por propiedad
+  (<a href="{{ url_for('settings_view') }}">cambiar</a>).</p>
 <table class="detect"><tbody>
 {% for v in todas %}
   <tr>

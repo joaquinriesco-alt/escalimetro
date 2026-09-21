@@ -11,6 +11,7 @@
     <a href="{{ url_for('review_queue') }}">Revisión</a>
     <a href="{{ url_for('customer.index') }}">Propiedades</a>
     <a href="{{ url_for('reviews_export') }}">Revisiones (JSON)</a>
+    <a href="{{ url_for('settings_view') }}">Producto</a>
     {% if pending_jobs %}<span class="chip work">{{ pending_jobs }} en cola</span>{% endif %}
   </nav>
 </header>

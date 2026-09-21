@@ -135,3 +135,16 @@ table.pasos td.ic.listo{color:var(--ok)}
 .grid3 img{width:100%;height:170px;object-fit:cover;display:block;background:#f4f5f7}
 .grid3 figcaption{padding:7px 9px;font-size:11.5px;color:var(--mut);display:flex;justify-content:space-between;align-items:center;gap:6px}
 img.big{max-width:100%;border:1px solid var(--line);border-radius:8px;background:#fff}
+
+/* ---------------------------------------------------------------- E30 · producto comercial */
+.chip.plan{background:#111827;color:#fff;border-color:#111827;font-size:11px}
+.opciones{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+label.op{display:block;border:1px solid var(--linea,#e5e7eb);border-radius:6px;padding:10px 12px;
+         cursor:pointer;background:#fff}
+label.op input{margin-right:7px}
+label.op b{display:inline}
+label.op .sub{display:block;margin:3px 0 0;font-size:12px}
+label.op:has(input:checked){border-color:#111827;box-shadow:inset 0 0 0 1px #111827}
+.row.rooms{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+img.logo-prev{max-height:54px;max-width:200px;object-fit:contain}
+details>summary{cursor:pointer;margin:22px 0 8px;font-weight:600}
