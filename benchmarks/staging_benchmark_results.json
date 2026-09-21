@@ -1,0 +1,37 @@
+{
+  "results_version": "staging_benchmark_results_v1",
+  "generated_at": "2026-09-21T19:23:06+00:00",
+  "benchmark_id": null,
+  "manifest_version": "staging_benchmark_v1",
+  "style": "CONTEMPORARY",
+  "request_version": "staging_request_v1",
+  "photos_in_manifest": 0,
+  "providers_requested": [
+    "gemini",
+    "openai",
+    "bfl"
+  ],
+  "provider_status": {
+    "gemini": {
+      "status": "HUMAN_ACTION_REQUIRED",
+      "reason": "manifiesto sin fotos reales suficientes"
+    },
+    "openai": {
+      "status": "HUMAN_ACTION_REQUIRED",
+      "reason": "manifiesto sin fotos reales suficientes"
+    },
+    "bfl": {
+      "status": "HUMAN_ACTION_REQUIRED",
+      "reason": "manifiesto sin fotos reales suficientes"
+    }
+  },
+  "sample_size": 0,
+  "metrics": {},
+  "selection": {
+    "winner": null,
+    "verdict": "NOT_RUN",
+    "gates": {}
+  },
+  "status": "NOT_RUN",
+  "_nota": "El benchmark no se ejecutó: sin credenciales de proveedor y/o sin fotos reales. Nada de lo anterior es un resultado."
+}

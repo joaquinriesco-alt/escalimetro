@@ -1,0 +1,17 @@
+{
+  "manifest_version": "staging_benchmark_v1",
+  "created_at": "2026-09-21T00:00:00+00:00",
+  "style": "CONTEMPORARY",
+  "request_version": "staging_request_v1",
+  "status": "AWAITING_REAL_PHOTOS",
+  "requirements": {
+    "min_photos": 8,
+    "ideal_photos": 10,
+    "min_spaces": 3,
+    "real_photos_only": true,
+    "no_stock_without_license": true,
+    "diversity_wanted": ["windows", "columns", "ceiling", "corner", "wide_angle", "open_space", "backlight", "glazing"]
+  },
+  "photos": [],
+  "_nota": "No hay fotos reales de oficinas vacias disponibles localmente (el repo, los fixtures y las propiedades existentes solo contienen planos y dibujos). No se rellena con imagenes sinteticas ni con stock sin licencia. Para armar el manifiesto: subir 8-12 fotos reales de al menos 3 espacios a una o mas propiedades y correr `python -m webapp.benchmark init --from-properties p_xxx,p_yyy`."
+}
