@@ -132,7 +132,7 @@ def layout_assets(property_id: str, fit_id: Optional[str] = None) -> List[Dict]:
             # programa sería presentarle como suyo un estudio que no lo es.
             return propias
         fit_id = None                        # el fit BASE cae al material de la propiedad
-    tope = entitlements.max_layouts_in_pack()
+    tope = entitlements.max_layouts_in_pack(property_id)
     base = [a for a in todos
             if not meta(a).get("fit_id") or meta(a).get("fit_kind") == fits.BASE]
     if tope is not None and len(base) > tope:
@@ -181,7 +181,7 @@ def build_manifest(property_id: str, fit_id: Optional[str] = None) -> Dict:
     return {
         "schema_version": SCHEMA_VERSION,
         "pack_kind": kind,
-        "product_mode": entitlements.mode(),
+        "product": entitlements.product_of(property_id),
         "generated_at": store.now(),
         "property": {"property_id": p["property_id"], "title": p["title"],
                      "asset_type": p["asset_type"], "city": p["city"], "country": p["country"],

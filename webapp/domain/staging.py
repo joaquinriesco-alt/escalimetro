@@ -223,7 +223,7 @@ def attempts_used(property_id: str, source_asset_id: str, fit_id: Optional[str] 
 def retries_left(property_id: str, source_asset_id: str, fit_id: Optional[str] = None):
     """§20 — los reintentos son mecánica de producción, no créditos del cliente, y tienen tope.
     None = sin tope (Pro)."""
-    tope = entitlements.limit("staging_attempts_per_hero")
+    tope = entitlements.limit(property_id, "staging_attempts_per_hero")
     if tope is None:
         return None
     return max(0, tope - attempts_used(property_id, source_asset_id, fit_id))
@@ -247,7 +247,7 @@ def create_attempt(property_id: str, source_asset_id: str, style: str,
         raise StagingError("La foto de origen no pertenece a esta propiedad.")
     presets.require_style(style)
     if fit_id is not None:
-        entitlements.require(entitlements.MULTIPLE_STAGING)
+        entitlements.require(property_id, entitlements.MULTIPLE_STAGING)
         from . import fits                                    # noqa: PLC0415
         fits.require(fit_id, property_id)
     if purpose not in PURPOSES:

@@ -110,7 +110,7 @@ def create_prospect(property_id: str, prospect_name: str, headcount: int,
                     notes: str = "") -> str:
     """Un fit para un prospecto concreto. Sólo Pro (§17) — y la negativa ocurre acá, en el
     dominio, no escondiendo un botón."""
-    entitlements.require(entitlements.PROSPECT_FIT_REQUESTS)
+    entitlements.require(property_id, entitlements.PROSPECT_FIT_REQUESTS)
     properties.require(property_id)
     presets.require_preset(preset)
     presets.require_style(style)
@@ -123,7 +123,7 @@ def create_prospect(property_id: str, prospect_name: str, headcount: int,
         raise FitError("Decinos cuántas personas son.")
     if h < 1:
         raise FitError("El número de personas debe ser al menos 1.")
-    tope = entitlements.limit("fit_requests_per_property")
+    tope = entitlements.limit(property_id, "fit_requests_per_property")
     if tope is not None and len(list_for(property_id, include_base=False)) >= tope:
         raise entitlements.EntitlementError(entitlements.PROSPECT_FIT_REQUESTS)
     from . import branding                                    # noqa: PLC0415
@@ -194,8 +194,8 @@ def _brief_slug(fit: Dict) -> str:
 def set_advanced_brief(fit_id: str, brief_dict: Dict) -> None:
     """Modo AVANZADO (§10): el usuario editó el programa módulo por módulo. Se guarda tal cual;
     a partir de acá el preset queda como referencia de dónde salió, no como fuente."""
-    entitlements.require(entitlements.ADVANCED_BRIEF)
-    require(fit_id)
+    f = require(fit_id)
+    entitlements.require(f["property_id"], entitlements.ADVANCED_BRIEF)
     store.ex("UPDATE fit_requests SET brief_json=?, brief_mode=?, updated_at=? WHERE fit_id=?",
              (json.dumps(brief_dict, ensure_ascii=False), ADVANCED, store.now(), fit_id))
 
@@ -232,7 +232,7 @@ def generate(fit_id: str) -> str:
     t = floorplan.technical_state(f["property_id"])
     if not t["ready"]:
         raise FitError("La planta todavía no está lista para generar alternativas.")
-    if runs_for(fit_id) and not entitlements.allows(entitlements.REGENERATE):
+    if runs_for(fit_id) and not entitlements.allows(f["property_id"], entitlements.REGENERATE):
         raise entitlements.EntitlementError(entitlements.REGENERATE)
 
     b = brief_preview(f)
@@ -317,9 +317,10 @@ def representative(fit_id: str) -> Optional[Dict]:
 
 
 def delivered(fit_id: str) -> List[Dict]:
-    """Qué alternativas ENTREGA este producto. Acá vive la diferencia comercial del §4:
-    ONE_OFF entrega una representativa; Pro entrega las tres."""
-    if entitlements.allows(entitlements.ABC_ALTERNATIVES):
+    """Qué alternativas ENTREGA el producto de ESTA propiedad: el Pack entrega una representativa;
+    Pro entrega las tres. Se pregunta por la propiedad, no por la cuenta."""
+    f = require(fit_id)
+    if entitlements.allows(f["property_id"], entitlements.ABC_ALTERNATIVES):
         return fit_alternatives(fit_id)
     rep = representative(fit_id)
     return [rep["alt"]] if rep else []

@@ -202,7 +202,7 @@ def publish_layouts(property_id: str, run_id: Optional[str] = None,
             return []
         rep = fits.pick_representative(ultimo["run"], ultimo["alternatives"])
         entregar = ([a for a in ultimo["alternatives"] if a["status"] == "FIT"]
-                    if entitlements.allows(entitlements.ABC_ALTERNATIVES)
+                    if entitlements.allows(property_id, entitlements.ABC_ALTERNATIVES)
                     else ([rep["alt"]] if rep else []))
         etiqueta, clase = "", None
 
