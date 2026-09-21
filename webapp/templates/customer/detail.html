@@ -56,8 +56,12 @@
 <h2>Pack comercial</h2>
 {% if pack and pack.export_name %}
   <p><a class="btn" href="{{ url_for('customer.download_pack', property_id=p.property_id) }}">Descargar pack (.zip)</a></p>
-  <p class="sub">Incluye el plano, las alternativas disponibles y tus fotos.
-     Las imágenes ambientadas todavía no forman parte de esta versión.</p>
+  {% set man = pack.manifest_obj %}
+  <p class="sub">Contiene:
+    {% if man.floorplan_commercial %}el plano preparado{% endif %}
+    {% if man.layouts %} · {{ man.layouts|length }} alternativa(s){% endif %}
+    {% if man.source_assets.photos_original %} · {{ man.source_assets.photos_original|length }} foto(s){% endif %}.
+    Las imágenes ambientadas todavía no forman parte de esta versión.</p>
 {% else %}
   <p class="sub">El pack reúne el plano, las alternativas y tus fotos en un solo archivo.</p>
 {% endif %}
