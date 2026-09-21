@@ -1,0 +1,26 @@
+{% extends "customer/base.html" %}{% block title %}Nueva propiedad{% endblock %}
+{% block body %}
+<h1>Nueva propiedad</h1>
+<p class="sub">Sube lo que tengas. Nosotros preparamos el resto.</p>
+<form method="post" enctype="multipart/form-data" class="upload">
+  <label class="{{ 'bad-label' if errors.get('title') }}">Nombre o referencia de la propiedad *
+    <input name="title" value="{{ form.title if form else '' }}" required
+           placeholder="p. ej. Oficina 403, Av. Apoquindo 3000"></label>
+  {% if errors.get('title') %}<p class="err">{{ errors['title'] }}</p>{% endif %}
+  <div class="row">
+    <label>Ciudad <span class="opt">(opcional)</span>
+      <input name="city" value="{{ form.city if form else '' }}" placeholder="Santiago"></label>
+    <label class="{{ 'bad-label' if errors.get('published_area_m2') }}">Superficie publicada m² <span class="opt">(opcional)</span>
+      <input name="published_area_m2" type="number" step="0.1"
+             value="{{ form.published_area_m2 if form else '' }}"></label>
+  </div>
+  {% if errors.get('published_area_m2') %}<p class="err">{{ errors['published_area_m2'] }}</p>{% endif %}
+  <fieldset><legend>Plano de la propiedad</legend>
+    <input type="file" name="floorplan" accept=".pdf,.png,.jpg,.jpeg">
+    <p class="hint">PDF, PNG o JPG. El plano tal como lo tengas.</p></fieldset>
+  <fieldset><legend>Fotos del espacio</legend>
+    <input type="file" name="photos" accept=".png,.jpg,.jpeg" multiple>
+    <p class="hint">Cuantas quieras. PNG o JPG.</p></fieldset>
+  <button type="submit">Crear propiedad</button>
+</form>
+{% endblock %}

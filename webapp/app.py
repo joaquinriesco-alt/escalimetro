@@ -16,7 +16,9 @@ from typing import Dict, List
 from flask import (Flask, abort, jsonify, redirect, render_template, request,
                    send_file, send_from_directory, url_for)
 
-from . import auth, briefs as briefmod, detected as det, engine, intake, store
+from . import auth, briefs as briefmod, customer, detected as det, engine, intake, store
+from .domain import assets as dassets, floorplan as dfloorplan, packs as dpacks, \
+    properties as dproperties
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REVIEWER = os.environ.get("ESCALIMETRO_REVIEWER", "Joaquín Riesco")
@@ -41,6 +43,8 @@ def create_app() -> Flask:
     app = Flask(__name__, template_folder="templates", static_folder="static")
     app.config["MAX_CONTENT_LENGTH"] = intake.MAX_UPLOAD_MB * 1024 * 1024 * 4
     engine.start_worker()
+    app.register_blueprint(customer.bp)
+    app.jinja_env.filters["from_json"] = lambda v: store.js(v, {}) or {}
     if os.environ.get("ESCALIMETRO_MIGRATE", "1") == "1":
         from . import migrate                                 # noqa: PLC0415
         migrate.run()
@@ -137,6 +141,8 @@ def create_app() -> Flask:
             detected=det.summary(fp) if fp else [],
             scale_info=det.scale_row(fp) if fp else None,
             answers=store.js(it["answers"] if it else None, {}) or {},
+            propiedad=store.q1("SELECT property_id, title FROM properties "
+                               "WHERE floorplan_case_id=?", (case_id,)),
             saved={"scale": store.js(it["scale_points"] if it else None),
                    "entrance": store.js(it["entrance_point"] if it else None),
                    "seed": store.js(it["seed_point"] if it else None),
@@ -424,6 +430,50 @@ def create_app() -> Flask:
                         "_engine_commit": r["engine_commit"], "_brief_sha256": r["brief_sha256"],
                         "_run_id": r["run_id"]})
         return jsonify(out)
+
+    # ==========================================================================================
+    # E28 §17 — SUPERFICIE INTERNA de propiedades. Vive en el app interno, no en el blueprint de
+    # cliente: es la cola que nos permite darle al cliente una experiencia simple mientras el QA
+    # humano sigue ocurriendo acá.
+    # ==========================================================================================
+    @app.get("/review")
+    @auth.require
+    def review_queue():
+        pendientes = dproperties.needing_review()
+        return render_template("review.html", pendientes=pendientes,
+                               todas=dproperties.listing())
+
+    @app.post("/review/<property_id>/prepare")
+    @auth.require
+    def prepare_property(property_id):
+        """Crea el CASE técnico de una propiedad y lleva al operador al intake de E27.3."""
+        try:
+            case_id = dfloorplan.ensure_case(property_id)
+        except (LookupError, dfloorplan.FloorplanError) as e:
+            return render_template("error.html", msg=str(e),
+                                   back=url_for("review_queue")), 400
+        return redirect(url_for("case_view", case_id=case_id))
+
+    @app.post("/review/<property_id>/publish")
+    @auth.require
+    def publish_property(property_id):
+        """Publica plano comercial y layouts como assets de la propiedad."""
+        try:
+            dfloorplan.publish_all(property_id)
+        except (LookupError, dfloorplan.FloorplanError) as e:
+            return render_template("error.html", msg=str(e),
+                                   back=url_for("review_queue")), 400
+        return redirect(url_for("customer.detail", property_id=property_id))
+
+    @app.post("/review/<property_id>/link")
+    @auth.require
+    def link_existing_case(property_id):
+        """§20 — vincular a mano un CASE que ya existía. No inventa datos de propiedad."""
+        try:
+            dproperties.link_case(property_id, request.form.get("case_id", ""))
+        except (LookupError, ValueError) as e:
+            return render_template("error.html", msg=str(e), back=url_for("review_queue")), 400
+        return redirect(url_for("review_queue"))
 
     @app.get("/healthz")
     def healthz():

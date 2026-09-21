@@ -1,0 +1,6 @@
+{% extends "customer/base.html" %}{% block body %}
+<h1>{{ titulo }}</h1>
+<div class="panel-bad"><b>Algunos archivos no se pudieron cargar:</b>
+  <ul>{% for e in errores %}<li>{{ e }}</li>{% endfor %}</ul></div>
+<p><a href="{{ url_for('customer.detail', property_id=pid) }}">Ir a la propiedad →</a></p>
+{% endblock %}

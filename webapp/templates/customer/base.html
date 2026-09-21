@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}Escalímetro{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head><body class="cx">
+<header class="top">
+  <a class="brand" href="{{ url_for('customer.index') }}">ESCALÍMETRO<span>tus propiedades</span></a>
+  <nav><a href="{{ url_for('customer.index') }}">Mis propiedades</a>
+       <a href="{{ url_for('customer.new') }}">Nueva propiedad</a></nav>
+</header>
+<main>{% block body %}{% endblock %}</main>
+<footer>Material de pre-diseño para uso comercial. No constituye proyecto de arquitectura.</footer>
+</body></html>

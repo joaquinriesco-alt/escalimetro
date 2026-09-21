@@ -1,0 +1,53 @@
+{% extends "base.html" %}{% block title %}Revisión de propiedades{% endblock %}
+{% block body %}
+<h1>Propiedades que necesitan revisión</h1>
+<p class="sub">Esta es la cola interna. El cliente no ve nada de esto: para él la propiedad
+  simplemente dice «Estamos preparando la planta».</p>
+
+{% if not pendientes %}<p class="empty">Nada pendiente.</p>{% endif %}
+<table class="detect"><tbody>
+{% for v in pendientes %}
+  <tr>
+    <td><b>{{ v.property.title }}</b>
+      <span class="sub">{{ v.property.city }}{% if v.property.published_area_m2 %} · {{ v.property.published_area_m2|round|int }} m²{% endif %}</span>
+      <span class="sub mono">{{ v.property.property_id }}</span></td>
+    <td class="sub">
+      {% if v.case %}caso <a href="{{ url_for('case_view', case_id=v.case.case_id) }}">{{ v.case.case_id }}</a>
+        <span class="chip s-{{ v.case.status }}">{{ v.case.status }}</span>
+      {% elif v.has_floorplan_asset %}<span class="chip s-UPLOADED">plano sin procesar</span>
+      {% else %}<span class="chip">sin plano</span>{% endif %}
+    </td>
+    <td class="ans">
+      {% if v.case %}
+        <a class="btn sec" href="{{ url_for('case_view', case_id=v.case.case_id) }}">Revisar planta</a>
+      {% elif v.has_floorplan_asset %}
+        <form method="post" action="{{ url_for('prepare_property', property_id=v.property.property_id) }}" class="inline">
+          <button>Crear caso técnico</button></form>
+      {% endif %}
+      <a class="btn sec" href="{{ url_for('customer.detail', property_id=v.property.property_id) }}">Ver como cliente</a>
+    </td>
+  </tr>
+{% endfor %}
+</tbody></table>
+
+<h2>Todas las propiedades</h2>
+<table class="detect"><tbody>
+{% for v in todas %}
+  <tr>
+    <td><a href="{{ url_for('customer.detail', property_id=v.property.property_id) }}">{{ v.property.title }}</a>
+      <span class="sub mono">{{ v.property.property_id }}</span></td>
+    <td><span class="chip s-{{ v.status }}">{{ v.status }}</span>
+      {% if v.case %}<span class="sub">→ {{ v.case.case_id }}</span>{% endif %}</td>
+    <td class="ans">
+      {% if v.case %}
+      <form method="post" action="{{ url_for('publish_property', property_id=v.property.property_id) }}" class="inline">
+        <button class="sec">Publicar material comercial</button></form>
+      {% endif %}
+      <form method="post" action="{{ url_for('link_existing_case', property_id=v.property.property_id) }}" class="inline">
+        <input name="case_id" placeholder="vincular case_id" style="width:150px">
+        <button class="sec">Vincular</button></form>
+    </td>
+  </tr>
+{% endfor %}
+</tbody></table>
+{% endblock %}

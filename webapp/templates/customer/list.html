@@ -1,0 +1,19 @@
+{% extends "customer/base.html" %}{% block title %}Mis propiedades{% endblock %}
+{% block body %}
+<h1>Mis propiedades</h1>
+<p><a class="btn" href="{{ url_for('customer.new') }}">+ Nueva propiedad</a></p>
+{% if not propiedades %}<p class="empty">Todavía no cargaste ninguna propiedad.</p>{% endif %}
+<div class="grid">
+  {% for v in propiedades %}
+  <article class="card">
+    <div class="meta">
+      <a class="t" href="{{ url_for('customer.detail', property_id=v.property.property_id) }}">{{ v.property.title }}</a>
+      <span class="chip">{{ v.customer_label }}</span>
+      <p class="sub">{% if v.property.city %}{{ v.property.city }} · {% endif %}
+        {% if v.property.published_area_m2 %}{{ v.property.published_area_m2|round|int }} m²{% endif %}</p>
+      <p class="sub">{{ v.n_photos }} foto(s){% if v.n_fit_layouts %} · {{ v.n_fit_layouts }} alternativa(s){% endif %}</p>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -4,6 +4,8 @@
 {% block body %}
 <p class="crumb"><a href="{{ url_for('library') }}">Plantas</a> / {{ c.title }}</p>
 <h1>{{ c.title }} <span class="chip s-{{ c.status }}">{{ c.status }}</span></h1>
+{% if propiedad %}<p class="sub">Planta de la propiedad
+  <a href="{{ url_for('customer.detail', property_id=propiedad.property_id) }}">{{ propiedad.title }}</a>.</p>{% endif %}
 
 {# ------------------------------------------------------------------ pasos, siempre a la vista #}
 <ol class="steps">

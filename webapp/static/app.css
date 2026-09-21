@@ -121,3 +121,17 @@ details summary{margin:6px 0}
 .s-NEEDS_CONFIRMATION{background:#e9f0fa;color:#2d5fa8;border-color:#cbdaf0}
 .s-INPUT_NOT_READY{background:#f5f2ea;color:#8a6d1f;border-color:#e6dcc2}
 .s-READY{background:#e8f4ed;color:var(--ok);border-color:#bfe0cd}
+
+/* --- E28: superficie de cliente ---------------------------------------------------------- */
+body.cx .brand span{color:var(--acc)}
+a.btn{display:inline-block;padding:8px 16px;border:1px solid var(--ink);border-radius:6px;background:var(--ink);color:#fff;text-decoration:none;font-size:13.5px}
+a.btn.sec{background:#fff;color:var(--ink);border-color:#ccd2da}
+table.pasos{width:100%;border-collapse:collapse;margin:8px 0 22px;max-width:760px}
+table.pasos td{padding:9px 10px 9px 0;border-bottom:1px solid var(--line);font-size:14px}
+table.pasos td.ic{width:26px;font-size:16px;color:var(--mut)}
+table.pasos td.ic.listo{color:var(--ok)}
+.grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin:10px 0}
+.grid3 figure{margin:0;background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.grid3 img{width:100%;height:170px;object-fit:cover;display:block;background:#f4f5f7}
+.grid3 figcaption{padding:7px 9px;font-size:11.5px;color:var(--mut);display:flex;justify-content:space-between;align-items:center;gap:6px}
+img.big{max-width:100%;border:1px solid var(--line);border-radius:8px;background:#fff}

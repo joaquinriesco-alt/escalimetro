@@ -1,0 +1,66 @@
+{% extends "customer/base.html" %}{% block title %}{{ p.title }}{% endblock %}
+{% block body %}
+<p class="crumb"><a href="{{ url_for('customer.index') }}">Mis propiedades</a> / {{ p.title }}</p>
+<h1>{{ p.title }}</h1>
+<p class="sub">{% if p.city %}{{ p.city }} · {% endif %}
+  {% if p.published_area_m2 %}{{ p.published_area_m2|round|int }} m² publicados{% endif %}</p>
+
+{% if errores %}<div class="panel-bad"><b>Algunos archivos no se pudieron cargar:</b>
+  <ul>{% for e in errores %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+
+<h2>Estado</h2>
+<table class="pasos"><tbody>
+{% for s in pasos %}
+  <tr><td class="ic {{ s.estado }}">{{ '✓' if s.estado == 'listo' else '○' }}</td>
+      <td><b>{{ s.nombre }}</b></td><td class="sub">{{ s.detalle }}</td></tr>
+{% endfor %}
+</tbody></table>
+
+{% if plano_com %}
+  <h2>Tu plano</h2>
+  <img class="big" src="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=plano_com.asset_id) }}" alt="plano">
+{% endif %}
+
+{% if layouts %}
+  <h2>Alternativas de layout</h2>
+  <div class="grid3">
+  {% for l in layouts %}
+    {% set m = l.metadata|from_json %}
+    <figure><img src="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=l.asset_id) }}" alt="alternativa">
+      <figcaption>Alternativa {{ m.alt }}{% if m.name %} — {{ m.name|lower|capitalize }}{% endif %}</figcaption></figure>
+  {% endfor %}
+  </div>
+{% endif %}
+
+<h2>Fotos</h2>
+<form method="post" action="{{ url_for('customer.upload', property_id=p.property_id) }}"
+      enctype="multipart/form-data" class="upload">
+  {% if not plano %}
+    <fieldset><legend>Plano de la propiedad</legend>
+      <input type="file" name="floorplan" accept=".pdf,.png,.jpg,.jpeg"></fieldset>
+  {% endif %}
+  <input type="file" name="photos" accept=".png,.jpg,.jpeg" multiple>
+  <button type="submit">Subir</button>
+</form>
+{% if fotos %}
+<div class="grid3">
+{% for f in fotos %}
+  <figure><img src="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=f.asset_id) }}" alt="foto">
+    <figcaption>{{ f.original_filename }}
+      <form method="post" action="{{ url_for('customer.delete_asset', property_id=p.property_id, asset_id=f.asset_id) }}" class="inline">
+        <button class="sec">Quitar</button></form></figcaption></figure>
+{% endfor %}
+</div>
+{% else %}<p class="sub">Todavía no subiste fotos.</p>{% endif %}
+
+<h2>Pack comercial</h2>
+{% if pack and pack.export_name %}
+  <p><a class="btn" href="{{ url_for('customer.download_pack', property_id=p.property_id) }}">Descargar pack (.zip)</a></p>
+  <p class="sub">Incluye el plano, las alternativas disponibles y tus fotos.
+     Las imágenes ambientadas todavía no forman parte de esta versión.</p>
+{% else %}
+  <p class="sub">El pack reúne el plano, las alternativas y tus fotos en un solo archivo.</p>
+{% endif %}
+<form method="post" action="{{ url_for('customer.build_pack', property_id=p.property_id) }}" class="inline">
+  <button class="sec">{{ 'Volver a armar el pack' if pack and pack.export_name else 'Armar pack' }}</button></form>
+{% endblock %}
