@@ -63,13 +63,25 @@ def sniff_ok(path: str, ext: str) -> bool:
 
 def save_upload(file_storage, title: str = "") -> str:
     """Guarda el original tal cual y crea el CASE. El original NUNCA se modifica (§5)."""
-    original = file_storage.filename or "planta"
+    return _create_case(file_storage.filename or "planta", file_storage.save, title)
+
+
+def create_case_from_path(src_path: str, original_filename: str, title: str = "") -> str:
+    """E28 — mismo alta de caso, pero desde un archivo que ya está en disco.
+
+    Lo usa el adaptador de propiedades: el plano ya se guardó como asset de la propiedad y hay que
+    entregárselo al motor. Copiar en vez de mover deja el asset original intacto, que es lo que el
+    cliente subió y no debe cambiar nunca."""
+    return _create_case(original_filename, lambda dest: shutil.copy2(src_path, dest), title)
+
+
+def _create_case(original: str, escribir, title: str = "") -> str:
     ext = ext_of(original)
     case_id = new_case_id()
     cdir = store.case_dir(case_id)
     os.makedirs(cdir, exist_ok=True)
     src = os.path.join(cdir, "original" + ext)
-    file_storage.save(src)
+    escribir(src)
     size_mb = os.path.getsize(src) / 1e6
     if size_mb > MAX_UPLOAD_MB:
         shutil.rmtree(cdir, ignore_errors=True)
