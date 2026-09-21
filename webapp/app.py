@@ -15,7 +15,8 @@ from typing import Dict, List
 from flask import (Flask, abort, jsonify, redirect, render_template, request,
                    send_file, send_from_directory, url_for)
 
-from . import auth, briefs as briefmod, customer, detected as det, engine, intake, store
+from . import (auth, briefs as briefmod, customer, detected as det, engine, intake, staging_ui,
+               store)
 from .domain import (assets as dassets, entitlements as dent, fits as dfits,
                      floorplan as dfloorplan, packs as dpacks, presets as dpresets,
                      properties as dproperties, visual as dvisual)
@@ -25,7 +26,7 @@ REVIEWER = os.environ.get("ESCALIMETRO_REVIEWER", "Joaquín Riesco")
 MODULES_PATH = briefmod.MODULES_PATH
 #: Etiqueta de la versión de la app que sirve `/healthz`. Es un rótulo nuestro, NO el commit: saber
 #: qué build está viva no debería exigir credenciales, y filtrar un SHA de git sí sería de más.
-APP_VERSION = "e30"
+APP_VERSION = "e31"
 GRADES = [("A_GOOD", "A — LA MANDARÍA"), ("B_CORRECTABLE", "B — CORREGIBLE"),
           ("C_BAD", "C — NO SIRVE")]
 #: §12 — las etiquetas son las del contrato, leídas del contrato. No se redefinen aquí.
@@ -44,6 +45,7 @@ def create_app() -> Flask:
     app.config["MAX_CONTENT_LENGTH"] = intake.MAX_UPLOAD_MB * 1024 * 1024 * 4
     engine.start_worker()
     app.register_blueprint(customer.bp)
+    app.register_blueprint(staging_ui.bp)
     app.jinja_env.filters["from_json"] = lambda v: store.js(v, {}) or {}
     if os.environ.get("ESCALIMETRO_MIGRATE", "1") == "1":
         from . import migrate                                 # noqa: PLC0415
@@ -63,7 +65,8 @@ def create_app() -> Flask:
 
     @app.context_processor
     def _ctx():
-        return {"pending_jobs": engine.pending()}
+        from .domain import staging as dstaging               # noqa: PLC0415
+        return {"pending_jobs": engine.pending() + dstaging.pending()}
 
     # ---------- biblioteca --------------------------------------------------------------------
     @app.get("/")

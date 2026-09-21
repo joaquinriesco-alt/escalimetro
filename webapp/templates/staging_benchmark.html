@@ -1,0 +1,36 @@
+{% extends "base.html" %}{% block title %}Bake-off de ambientación{% endblock %}
+{% block body %}
+<p class="crumb"><a href="{{ url_for('staging.queue') }}">Ambientación</a> / Bake-off</p>
+<h1>Bake-off de ambientación</h1>
+<p class="sub">Mismas fotos reales, misma petición canónica, 2–3 proveedores. La métrica que manda
+  es la tasa de imágenes <b>aprobadas por un humano</b>, no que la API haya respondido.</p>
+
+<h2>Manifiesto</h2>
+{% if manifiesto %}
+  <p><span class="chip s-{{ 'READY' if manifiesto.status == 'READY' else 'FAILED' }}">{{ manifiesto.status }}</span>
+     {{ manifiesto.photos|length }} foto(s) · estilo fijo {{ manifiesto.style }} · petición {{ manifiesto.request_version }}</p>
+  {% if manifiesto._nota %}<div class="nota">{{ manifiesto._nota }}</div>{% endif %}
+{% endif %}
+{% if errores %}<div class="panel-bad"><b>Todavía no se puede correr:</b><ul>{% for e in errores %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+
+<h2>Proveedores</h2>
+<table class="detect"><tbody>
+{% for pr in proveedores %}
+  <tr><td class="ic {{ 'listo' if pr.available }}">{{ '✓' if pr.available else '○' }}</td>
+      <td><b>{{ pr.name }}</b> <span class="sub mono">{{ pr.model }}</span></td>
+      <td class="sub">{{ 'listo para el bake-off' if pr.available else 'HUMAN_ACTION_REQUIRED: falta ' ~ pr.env }}</td></tr>
+{% endfor %}
+</tbody></table>
+
+<h2>Compuerta (§14)</h2>
+<p class="sub">fidelidad ≥ {{ (gate.fidelity_pass_rate*100)|int }}% · aprobación ≥ {{ (gate.approval_rate*100)|int }}% ·
+  sin patrón estructural recurrente · costo por imagen aprobada ≤ USD {{ gate.max_cost_per_approved_usd }} ·
+  derechos comerciales verificados por escrito. Con menos de {{ gate.min_sample_for_confidence }} revisiones es evidencia de piloto, no prueba.</p>
+
+<h2>Cómo correrlo</h2>
+<pre class="mono">python -m webapp.benchmark init --from-properties p_xxx,p_yyy
+python -m webapp.benchmark run --providers gemini,openai,bfl --runs 2 --style CONTEMPORARY
+# revisar cada candidato en /staging, y después:
+python -m webapp.benchmark report --benchmark-id bm_xxxxxxxxxx</pre>
+<p class="sub">Sin credencial, <span class="mono">run</span> deja al proveedor en HUMAN_ACTION_REQUIRED y no inventa nada.</p>
+{% endblock %}

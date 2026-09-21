@@ -1,0 +1,58 @@
+{% extends "base.html" %}{% block title %}Ambientación{% endblock %}
+{% block body %}
+<h1>Ambientación</h1>
+<p class="sub">La cola interna. Un candidato no llega al cliente hasta que alguien de acá lo mira
+  al lado de la foto real y dice que sigue siendo la misma oficina.</p>
+
+<h2>Proveedor</h2>
+<table class="detect"><tbody>
+{% for pr in proveedores %}
+  <tr><td class="ic {{ 'listo' if pr.available }}">{{ '✓' if pr.available else '○' }}</td>
+      <td><b>{{ pr.name }}</b> <span class="sub mono">{{ pr.model }}</span>
+        {% if pr.selected %}<span class="chip">elegido para el producto</span>{% endif %}</td>
+      <td class="sub">{{ 'credencial presente' if pr.available else 'sin credencial (' ~ pr.env ~ ')' }}</td></tr>
+{% endfor %}
+</tbody></table>
+{% if not seleccionado %}
+<div class="panel-bad"><p><b>Ningún proveedor está elegido para el producto</b>
+  (<span class="mono">ESCALIMETRO_STAGING_PROVIDER</span> vacío). Tener una clave no basta: la
+  elección sale del bake-off, con evidencia. Ver <a href="{{ url_for('staging.benchmark_page') }}">benchmark</a>.</p></div>
+{% endif %}
+
+<h2>Candidatos esperando revisión ({{ por_revisar|length }})</h2>
+{% if not por_revisar %}<p class="empty">Nada pendiente.</p>{% endif %}
+<table class="detect"><tbody>
+{% for a in por_revisar %}
+  <tr><td><a href="{{ url_for('staging.review_page', attempt_id=a.attempt_id) }}"><b>{{ propiedades.get(a.property_id, {}).get('title', a.property_id) }}</b></a>
+        <span class="sub mono">{{ a.attempt_id }}</span></td>
+      <td class="sub">{{ a.provider }} · {{ a.model }} · {{ a.visual_style }}
+        {% if a.benchmark_id %}<span class="chip">benchmark</span>{% endif %}
+        {% if a.auto_warnings_list %}<span class="chip s-FAILED">{{ a.auto_warnings_list|length }} aviso(s)</span>{% endif %}</td>
+      <td class="ans"><a class="btn sec" href="{{ url_for('staging.review_page', attempt_id=a.attempt_id) }}">Revisar</a></td></tr>
+{% endfor %}
+</tbody></table>
+
+<h2>Propiedades con foto principal, sin imagen aprobada ({{ por_generar|length }})</h2>
+{% if not por_generar %}<p class="empty">Ninguna.</p>{% endif %}
+<table class="detect"><tbody>
+{% for st in por_generar %}
+  <tr><td><a href="{{ url_for('customer.detail', property_id=st.property.property_id) }}"><b>{{ st.property.title }}</b></a>
+        <span class="sub mono">{{ st.property.property_id }}</span></td>
+      <td><span class="chip s-{{ 'FAILED' if st.state in ('STAGING_UNAVAILABLE','STAGING_NEEDS_MANUAL_REVIEW') else 'READY' }}">{{ st.state }}</span>
+        <span class="sub">{{ st.reason }}{% if st.retries_left is not none %} · {{ st.retries_left }} intento(s) restante(s){% endif %}</span></td>
+      <td class="ans">
+        {% if st.state == 'NEEDS_STAGING' %}
+        <form method="post" action="{{ url_for('staging.generate', property_id=st.property.property_id) }}" class="inline">
+          <select name="visual_style">{% for k, e in estilos.items() %}<option value="{{ k }}">{{ e.label }}</option>{% endfor %}</select>
+          <button>Generar</button></form>
+        {% endif %}
+      </td></tr>
+{% endfor %}
+</tbody></table>
+
+<h2>Bake-off</h2>
+<p class="sub">Manifiesto: <b>{{ manifiesto.status if manifiesto else 'sin manifiesto' }}</b>
+  {% if manifiesto %}· {{ manifiesto.photos|length }} foto(s) reales{% endif %}
+  · <a href="{{ url_for('staging.benchmark_page') }}">detalle</a>.
+  {% if pendientes_cola %}<span class="chip work">{{ pendientes_cola }} generando</span>{% endif %}</p>
+{% endblock %}

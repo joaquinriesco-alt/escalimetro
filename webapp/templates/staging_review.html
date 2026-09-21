@@ -1,0 +1,100 @@
+{% extends "base.html" %}{% block title %}Revisión {{ a.attempt_id }}{% endblock %}
+{% block body %}
+<p class="crumb"><a href="{{ url_for('staging.queue') }}">Ambientación</a> / {{ p.title }} / {{ a.attempt_id }}</p>
+<h1>{{ p.title }} — candidato {{ a.attempt_id }}</h1>
+<p class="sub">{{ a.provider }} · {{ a.model }} · estilo {{ a.visual_style }} · petición {{ a.request_version }}
+  · <span class="mono">{{ a.prompt_hash[:12] }}</span>
+  {% if a.benchmark_id %}· <span class="chip">benchmark {{ a.benchmark_id }}</span>{% endif %}
+  {% if a.fit_id %}· propuesta {{ a.fit_id }}{% endif %}</p>
+
+{% if errores %}<div class="panel-bad"><ul>{% for e in errores %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+
+<p><span class="chip s-{{ a.status }}">{{ a.status }}</span>
+   <span class="chip">revisión: {{ a.review_status }}</span>
+   <span class="chip">fidelidad: {{ a.fidelity_status }}</span>
+   {% if a.quality_score %}<span class="chip">calidad {{ a.quality_score }}/5</span>{% endif %}
+   {% if a.latency_ms %}<span class="sub">{{ a.latency_ms }} ms proveedor · {{ a.pipeline_ms }} ms total</span>{% endif %}
+   {% if a.cost_usd is not none %}<span class="sub">· USD {{ '%.4f'|format(a.cost_usd) }} ({{ a.cost_basis }})</span>{% endif %}</p>
+
+{% if a.status in ('QUEUED','RUNNING') %}
+  <div class="nota">Generando. Recargá en unos segundos.</div>
+{% elif a.status == 'FAILED' %}
+  <div class="panel-bad"><b>El proveedor no devolvió una imagen utilizable.</b>
+    <pre class="mono">{{ a.error }}</pre>
+    <p>No hay candidato. Nada se publicó. Nada se pasó como ambientado.</p></div>
+{% else %}
+  {% if a.auto_warnings_list %}
+  <div class="panel-bad"><b>Avisos automáticos</b> — razones para mirar con más cuidado, <u>no</u> un veredicto:
+    <ul>{% for w in a.auto_warnings_list %}<li class="mono">{{ w }}</li>{% endfor %}</ul></div>
+  {% endif %}
+
+  <div class="cmp" id="cmp">
+    <div class="cmp-tools">
+      <button type="button" class="sec" onclick="cmpMode('side')">Lado a lado</button>
+      <button type="button" class="sec" onclick="cmpMode('toggle')">Alternar</button>
+      <button type="button" class="sec" onclick="cmpMode('wipe')">Cortina</button>
+      <a class="btn sec" target="_blank" href="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=src.asset_id) }}">Original grande</a>
+      <a class="btn sec" target="_blank" href="{{ url_for('staging.candidate_image', attempt_id=a.attempt_id) }}">Candidato grande</a>
+    </div>
+    <div class="cmp-side" id="cmp-side">
+      <figure><img src="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=src.asset_id) }}" alt="original"><figcaption>ORIGINAL · foto real</figcaption></figure>
+      <figure><img src="{{ url_for('staging.candidate_image', attempt_id=a.attempt_id) }}" alt="candidato"><figcaption>CANDIDATO · {{ a.provider }}</figcaption></figure>
+    </div>
+    <div class="cmp-stack" id="cmp-stack" hidden>
+      <img id="cmp-orig" src="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=src.asset_id) }}" alt="original">
+      <img id="cmp-cand" src="{{ url_for('staging.candidate_image', attempt_id=a.attempt_id) }}" alt="candidato">
+      <input type="range" id="cmp-wipe" min="0" max="100" value="50" oninput="cmpWipe(this.value)" hidden>
+      <button type="button" id="cmp-flip" class="sec" onclick="cmpFlip()" hidden>Alternar (o barra espaciadora)</button>
+    </div>
+  </div>
+
+  <h2>Veredicto</h2>
+  <form method="post" action="{{ url_for('staging.review', attempt_id=a.attempt_id) }}" class="upload">
+    <fieldset><legend>Fidelidad arquitectónica * <span class="opt">(compuerta dura)</span></legend>
+      <label class="op"><input type="radio" name="fidelity" value="PASS" required> <b>PASS</b> — sigue siendo esta oficina: mismas ventanas, pilares, muros, cielo, perspectiva y vista</label>
+      <label class="op"><input type="radio" name="fidelity" value="FAIL"> <b>FAIL</b> — algo estructural cambió, por bonita que sea</label>
+      <div class="opciones" style="margin-top:8px">
+      {% for k, l in motivos %}<label class="op"><input type="checkbox" name="reasons" value="{{ k }}"> {{ l }}</label>{% endfor %}
+      </div></fieldset>
+    <fieldset><legend>Calidad <span class="opt">(sólo si la fidelidad pasa)</span></legend>
+      <select name="quality"><option value="">—</option>{% for n in [1,2,3,4,5] %}<option value="{{ n }}">{{ n }}</option>{% endfor %}</select>
+      <p class="hint">fotorrealismo · escala del mobiliario · ubicación · luz coherente · estética · verosimilitud de oficina · listo para publicar</p></fieldset>
+    <fieldset><legend>Publicación *</legend>
+      <label class="op"><input type="radio" name="publication" value="APPROVE" required> Aprobar — se publica como imagen ambientada de la propiedad</label>
+      <label class="op"><input type="radio" name="publication" value="REJECT"> Rechazar — se conserva como evidencia, no se publica</label></fieldset>
+    <label>Notas internas <span class="opt">(nunca salen al pack)</span><input name="notes"></label>
+    <input type="hidden" name="reviewer" value="{{ reviewer }}">
+    <button type="submit" {{ 'disabled' if a.review_status != 'PENDING' }}>Guardar veredicto</button>
+  </form>
+{% endif %}
+
+{% if a.review_status == 'REJECTED' or a.status == 'FAILED' %}
+  <form method="post" action="{{ url_for('staging.retry', attempt_id=a.attempt_id) }}" class="inline">
+    <button class="sec" {{ 'disabled' if retries_left is not none and retries_left <= 0 }}>Nuevo intento{% if retries_left is not none %} ({{ retries_left }} restante(s)){% endif %}</button></form>
+  {% if retries_left is not none and retries_left <= 0 %}<p class="sub">Se agotaron los intentos internos: corresponde revisión manual, no otro intento automático.</p>{% endif %}
+{% endif %}
+
+<h2>Intentos sobre esta foto</h2>
+<table class="detect"><tbody>
+{% for i in intentos %}
+  <tr><td><a href="{{ url_for('staging.review_page', attempt_id=i.attempt_id) }}" class="mono">{{ i.attempt_id }}</a></td>
+      <td><span class="chip s-{{ i.status }}">{{ i.status }}</span> {{ i.review_status }} · fidelidad {{ i.fidelity_status }}{% if i.quality_score %} · {{ i.quality_score }}/5{% endif %}</td>
+      <td class="sub">{{ i.provider }} · {{ i.created_at }}{% if i.output_asset_id %} · <b>publicada</b>{% endif %}</td></tr>
+{% endfor %}
+</tbody></table>
+<p class="sub">Estado de la propiedad: <b>{{ estado.state }}</b> — {{ estado.reason }}.</p>
+
+<script>
+function cmpMode(m){
+  const side=document.getElementById('cmp-side'),stack=document.getElementById('cmp-stack'),
+        wipe=document.getElementById('cmp-wipe'),flip=document.getElementById('cmp-flip'),
+        cand=document.getElementById('cmp-cand');
+  side.hidden=m!=='side'; stack.hidden=m==='side'; wipe.hidden=m!=='wipe'; flip.hidden=m!=='toggle';
+  cand.style.clipPath=''; cand.style.visibility='visible';
+  if(m==='wipe'){cmpWipe(wipe.value);}
+}
+function cmpWipe(v){document.getElementById('cmp-cand').style.clipPath='inset(0 0 0 '+v+'%)';}
+function cmpFlip(){const c=document.getElementById('cmp-cand');c.style.visibility=c.style.visibility==='hidden'?'visible':'hidden';}
+document.addEventListener('keydown',e=>{if(e.code==='Space'&&!document.getElementById('cmp-flip').hidden){e.preventDefault();cmpFlip();}});
+</script>
+{% endblock %}

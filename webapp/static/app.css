@@ -148,3 +148,19 @@ label.op:has(input:checked){border-color:#111827;box-shadow:inset 0 0 0 1px #111
 .row.rooms{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
 img.logo-prev{max-height:54px;max-width:200px;object-fit:contain}
 details>summary{cursor:pointer;margin:22px 0 8px;font-weight:600}
+
+/* ---------------------------------------------------------------- E31 · revisión de ambientación */
+.cmp{margin:16px 0}
+.cmp-tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.cmp-side{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+.cmp-side figure{margin:0}.cmp-side img{width:100%;border:1px solid #e5e7eb;border-radius:5px;display:block}
+.cmp-side figcaption{font-size:12px;color:#6b7280;margin-top:5px}
+.cmp-stack{position:relative;max-width:960px}
+.cmp-stack img{width:100%;display:block;border:1px solid #e5e7eb;border-radius:5px}
+.cmp-stack #cmp-cand{position:absolute;inset:0}
+.cmp-stack input[type=range]{width:100%;margin-top:8px}
+.nota{background:#fbfbfc;border:1px solid #e5e7eb;border-left:3px solid #111827;border-radius:4px;padding:12px 14px;margin:14px 0}
+.staged-pair{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+.staged-pair figcaption{font-size:12px;color:#6b7280;margin-top:5px}
+.disclosure{font-size:13px;color:#374151;background:#f9fafb;border:1px solid #e5e7eb;border-radius:4px;padding:8px 10px;margin-top:8px}
+label.op.hero{display:block}
