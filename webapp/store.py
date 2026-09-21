@@ -19,8 +19,12 @@ from typing import Any, Dict, List, Optional
 DATA_DIR = os.environ.get("ESCALIMETRO_DATA_DIR") or os.path.join(os.getcwd(), ".data")
 DB_PATH = os.path.join(DATA_DIR, "escalimetro.db")
 
-#: Estados de caso del §4. Simples a propósito.
-CASE_STATES = ("UPLOADED", "NEEDS_INPUT", "READY", "GENERATING", "COMPLETE", "PARTIAL", "FAILED")
+#: Estados de caso. E27.3 §13 añade dos que la UX necesita distinguir y el flujo anterior confundía:
+#:   INPUT_NOT_READY   la planta no viene limpia: está fuera del contrato de V1, no es un fallo
+#:   NEEDS_CONFIRMATION el motor YA analizó y falta que un humano revise lo detectado
+#: La diferencia importante es ANTES del análisis (NEEDS_INPUT) vs DESPUÉS (NEEDS_CONFIRMATION).
+CASE_STATES = ("UPLOADED", "NEEDS_INPUT", "INPUT_NOT_READY", "NEEDS_CONFIRMATION", "READY",
+               "GENERATING", "COMPLETE", "PARTIAL", "FAILED")
 #: §14 — separar lo que se usa para desarrollo de lo que se reserva como evaluación futura.
 TRACKS = ("DEVELOPMENT", "RESERVED")
 #: §9 — estados por alternativa. SEARCH_EXHAUSTED nunca se traduce como "no cabe".
@@ -53,6 +57,9 @@ CREATE TABLE IF NOT EXISTS intake (
   entrance_point TEXT,            -- JSON [x, y]
   confirmed      TEXT,            -- JSON lista de confirmaciones
   missing        TEXT,            -- JSON lista de lo que falta (del motor, no inventado)
+  scale_points   TEXT,            -- JSON [[x1,y1],[x2,y2]] de la medición humana
+  analyzed_at    TEXT,            -- cuándo corrió el análisis; NULL = el motor no miró la planta
+  answers        TEXT,            -- JSON {elemento: "ok"|"fix"} de la revisión humana posterior
   updated_at     TEXT
 );
 CREATE TABLE IF NOT EXISTS briefs (
@@ -136,6 +143,12 @@ def init() -> None:
     os.makedirs(os.path.join(DATA_DIR, "cases"), exist_ok=True)
     conn = connect()
     conn.executescript(SCHEMA)
+    # Migración en sitio para bases creadas antes de E27.3: SQLite no tiene ADD COLUMN IF NOT
+    # EXISTS, así que se mira el esquema. Sin esto, un volumen ya existente se rompería al arrancar.
+    tiene = {r["name"] for r in conn.execute("PRAGMA table_info(intake)").fetchall()}
+    for col in ("analyzed_at", "answers", "scale_points"):
+        if col not in tiene:
+            conn.execute(f"ALTER TABLE intake ADD COLUMN {col} TEXT")
     # Honestidad al reiniciar: un job que decía RUNNING murió con el proceso anterior. No se
     # reanuda solo y no se deja mintiendo en pantalla.
     conn.execute("UPDATE runs SET status='FAILED', finished_at=?, "
@@ -151,6 +164,8 @@ def init() -> None:
         fp = os.path.join(case_dir(row["case_id"]), "outputs", "floorplate.json")
         if not os.path.exists(fp):
             conn.execute("UPDATE cases SET status='NEEDS_INPUT' WHERE case_id=?", (row["case_id"],))
+    # un caso GENERATING que quedó colgado vuelve a donde su artefacto diga (no a READY a ciegas)
+    conn.execute("UPDATE cases SET status='NEEDS_CONFIRMATION' WHERE status='ANALYZING'")
     conn.commit()
 
 

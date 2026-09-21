@@ -161,15 +161,18 @@ def write_case_json(case_id: str) -> str:
     return p
 
 
-def write_overrides(case_id: str) -> str:
+def write_overrides(case_id: str, confirm: Optional[List[str]] = None) -> str:
     """Intake → `overrides.json`, el vocabulario HITL que el pipeline ya entiende (seed_points,
-    scale, entrances, confirm). No se inventa ninguna clave nueva."""
+    scale, entrances, confirm). No se inventa ninguna clave nueva.
+
+    `confirm` se pasa EXPLÍCITO y no se deduce de la base: en el análisis inicial va vacío a
+    propósito, para que el motor diga qué encontró sin que nadie lo haya dado por bueno antes."""
     it = store.q1("SELECT * FROM intake WHERE case_id=?", (case_id,))
-    o: Dict = {"_doc": "E27 — confirmaciones humanas capturadas en la web app."}
+    o: Dict = {"_doc": "E27 — datos humanos del intake capturados en la web app."}
     if it:
         seed = store.js(it["seed_point"])
         ent = store.js(it["entrance_point"])
-        conf = store.js(it["confirmed"], []) or []
+        conf = list(confirm or [])
         if seed:
             o["seed_points"] = [[int(seed[0]), int(seed[1])]]
         if it["scale_px_per_m"]:
@@ -184,51 +187,76 @@ def write_overrides(case_id: str) -> str:
     return p
 
 
-def normalize(case_id: str) -> Dict:
-    """Corre el pipeline de normalización EXISTENTE (`python -m escalimetro run`) y devuelve
-    qué falta, según el propio motor. No se corrige nada a mano."""
+def _run_pipeline(case_id: str, confirm: Optional[List[str]] = None) -> Dict:
+    """Ejecuta el pipeline de normalización EXISTENTE (`python -m escalimetro run`).
+
+    Tarda ~4 s sobre una planta real, así que corre de forma síncrona: meterlo en una cola sería
+    infraestructura sin beneficio para el usuario."""
     write_case_json(case_id)
-    write_overrides(case_id)
+    write_overrides(case_id, confirm)
     cdir = store.case_dir(case_id)
     env = dict(os.environ, PYTHONPATH=os.path.join(REPO_ROOT, "src"), MPLBACKEND="Agg")
     p = subprocess.run([sys.executable, "-m", "escalimetro", "run", "--case", cdir],
                        cwd=REPO_ROOT, env=env, capture_output=True, text=True, timeout=900)
-    log = (p.stdout or "") + (p.stderr or "")
-    fp_path = os.path.join(cdir, "outputs", "floorplate.json")
-    missing: List[str] = []
-    ready = False
-    if os.path.exists(fp_path):
-        try:
-            with open(fp_path, encoding="utf-8") as fh:
-                fp = json.load(fh)
-            sr = fp.get("shell_readiness") or {}
-            missing = list(sr.get("requires_confirmation") or [])
-            ready = bool(sr.get("ready_for_layout"))
-        except (OSError, ValueError):
-            missing = ["floorplate ilegible"]
-    else:
-        missing = ["no se pudo leer la geometría de esta planta"]
-    store.ex("UPDATE intake SET missing=?, updated_at=? WHERE case_id=?",
-             (json.dumps(missing, ensure_ascii=False), store.now(), case_id))
-    store.ex("UPDATE cases SET status=? WHERE case_id=?",
-             ("READY" if ready else "NEEDS_INPUT", case_id))
-    return {"ready": ready, "missing": missing, "log": log[-8000:], "returncode": p.returncode}
+    return {"log": ((p.stdout or "") + (p.stderr or ""))[-8000:], "returncode": p.returncode}
 
 
-def existing_scale(case_id: str) -> Optional[Dict]:
-    """§6.2 — si el artefacto ya trae una escala, se MUESTRA con su método y confianza en vez de
-    pedirla de nuevo. El humano la confirma; no se la da por buena en silencio."""
-    p = os.path.join(store.case_dir(case_id), "outputs", "floorplate.json")
+def load_floorplate(case_id: str) -> Optional[Dict]:
     try:
-        with open(p, encoding="utf-8") as fh:
-            sc = (json.load(fh).get("scale") or {})
+        with open(os.path.join(store.case_dir(case_id), "outputs", "floorplate.json"),
+                  encoding="utf-8") as fh:
+            return json.load(fh)
     except (OSError, ValueError):
         return None
-    if not sc.get("px_per_m"):
-        return None
-    meta = sc.get("meta") or {}
-    return {"px_per_m": float(sc["px_per_m"]), "method": sc.get("method") or meta.get("method") or "",
-            "status": meta.get("status") or "", "confidence": meta.get("confidence") or ""}
+
+
+def _readiness(fp: Optional[Dict]) -> Dict:
+    return ((fp or {}).get("shell_readiness") or {})
+
+
+def analyze(case_id: str) -> Dict:
+    """ETAPA 2 — «Analizar planta». El motor mira la planta por PRIMERA vez.
+
+    Se corre sin ninguna confirmación humana (`confirm=[]`) justamente para que lo que salga sea lo
+    que el motor detectó por su cuenta, no un eco de lo que alguien marcó antes de mirar."""
+    res = _run_pipeline(case_id, confirm=[])
+    fp = load_floorplate(case_id)
+    if fp is None:
+        store.ex("UPDATE cases SET status='NEEDS_INPUT' WHERE case_id=?", (case_id,))
+        store.ex("UPDATE intake SET missing=?, analyzed_at=?, updated_at=? WHERE case_id=?",
+                 (json.dumps(["no se pudo leer la geometría de esta planta"]), None,
+                  store.now(), case_id))
+        return {"ok": False, "log": res["log"]}
+    store.ex("UPDATE intake SET missing=?, analyzed_at=?, answers=NULL, updated_at=? "
+             "WHERE case_id=?",
+             (json.dumps(_readiness(fp).get("requires_confirmation") or []), store.now(),
+              store.now(), case_id))
+    _set_status_from_artifact(case_id, fp)
+    return {"ok": True, "log": res["log"]}
+
+
+def apply_confirmations(case_id: str, answers: Dict[str, str]) -> Dict:
+    """ETAPA 2b — el humano revisó lo dibujado y responde por elemento: correcto / necesita
+    corrección. Sólo lo marcado CORRECTO viaja como confirmación al pipeline."""
+    store.ex("UPDATE intake SET answers=?, confirmed=?, updated_at=? WHERE case_id=?",
+             (json.dumps(answers, ensure_ascii=False),
+              json.dumps(sorted(k for k, v in answers.items() if v == "ok")),
+              store.now(), case_id))
+    confirm = [k for k, v in answers.items() if v == "ok"]
+    res = _run_pipeline(case_id, confirm=confirm)
+    fp = load_floorplate(case_id)
+    store.ex("UPDATE intake SET missing=?, updated_at=? WHERE case_id=?",
+             (json.dumps(_readiness(fp).get("requires_confirmation") or []), store.now(), case_id))
+    _set_status_from_artifact(case_id, fp)
+    return {"ok": bool(_readiness(fp).get("ready_for_layout")), "log": res["log"]}
+
+
+def _set_status_from_artifact(case_id: str, fp: Optional[Dict]) -> str:
+    """El estado del caso lo dicta el ARTEFACTO, no la UI. Una sola definición de «listo»."""
+    estado = "READY" if _readiness(fp).get("ready_for_layout") else (
+        "NEEDS_CONFIRMATION" if fp else "NEEDS_INPUT")
+    store.ex("UPDATE cases SET status=? WHERE case_id=?", (estado, case_id))
+    return estado
 
 
 def shell_svg_for(case_id: str) -> Optional[str]:
@@ -263,15 +291,18 @@ def shell_svg_for(case_id: str) -> Optional[str]:
 # Lo que NO está acá es tan importante como lo que está: el punto semilla no aparece en
 # `requires_confirmation`, así que es OPCIONAL aunque ayude a la segmentación.
 
-#: Confirmaciones de elementos fijos que el runtime exige. Clave = valor en `overrides.confirm`
-#: (consumido por `pipeline.py:272` y `semantics/shell.py`); valor = etiqueta humana.
-REQUIRED_CONFIRMS = {
-    "perimeter": "Perímetro",
-    "core": "Núcleo",
-    "columns": "Pilares",
-    "daylight": "Fachada / ventanas",
-    "scale_assumption": "Supuesto de escala",
-}
+# E27.3 §1 — LAS DOS ETAPAS, que antes estaban mezcladas.
+#
+# ETAPA 1 · lo que el humano sabe ANTES de que el motor mire la planta: si viene limpia, cuánto
+#           mide algo que él pueda medir, y por dónde se entra. Nada de esto requiere análisis.
+# ETAPA 2 · lo que el motor DETECTA y recién entonces el humano confirma o corrige.
+#
+# El error de E27.2 era pedir la etapa 2 dentro de la etapa 1: se le pedía al usuario confirmar el
+# núcleo antes de que existiera un núcleo detectado que mirar.
+
+#: Elementos que el motor detecta y el humano revisa DESPUÉS. Clave = valor que espera
+#: `overrides.confirm` (`pipeline.py:272` y `semantics/shell.py`); nunca se muestra en pantalla.
+CONFIRMABLE = ("perimeter", "core", "columns", "daylight")
 
 #: Traducción de los códigos que devuelve el runtime a algo que una persona pueda accionar.
 MISSING_LABELS = {
@@ -290,19 +321,17 @@ def humanize_missing(codes: List[str]) -> List[str]:
 
 
 def validate_intake_form(form) -> Dict[str, str]:
-    """§4 — validación de servidor del formulario de intake. Devuelve {campo: mensaje}.
+    """§2/§3 — valida SÓLO los datos humanos previos. Devuelve {campo: mensaje}.
 
-    Se ejecuta ANTES de tocar el pipeline: un intake incompleto no llega nunca al motor, así que no
-    puede terminar en un traceback disfrazado de FAILED."""
+    Deliberadamente NO valida perímetro, núcleo, pilares ni fachada: en este punto el motor todavía
+    no ha mirado la planta, así que no hay nada que confirmar."""
     errs: Dict[str, str] = {}
 
-    if (form.get("declared_clean") or "") not in ("yes", "no"):
-        errs["declared_clean"] = "Debes confirmar si la planta está limpia."
-    elif form.get("declared_clean") == "no":
-        errs["declared_clean"] = ("V1 sólo acepta plantas libres. Una planta con mobiliario o layout "
-                                  "previo queda fuera de contrato: la limpieza automática es V2.")
+    limpia = form.get("declared_clean") or ""
+    if limpia not in ("yes", "no"):
+        errs["declared_clean"] = "Indica si la planta está libre de mobiliario y layouts interiores."
 
-    # Escala: vale por dos puntos + distancia real, o por superficie publicada. Una de las dos.
+    # Escala: dos puntos + distancia real (preferido), o superficie publicada (alternativa).
     p1 = _pair_of(form, "scale_x1", "scale_y1")
     p2 = _pair_of(form, "scale_x2", "scale_y2")
     metres = (form.get("scale_m") or "").strip()
@@ -312,6 +341,9 @@ def validate_intake_form(form) -> Dict[str, str]:
             px_per_m_from_two_points(p1, p2, float(metres))
         except (IntakeError, ValueError) as e:
             errs["scale"] = str(e)
+    elif p1 or p2 or metres:
+        errs["scale"] = ("Para medir la escala hacen falta los dos puntos y la distancia real "
+                         "entre ellos.")
     elif area:
         try:
             if float(area) <= 0:
@@ -319,15 +351,11 @@ def validate_intake_form(form) -> Dict[str, str]:
         except ValueError:
             errs["scale"] = "La superficie publicada debe ser un número."
     else:
-        errs["scale"] = ("Falta definir la escala: marcá dos puntos y su distancia real, o escribí "
-                         "la superficie publicada.")
+        errs["scale"] = ("Falta la escala: marca dos puntos sobre el plano y escribe la distancia "
+                         "real entre ellos.")
 
     if not _pair_of(form, "entrance_x", "entrance_y"):
-        errs["entrance"] = "Marca el acceso principal sobre el plano."
-
-    faltan = [lbl for k, lbl in REQUIRED_CONFIRMS.items() if k not in form.getlist("confirm")]
-    if faltan:
-        errs["confirm"] = "Falta confirmar: " + ", ".join(faltan) + "."
+        errs["entrance"] = "Marca por dónde se ingresa a la oficina."
     return errs
 
 
@@ -350,8 +378,8 @@ def blockers_for_generate(case_id: str) -> List[str]:
         return ["El caso no existe."]
     fp = os.path.join(case_dir_of(case_id), "outputs", "floorplate.json")
     if not os.path.exists(fp):
-        return ["Todavía no preparaste el shell. Completá los campos obligatorios y pulsá "
-                "«Preparar shell»."]
+        return ["Todavía no analizaste la planta. Completá los datos básicos y pulsá "
+                "«Analizar planta»."]
     try:
         with open(fp, encoding="utf-8") as fh:
             sr = (json.load(fh).get("shell_readiness") or {})

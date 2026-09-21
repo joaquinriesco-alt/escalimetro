@@ -16,14 +16,14 @@ from typing import Dict, List
 from flask import (Flask, abort, jsonify, redirect, render_template, request,
                    send_file, send_from_directory, url_for)
 
-from . import auth, briefs as briefmod, engine, intake, store
+from . import auth, briefs as briefmod, detected as det, engine, intake, store
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REVIEWER = os.environ.get("ESCALIMETRO_REVIEWER", "Joaquín Riesco")
 MODULES_PATH = os.path.join(REPO_ROOT, "program_templates", "modules_office.json")
 #: Etiqueta de la versión de la app que sirve `/healthz`. Es un rótulo nuestro, NO el commit: saber
 #: qué build está viva no debería exigir credenciales, y filtrar un SHA de git sí sería de más.
-APP_VERSION = "e27.2"
+APP_VERSION = "e27.3"
 GRADES = [("A_GOOD", "A — LA MANDARÍA"), ("B_CORRECTABLE", "B — CORREGIBLE"),
           ("C_BAD", "C — NO SIRVE")]
 #: §12 — las etiquetas son las del contrato, leídas del contrato. No se redefinen aquí.
@@ -118,18 +118,26 @@ def create_app() -> Flask:
                 "SELECT alt, status FROM alternatives WHERE run_id=? ORDER BY alt", (r["run_id"],))]
             runs.append(d)
         w, h = intake.preview_size(case_id)
+        fp = intake.load_floorplate(case_id)
         codes = store.js(it["missing"] if it else None, []) or []
         html = render_template(
             "case.html", c=c, it=it, briefs=[dict(b) for b in bs], runs=runs,
             modules=briefmod.MODULE_LABELS, defaults=briefmod.DEFAULT_ROOMS,
             preview_w=w, preview_h=h, missing=intake.humanize_missing(codes),
-            existing_scale=intake.existing_scale(case_id),
             has_shell=os.path.exists(os.path.join(store.case_dir(case_id), "outputs",
                                                   "floorplate.json")),
             tracks=store.TRACKS, errors=errors or {}, brief_errors=brief_errors or {},
             confirmed=store.js(it["confirmed"] if it else None, []) or [],
-            form=form, required_confirms=intake.REQUIRED_CONFIRMS,
-            blockers=intake.blockers_for_generate(case_id))
+            form=form, blockers=intake.blockers_for_generate(case_id),
+            analyzed=bool(it and it["analyzed_at"]), fp_ok=fp is not None,
+            detected=det.summary(fp) if fp else [],
+            scale_info=det.scale_row(fp) if fp else None,
+            answers=store.js(it["answers"] if it else None, {}) or {},
+            saved={"scale": store.js(it["scale_points"] if it else None),
+                   "entrance": store.js(it["entrance_point"] if it else None),
+                   "seed": store.js(it["seed_point"] if it else None),
+                   "metres": (it["scale_note"] or "").split(": ")[-1].replace(" m", "")
+                             if it and it["scale_method"] == "two_points" else ""})
         return (html, code) if code != 200 else html
 
     @app.get("/case/<case_id>")
@@ -167,38 +175,80 @@ def create_app() -> Flask:
             abort(404)
         return app.response_class(svg, mimetype="image/svg+xml")
 
-    @app.post("/case/<case_id>/intake")
+    @app.post("/case/<case_id>/analyze")
     @auth.require
-    def save_intake(case_id):
+    def analyze_plan(case_id):
+        """§3 — «Analizar planta». Sólo exige los datos que el humano puede aportar ANTES de que
+        el motor mire nada. Lo que se detecte se revisa después."""
         case_or_404(case_id)
         f = request.form
-        # §4 — el servidor decide, no el navegador. Un POST con campos faltantes vuelve a la misma
-        # pantalla con los errores marcados y NO llega al pipeline: por eso ya no puede haber un
-        # FAILED causado por un input omitido.
         errs = intake.validate_intake_form(f)
         if errs:
             return _render_case(case_id, errors=errs, form=f, code=400)
-        seed = _pair(f.get("seed_x"), f.get("seed_y"))
-        ent = _pair(f.get("entrance_x"), f.get("entrance_y"))
+
+        _guardar_datos_humanos(case_id, f)
+        if f.get("declared_clean") == "no":
+            # §2 — fuera del contrato de V1. No es un fallo: es un input que esta versión no cubre.
+            store.ex("UPDATE cases SET status='INPUT_NOT_READY' WHERE case_id=?", (case_id,))
+            return _render_case(case_id)
+        res = intake.analyze(case_id)
+        return render_template("analyzed.html", case_id=case_id, res=res,
+                               ok=res["ok"], titulo=case_or_404(case_id)["title"])
+
+    def _guardar_datos_humanos(case_id, f):
         px_per_m, method, note = None, None, ""
         p1 = _pair(f.get("scale_x1"), f.get("scale_y1"))
         p2 = _pair(f.get("scale_x2"), f.get("scale_y2"))
         if p1 and p2 and f.get("scale_m"):
             px_per_m = intake.px_per_m_from_two_points(p1, p2, float(f["scale_m"]))
-            method, note = "two_points", f'dos puntos + {f["scale_m"]} m declarados'
+            method, note = "two_points", f'medida sobre el plano: {f["scale_m"]} m'
         area = f.get("published_area_m2") or None
         store.ex("UPDATE cases SET published_area_m2=?, source_name=?, title=? WHERE case_id=?",
                  (float(area) if area else None, f.get("source_name") or None,
                   (f.get("title") or "").strip()[:120] or "Planta", case_id))
         store.ex("UPDATE intake SET declared_clean=?, scale_px_per_m=?, scale_method=?, "
-                 "scale_note=?, seed_point=?, entrance_point=?, confirmed=?, updated_at=? "
+                 "scale_note=?, scale_points=?, seed_point=?, entrance_point=?, updated_at=? "
                  "WHERE case_id=?",
                  (f.get("declared_clean") or None, px_per_m, method, note,
-                  json.dumps(seed) if seed else None, json.dumps(ent) if ent else None,
-                  json.dumps(f.getlist("confirm")), store.now(), case_id))
-        res = intake.normalize(case_id)
-        return render_template("intake_result.html", case_id=case_id, res=res,
-                               missing=intake.humanize_missing(res["missing"]))
+                  json.dumps([p1, p2]) if (p1 and p2) else None,
+                  json.dumps(_pair(f.get("seed_x"), f.get("seed_y")) or None),
+                  json.dumps(_pair(f.get("entrance_x"), f.get("entrance_y")) or None),
+                  store.now(), case_id))
+
+    @app.post("/case/<case_id>/confirm")
+    @auth.require
+    def confirm_detected(case_id):
+        """§6 — la revisión humana de lo que el motor YA dibujó. Nada viene preseleccionado."""
+        case_or_404(case_id)
+        it = store.q1("SELECT analyzed_at FROM intake WHERE case_id=?", (case_id,))
+        if not (it and it["analyzed_at"]):
+            return _render_case(case_id, errors={"analyze": "Primero hay que analizar la planta."},
+                                code=400)
+        fp = intake.load_floorplate(case_id)
+        elementos = [r["key"] for r in det.summary(fp or {}) if r["found"]]
+        answers = {k: request.form.get(f"ans_{k}") for k in elementos}
+        faltan = [k for k, v in answers.items() if v not in ("ok", "fix")]
+        if faltan:
+            return _render_case(case_id, errors={"confirm": "Revisa todos los elementos: falta "
+                                                            "responder por alguno."}, code=400)
+        if det.scale_row(fp or {}).get("needs_confirm"):
+            answers["scale_assumption"] = request.form.get("ans_scale_assumption") or ""
+            if answers["scale_assumption"] not in ("ok", "fix"):
+                return _render_case(case_id, errors={"confirm": "Falta responder por la escala."},
+                                    code=400)
+        intake.apply_confirmations(case_id, answers)
+        return redirect(url_for("case_view", case_id=case_id))
+
+    @app.get("/case/<case_id>/detected.svg")
+    @auth.require
+    def detected_svg(case_id):
+        """El dibujo de lo detectado, para superponer sobre la planta subida."""
+        case_or_404(case_id)
+        fp = intake.load_floorplate(case_id)
+        svg = det.overlay_svg(fp) if fp else None
+        if svg is None:
+            abort(404)
+        return app.response_class(svg, mimetype="image/svg+xml")
 
     # ---------- brief y generación ------------------------------------------------------------
     @app.post("/case/<case_id>/brief")

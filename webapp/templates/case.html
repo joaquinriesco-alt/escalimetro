@@ -1,90 +1,169 @@
 {% extends "base.html" %}{% block title %}{{ c.title }} · Escalímetro{% endblock %}
-{# `v()` devuelve lo enviado en un POST rechazado, y si no hay POST, el valor guardado. #}
 {% macro v(campo, guardado="") %}{{ form[campo] if form and form.get(campo) is not none else guardado }}{% endmacro %}
 {% macro err(campo) %}{% if errors.get(campo) %}<p class="err">{{ errors[campo] }}</p>{% endif %}{% endmacro %}
 {% block body %}
 <p class="crumb"><a href="{{ url_for('library') }}">Plantas</a> / {{ c.title }}</p>
 <h1>{{ c.title }} <span class="chip s-{{ c.status }}">{{ c.status }}</span></h1>
 
+{# ------------------------------------------------------------------ pasos, siempre a la vista #}
+<ol class="steps">
+  <li class="{{ 'done' if analyzed or c.status in ('READY','COMPLETE','PARTIAL') }}">1 · Subir planta</li>
+  <li class="{{ 'done' if analyzed else 'now' }}">2 · Datos básicos</li>
+  <li class="{{ 'done' if c.status in ('READY','COMPLETE','PARTIAL') else ('now' if analyzed) }}">3 · Revisar lo detectado</li>
+  <li class="{{ 'done' if c.status in ('READY','COMPLETE','PARTIAL') }}">4 · Planta lista</li>
+  <li>5 · Tu programa</li>
+  <li>6 · Generar</li>
+</ol>
+
+{% if c.status == 'INPUT_NOT_READY' %}
+  <div class="panel-bad"><b>Esta planta no entra en esta versión.</b>
+    <p>Escalímetro V1 necesita una planta base limpia. La limpieza automática de planos
+       todavía no forma parte de esta versión.</p>
+    <p class="sub">Si te equivocaste al responder, cambiá la respuesta abajo y volvé a analizar.</p></div>
+{% endif %}
+
 <section class="two">
+  {# ------------------------------------------------------------------------------ la planta #}
   <div>
-    <h2>1 · La planta</h2>
+    <h2>1 · Tu planta</h2>
     <div class="planbox">
       <img id="plan" src="{{ url_for('preview', case_id=c.case_id) }}" alt="planta subida">
+      {% if analyzed and fp_ok %}
+        <img class="ovl-img" id="ovl" src="{{ url_for('detected_svg', case_id=c.case_id) }}" alt="">
+      {% endif %}
       <div id="pins"></div>
     </div>
-    <p class="sub">{{ c.original_filename }} · <a href="{{ url_for('original', case_id=c.case_id) }}" target="_blank">ver original</a>{% if preview_w %} · {{ preview_w }}×{{ preview_h }} px{% endif %}</p>
-    {% if has_shell %}
-      <h3>Shell leído</h3>
-      <img class="shell" src="{{ url_for('shell_svg', case_id=c.case_id) }}" alt="shell">
-      <p class="sub">Perímetro, núcleo, pilares y acceso tal como los consume el motor.</p>
+    <p class="sub">{{ c.original_filename }} ·
+      <a href="{{ url_for('original', case_id=c.case_id) }}" target="_blank">ver original</a>
+      {% if preview_w %} · {{ preview_w }}×{{ preview_h }} px{% endif %}</p>
+    {% if analyzed and fp_ok %}
+      <p class="sub"><label class="rad"><input type="checkbox" id="togg" checked>
+        Mostrar encima lo que detectó Escalímetro</label></p>
+      <p class="leyenda">
+        <span class="sw" style="background:#1d2430"></span>Perímetro
+        <span class="sw" style="background:#7a8598"></span>Núcleo
+        <span class="sw" style="background:#111"></span>Pilares
+        <span class="sw" style="background:#2f7ac4"></span>Fachada
+        <span class="sw" style="background:#b5452f"></span>Acceso
+      </p>
     {% endif %}
   </div>
 
   <div>
-    <h2>2 · Preparar el shell</h2>
-    {% if missing %}
-      <div class="panel-bad"><b>Falta para poder generar layouts:</b>
-        <ul>{% for m in missing %}<li>{{ m }}</li>{% endfor %}</ul></div>
+    {# ------------------------------------------------------------------- PASO 2 · datos básicos #}
+    <h2>2 · Datos básicos <span class="sub">— lo que sólo vos sabés</span></h2>
+    {% if errors and not errors.get('confirm') %}
+      <div class="panel-bad"><b>No se pudo analizar.</b> Revisá los campos marcados.</div>
     {% endif %}
-    {% if errors %}
-      <div class="panel-bad"><b>No se preparó el shell.</b> Revisá los campos marcados abajo.</div>
-    {% endif %}
-    <form method="post" action="{{ url_for('save_intake', case_id=c.case_id) }}" id="intake">
+    <form method="post" action="{{ url_for('analyze_plan', case_id=c.case_id) }}" id="datos">
       <label>Nombre de la unidad <span class="req">*</span>
         <input name="title" value="{{ v('title', c.title) }}" required></label>
       <label>Fuente <span class="opt">(opcional)</span>
-        <input name="source_name" value="{{ v('source_name', c.source_name or '') }}" placeholder="p. ej. GPS Property"></label>
-      <label>Superficie publicada m² <span class="opt">(opcional si definís la escala con dos puntos)</span>
-        <input name="published_area_m2" type="number" step="0.1" value="{{ v('published_area_m2', c.published_area_m2 or '') }}"></label>
+        <input name="source_name" value="{{ v('source_name', c.source_name or '') }}"
+               placeholder="p. ej. GPS Property"></label>
 
       <fieldset class="{{ 'bad-field' if errors.get('declared_clean') }}">
-        <legend>¿Esta planta está limpia / sin layout previo? <span class="req">*</span></legend>
-        <label class="rad"><input type="radio" name="declared_clean" value="yes" {% if it and it.declared_clean=='yes' %}checked{% endif %}> Sí</label>
-        <label class="rad"><input type="radio" name="declared_clean" value="no" {% if it and it.declared_clean=='no' %}checked{% endif %}> No</label>
+        <legend>Planta limpia <span class="req">*</span></legend>
+        <p>¿Esta planta está libre de mobiliario y layouts interiores que haya que eliminar?</p>
+        <label class="rad"><input type="radio" name="declared_clean" value="yes"
+          {% if (form and form.get('declared_clean')=='yes') or (not form and it and it.declared_clean=='yes') %}checked{% endif %}> Sí</label>
+        <label class="rad"><input type="radio" name="declared_clean" value="no"
+          {% if (form and form.get('declared_clean')=='no') or (not form and it and it.declared_clean=='no') %}checked{% endif %}> No</label>
         {{ err('declared_clean') }}
-        <p class="hint">V1 sólo acepta plantas libres. Si trae mobiliario o un layout previo, el input queda fuera de contrato: no se limpia automáticamente.</p>
       </fieldset>
 
       <fieldset class="{{ 'bad-field' if errors.get('scale') }}">
         <legend>Escala <span class="req">*</span></legend>
-        <p class="hint">Marcá dos puntos sobre el plano y escribí la distancia real entre ellos.</p>
-        <button type="button" class="pick" data-mode="scale1">1er punto</button>
-        <button type="button" class="pick" data-mode="scale2">2º punto</button>
-        <label>Distancia real (m) <input name="scale_m" type="number" step="0.01" placeholder="p. ej. 12.5"></label>
-        <input type="hidden" name="scale_x1" id="scale_x1"><input type="hidden" name="scale_y1" id="scale_y1">
-        <input type="hidden" name="scale_x2" id="scale_x2"><input type="hidden" name="scale_y2" id="scale_y2">
-        {% if existing_scale %}<p class="sub">Escala ya leída del artefacto:
-          <b>{{ '%.3f'|format(existing_scale.px_per_m) }} px/m</b>
-          {% if existing_scale.method %}({{ existing_scale.method }}{% if existing_scale.confidence %}, confianza {{ existing_scale.confidence }}{% endif %}){% endif %}.
-          Marcá dos puntos sólo si querés reemplazarla.</p>{% endif %}
-        <p class="sub" id="scaleout">{% if it and it.scale_px_per_m %}Actual: {{ '%.3f'|format(it.scale_px_per_m) }} px/m ({{ it.scale_note }}){% else %}Sin escala confirmada.{% endif %}</p>
+        <p>Marcá dos puntos sobre el plano y escribí cuánto mide esa distancia en la realidad.</p>
+        <button type="button" class="pick" data-mode="scale1">Punto A</button>
+        <button type="button" class="pick" data-mode="scale2">Punto B</button>
+        <label>Distancia real entre A y B, en metros
+          <input name="scale_m" type="number" step="0.01" value="{{ v('scale_m', saved.metres) }}" placeholder="5.40"></label>
+        <input type="hidden" name="scale_x1" id="scale_x1" value="{{ v('scale_x1', saved.scale[0][0] if saved.scale else '') }}">
+        <input type="hidden" name="scale_y1" id="scale_y1" value="{{ v('scale_y1', saved.scale[0][1] if saved.scale else '') }}">
+        <input type="hidden" name="scale_x2" id="scale_x2" value="{{ v('scale_x2', saved.scale[1][0] if saved.scale else '') }}">
+        <input type="hidden" name="scale_y2" id="scale_y2" value="{{ v('scale_y2', saved.scale[1][1] if saved.scale else '') }}">
+        {% if it and it.scale_method == 'two_points' %}
+          <p class="ok sub">Escala tomada de tu medición ({{ it.scale_note }}).</p>
+        {% endif %}
+        <details><summary>No puedo medir: tengo la superficie publicada</summary>
+          <label>Superficie publicada, en m²
+            <input name="published_area_m2" type="number" step="0.1"
+                   value="{{ v('published_area_m2', c.published_area_m2 or '') }}"></label>
+          <p class="hint">Es una estimación, no una medición: después vas a tener que confirmarla.</p>
+        </details>
         {{ err('scale') }}
       </fieldset>
 
       <fieldset class="{{ 'bad-field' if errors.get('entrance') }}">
-        <legend>Puntos sobre el plano</legend>
-        <button type="button" class="pick" data-mode="seed">Marcar un punto DENTRO de la unidad <span class="opt">(opcional)</span></button>
-        <button type="button" class="pick" data-mode="entrance">Marcar el ACCESO principal <span class="req">*</span></button>
+        <legend>Acceso <span class="req">*</span></legend>
+        <p>Marca por dónde se ingresa a la oficina.</p>
+        <button type="button" class="pick" data-mode="entrance">Marcar el acceso</button>
+        <input type="hidden" name="entrance_x" id="entrance_x" value="{{ v('entrance_x', saved.entrance[0] if saved.entrance else '') }}">
+        <input type="hidden" name="entrance_y" id="entrance_y" value="{{ v('entrance_y', saved.entrance[1] if saved.entrance else '') }}">
+        {% if saved.entrance %}<p class="ok sub">Acceso marcado.</p>{% endif %}
         {{ err('entrance') }}
-        <input type="hidden" name="seed_x" id="seed_x"><input type="hidden" name="seed_y" id="seed_y">
-        <input type="hidden" name="entrance_x" id="entrance_x"><input type="hidden" name="entrance_y" id="entrance_y">
+        <hr class="fine">
+        <button type="button" class="pick" data-mode="seed">Punto dentro de la oficina
+          <span class="opt">(opcional)</span></button>
+        <input type="hidden" name="seed_x" id="seed_x" value="{{ v('seed_x', saved.seed[0] if saved.seed else '') }}">
+        <input type="hidden" name="seed_y" id="seed_y" value="{{ v('seed_y', saved.seed[1] if saved.seed else '') }}">
+        <p class="hint">Sirve cuando la lámina tiene varias oficinas y hay que saber cuál es la tuya.</p>
       </fieldset>
 
-      <fieldset class="{{ 'bad-field' if errors.get('confirm') }}">
-        <legend>Elementos fijos — confirmar lo que el motor leyó <span class="req">*</span></legend>
-        {% for k, lbl in required_confirms.items() %}
-        <label class="rad"><input type="checkbox" name="confirm" value="{{ k }}"
-          {% if form and k in form.getlist('confirm') %}checked{% elif not form and k in confirmed %}checked{% endif %}> {{ lbl }} <span class="req">*</span></label>
-        {% endfor %}
-        {{ err('confirm') }}
-        <p class="hint">El motor no acepta un shell con elementos sin confirmar: <code>shell_adapter</code>
-          rechaza cualquier planta cuyo <code>ready_for_layout</code> sea falso.</p>
-      </fieldset>
-      <button type="submit">Preparar shell</button>
+      <button type="submit" id="btn-analizar">{{ 'Volver a analizar la planta' if analyzed else 'Analizar planta' }}</button>
+      <p class="hint" id="falta-analizar"></p>
     </form>
 
-    <h2>3 · Programa del cliente</h2>
+    {# -------------------------------------------------------------- PASO 3 · revisar lo detectado #}
+    {% if analyzed and fp_ok %}
+      <h2>3 · Esto detectó Escalímetro</h2>
+      <p class="sub">Mirá el dibujo sobre tu planta y decinos si está bien. Nada viene marcado.</p>
+      {{ err('confirm') }}
+      <form method="post" action="{{ url_for('confirm_detected', case_id=c.case_id) }}">
+        <table class="detect"><tbody>
+        {% for d in detected %}
+          <tr>
+            <td><span class="sw" style="background:{{ d.color }}"></span><b>{{ d.label }}</b>
+              <span class="sub">{{ d.detail if d.found else 'no se detectó' }}</span></td>
+            <td class="ans">
+              {% if d.found %}
+                <label class="rad"><input type="radio" name="ans_{{ d.key }}" value="ok"
+                  {% if answers.get(d.key)=='ok' %}checked{% endif %}> Correcto</label>
+                <label class="rad"><input type="radio" name="ans_{{ d.key }}" value="fix"
+                  {% if answers.get(d.key)=='fix' %}checked{% endif %}> Necesita corrección</label>
+              {% else %}<span class="sub">—</span>{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        {% if scale_info and scale_info.needs_confirm %}
+          <tr><td><b>Escala</b> <span class="sub">{{ scale_info.text }}</span></td>
+            <td class="ans">
+              <label class="rad"><input type="radio" name="ans_scale_assumption" value="ok"
+                {% if answers.get('scale_assumption')=='ok' %}checked{% endif %}> Correcto</label>
+              <label class="rad"><input type="radio" name="ans_scale_assumption" value="fix"
+                {% if answers.get('scale_assumption')=='fix' %}checked{% endif %}> Necesita corrección</label>
+            </td></tr>
+        {% elif scale_info and scale_info.confirmed %}
+          <tr><td><b>Escala</b> <span class="sub">{{ scale_info.text }}</span></td>
+            <td class="ans"><span class="ok">Confirmada</span></td></tr>
+        {% endif %}
+        </tbody></table>
+        <button type="submit">Guardar revisión</button>
+      </form>
+      {% if missing %}
+        <div class="panel-bad"><b>Falta antes de poder generar layouts:</b>
+          <ul>{% for m in missing %}<li>{{ m }}</li>{% endfor %}</ul></div>
+      {% endif %}
+    {% endif %}
+
+    {% if c.status in ('READY','COMPLETE','PARTIAL') %}
+      <h2>4 · Planta lista ✓</h2>
+      <p class="ok">La planta quedó confirmada y se pueden generar alternativas.</p>
+    {% endif %}
+
+    {# ------------------------------------------------------------------------ PASO 5 · programa #}
+    <h2>5 · Tu programa</h2>
     {% if brief_errors.get('generate') %}
       <div class="panel-bad"><b>No se puede generar todavía.</b> {{ brief_errors['generate'] }}</div>
     {% endif %}
@@ -94,7 +173,7 @@
                class="{{ 'bad-input' if brief_errors.get('brief_name') }}" required></label>
       {% if brief_errors.get('brief_name') %}<p class="err">{{ brief_errors['brief_name'] }}</p>{% endif %}
       <div class="row">
-        <label class="{{ 'bad-label' if brief_errors.get('headcount') }}">Personas (headcount) <span class="req">*</span>
+        <label class="{{ 'bad-label' if brief_errors.get('headcount') }}">Personas <span class="req">*</span>
           <input name="headcount" type="number" min="1" value="{{ v('headcount', 48) }}"
                  class="{{ 'bad-input' if brief_errors.get('headcount') }}" required></label>
         <label class="{{ 'bad-label' if brief_errors.get('workstations') }}">Puestos open <span class="req">*</span>
@@ -110,20 +189,21 @@
                        value="{{ v('room_' ~ mod, defaults.get(mod, 0)) }}"></td></tr>
       {% endfor %}
       </tbody></table>
-      <p class="hint">Vos decís QUÉ necesitás. Cómo se organiza en la planta lo decide el motor.</p>
+      <p class="hint">Vos decís QUÉ necesitás. Cómo se organiza en la planta lo decide Escalímetro.</p>
+      <h2>6 · Generar</h2>
       {% if blockers %}
-        <button type="submit" name="generate" value="1" disabled>Guardar y generar 3 alternativas</button>
+        <button type="submit" name="generate" value="1" disabled>Generar 3 alternativas</button>
         <p class="err">{{ blockers|join(' ') }}</p>
         <button type="submit" class="sec">Sólo guardar el brief</button>
       {% else %}
-        <button type="submit" name="generate" value="1">Guardar y generar 3 alternativas</button>
+        <button type="submit" name="generate" value="1">Generar 3 alternativas</button>
         <button type="submit" class="sec">Sólo guardar el brief</button>
       {% endif %}
     </form>
   </div>
 </section>
 
-<h2>4 · Historial</h2>
+<h2>Historial</h2>
 <div class="two">
   <div><h3>Briefs</h3>
     {% if not briefs %}<p class="sub">Ninguno todavía.</p>{% endif %}
@@ -131,8 +211,7 @@
       <li><b>{{ b.name }}</b> — {{ b.workstations }} puestos · {{ b.headcount }} personas
         <form method="post" action="{{ url_for('generate', case_id=c.case_id) }}" class="inline">
           <input type="hidden" name="brief_id" value="{{ b.brief_id }}">
-          <button class="sec" {% if blockers %}disabled title="{{ blockers|join(' ') }}"{% endif %}>Generar</button></form>
-        <span class="mono">{{ b.brief_sha256[:12] }}</span></li>
+          <button class="sec" {% if blockers %}disabled title="{{ blockers|join(' ') }}"{% endif %}>Generar</button></form></li>
     {% endfor %}</ul></div>
   <div><h3>Corridas</h3>
     {% if not runs %}<p class="sub">Ninguna todavía.</p>{% endif %}
@@ -154,7 +233,6 @@ document.querySelectorAll('.pick').forEach(b => b.onclick = () => {
 img.addEventListener('click', e => {
   if (!mode) { alert('Elegí antes qué querés marcar.'); return; }
   const r = img.getBoundingClientRect();
-  // coordenadas en px de la imagen ORIGINAL, que es el sistema que usa overrides.json
   const x = Math.round((e.clientX - r.left) * img.naturalWidth / r.width);
   const y = Math.round((e.clientY - r.top) * img.naturalHeight / r.height);
   const set = (a, b) => { document.getElementById(a).value = x; document.getElementById(b).value = y; };
@@ -166,10 +244,28 @@ img.addEventListener('click', e => {
   d.className = 'pin ' + mode;
   d.style.left = (100 * (e.clientX - r.left) / r.width) + '%';
   d.style.top = (100 * (e.clientY - r.top) / r.height) + '%';
-  d.title = mode + ' ' + x + ',' + y;
   pins.appendChild(d);
   document.querySelectorAll('.pick').forEach(x => x.classList.remove('on'));
-  mode = null;
+  mode = null; revisar();
 });
+const togg = document.getElementById('togg'), ovl = document.getElementById('ovl');
+if (togg && ovl) togg.onchange = () => { ovl.style.display = togg.checked ? 'block' : 'none'; };
+
+// El botón sólo se habilita con los tres datos puestos, y dice qué falta. El servidor vuelve a
+// comprobarlo igual: esto es comodidad, no la barrera.
+const btn = document.getElementById('btn-analizar'), aviso = document.getElementById('falta-analizar');
+function revisar() {
+  const falta = [];
+  if (!document.querySelector('input[name=declared_clean]:checked')) falta.push('responder si la planta está limpia');
+  const dosPuntos = scale_x1.value && scale_x2.value && document.querySelector('[name=scale_m]').value;
+  const area = document.querySelector('[name=published_area_m2]');
+  if (!dosPuntos && !(area && area.value)) falta.push('la escala');
+  if (!entrance_x.value) falta.push('el acceso');
+  btn.disabled = falta.length > 0;
+  aviso.textContent = falta.length ? 'Completá ' + falta.join(' y ') + ' para analizar la planta.' : '';
+}
+document.getElementById('datos').addEventListener('input', revisar);
+document.getElementById('datos').addEventListener('change', revisar);
+revisar();
 </script>
 {% endblock %}

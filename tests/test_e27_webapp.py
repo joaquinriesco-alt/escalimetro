@@ -455,7 +455,6 @@ INTAKE_COMPLETO = {
     "title": "Unidad X", "declared_clean": "yes",
     "scale_x1": "100", "scale_y1": "100", "scale_x2": "200", "scale_y2": "100", "scale_m": "12",
     "entrance_x": "150", "entrance_y": "300",
-    "confirm": ["perimeter", "core", "columns", "daylight", "scale_assumption"],
 }
 
 
@@ -465,8 +464,8 @@ def test_los_obligatorios_estan_marcados_con_asterisco(client):
     _upload(client, "planta.png", PNG_1PX)
     cid = store.q1("SELECT case_id FROM cases")["case_id"]
     html = client.get(f"/case/{cid}").get_data(as_text=True)
-    for obligatorio in ("¿Esta planta está limpia", "Escala", "Nombre del brief",
-                        "Personas (headcount)", "Puestos open"):
+    for obligatorio in ("Planta limpia", "Escala", "Acceso", "Nombre del brief",
+                        "Personas", "Puestos open"):
         i = html.find(obligatorio)
         assert i > 0, obligatorio
         assert '<span class="req">*</span>' in html[i:i + 400], f"falta el * en: {obligatorio}"
@@ -480,16 +479,15 @@ def test_el_backend_rechaza_un_intake_incompleto_con_mensajes_por_campo(client):
     from webapp import store
     _upload(client, "planta.png", PNG_1PX)
     cid = store.q1("SELECT case_id FROM cases")["case_id"]
-    r = client.post(f"/case/{cid}/intake", data={"title": "X"})
+    r = client.post(f"/case/{cid}/analyze", data={"title": "X"})
     assert r.status_code == 400
     html = r.get_data(as_text=True)
-    for msg in ("Debes confirmar si la planta está limpia.",
-                "Falta definir la escala",
-                "Marca el acceso principal",
-                "Falta confirmar:"):
+    for msg in ("Indica si la planta está libre de mobiliario",
+                "Falta la escala",
+                "Marca por dónde se ingresa"):
         assert msg in html, msg
     # el color no es la única señal: hay texto para cada uno
-    assert html.count('class="err"') >= 4
+    assert html.count('class="err"') >= 3
 
 
 def test_un_intake_incompleto_no_deja_el_caso_en_failed(client):
@@ -497,7 +495,7 @@ def test_un_intake_incompleto_no_deja_el_caso_en_failed(client):
     from webapp import store
     _upload(client, "planta.png", PNG_1PX)
     cid = store.q1("SELECT case_id FROM cases")["case_id"]
-    client.post(f"/case/{cid}/intake", data={"title": "X"})
+    client.post(f"/case/{cid}/analyze", data={"title": "X"})
     assert store.q1("SELECT status FROM cases WHERE case_id=?", (cid,))["status"] != "FAILED"
 
 
@@ -509,7 +507,7 @@ def test_un_shell_sin_preparar_bloquea_la_generacion(client):
     r = client.post(f"/case/{cid}/brief", data={"brief_name": "B", "headcount": "48",
                                                 "workstations": "40", "generate": "1"})
     assert r.status_code == 400
-    assert "Todavía no preparaste el shell" in r.get_data(as_text=True)
+    assert "Todavía no analizaste la planta" in r.get_data(as_text=True)
     assert store.q("SELECT * FROM runs") == []        # no se creó una corrida condenada
     assert store.q1("SELECT status FROM cases WHERE case_id=?", (cid,))["status"] != "FAILED"
 
@@ -606,23 +604,26 @@ def test_la_escala_acepta_superficie_publicada_como_alternativa():
     from werkzeug.datastructures import MultiDict
 
     from webapp import intake
-    datos = {k: v for k, v in INTAKE_COMPLETO.items()
-             if not k.startswith("scale_") or k == "scale_assumption"}
+    datos = {k: v for k, v in INTAKE_COMPLETO.items() if not k.startswith("scale_")}
     datos["published_area_m2"] = "543"
     errs = intake.validate_intake_form(MultiDict(
         [(k, x) for k, v in datos.items() for x in (v if isinstance(v, list) else [v])]))
     assert "scale" not in errs, errs
 
 
-def test_una_planta_no_limpia_se_rechaza_con_su_razon():
-    """§2 de E27: V1 es shell-only y lo dice, en vez de fallar más adelante sin explicación."""
-    from werkzeug.datastructures import MultiDict
-
-    from webapp import intake
+def test_una_planta_no_limpia_no_se_analiza_y_no_es_un_fallo(client):
+    """§2 — responder «No» es una respuesta válida, no un error de formulario: la planta queda
+    fuera del contrato de V1 y se dice, sin intentar analizarla y sin marcarla FAILED."""
+    from webapp import store
+    _upload(client, "planta.png", PNG_1PX)
+    cid = store.q1("SELECT case_id FROM cases")["case_id"]
     datos = dict(INTAKE_COMPLETO, declared_clean="no")
-    errs = intake.validate_intake_form(MultiDict(
-        [(k, x) for k, v in datos.items() for x in (v if isinstance(v, list) else [v])]))
-    assert "V1 sólo acepta plantas libres" in errs["declared_clean"]
+    r = client.post(f"/case/{cid}/analyze", data=datos)
+    assert r.status_code == 200
+    html = r.get_data(as_text=True)
+    assert "necesita una planta base limpia" in html
+    assert store.q1("SELECT status FROM cases WHERE case_id=?", (cid,))["status"] == "INPUT_NOT_READY"
+    assert store.q1("SELECT analyzed_at FROM intake WHERE case_id=?", (cid,))["analyzed_at"] is None
 
 
 def test_un_caso_en_failed_sin_geometria_se_repara_a_needs_input(client):
@@ -650,3 +651,146 @@ def test_healthz_declara_la_version_sin_exigir_credenciales(client):
     d = client.get("/healthz").get_json()
     assert d["ok"] is True and d["version"]
     assert "commit" not in d and "sha" not in d
+
+
+# ===================================================================================================
+# 11 — E27.3: el input humano previo y la detección del motor son dos etapas distintas
+# ===================================================================================================
+def _sube(client, store, nombre="lamina.png"):
+    with open(os.path.join(ROOT, "cases", "001_gps_403", "original.png"), "rb") as fh:
+        _upload(client, nombre, fh.read())
+    return store.q1("SELECT case_id FROM cases ORDER BY uploaded_at DESC")["case_id"]
+
+
+DATOS_BASICOS = {"title": "Unidad", "declared_clean": "yes",
+                 "scale_x1": "321", "scale_y1": "238", "scale_x2": "321", "scale_y2": "378",
+                 "scale_m": "16.7", "entrance_x": "570", "entrance_y": "300",
+                 "seed_x": "400", "seed_y": "340"}
+
+
+@pytest.mark.parametrize("quitar,esperado", [
+    ("declared_clean", "Indica si la planta está libre de mobiliario"),
+    ("scale_m", "escala"),
+    ("entrance_x", "Marca por dónde se ingresa"),
+])
+def test_no_se_puede_analizar_sin_los_datos_humanos_previos(client, quitar, esperado):
+    """§3 — los tres obligatorios de la etapa 1, uno por uno."""
+    from webapp import store
+    cid = _sube(client, store)
+    datos = {k: v for k, v in DATOS_BASICOS.items() if k != quitar}
+    r = client.post(f"/case/{cid}/analyze", data=datos)
+    assert r.status_code == 400
+    assert esperado in r.get_data(as_text=True)
+    assert store.q1("SELECT analyzed_at FROM intake WHERE case_id=?", (cid,))["analyzed_at"] is None
+
+
+def test_antes_del_analisis_no_se_pide_confirmar_geometria(client):
+    """§1 — EL defecto que E27.3 corrige: no se puede confirmar lo que todavía no se detectó."""
+    from webapp import store
+    cid = _sube(client, store)
+    html = client.get(f"/case/{cid}").get_data(as_text=True)
+    for campo in ("ans_perimeter", "ans_core", "ans_columns", "ans_daylight"):
+        assert campo not in html, f"se pide confirmar {campo} antes de analizar"
+    assert "Supuesto de escala" not in html
+    assert "Analizar planta" in html
+
+
+def test_dos_puntos_y_distancia_real_dejan_la_escala_confirmada(client):
+    """§10 — medir es confirmar. No se vuelve a preguntar por un 'supuesto de escala'."""
+    from webapp import intake, store
+    cid = _sube(client, store)
+    client.post(f"/case/{cid}/analyze", data=DATOS_BASICOS)
+    fp = intake.load_floorplate(cid)
+    assert fp["scale"]["method"] == "manual"
+    assert fp["scale"]["meta"]["status"] == "confirmed"
+    assert "scale_assumption" not in (fp["shell_readiness"]["requires_confirmation"] or [])
+    from webapp import detected as det
+    assert det.scale_row(fp)["needs_confirm"] is False
+    assert "ans_scale_assumption" not in client.get(f"/case/{cid}").get_data(as_text=True)
+
+
+def test_despues_del_analisis_se_muestra_lo_que_realmente_detecto(client):
+    """§5/§6 — la confirmación va atada a un dibujo: hay overlay y hay filas por elemento."""
+    from webapp import store
+    cid = _sube(client, store)
+    client.post(f"/case/{cid}/analyze", data=DATOS_BASICOS)
+    assert store.q1("SELECT status FROM cases WHERE case_id=?", (cid,))["status"] == "NEEDS_CONFIRMATION"
+    r = client.get(f"/case/{cid}/detected.svg")
+    assert r.status_code == 200 and r.headers["Content-Type"].startswith("image/svg+xml")
+    html = client.get(f"/case/{cid}").get_data(as_text=True)
+    assert "Esto detectó Escalímetro" in html
+    for campo in ("ans_perimeter", "ans_core", "ans_columns", "ans_daylight"):
+        assert campo in html
+    # nada viene preseleccionado
+    assert 'value="ok" checked' not in html and 'value="fix" checked' not in html
+
+
+def test_sin_analizar_no_hay_dibujo_que_confirmar(client):
+    """No se puede abrir la etapa 2 por la puerta de atrás."""
+    from webapp import store
+    cid = _sube(client, store)
+    assert client.get(f"/case/{cid}/detected.svg").status_code == 404
+    r = client.post(f"/case/{cid}/confirm", data={"ans_perimeter": "ok"})
+    assert r.status_code == 400
+    assert "analizar la planta" in r.get_data(as_text=True)
+
+
+def test_un_elemento_a_corregir_impide_llegar_a_ready(client):
+    """§7/§8 — no se avanza fingiendo que algo está confirmado."""
+    from webapp import intake, store
+    cid = _sube(client, store)
+    client.post(f"/case/{cid}/analyze", data=DATOS_BASICOS)
+    client.post(f"/case/{cid}/confirm", data={"ans_perimeter": "ok", "ans_core": "ok",
+                                              "ans_columns": "fix", "ans_daylight": "ok"})
+    assert store.q1("SELECT status FROM cases WHERE case_id=?", (cid,))["status"] == "NEEDS_CONFIRMATION"
+    assert intake.blockers_for_generate(cid) == ["Confirmá los pilares."]
+    assert "disabled>Generar 3 alternativas" in client.get(f"/case/{cid}").get_data(as_text=True)
+
+
+def test_el_flujo_completo_llega_a_ready_y_habilita_generar(client):
+    """§8 — y con todo revisado, READY sale del artefacto, no de una segunda definición nuestra."""
+    from webapp import intake, store
+    cid = _sube(client, store)
+    client.post(f"/case/{cid}/analyze", data=DATOS_BASICOS)
+    client.post(f"/case/{cid}/confirm", data={"ans_perimeter": "ok", "ans_core": "ok",
+                                              "ans_columns": "ok", "ans_daylight": "ok"})
+    assert store.q1("SELECT status FROM cases WHERE case_id=?", (cid,))["status"] == "READY"
+    assert intake.load_floorplate(cid)["shell_readiness"]["ready_for_layout"] is True
+    assert intake.blockers_for_generate(cid) == []
+
+
+def test_una_planta_sucia_no_se_analiza_y_no_es_un_fallo_tecnico(client):
+    """§2 — «No» es una respuesta válida, no un error: queda fuera del contrato de V1."""
+    from webapp import store
+    cid = _sube(client, store)
+    r = client.post(f"/case/{cid}/analyze", data=dict(DATOS_BASICOS, declared_clean="no"))
+    assert r.status_code == 200
+    assert "necesita una planta base limpia" in r.get_data(as_text=True)
+    assert store.q1("SELECT status FROM cases WHERE case_id=?", (cid,))["status"] == "INPUT_NOT_READY"
+    assert store.q1("SELECT analyzed_at FROM intake WHERE case_id=?", (cid,))["analyzed_at"] is None
+
+
+def test_la_interfaz_no_habla_como_un_desarrollador(client):
+    """§9 — el vocabulario interno vive en artefactos y logs, no en la pantalla."""
+    from webapp import store
+    cid = _sube(client, store)
+    paginas = [client.get(f"/case/{cid}").get_data(as_text=True)]
+    client.post(f"/case/{cid}/analyze", data=DATOS_BASICOS)
+    paginas.append(client.get(f"/case/{cid}").get_data(as_text=True))
+    paginas.append(client.get("/").get_data(as_text=True))
+    prohibido = ("shell_adapter", "ready_for_layout", "requires_confirmation", "primary_entrance",
+                 "USER_CONFIRMED_DISTANCE", "px/m", "floorplate", "overrides.json",
+                 "scale_assumption", "shell_readiness")
+    for html in paginas:
+        for palabra in prohibido:
+            assert palabra not in html, f"la UI muestra vocabulario interno: {palabra}"
+
+
+def test_el_estado_distingue_antes_y_despues_del_analisis(client):
+    """§13 — la diferencia que la UX necesitaba: falta un dato mío vs falta que yo revise."""
+    from webapp import store
+    cid = _sube(client, store)
+    assert store.q1("SELECT status FROM cases WHERE case_id=?", (cid,))["status"] == "UPLOADED"
+    client.post(f"/case/{cid}/analyze", data=DATOS_BASICOS)
+    assert store.q1("SELECT status FROM cases WHERE case_id=?", (cid,))["status"] == "NEEDS_CONFIRMATION"
+    assert "NEEDS_CONFIRMATION" in store.CASE_STATES and "INPUT_NOT_READY" in store.CASE_STATES
