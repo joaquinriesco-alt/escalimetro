@@ -350,7 +350,9 @@ def test_el_reinicio_marca_los_intentos_colgados_como_fallidos(client, dom, fake
     pid, foto = _prop_con_foto(dom)
     aid = dom["staging"].create_attempt(pid, foto, "CONTEMPORARY", provider_name="fake")
     store.ex("UPDATE staging_attempts SET status='RUNNING' WHERE attempt_id=?", (aid,))
-    store.init()
+    # E33 movió esto de `init()` a `reset_orphans()`: sólo el arranque del SERVIDOR resetea lo que
+    # quedó a medias. Cualquier otro proceso que abra la base ya no mata el trabajo en vuelo.
+    store.reset_orphans()
     assert dom["staging"].get(aid)["status"] == "FAILED"
 
 

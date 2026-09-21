@@ -127,7 +127,9 @@ def test_una_corrida_interrumpida_no_queda_diciendo_que_genera(client):
     store.ex("INSERT INTO runs(run_id,case_id,brief_id,status,created_at) "
              "VALUES ('r1','x','b','RUNNING','t')")
     store.ex("INSERT INTO alternatives(run_id,alt,status) VALUES ('r1','A','GENERATING')")
-    store.init()
+    # E33 movió el reseteo de `init()` a `reset_orphans()`, que sólo llama el arranque del servidor:
+    # abrir la base desde una CLI ya no mata las corridas en vuelo.
+    store.reset_orphans()
     assert store.q1("SELECT status FROM runs WHERE run_id='r1'")["status"] == "FAILED"
     assert store.q1("SELECT status FROM alternatives WHERE run_id='r1'")["status"] == "FAILED"
 
