@@ -166,3 +166,27 @@ details>summary{cursor:pointer;margin:22px 0 8px;font-weight:600}
 label.op.hero{display:block}
 .staged-pair figure{margin:0}
 .staged-pair img{width:100%;display:block;border:1px solid #e5e7eb;border-radius:5px}
+
+/* ---------------------------------------------------------------- E32 · Escalímetro LAB */
+body.lab .brand span{color:var(--acc)}
+.top nav a.sub{opacity:.6;font-size:13px}
+.prop-head{display:flex;gap:24px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.prop-head h1{margin-bottom:4px}
+.avance{min-width:260px}
+.barra{height:7px;background:#eceef1;border-radius:4px;overflow:hidden}
+.barra span{display:block;height:100%;background:var(--ok);transition:width .3s}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;margin:18px 0 22px;border-bottom:1px solid var(--line)}
+.tabs a{padding:8px 14px;font-size:14px;color:var(--mut);text-decoration:none;border-bottom:2px solid transparent}
+.tabs a.on{color:var(--ink);font-weight:600;border-bottom-color:var(--acc)}
+.tabs a:hover{color:var(--ink)}
+.kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));margin:18px 0}
+.kpis>div{border:1px solid var(--line);border-radius:6px;padding:12px 14px;background:#fff}
+.kpis b{display:block;font-size:24px;line-height:1.1}
+.kpis span{font-size:12px;color:var(--mut)}
+.cols{display:grid;gap:32px;grid-template-columns:1fr 1fr}
+@media (max-width:900px){.cols{grid-template-columns:1fr}}
+figure.sel{outline:2px solid var(--ok);outline-offset:2px}
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}
+label.tag{font-size:11px;color:var(--mut);border:1px solid var(--line);border-radius:3px;padding:1px 5px;cursor:pointer}
+.sin-layout{display:flex;align-items:center;justify-content:center;height:160px;background:#f4f4f6;
+            border:1px dashed var(--line);border-radius:5px;color:var(--mut);font-size:13px}

@@ -1,0 +1,85 @@
+{% extends "lab/base.html" %}{% block title %}{{ p.title }} · Material base{% endblock %}
+{% block body %}{% include "lab/_head.html" %}
+
+<h2>Programa base</h2>
+<form method="post" action="{{ url_for('lab.programa', property_id=p.property_id) }}" class="upload">
+  <div class="row">
+    <label>Personas *<input name="headcount" type="number" min="1" required
+      value="{{ base.fit.headcount if base else '' }}"></label>
+    <label>Puestos fijos <span class="opt">(opcional)</span><input name="target_seats" type="number" min="1" placeholder="lo calculamos"></label>
+    <label>Forma de trabajo<select name="workplace_preset">
+      {% for k, wp in presets_wp.items() %}<option value="{{ k }}" {{ 'selected' if (base and base.fit.workplace_preset == k) or (not base and k == preset_default) }}>{{ wp.label }}</option>{% endfor %}
+    </select></label>
+    <label>Estilo visual<select name="visual_style">
+      {% for k, e in estilos.items() %}<option value="{{ k }}" {{ 'selected' if (base and base.fit.visual_style == k) or (not base and k == estilo_default) }}>{{ e.label }}</option>{% endfor %}
+    </select></label>
+  </div>
+  <button type="submit" class="sec">Guardar</button>
+  <button type="submit" name="generate" value="1">Guardar y generar layout</button>
+</form>
+{% if base and base.brief_summary %}<p class="sub">Programa: <b>{{ base.brief_summary }}</b>
+  {% if base.run %}· última corrida <span class="mono">{{ base.run.run_id }}</span> · {{ base.run.status }}{% endif %}</p>{% endif %}
+
+<h2>Plano comercial</h2>
+{% if plano_com %}
+  <img class="big" src="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=plano_com.asset_id) }}" alt="plano comercial">
+{% else %}<p class="sub">Todavía no publicado. Se genera cuando la planta está confirmada.</p>{% endif %}
+
+<h2>{{ 'Alternativa representativa' if layouts|length == 1 else 'Alternativas' }}</h2>
+{% if layouts %}
+<div class="grid3">
+{% for l in layouts %}{% set m = l.metadata|from_json %}
+  <figure><a target="_blank" href="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=l.asset_id) }}">
+    <img src="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=l.asset_id) }}" alt="alternativa"></a>
+    <figcaption>Alternativa {{ m.alt }}{% if m.name %} — {{ m.name|lower|capitalize }}{% endif %}
+      {% if m.representative %}<br><span class="sub">representativa</span>{% endif %}</figcaption></figure>
+{% endfor %}
+</div>
+{% else %}<p class="sub">Todavía no hay alternativas publicadas.</p>{% endif %}
+<form method="post" action="{{ url_for('lab.publicar', property_id=p.property_id) }}" class="inline">
+  <button class="sec">Publicar material comercial</button></form>
+
+<h2>Ambientación</h2>
+<p class="sub">Estado: <b>{{ staging_st.state }}</b> — {{ staging_st.reason }}.
+  {% if staging_st.retries_left is not none %}{{ staging_st.retries_left }} intento(s) interno(s) restante(s).{% endif %}</p>
+
+{% if staged and hero %}
+  <div class="staged-pair">
+    <figure><img src="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=hero.asset_id) }}" alt="foto real"><figcaption>Foto real</figcaption></figure>
+    <figure><img src="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=staged.asset_id) }}" alt="ambientada"><figcaption><b>Ambientación referencial.</b></figcaption></figure>
+  </div>
+  <p class="disclosure">{{ disclosure }}</p>
+  {% if antes %}<p><a class="btn sec" target="_blank" href="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=antes.asset_id) }}">Ver antes / después</a></p>{% endif %}
+{% endif %}
+
+{% if not aprobado %}
+  <div class="panel-bad">
+    <b>STAGING PROVIDER NOT YET APPROVED.</b>
+    <p>Ningún proveedor de ambientación fue aprobado todavía, así que el producto no genera
+      imágenes. Se puede experimentar desde el <a href="{{ url_for('lab.benchmark') }}">benchmark</a>,
+      pero un candidato experimental no se convierte en entregable.</p>
+  </div>
+{% elif not hero %}
+  <p class="sub">Elegí primero la <a href="{{ url_for('lab.fotos', property_id=p.property_id) }}">foto principal</a>.</p>
+{% else %}
+  <form method="post" action="{{ url_for('lab.generar_staging', property_id=p.property_id) }}" class="inline">
+    <select name="visual_style">
+      {% for k, e in estilos.items() %}<option value="{{ k }}" {{ 'selected' if base and base.fit.visual_style == k }}>{{ e.label }}</option>{% endfor %}
+    </select>
+    <button>Generar ambientación</button>
+  </form>
+  <p class="hint">Usa el proveedor aprobado ({{ aprobado.provider }} · {{ aprobado.model }}).
+    El producto no pregunta cuál: es una decisión interna.</p>
+{% endif %}
+
+{% if intentos %}
+<h3>Intentos</h3>
+<table class="detect"><tbody>
+{% for a in intentos %}
+  <tr><td><a class="mono" href="{{ url_for('staging.review_page', attempt_id=a.attempt_id) }}">{{ a.attempt_id }}</a></td>
+      <td><span class="chip s-{{ a.status }}">{{ a.status }}</span> {{ a.review_status }} · fidelidad {{ a.fidelity_status }}{% if a.quality_score %} · {{ a.quality_score }}/5{% endif %}</td>
+      <td class="sub">{{ a.provider }}{% if a.experimental %} · <span class="chip">experimental</span>{% endif %} · {{ a.created_at[:16] }}</td></tr>
+{% endfor %}
+</tbody></table>
+{% endif %}
+{% endblock %}

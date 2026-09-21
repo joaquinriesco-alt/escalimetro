@@ -1,0 +1,178 @@
+{% extends "lab/base.html" %}{% block title %}Benchmark de ambientación{% endblock %}
+{% block body %}
+{% set tab_benchmark = true %}
+<h1>Benchmark de ambientación</h1>
+<p class="sub">Mismas fotos reales, misma petición canónica, dos proveedores. La métrica que decide
+  es la <b>tasa de imágenes aprobadas por un humano</b>, con la fidelidad como compuerta dura.</p>
+
+{% include "lab/_readiness.html" %}
+
+<h2>Dataset</h2>
+<p class="sub">Seleccionadas: <b>{{ dataset.photos|length }}</b> / mínimo {{ preparacion.photos.min_photos }} ·
+  espacios distintos: <b>{{ dataset.distinct_spaces }}</b> / mínimo {{ preparacion.photos.min_spaces }} ·
+  estado <b>{{ dataset.status }}</b></p>
+{% if errores_ds %}<div class="panel-bad"><ul>{% for e in errores_ds %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+{% if not fotos %}
+  <p class="empty">No hay fotos reales en el sistema. Subí fotos de oficinas vacías a una propiedad
+    desde <a href="{{ url_for('lab.home') }}">Propiedades</a>.</p>
+{% endif %}
+
+<div class="grid3">
+{% for f in fotos %}
+  <figure class="{{ 'sel' if f.selected }}">
+    <img src="{{ url_for('customer.serve_asset', property_id=f.property_id, asset_id=f.asset.asset_id) }}" alt="foto">
+    <figcaption>
+      <span class="sub">{{ f.title }} · {{ f.asset.width_px }}×{{ f.asset.height_px }}</span>
+      <form method="post" action="{{ url_for('lab.benchmark_foto') }}">
+        <input type="hidden" name="asset_id" value="{{ f.asset.asset_id }}">
+        <input type="hidden" name="property_id" value="{{ f.property_id }}">
+        {% if f.selected %}
+          <input type="hidden" name="action" value="remove">
+          <button class="sec">Quitar del benchmark</button>
+          {% if f.tags %}<span class="sub">{{ f.tags|join(', ') }}</span>{% endif %}
+        {% else %}
+          <div class="tags">
+          {% for t in rasgos %}<label class="tag"><input type="checkbox" name="tags" value="{{ t }}"> {{ t|lower }}</label>{% endfor %}
+          </div>
+          <button>Sumar al benchmark</button>
+        {% endif %}
+      </form>
+    </figcaption>
+  </figure>
+{% endfor %}
+</div>
+
+<h2>Smoke tests</h2>
+<p class="sub">UNA llamada real por proveedor: verifica endpoint, autenticación, formato, parseo,
+  costo y latencia. No aprueba a nadie y su salida no se publica.</p>
+{% for pr in preparacion.providers if pr.in_pilot %}
+  <form method="post" action="{{ url_for('lab.smoke', provider=pr.name) }}" class="inline">
+    <button class="sec" {{ 'disabled' if not pr.credential or not dataset.photos }}>Probar {{ pr.name }}</button>
+  </form>
+{% endfor %}
+{% if not dataset.photos %}<p class="hint">Sumá al menos una foto real al dataset para poder probar.</p>{% endif %}
+
+<h2>Bake-off</h2>
+{% set listos = preparacion.providers | selectattr('in_pilot') | selectattr('credential') | list %}
+<form method="post" action="{{ url_for('lab.benchmark_run') }}" class="upload">
+  <fieldset><legend>Proveedores</legend>
+    {% for pr in preparacion.providers if pr.in_pilot %}
+      <label class="op"><input type="checkbox" name="providers" value="{{ pr.name }}"
+        {{ 'checked' if pr.credential }} {{ 'disabled' if not pr.credential }}>
+        <b>{{ pr.name }}</b> <span class="sub">{{ pr.model }}{{ '' if pr.credential else ' — sin credencial' }}</span></label>
+    {% endfor %}
+    {% for pr in preparacion.providers if pr.excluded %}
+      <label class="op"><input type="checkbox" disabled> <b>{{ pr.name }}</b>
+        <span class="sub">{{ pr.excluded_reason }}</span></label>
+    {% endfor %}
+  </fieldset>
+  <div class="row">
+    <label>Corridas por foto<input name="runs" type="number" min="1" max="4" value="2"></label>
+    <label>Estilo (fijo)<input value="CONTEMPORARY" disabled><input type="hidden" name="style" value="CONTEMPORARY"></label>
+  </div>
+  <div class="nota">
+    <b>{{ dataset.photos|length }} fotos × 2 corridas × {{ listos|length }} proveedor(es)
+      = {{ estimacion.attempts }} intentos.</b>
+    Gasto estimado a precio de lista: <b>USD {{ estimacion.total_usd }}</b>{% if not estimacion.complete %} (incompleto: algún proveedor sin tarifa conocida){% endif %}.
+    El costo real se mide intento por intento.
+  </div>
+  <label class="op"><input type="checkbox" name="confirm" value="1" required>
+    Confirmo este gasto experimental</label>
+  <button type="submit" {{ 'disabled' if errores_ds or listos|length < 2 }}>Lanzar bake-off real</button>
+  {% if listos|length < 2 %}<p class="hint">Hacen falta dos proveedores con credencial: con uno no hay comparación posible.</p>{% endif %}
+</form>
+
+{% if progreso %}
+<h2>Corrida {{ run }}</h2>
+<div id="prog" data-url="{{ url_for('lab.benchmark_status', benchmark_id=run) }}">
+  <p class="sub"><b><span id="p-done">{{ progreso.done }}</span>/{{ progreso.total }}</b> completados ·
+    <span id="p-run">{{ progreso.running }}</span> corriendo ·
+    <span id="p-queue">{{ progreso.queued }}</span> en cola ·
+    <span id="p-fail">{{ progreso.failed }}</span> fallidos ·
+    gasto <b>USD <span id="p-spend">{{ progreso.spend_usd }}</span></b> ·
+    <span id="p-rev">{{ progreso.pending_review }}</span> por revisar</p>
+  <div class="barra"><span id="p-bar" style="width:{{ (100 * progreso.done / progreso.total)|round|int if progreso.total else 0 }}%"></span></div>
+</div>
+{% if progreso.pending_review %}
+  <p><a class="btn" href="{{ url_for('lab.next_unreviewed') }}">Revisar candidatos ({{ progreso.pending_review }})</a></p>
+  <p class="hint">La revisión es a ciegas: no verás qué proveedor produjo cada imagen hasta después
+    de guardar tu veredicto.</p>
+{% endif %}
+{% endif %}
+
+{% if resultados and resultados.metrics %}
+<h2>Resultados — PILOT OBSERVED RATE</h2>
+<p class="sub">Muestra {{ resultados.sample_size }} intento(s). Con muestras chicas esto es
+  evidencia de piloto, no una prueba estadística.</p>
+<table class="detect"><tbody>
+<tr><td></td>{% for prov, m in resultados.metrics.items() %}<td><b>{{ prov }}</b><br><span class="sub mono">{{ m.model|join(', ') }}</span></td>{% endfor %}</tr>
+<tr><td class="sub">Intentos</td>{% for prov, m in resultados.metrics.items() %}<td>{{ m.total_generations }}</td>{% endfor %}</tr>
+<tr><td class="sub">Éxito de API</td>{% for prov, m in resultados.metrics.items() %}<td>{{ '%.0f%%'|format(100*m.api_success_rate) if m.api_success_rate is not none else '—' }}</td>{% endfor %}</tr>
+<tr><td class="sub">Revisadas</td>{% for prov, m in resultados.metrics.items() %}<td>{{ m.reviewed }}{% if m.pending_review %} <span class="sub">(+{{ m.pending_review }} pendientes)</span>{% endif %}</td>{% endfor %}</tr>
+<tr><td class="sub"><b>Fidelidad PASS</b></td>{% for prov, m in resultados.metrics.items() %}<td><b>{{ '%.0f%%'|format(100*m.fidelity_pass_rate) if m.fidelity_pass_rate is not none else '—' }}</b></td>{% endfor %}</tr>
+<tr><td class="sub"><b>Aprobadas</b></td>{% for prov, m in resultados.metrics.items() %}<td><b>{{ '%.0f%%'|format(100*m.approval_rate) if m.approval_rate is not none else '—' }}</b></td>{% endfor %}</tr>
+<tr><td class="sub">Calidad media (PASS)</td>{% for prov, m in resultados.metrics.items() %}<td>{{ m.avg_quality_among_fidelity_pass or '—' }}</td>{% endfor %}</tr>
+<tr><td class="sub">Gasto total</td>{% for prov, m in resultados.metrics.items() %}<td>{{ 'USD %.3f'|format(m.cost.total_usd) if m.cost.total_usd is not none else '—' }}</td>{% endfor %}</tr>
+<tr><td class="sub">Costo / generación</td>{% for prov, m in resultados.metrics.items() %}<td>{{ 'USD %.3f'|format(m.cost.per_generation_usd) if m.cost.per_generation_usd is not none else '—' }}</td>{% endfor %}</tr>
+<tr><td class="sub"><b>Costo / aprobada</b></td>{% for prov, m in resultados.metrics.items() %}<td><b>{{ 'USD %.2f'|format(m.cost.per_approved_usd) if m.cost.per_approved_usd is not none else '—' }}</b></td>{% endfor %}</tr>
+<tr><td class="sub">Latencia mediana</td>{% for prov, m in resultados.metrics.items() %}<td>{{ m.latency_ms.median or '—' }} ms</td>{% endfor %}</tr>
+<tr><td class="sub">p95</td>{% for prov, m in resultados.metrics.items() %}<td>{{ m.latency_ms.p95 or '—' }}</td>{% endfor %}</tr>
+<tr><td class="sub">Fallos frecuentes</td>{% for prov, m in resultados.metrics.items() %}<td class="sub">{% for k, n in m.hard_failure_reasons.items() %}{{ k }}×{{ n }} {% endfor %}</td>{% endfor %}</tr>
+</tbody></table>
+
+<h3>Compuerta</h3>
+{% for prov, v in resultados.selection.gates.items() %}
+  <p><b>{{ prov }}</b>: <span class="chip s-{{ 'COMPLETE' if v.passes else 'FAILED' }}">{{ 'GATE PASSED' if v.passes else 'GATE NOT PASSED' }}</span>
+    <span class="sub">{{ v.reasons|join(' · ') }}{% if v.evidence == 'pilot_only' %} · muestra chica: evidencia de piloto{% endif %}</span></p>
+{% endfor %}
+
+<h3>Aprobar proveedor</h3>
+<p class="sub">La consola no aprueba a nadie. Esta decisión es tuya y queda registrada con su evidencia.</p>
+{% for prov, m in resultados.metrics.items() %}
+<form method="post" action="{{ url_for('lab.approve_provider') }}" class="upload">
+  <input type="hidden" name="benchmark_id" value="{{ run }}">
+  <input type="hidden" name="provider" value="{{ prov }}">
+  <p><b>{{ prov }}</b> · {{ m.model|join(', ') }} · muestra {{ m.reviewed }} ·
+    fidelidad {{ '%.0f%%'|format(100*m.fidelity_pass_rate) if m.fidelity_pass_rate is not none else '—' }} ·
+    aprobadas {{ '%.0f%%'|format(100*m.approval_rate) if m.approval_rate is not none else '—' }} ·
+    costo/aprobada {{ 'USD %.2f'|format(m.cost.per_approved_usd) if m.cost.per_approved_usd is not none else '—' }} ·
+    latencia {{ m.latency_ms.median or '—' }} ms</p>
+  <label class="op"><input type="checkbox" name="rights_verified" value="1"> Verifiqué por escrito los derechos comerciales de uso</label>
+  {% if not resultados.selection.gates[prov].passes %}
+    <label>Motivo del OVERRIDE <span class="opt">(obligatorio: este proveedor no cumple la compuerta)</span>
+      <input name="override_reason" placeholder="por qué se aprueba igual"></label>
+  {% endif %}
+  <button type="submit" class="sec">Aprobar {{ prov }} como proveedor del piloto</button>
+</form>
+{% endfor %}
+{% if preparacion.approved %}
+<form method="post" action="{{ url_for('lab.revoke_provider') }}" class="upload">
+  <label>Revocar la aprobación actual<input name="reason" placeholder="motivo"></label>
+  <button class="sec">Revocar</button></form>
+{% endif %}
+{% elif resultados %}
+<h2>Resultados</h2>
+<div class="nota"><b>{{ resultados.status }}.</b> {{ resultados._nota or 'Todavía no hay revisiones humanas: las tasas se calculan sólo sobre candidatos revisados.' }}</div>
+{% endif %}
+
+<p class="sub mono">manifiesto: {{ manifest_path }}</p>
+
+<script>
+(function(){
+  var box = document.getElementById('prog'); if(!box) return;
+  function tick(){
+    fetch(box.dataset.url).then(r=>r.json()).then(function(d){
+      document.getElementById('p-done').textContent = d.done;
+      document.getElementById('p-run').textContent = d.running;
+      document.getElementById('p-queue').textContent = d.queued;
+      document.getElementById('p-fail').textContent = d.failed;
+      document.getElementById('p-spend').textContent = d.spend_usd;
+      document.getElementById('p-rev').textContent = d.pending_review;
+      document.getElementById('p-bar').style.width = (d.total ? Math.round(100*d.done/d.total) : 0) + '%';
+      if(!d.finished) setTimeout(tick, 3000); else location.reload();
+    }).catch(function(){ setTimeout(tick, 8000); });
+  }
+  if({{ 'true' if progreso and not progreso.finished else 'false' }}) setTimeout(tick, 3000);
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "lab/base.html" %}{% block title %}{{ p.title }}{% endblock %}
+{% block body %}{% include "lab/_head.html" %}
+
+<div class="cols">
+<div>
+<h2>Avance</h2>
+<table class="pasos"><tbody>
+{% for s in avance.steps %}
+  <tr><td class="ic {{ 'listo' if s.done else '' }}">{{ '✓' if s.done else '○' }}</td>
+      <td><b>{{ s.name }}</b></td>
+      <td class="sub">{{ s.detail }}{% if s.blocked %} <span class="chip s-FAILED">bloqueado</span>{% endif %}</td></tr>
+{% endfor %}
+</tbody></table>
+<p class="sub">Cada paso se deriva de un hecho: un archivo, una fila o un artefacto del motor.
+  No hay casillas que se marquen a mano.</p>
+</div>
+
+<div>
+<h2>Valoración interna</h2>
+<form method="post" action="{{ url_for('lab.feedback', property_id=p.property_id) }}" class="inline">
+  {% for k, label in feedback_opts %}
+    <button name="value" value="{{ k }}" class="{{ '' if p.lab_feedback == k else 'sec' }}">{{ label }}</button>
+  {% endfor %}
+  <button name="value" value="" class="sec">—</button>
+</form>
+
+<h2>Notas de prueba</h2>
+<form method="post" action="{{ url_for('lab.nota', property_id=p.property_id) }}" class="upload">
+  <input type="hidden" name="next" value="{{ url_for('lab.resumen', property_id=p.property_id) }}">
+  <label>Qué viste<input name="body" placeholder="p. ej. el pilar del fondo quedó mal detectado" required></label>
+  <button type="submit" class="sec">Guardar nota</button>
+</form>
+{% for n in notas %}<p class="sub">· {{ n.body }} <span class="mono">{{ n.created_at[:16] }}</span></p>{% endfor %}
+
+<h2>Últimos movimientos</h2>
+{% for e in linea %}<p class="sub"><span class="mono">{{ e.at[:16] if e.at }}</span> — {{ e.text }}</p>{% endfor %}
+<p><a class="btn sec" href="{{ url_for('lab.actividad', property_id=p.property_id) }}">Ver toda la actividad</a></p>
+</div>
+</div>
+{% endblock %}

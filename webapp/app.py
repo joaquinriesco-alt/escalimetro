@@ -15,8 +15,8 @@ from typing import Dict, List
 from flask import (Flask, abort, jsonify, redirect, render_template, request,
                    send_file, send_from_directory, url_for)
 
-from . import (auth, briefs as briefmod, customer, detected as det, engine, intake, staging_ui,
-               store)
+from . import (auth, briefs as briefmod, customer, detected as det, engine, intake, lab,
+               staging_ui, store)
 from .domain import (assets as dassets, entitlements as dent, fits as dfits,
                      floorplan as dfloorplan, packs as dpacks, presets as dpresets,
                      properties as dproperties, visual as dvisual)
@@ -26,7 +26,7 @@ REVIEWER = os.environ.get("ESCALIMETRO_REVIEWER", "Joaquín Riesco")
 MODULES_PATH = briefmod.MODULES_PATH
 #: Etiqueta de la versión de la app que sirve `/healthz`. Es un rótulo nuestro, NO el commit: saber
 #: qué build está viva no debería exigir credenciales, y filtrar un SHA de git sí sería de más.
-APP_VERSION = "e31"
+APP_VERSION = "e32"
 GRADES = [("A_GOOD", "A — LA MANDARÍA"), ("B_CORRECTABLE", "B — CORREGIBLE"),
           ("C_BAD", "C — NO SIRVE")]
 #: §12 — las etiquetas son las del contrato, leídas del contrato. No se redefinen aquí.
@@ -46,6 +46,7 @@ def create_app() -> Flask:
     engine.start_worker()
     app.register_blueprint(customer.bp)
     app.register_blueprint(staging_ui.bp)
+    app.register_blueprint(lab.bp)
     app.jinja_env.filters["from_json"] = lambda v: store.js(v, {}) or {}
     if os.environ.get("ESCALIMETRO_MIGRATE", "1") == "1":
         from . import migrate                                 # noqa: PLC0415
@@ -494,6 +495,7 @@ def create_app() -> Flask:
                         "cases": store.q1("SELECT COUNT(*) n FROM cases")["n"],
                         "properties": store.q1("SELECT COUNT(*) n FROM properties")["n"],
                         "product_mode": dent.mode(),
+                        "staging_provider": _pilot_name(),
                         "jobs_pending": engine.pending()})
 
     @app.errorhandler(413)
@@ -502,6 +504,11 @@ def create_app() -> Flask:
                                msg=f"Archivo demasiado grande (máximo {intake.MAX_UPLOAD_MB} MB "
                                    f"por planta)."), 413
     return app
+
+
+def _pilot_name():
+    from .domain import pilot                                 # noqa: PLC0415
+    return pilot.approved_provider_name()
 
 
 def _pair(x, y):

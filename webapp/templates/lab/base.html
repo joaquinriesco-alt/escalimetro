@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}Escalímetro LAB{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head><body class="lab">
+<header class="top">
+  <a class="brand" href="{{ url_for('lab.home') }}">ESCALÍMETRO<span>lab</span></a>
+  <nav>
+    <a href="{{ url_for('lab.home') }}">Propiedades</a>
+    <a href="{{ url_for('staging.queue') }}">Ambientación</a>
+    <a href="{{ url_for('lab.benchmark') }}">Benchmark</a>
+    <a href="{{ url_for('lab.config') }}">Configuración</a>
+    <a class="sub" href="{{ url_for('library') }}">Herramienta técnica</a>
+    <span class="chip plan">{{ producto.label }}</span>
+    {% if cola %}<span class="chip work">{{ cola }} en cola</span>{% endif %}
+  </nav>
+</header>
+<main>{% block body %}{% endblock %}</main>
+<footer>Consola interna de pruebas. No es la web pública ni el producto final.</footer>
+</body></html>

@@ -1,0 +1,34 @@
+{% extends "lab/base.html" %}{% block title %}{{ p.title }} · Plano{% endblock %}
+{% block body %}{% include "lab/_head.html" %}
+<h2>Plano de la propiedad</h2>
+{% if adjunto.plano %}
+  <p class="sub">{{ adjunto.plano.original_filename }} · {{ (adjunto.plano.size_bytes/1000)|round|int }} KB</p>
+  {% if adjunto.plano.mime_type != 'application/pdf' %}
+  <img class="big" src="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=adjunto.plano.asset_id) }}" alt="plano">
+  {% else %}
+  <p><a class="btn sec" target="_blank" href="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=adjunto.plano.asset_id) }}">Abrir PDF</a></p>
+  {% endif %}
+
+  <h2>Revisión técnica</h2>
+  {% if adjunto.case.case_id %}
+    <p class="sub">Caso <span class="mono">{{ adjunto.case.case_id }}</span> ·
+      {{ 'planta confirmada y lista' if adjunto.case.ready else 'falta confirmar: ' ~ (adjunto.case.pending|join(', ') or 'analizar la planta') }}</p>
+    <p><a class="btn" href="{{ url_for('case_view', case_id=adjunto.case.case_id) }}">
+      {{ 'Ver la planta' if adjunto.case.ready else 'Revisar la planta' }}</a></p>
+    <p class="hint">Se abre la pantalla técnica: medir la escala sobre el plano, marcar el acceso y
+      revisar lo que el motor detectó. Volvés acá con el botón del navegador.</p>
+  {% else %}
+    <form method="post" action="{{ url_for('lab.preparar', property_id=p.property_id) }}" class="inline">
+      <button>Analizar plano</button></form>
+    <p class="hint">Crea el caso técnico y abre la pantalla de revisión de la planta.</p>
+  {% endif %}
+{% else %}
+  <p class="sub">Todavía no hay plano.</p>
+{% endif %}
+
+<h2>{{ 'Reemplazar' if adjunto.plano else 'Subir' }} plano</h2>
+<form method="post" enctype="multipart/form-data" class="upload">
+  <input type="file" name="floorplan" accept=".pdf,.png,.jpg,.jpeg" required>
+  <button type="submit">Subir</button>
+</form>
+{% endblock %}

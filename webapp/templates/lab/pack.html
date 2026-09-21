@@ -1,0 +1,38 @@
+{% extends "lab/base.html" %}{% block title %}{{ p.title }} · Pack{% endblock %}
+{% block body %}{% include "lab/_head.html" %}
+<h2>Pack de publicación</h2>
+<p class="sub">Estado: <b>{{ listo.state }}</b>{% if listo.missing %} · falta: {{ listo.missing|join(', ') }}{% endif %}</p>
+
+<h3>Qué incluiría hoy</h3>
+<table class="pasos"><tbody>
+{% for c in contenido %}
+  <tr><td class="ic {{ 'listo' if c.ok else '' }}">{{ '✓' if c.ok else '○' }}</td>
+      <td>{{ c.n }}</td><td class="sub">{{ '' if c.ok else c.por_que }}</td></tr>
+{% endfor %}
+</tbody></table>
+<p class="hint">Esta lista se calcula mirando los archivos que existen. No puede contradecir al ZIP.</p>
+
+{% if listo.state in ('READY', 'DEGRADED') %}
+  <form method="post" class="inline"><button>{{ 'Volver a armar el pack' if pack and pack.export_name else 'Armar pack' }}</button></form>
+{% else %}
+  <p class="sub">El pack no se arma incompleto. Si querés entregarlo igual, escribí abajo por qué.</p>
+{% endif %}
+{% if pack and pack.export_name %}
+  <a class="btn" href="{{ url_for('customer.download_pack', property_id=p.property_id) }}">Descargar ZIP</a>
+  {% set man = pack.manifest_obj %}
+  <details><summary>Manifiesto</summary>
+    <p class="sub">{{ man.layouts|length }} layout(s) · {{ man.photos_staged|length }} ambientada(s) ·
+      {{ man.source_assets.photos_original|length }} foto(s) · estado {{ man.readiness.state if man.readiness }}</p>
+    {% if man.warnings %}<ul>{% for w in man.warnings %}<li class="sub">{{ w }}</li>{% endfor %}</ul>{% endif %}
+    {% if man.export %}<p class="sub mono">{{ man.export.contents|join(' · ') }}</p>{% endif %}
+  </details>
+{% endif %}
+
+<h3>Salida degradada</h3>
+<form method="post" action="{{ url_for('lab.override', property_id=p.property_id) }}" class="upload">
+  <label>Motivo interno <span class="opt">(vacío lo quita)</span>
+    <input name="reason" value="{{ listo.override or '' }}" placeholder="p. ej. búsqueda agotada en A/B/C; el cliente quiere igual el plano"></label>
+  <button type="submit" class="sec">Guardar motivo</button>
+</form>
+<p class="hint">Un pack degradado siempre declara por qué, en el manifiesto y en pantalla.</p>
+{% endblock %}

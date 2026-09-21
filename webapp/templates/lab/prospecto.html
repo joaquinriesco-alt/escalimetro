@@ -1,0 +1,68 @@
+{% extends "lab/base.html" %}{% block title %}{{ f.label }}{% endblock %}
+{% block body %}{% include "lab/_head.html" %}
+<p class="crumb"><a href="{{ url_for('lab.prospectos', property_id=p.property_id) }}">Prospectos</a> / {{ f.label }}</p>
+<h2>{{ f.label }}</h2>
+
+<h3>Antes de generar</h3>
+<table class="pasos"><tbody>
+  <tr><td class="sub">Prospecto</td><td><b>{{ f.label }}</b></td></tr>
+  <tr><td class="sub">Personas</td><td>{{ f.headcount }}</td></tr>
+  <tr><td class="sub">Forma de trabajo</td><td>{{ fv.preset_label }}</td></tr>
+  <tr><td class="sub">Estilo visual</td><td>{{ fv.style_label }}</td></tr>
+  <tr><td class="sub">Programa</td><td>{{ fv.brief_summary or '—' }}</td></tr>
+</tbody></table>
+<form method="post" action="{{ url_for('lab.generar_fit', property_id=p.property_id, fit_id=f.fit_id) }}" class="inline">
+  <button>Generar A/B/C</button></form>
+
+<h3>Resultado</h3>
+{% if fv.run and fv.run.status in ('QUEUED','RUNNING') %}
+  <div class="nota">Generando desde {{ fv.run.created_at[:16] }}. El motor tarda unos minutos; recargá la página.</div>
+{% elif fv.alternatives %}
+  <div class="grid3">
+  {% for a in fv.alternatives %}
+    <figure>
+      {% if a.status == 'FIT' %}
+      <a target="_blank" href="{{ url_for('alt_asset', run_id=fv.run.run_id, alt=a.alt, kind='plan.png') }}">
+        <img src="{{ url_for('alt_asset', run_id=fv.run.run_id, alt=a.alt, kind='plan.png') }}" alt="alternativa {{ a.alt }}"></a>
+      {% else %}<div class="sin-layout">sin layout</div>{% endif %}
+      <figcaption><b>Alternativa {{ a.alt }}</b>{% if a.name %} — {{ a.name|lower|capitalize }}{% endif %}
+        <br><span class="chip s-{{ a.status }}">{{ a.status }}</span></figcaption></figure>
+  {% endfor %}
+  </div>
+  <details><summary>Detalle técnico</summary>
+    <table class="detect"><tbody>
+    {% for a in fv.alternatives %}{% set m = a.metrics|from_json %}{% set q = a.quality|from_json %}
+      <tr><td><b>{{ a.alt }}</b></td>
+          <td class="sub mono">{{ a.layout_sha256[:12] if a.layout_sha256 }}</td>
+          <td class="sub">{% if q %}puestos {{ q.open_seats }} · programa completo: {{ q.program_complete }}{% endif %}</td></tr>
+    {% endfor %}
+    </tbody></table>
+    <p class="sub mono">run {{ fv.run.run_id if fv.run }} · motor {{ fv.run.engine_commit[:12] if fv.run and fv.run.engine_commit }}</p>
+  </details>
+{% else %}<p class="sub">Todavía no se generó nada para este prospecto.</p>{% endif %}
+
+<h3>Material del prospecto</h3>
+<form method="post" action="{{ url_for('lab.publicar_fit', property_id=p.property_id, fit_id=f.fit_id) }}" class="inline">
+  <button class="sec">Publicar y armar pack</button></form>
+{% if pack and pack.export_name %}
+  <a class="btn sec" href="{{ url_for('customer.download_fit_pack', property_id=p.property_id, fit_id=f.fit_id) }}">Descargar pack</a>
+{% endif %}
+<a class="btn sec" target="_blank" href="{{ url_for('customer.fit_proposal', property_id=p.property_id, fit_id=f.fit_id) }}">Ver propuesta</a>
+
+<h3>Valoración y notas</h3>
+<form method="post" action="{{ url_for('lab.feedback', property_id=p.property_id) }}" class="inline">
+  <input type="hidden" name="fit_id" value="{{ f.fit_id }}">
+  <input type="hidden" name="next" value="{{ url_for('lab.prospecto', property_id=p.property_id, fit_id=f.fit_id) }}">
+  {% for k, label in feedback_opts %}
+    <button name="value" value="{{ k }}" class="{{ '' if f.lab_feedback == k else 'sec' }}">{{ label }}</button>
+  {% endfor %}
+</form>
+<form method="post" action="{{ url_for('lab.nota', property_id=p.property_id) }}" class="upload">
+  <input type="hidden" name="scope" value="FIT">
+  <input type="hidden" name="fit_id" value="{{ f.fit_id }}">
+  <input type="hidden" name="next" value="{{ url_for('lab.prospecto', property_id=p.property_id, fit_id=f.fit_id) }}">
+  <label>Nota<input name="body" placeholder="p. ej. la alternativa B es la mejor de las tres" required></label>
+  <button type="submit" class="sec">Guardar nota</button>
+</form>
+{% for n in notas %}<p class="sub">· {{ n.body }} <span class="mono">{{ n.created_at[:16] }}</span></p>{% endfor %}
+{% endblock %}

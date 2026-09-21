@@ -1,0 +1,38 @@
+{% extends "lab/base.html" %}{% block title %}Escalímetro LAB{% endblock %}
+{% block body %}
+<div class="prop-head">
+  <h1>Propiedades</h1>
+  <a class="btn" href="{{ url_for('lab.new') }}">+ Nueva propiedad</a>
+</div>
+
+<div class="kpis">
+  <div><b>{{ resumen.properties }}</b><span>propiedades</span></div>
+  <div><b>{{ resumen.ready }}</b><span>packs listos</span></div>
+  <div><b>{{ resumen.need_review }}</b><span>necesitan revisión</span></div>
+  <div><b>{{ resumen.staging_pending }}</b><span>ambientación pendiente</span></div>
+  <div><b>{{ resumen.fit_requests }}</b><span>prospectos</span></div>
+</div>
+
+{% if preparacion.blockers %}
+<div class="panel-bad">
+  <b>El piloto de ambientación todavía no puede correr:</b>
+  <ul>{% for b in preparacion.blockers %}<li>{{ b }}</li>{% endfor %}</ul>
+  <p><a class="btn sec" href="{{ url_for('lab.benchmark') }}">Ir al benchmark</a></p>
+</div>
+{% endif %}
+
+{% if not filas %}<p class="empty">Todavía no hay propiedades. Empezá por una real.</p>{% endif %}
+<table class="detect"><tbody>
+{% for r in filas %}
+  <tr>
+    <td><a href="{{ url_for('lab.resumen', property_id=r.p.property_id) }}"><b>{{ r.p.title }}</b></a>
+      <span class="sub">{{ r.p.city }}{% if r.p.published_area_m2 %} · {{ r.p.published_area_m2|round|int }} m²{% endif %}</span></td>
+    <td style="width:190px"><div class="barra"><span style="width:{{ r.progress.pct }}%"></span></div>
+      <span class="sub">{{ r.progress.done }}/{{ r.progress.total }}{% if r.progress.next %} · {{ r.progress.next.name }}{% endif %}</span></td>
+    <td><span class="chip s-{{ r.v.status }}">{{ r.v.status }}</span>
+      <span class="sub">ambientación: {{ r.staging.state }} · pack: {{ r.pack.state }}{% if r.fits %} · {{ r.fits }} prospecto(s){% endif %}</span></td>
+    <td class="ans"><a class="btn sec" href="{{ url_for('lab.resumen', property_id=r.p.property_id) }}">Continuar</a></td>
+  </tr>
+{% endfor %}
+</tbody></table>
+{% endblock %}

@@ -1,0 +1,42 @@
+{# §A — PANEL DE PREPARACIÓN. Booleanos y nombres de variable. Ningún valor de credencial. #}
+<h2>Preparación de la ambientación</h2>
+<div class="kpis">
+  <div><b>{{ preparacion.photos.total }}</b><span>fotos reales</span></div>
+  <div><b>{{ preparacion.photos.properties }}</b><span>propiedades con fotos</span></div>
+  <div><b>{{ preparacion.photos.benchmark_eligible }}/{{ preparacion.photos.min_photos }}</b><span>en el benchmark</span></div>
+  <div><b>{{ preparacion.photos.benchmark_properties }}/{{ preparacion.photos.min_spaces }}</b><span>espacios distintos</span></div>
+  <div><b>{{ preparacion.credentials_present }}/2</b><span>credenciales</span></div>
+</div>
+
+<table class="detect"><tbody>
+{% for pr in preparacion.providers %}
+  <tr>
+    <td class="ic {{ 'listo' if pr.credential and not pr.excluded }}">{{ '✓' if pr.credential and not pr.excluded else '○' }}</td>
+    <td><b>{{ pr.name }}</b> <span class="sub mono">{{ pr.model }}</span>
+      {% if pr.approved %}<span class="chip">APROBADO</span>{% endif %}</td>
+    <td class="sub">
+      {% if pr.excluded %}<span class="chip s-FAILED">{{ pr.excluded_reason }}</span>
+      {% else %}
+        credencial: <b>{{ 'SÍ' if pr.credential else 'NO' }}</b> <span class="mono">({{ pr.env }})</span>
+        {% if pr.smoke %}· smoke {{ 'OK' if pr.smoke.ok else 'FALLÓ' }} {{ pr.smoke.at[:16] }}
+          {% if pr.smoke.latency_ms %}· {{ pr.smoke.latency_ms }} ms{% endif %}
+          {% if pr.smoke.error %}<br><span class="mono">{{ pr.smoke.error[:120] }}</span>{% endif %}
+        {% else %}· sin smoke test{% endif %}
+      {% endif %}
+    </td>
+  </tr>
+{% endfor %}
+</tbody></table>
+
+<p class="sub">Proveedor aprobado para el producto: <b>{{ preparacion.approved_label }}</b>.
+  {% if preparacion.approved and preparacion.approved.override_reason %}
+    <span class="chip s-FAILED">OVERRIDE</span> {{ preparacion.approved.override_reason }}{% endif %}</p>
+{% if preparacion.env_select_set %}
+  <p class="sub">Nota: <span class="mono">ESCALIMETRO_STAGING_PROVIDER</span> está puesta en el
+    entorno y <b>no elige nada</b>. El proveedor de producto sale de la aprobación humana.</p>
+{% endif %}
+<form method="post" action="{{ url_for('lab.recheck') }}" class="inline">
+  <input type="hidden" name="from" value="{{ 'benchmark' if tab_benchmark else 'config' }}">
+  <button class="sec">Rechequear entorno</button></form>
+<p class="hint">Las credenciales se configuran una sola vez fuera de la consola (archivo <span class="mono">.env</span>
+  en la raíz del repo). Esta pantalla sólo detecta si existen: nunca muestra ni permite copiar un valor.</p>

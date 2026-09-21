@@ -1,0 +1,43 @@
+{% extends "lab/base.html" %}{% block title %}{{ p.title }} · Prospectos{% endblock %}
+{% block body %}{% include "lab/_head.html" %}
+<h2>Prospectos</h2>
+{% if not modo_pro %}
+  <div class="panel-bad"><b>El modo vigente es {{ producto.label }}.</b>
+    <p>Los prospectos son parte de Escalímetro Pro. Cambiá el modo en
+      <a href="{{ url_for('lab.config') }}">Configuración</a> para probarlos.</p></div>
+{% endif %}
+
+{% if lista %}
+<table class="detect"><tbody>
+{% for fv in lista %}
+  <tr><td><a href="{{ url_for('lab.prospecto', property_id=p.property_id, fit_id=fv.fit.fit_id) }}"><b>{{ fv.fit.label }}</b></a>
+      <span class="sub mono">{{ fv.fit.fit_id }}</span></td>
+      <td class="sub">{{ fv.fit.headcount }} personas · {{ fv.preset_label }} · {{ fv.style_label }}
+        {% if fv.brief_summary %}<br>{{ fv.brief_summary }}{% endif %}</td>
+      <td>{% if fv.run %}<span class="chip s-{{ fv.run.status }}">{{ fv.run.status }}</span>{% endif %}
+        {% if fv.fit_alternatives %}<span class="sub">{{ fv.fit_alternatives|length }} con layout</span>{% endif %}
+        {% if fv.fit.lab_feedback %}<span class="chip">{{ fv.fit.lab_feedback }}</span>{% endif %}</td></tr>
+{% endfor %}
+</tbody></table>
+{% else %}<p class="empty">Todavía no hay prospectos para esta propiedad.</p>{% endif %}
+
+{% if modo_pro %}
+<h2>Nuevo prospecto</h2>
+<form method="post" enctype="multipart/form-data" class="upload">
+  <div class="row">
+    <label>Nombre *<input name="prospect_name" required placeholder="Falabella"></label>
+    <label>Personas *<input name="headcount" type="number" min="1" required></label>
+    <label>Forma de trabajo<select name="workplace_preset">
+      {% for k, wp in presets_wp.items() %}<option value="{{ k }}" {{ 'selected' if k == preset_default }}>{{ wp.label }}</option>{% endfor %}</select></label>
+    <label>Estilo visual<select name="visual_style">
+      {% for k, e in estilos.items() %}<option value="{{ k }}" {{ 'selected' if k == estilo_default }}>{{ e.label }}</option>{% endfor %}</select></label>
+  </div>
+  <div class="row">
+    <label>Color de marca <span class="opt">(opcional)</span><input name="prospect_color" placeholder="#1f4fd8"></label>
+    <label>Logo <span class="opt">(opcional)</span><input type="file" name="prospect_logo" accept=".png,.jpg,.jpeg"></label>
+  </div>
+  <label>Notas <span class="opt">(opcional)</span><input name="notes" placeholder="qué pidió el prospecto"></label>
+  <button type="submit">Crear prospecto</button>
+</form>
+{% endif %}
+{% endblock %}
