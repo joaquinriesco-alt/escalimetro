@@ -187,7 +187,12 @@ def _loop() -> None:
             store.ex("UPDATE runs SET status='FAILED', finished_at=?, log=? WHERE run_id=?",
                      (store.now(), f"[web] error del worker: {e!r}", run_id))
         finally:
-            _jobs.task_done()
+            try:
+                _jobs.task_done()
+            except ValueError:
+                # la cola fue reemplazada debajo del hilo (pasa al recargar el módulo en los
+                # tests). Un worker de fondo no tiene a quién reportarle: sigue vivo y calla.
+                pass
 
 
 def start_worker() -> None:

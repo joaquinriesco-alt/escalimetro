@@ -41,6 +41,9 @@ def reason_tags() -> List[str]:
 def create_app() -> Flask:
     auth.check_config()
     store.init()
+    # Sólo el servidor web resetea lo que quedó a medias: es el único que sabe que el proceso
+    # anterior murió. Una CLI que abra la misma base no puede matar sus corridas en vuelo.
+    store.reset_orphans()
     app = Flask(__name__, template_folder="templates", static_folder="static")
     app.config["MAX_CONTENT_LENGTH"] = intake.MAX_UPLOAD_MB * 1024 * 1024 * 4
     engine.start_worker()

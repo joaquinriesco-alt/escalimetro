@@ -296,6 +296,32 @@ CREATE TABLE IF NOT EXISTS pack_grants (
 CREATE UNIQUE INDEX IF NOT EXISTS ix_grant_prop ON pack_grants(property_id)
   WHERE property_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS ix_grant_status ON pack_grants(status, product);
+-- ==============================================================================================
+-- E33 — EVALUACIONES DE PRODUCTO. La razón por la que existe el laboratorio: poder decir si lo que
+-- salió sirve. Cuatro valores, motivos opcionales y un comentario opcional.
+-- La procedencia técnica (motor, sha del artefacto, proveedor, corrida) se guarda SIEMPRE y NO se
+-- le muestra a nadie: es lo que permite correlacionar "esto quedó mal" con la versión exacta que
+-- lo produjo. Sin eso, el feedback es una opinión sobre nada.
+-- ==============================================================================================
+CREATE TABLE IF NOT EXISTS product_reviews (
+  review_id       TEXT PRIMARY KEY,
+  property_id     TEXT NOT NULL REFERENCES properties(property_id) ON DELETE CASCADE,
+  artifact_type   TEXT NOT NULL,       -- PLANO | LAYOUT | STAGING | PACK1 | ALTERNATIVA | PACK2
+  artifact_id     TEXT,                -- asset_id, attempt_id o alt, según el tipo
+  fit_id          TEXT,
+  rating          TEXT NOT NULL,       -- EXCELENTE | BUENO | MALO | PESIMO
+  reason_tags     TEXT,                -- JSON
+  comment         TEXT DEFAULT '',
+  engine_version  TEXT,
+  artifact_sha256 TEXT,
+  provider        TEXT,
+  model           TEXT,
+  run_id          TEXT,
+  author          TEXT DEFAULT '',
+  created_at      TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_reviews_prop ON product_reviews(property_id, created_at);
+CREATE INDEX IF NOT EXISTS ix_reviews_kind ON product_reviews(artifact_type, rating);
 CREATE INDEX IF NOT EXISTS ix_notes_prop ON lab_notes(property_id, created_at);
 CREATE INDEX IF NOT EXISTS ix_events_kind ON lab_events(kind, created_at);
 CREATE INDEX IF NOT EXISTS ix_staging_prop ON staging_attempts(property_id, created_at);
@@ -402,6 +428,27 @@ def init() -> None:
                      "note, created_at, assigned_at) VALUES (?,?,?,'ASSIGNED',?,?,?,?)",
                      ("gr_lg_" + uuid.uuid4().hex[:10], "LEGACY", row["product"] or "ONE_OFF",
                       row["property_id"], "propiedad anterior a E32.2", now(), now()))
+    # E27.2 §6/§9 — reparación de estados heredados del bug que E27.2 corrige: un caso quedó en
+    # FAILED porque se pudo pulsar "generar" sin preparar el shell. Eso nunca fue un fallo técnico,
+    # era un intake incompleto. Si el caso no tiene geometría, su estado honesto es NEEDS_INPUT.
+    # Sólo toca casos SIN floorplate: uno que sí lo tiene y falló de verdad conserva su FAILED.
+    for row in conn.execute("SELECT case_id FROM cases WHERE status='FAILED'").fetchall():
+        fp = os.path.join(case_dir(row["case_id"]), "outputs", "floorplate.json")
+        if not os.path.exists(fp):
+            conn.execute("UPDATE cases SET status='NEEDS_INPUT' WHERE case_id=?", (row["case_id"],))
+    # un caso GENERATING que quedó colgado vuelve a donde su artefacto diga (no a READY a ciegas)
+    conn.execute("UPDATE cases SET status='NEEDS_CONFIRMATION' WHERE status='ANALYZING'")
+    conn.commit()
+
+
+def reset_orphans() -> None:
+    """Marca como fallido lo que quedó a medias cuando el proceso anterior murió.
+
+    Vive APARTE de `init()` y sólo lo llama el arranque del servidor web. Estaba dentro de `init()`,
+    y eso significaba que CUALQUIER proceso que abriera la base —una CLI, un script de
+    comprobación— mataba las corridas y los intentos en vuelo del servidor, y mostraba un fallo que
+    nunca ocurrió. Lo descubrí matando una corrida real con mi propio script de diagnóstico."""
+    conn = connect()
     # E31 — un intento de ambientación que decía RUNNING murió con el proceso. Misma regla que
     # las corridas: no se reanuda solo ni se deja "generando" para siempre.
     conn.execute("UPDATE staging_attempts SET status='FAILED', completed_at=?, "
@@ -414,16 +461,6 @@ def init() -> None:
                  "WHERE status IN ('RUNNING','QUEUED')", (now(),))
     conn.execute("UPDATE alternatives SET status='FAILED' WHERE status='GENERATING'")
     conn.execute("UPDATE cases SET status='READY' WHERE status='GENERATING'")
-    # E27.2 §6/§9 — reparación de estados heredados del bug que E27.2 corrige: un caso quedó en
-    # FAILED porque se pudo pulsar "generar" sin preparar el shell. Eso nunca fue un fallo técnico,
-    # era un intake incompleto. Si el caso no tiene geometría, su estado honesto es NEEDS_INPUT.
-    # Sólo toca casos SIN floorplate: uno que sí lo tiene y falló de verdad conserva su FAILED.
-    for row in conn.execute("SELECT case_id FROM cases WHERE status='FAILED'").fetchall():
-        fp = os.path.join(case_dir(row["case_id"]), "outputs", "floorplate.json")
-        if not os.path.exists(fp):
-            conn.execute("UPDATE cases SET status='NEEDS_INPUT' WHERE case_id=?", (row["case_id"],))
-    # un caso GENERATING que quedó colgado vuelve a donde su artefacto diga (no a READY a ciegas)
-    conn.execute("UPDATE cases SET status='NEEDS_CONFIRMATION' WHERE status='ANALYZING'")
     conn.commit()
 
 
