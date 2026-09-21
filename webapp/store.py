@@ -16,7 +16,12 @@ import threading
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-DATA_DIR = os.environ.get("ESCALIMETRO_DATA_DIR") or os.path.join(os.getcwd(), ".data")
+#: Se normaliza a ABSOLUTA en la puerta, y no es cosmético. Con una ruta relativa el mismo archivo
+#: se resuelve contra dos bases distintas: `open()` lo busca desde el directorio de trabajo y
+#: `flask.send_file` desde el directorio del paquete. El resultado es que el ZIP se arma bien y la
+#: imagen da 500, que es exactamente el tipo de fallo que sólo aparece en un despliegue.
+DATA_DIR = os.path.abspath(os.environ.get("ESCALIMETRO_DATA_DIR")
+                           or os.path.join(os.getcwd(), ".data"))
 DB_PATH = os.path.join(DATA_DIR, "escalimetro.db")
 
 #: Estados de caso. E27.3 §13 añade dos que la UX necesita distinguir y el flujo anterior confundía:

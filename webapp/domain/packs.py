@@ -64,17 +64,22 @@ def layout_assets(property_id: str, fit_id: Optional[str] = None) -> List[Dict]:
     Con `fit_id`, sólo los de ESE fit: es lo que impide que la propuesta de un prospecto arrastre
     la alternativa que se generó para otro. Sin él (pack BASE), los que no son de ningún fit de
     prospecto, y como mucho tantos como el producto entregue."""
+    meta = lambda a: (store.js(a["metadata"], {}) or {})            # noqa: E731
     todos = assets.list_of_kind(property_id, assets.LAYOUT_RENDER)
     if fit_id:
-        return [a for a in todos if (store.js(a["metadata"], {}) or {}).get("fit_id") == fit_id]
+        propias = [a for a in todos if meta(a).get("fit_id") == fit_id]
+        f = fits.get(fit_id, property_id)
+        if propias or (f and f["kind"] == fits.PROSPECT):
+            # Un prospecto ve SÓLO lo suyo, aunque no haya nada: heredar la lámina de otro
+            # programa sería presentarle como suyo un estudio que no lo es.
+            return propias
+        fit_id = None                        # el fit BASE cae al material de la propiedad
     tope = entitlements.max_layouts_in_pack()
-    propios = [a for a in todos
-               if not (store.js(a["metadata"], {}) or {}).get("fit_id")
-               or (store.js(a["metadata"], {}) or {}).get("fit_kind") == "BASE"]
-    base = propios or todos
+    base = [a for a in todos
+            if not meta(a).get("fit_id") or meta(a).get("fit_kind") == fits.BASE]
     if tope is not None and len(base) > tope:
         # se conserva la representativa, no "las primeras": §18
-        rep = [a for a in base if (store.js(a["metadata"], {}) or {}).get("representative")]
+        rep = [a for a in base if meta(a).get("representative")]
         base = (rep or base)[:tope]
     return base
 
@@ -207,15 +212,17 @@ def proposal_html(property_id: str, fit_id: Optional[str] = None,
     corredora = branding.brokerage()
     plano_com = assets.first_of_kind(property_id, assets.FLOORPLAN_COMMERCIAL)
     layouts = layout_assets(property_id, fit_id)
-    rep_why = fitv.get("representative_why") or ""
 
     lays = []
     for a in layouts:
         meta = store.js(a["metadata"], {}) or {}
+        # el motivo se lee de la LÁMINA, no del fit: así sigue siendo cierto cuando la corrida
+        # vino de un caso vinculado a mano y el fit todavía no generó la suya.
+        why = fits.SELECTED_BY_LABEL.get(meta.get("selected_by"), "")
         lays.append({"url": url("layouts", f'alternativa_{meta.get("alt", "")}', a),
                      "alt": meta.get("alt", ""), "name": meta.get("name", ""),
                      "representative": bool(meta.get("representative")),
-                     "why": rep_why if (meta.get("representative") and len(layouts) == 1) else ""})
+                     "why": why if (meta.get("representative") and len(layouts) == 1) else ""})
 
     marca = fitv["brand"]
     logo = branding.logo(marca.get("logo_id"))

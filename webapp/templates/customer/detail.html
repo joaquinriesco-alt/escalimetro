@@ -64,7 +64,7 @@
     {% set m = l.metadata|from_json %}
     <figure><img src="{{ url_for('customer.serve_asset', property_id=p.property_id, asset_id=l.asset_id) }}" alt="alternativa">
       <figcaption>Alternativa {{ m.alt }}{% if m.name %} — {{ m.name|lower|capitalize }}{% endif %}
-        {% if m.representative and layouts|length == 1 and base %}<br><span class="sub">{{ base.representative_why }}</span>{% endif %}
+        {% if m.representative and layouts|length == 1 %}<br><span class="sub">{{ porque.get(m.selected_by, '') }}</span>{% endif %}
       </figcaption></figure>
   {% endfor %}
   </div>

@@ -175,12 +175,23 @@ def publish_layouts(property_id: str, run_id: Optional[str] = None,
     if fit_id:
         f = fits.require(fit_id, property_id)
         ultimo = fits.latest_run(fit_id)
-        if ultimo is None:
+        if ultimo is None and f["kind"] == fits.BASE:
+            # El fit BASE todavía no generó, pero el caso vinculado sí tiene corridas: es el caso
+            # de una propiedad conectada a mano a un caso que ya existía (E27/E28). Se publica esa
+            # corrida y se dice que no salió de este fit — `fit_id` queda en None en la metadata,
+            # así que ninguna lámina afirma haberse generado para un programa que no la generó.
+            fit_id = None
+        elif ultimo is None:
+            # Un fit de PROSPECTO sin corrida propia no hereda la de nadie: mostrarle a un
+            # prospecto un layout hecho para otro programa es precisamente la mentira que este
+            # sistema no comete. Se publica nada y la propuesta lo dice.
             return []
-        entregar = fits.delivered(fit_id)
-        rep = fits.representative(fit_id)
-        etiqueta, clase = f["label"], f["kind"]
-    else:
+        else:
+            entregar = fits.delivered(fit_id)
+            rep = fits.representative(fit_id)
+            etiqueta, clase = f["label"], f["kind"]
+
+    if not fit_id:
         # camino heredado de E28: la propiedad está vinculada a un caso que ya tenía corridas y
         # ninguna nació de un fit request. Sigue funcionando, con el mismo tope de producto.
         ultimo = latest_layouts(property_id)

@@ -95,7 +95,7 @@ def render(prop: Dict, fitv: Dict, brokerage: Dict, floorplan_url: Optional[str]
              ("Forma de trabajo", fitv.get("preset_label")),
              ("Puestos fijos", b.get("open_workstations")),
              ("Programa", fitv.get("brief_summary")),
-             ("Estilo visual", fitv.get("style_label"))]
+             ("Estilo visual", style_note(f.get("visual_style") or ""))]
     for k, v in filas:
         if v:
             partes.append(f"<tr><th>{_e(k)}</th><td>{_e(v)}</td></tr>")
@@ -146,7 +146,7 @@ def render(prop: Dict, fitv: Dict, brokerage: Dict, floorplan_url: Optional[str]
             f'<div class="hoja">{"".join(partes)}</div></body></html>')
 
 
-def style_note(style_key: str) -> str:
+def style_note(style_key: str) -> str:  # noqa: E302
     """Una línea sobre el estilo elegido, para la propuesta. Descriptiva, nunca una promesa."""
     s = presets.VISUAL_STYLES.get(style_key)
     return f"{s.label}: {s.mood}. Materiales: {s.materials}." if s else ""

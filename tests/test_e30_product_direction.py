@@ -568,3 +568,72 @@ def test_el_motor_no_fue_tocado():
     out = subprocess.run(["git", "diff", "--name-only", "6324b1f", "HEAD", "--", "src/"],
                          cwd=ROOT, capture_output=True, text=True)
     assert out.stdout.strip() == "", f"E30 tocó el motor: {out.stdout}"
+
+
+def test_el_fit_base_puede_publicar_la_corrida_de_un_caso_vinculado(client, dom):
+    """Una propiedad conectada a mano a un caso que YA tenía corridas (el camino de E27/E28) sigue
+    publicando. La lámina no miente: `fit_id` queda vacío porque no salió de ese programa."""
+    from webapp import store
+    pid, _ = _propiedad_con_layouts(dom, store)
+    fid = dom["fits"].ensure_base(pid, 40)
+    ids = dom["floorplan"].publish_layouts(pid, fit_id=fid)
+    assert len(ids) == 1
+    assert store.js(dom["assets"].get(ids[0], pid)["metadata"], {})["fit_id"] is None
+
+
+def test_un_prospecto_no_hereda_el_layout_de_otro_programa(client, dom):
+    """La otra mitad de la regla, y la que protege la confianza: mostrarle a un prospecto una
+    lámina generada para otro programa sería exactamente la mentira que este sistema no comete."""
+    dom["entitlements"].set_mode("PRO")
+    from webapp import store
+    pid, _ = _propiedad_con_layouts(dom, store)
+    fid = dom["fits"].create_prospect(pid, "Falabella", 40)
+    assert dom["floorplan"].publish_layouts(pid, fit_id=fid) == []
+    assert "Todavía no hay alternativas" in dom["packs"].proposal_html(pid, fid)
+
+
+def test_el_directorio_de_datos_es_absoluto(client):
+    """Con una ruta relativa el mismo archivo se resuelve contra dos bases distintas: `open()`
+    desde el directorio de trabajo y `flask.send_file` desde el del paquete. El ZIP se armaba bien
+    y la imagen daba 500 — un fallo que sólo aparece desplegado."""
+    from webapp import store
+    assert os.path.isabs(store.DATA_DIR)
+
+
+def test_las_imagenes_de_una_propiedad_se_sirven_de_verdad(client, dom):
+    """No basta con que el asset exista en la base: la ruta tiene que abrir."""
+    from webapp import store
+    pid, _ = _propiedad_con_layouts(dom, store)
+    dom["fits"].ensure_base(pid, 40)
+    aid = dom["floorplan"].publish_layouts(pid)[0]
+    r = client.get(f"/properties/{pid}/asset/{aid}")
+    assert r.status_code == 200 and r.data[:4] == b"\x89PNG"
+
+
+def test_la_propuesta_del_programa_base_muestra_su_lamina(client, dom):
+    from webapp import store
+    pid, _ = _propiedad_con_layouts(dom, store)
+    fid = dom["fits"].ensure_base(pid, 40)
+    dom["floorplan"].publish_layouts(pid, fit_id=fid)
+    assert len(dom["packs"].layout_assets(pid, fid)) == 1
+    assert "Todavía no hay alternativas" not in dom["packs"].proposal_html(pid, fid)
+
+
+def test_la_propuesta_dice_por_que_esa_es_la_representativa(client, dom):
+    """El motivo se lee de la lámina publicada, así que sigue siendo cierto aunque la corrida haya
+    venido de un caso vinculado a mano."""
+    from webapp import store
+    pid, _ = _propiedad_con_layouts(dom, store, alts=(("A", "FIT", True), ("B", "FIT", True)))
+    fid = dom["fits"].ensure_base(pid, 40)
+    dom["floorplan"].publish_layouts(pid, fit_id=fid)
+    html = dom["packs"].proposal_html(pid, fid)
+    assert dom["fits"].SELECTED_BY_LABEL["program_complete"] in html
+
+
+def test_la_propuesta_describe_el_estilo_sin_hablar_de_geometria(client, dom):
+    dom["entitlements"].set_mode("PRO")
+    from webapp import store
+    pid, _ = _propiedad_con_layouts(dom, store)
+    fid = dom["fits"].create_prospect(pid, "Falabella", 40, style="PREMIUM")
+    html = dom["packs"].proposal_html(pid, fid)
+    assert "Premium" in html and "materiales nobles" in html

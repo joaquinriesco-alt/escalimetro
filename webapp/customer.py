@@ -50,7 +50,8 @@ def _ctx():
     pantallas donde esa lista no existe."""
     tope = entitlements.limit("properties")
     return {"producto": entitlements.summary(), "corredora": branding.brokerage(),
-            "puede_crear": tope is None or len(properties.listing()) < tope}
+            "puede_crear": tope is None or len(properties.listing()) < tope,
+            "porque": fits.SELECTED_BY_LABEL}
 
 
 def _pasos(v):
