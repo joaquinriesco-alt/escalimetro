@@ -108,9 +108,18 @@ class BrokenProvider(FakeProvider):
 
 @pytest.fixture()
 def fake(dom):
+    """Registra el proveedor de prueba y lo APRUEBA.
+
+    E32 §I cambió el contrato: desde que existe una decisión humana de proveedor, lo que produce un
+    proveedor sin aprobar nace experimental y no puede publicarse. Estos tests hablan de la
+    publicación, así que aprueban al de prueba — que es exactamente el paso que un operador tiene
+    que dar hoy. El camino sin aprobar tiene sus propios tests en test_e32."""
     dom["providers"]._FACTORIES["fake"] = FakeProvider
     dom["providers"]._FACTORIES["broken"] = BrokenProvider
     FakeProvider.calls = 0
+    from webapp.domain import pilot
+    pilot.approve("fake", "fake-1", {"gate": {"passes": True}, "sample_size": 12},
+                  reviewer="tests")
     return FakeProvider
 
 
@@ -166,8 +175,9 @@ def test_los_tres_adaptadores_obedecen_el_protocolo(dom):
 
 
 def test_el_no_configurado_sigue_siendo_ruidoso(dom, monkeypatch):
-    """Tener una clave no elige proveedor. Sin ESCALIMETRO_STAGING_PROVIDER, no hay proveedor."""
+    """Tener una clave no elige proveedor: sin aprobación humana, no hay proveedor de producto."""
     monkeypatch.setenv("GEMINI_API_KEY", "clave-de-prueba")
+    monkeypatch.setenv("ESCALIMETRO_STAGING_PROVIDER", "gemini")   # ya no elige nada
     p = dom["visual"].get_provider()
     assert p.name == "not_configured" and p.available() is False
     with pytest.raises(dom["visual"].ProviderNotConfigured):
