@@ -36,12 +36,14 @@ import uuid
 from typing import Dict, List, Optional
 
 from .. import store
-from . import assets, entitlements, presets, properties, visual
+from . import assets, entitlements, pilot, presets, properties, visual
 
 REQUEST_VERSION = "staging_request_v1"
 
 #: Estados del intento (lo técnico) — separados de la revisión (lo humano).
 ATTEMPT_STATES = ("QUEUED", "RUNNING", "GENERATED", "FAILED")
+#: E32 §I — para qué se pidió este intento. Sólo PRODUCT puede llegar a un cliente.
+PURPOSES = ("PRODUCT", "SMOKE", "BENCHMARK")
 REVIEW_STATES = ("PENDING", "APPROVED", "REJECTED")
 FIDELITY_STATES = ("PENDING", "PASS", "FAIL")
 
@@ -66,8 +68,9 @@ DISCLOSURE_LONG = ("Ambientación referencial. El mobiliario y la decoración so
                    "digital sobre la foto real; no existen en la propiedad.")
 
 #: Estados de la ambientación de UNA propiedad (§21/§26). Se derivan de hechos, como todo.
-PROPERTY_STAGING_STATES = ("STAGING_UNAVAILABLE", "NOT_REQUESTED", "NEEDS_STAGING", "GENERATING",
-                           "STAGING_REVIEW", "APPROVED", "STAGING_NEEDS_MANUAL_REVIEW")
+PROPERTY_STAGING_STATES = ("STAGING_PROVIDER_NOT_APPROVED", "STAGING_UNAVAILABLE", "NOT_REQUESTED",
+                           "NEEDS_STAGING", "GENERATING", "STAGING_REVIEW", "APPROVED",
+                           "STAGING_NEEDS_MANUAL_REVIEW")
 
 
 class StagingError(ValueError):
@@ -208,7 +211,7 @@ def list_for(property_id: str, source_asset_id: Optional[str] = None,
     else:
         sql += " AND fit_id=?"; args.append(fit_id)
     if not include_benchmark:
-        sql += " AND benchmark_id IS NULL"
+        sql += " AND purpose='PRODUCT'"
     sql += " ORDER BY created_at DESC"
     return [get(r["attempt_id"]) for r in store.q(sql, tuple(args))]
 
@@ -228,12 +231,16 @@ def retries_left(property_id: str, source_asset_id: str, fit_id: Optional[str] =
 
 def create_attempt(property_id: str, source_asset_id: str, style: str,
                    fit_id: Optional[str] = None, provider_name: Optional[str] = None,
-                   benchmark_id: Optional[str] = None) -> str:
+                   benchmark_id: Optional[str] = None, purpose: str = "PRODUCT") -> str:
     """Registra un intento en QUEUED. No llama a nadie todavía.
 
     Comprueba los derechos ANTES de gastar: un fit de prospecto exige Pro; un pack base tiene un
-    tope de reintentos por foto principal. Los intentos de benchmark no consumen el cupo de un
-    cliente ni se publican jamás."""
+    tope de reintentos por foto principal. Los intentos de benchmark o de smoke no consumen el cupo
+    de un cliente.
+
+    E32 §I — un intento nace EXPERIMENTAL si no es de producto o si lo atiende un proveedor que
+    nadie aprobó. Un experimental no puede publicarse nunca, ni aunque después se apruebe a ese
+    proveedor: lo que se generó antes de la decisión se generó antes de la decisión."""
     properties.require(property_id)
     src = assets.get(source_asset_id, property_id)
     if src is None or src["kind"] != assets.PHOTO_ORIGINAL:
@@ -243,7 +250,9 @@ def create_attempt(property_id: str, source_asset_id: str, style: str,
         entitlements.require(entitlements.MULTIPLE_STAGING)
         from . import fits                                    # noqa: PLC0415
         fits.require(fit_id, property_id)
-    if benchmark_id is None:
+    if purpose not in PURPOSES:
+        raise StagingError(f"propósito de intento desconocido: {purpose}")
+    if purpose == "PRODUCT":
         left = retries_left(property_id, source_asset_id, fit_id)
         if left is not None and left <= 0:
             raise entitlements.EntitlementError(
@@ -251,6 +260,8 @@ def create_attempt(property_id: str, source_asset_id: str, style: str,
                 "Se agotaron los intentos internos para esta foto. Corresponde revisión manual, "
                 "no otro intento automático.")
     prov = visual.get_provider(provider_name)
+    aprobado = pilot.approved_provider_name()
+    experimental = 1 if (purpose != "PRODUCT" or prov.name != aprobado or not aprobado) else 0
     req = canonical_request(style)
     ruta = assets.path_of(src)
     if not os.path.exists(ruta):
@@ -258,9 +269,11 @@ def create_attempt(property_id: str, source_asset_id: str, style: str,
     aid = "st_" + uuid.uuid4().hex[:12]
     store.ex("INSERT INTO staging_attempts(attempt_id, property_id, source_asset_id, fit_id, "
              "benchmark_id, visual_style, provider, model, request_version, prompt_hash, "
-             "input_sha256, status, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,'QUEUED',?)",
+             "input_sha256, status, purpose, experimental, created_at) "
+             "VALUES (?,?,?,?,?,?,?,?,?,?,?,'QUEUED',?,?,?)",
              (aid, property_id, source_asset_id, fit_id, benchmark_id, style, prov.name,
-              prov.model, REQUEST_VERSION, req["prompt_hash"], src["sha256"], store.now()))
+              prov.model, REQUEST_VERSION, req["prompt_hash"], src["sha256"], purpose,
+              experimental, store.now()))
     return aid
 
 
@@ -344,10 +357,20 @@ def _loop() -> None:
         try:
             run_attempt(aid)
         except Exception as e:                                # noqa: BLE001
-            store.ex("UPDATE staging_attempts SET status='FAILED', error=?, completed_at=? "
-                     "WHERE attempt_id=?", (_safe_error(e), store.now(), aid))
+            try:
+                store.ex("UPDATE staging_attempts SET status='FAILED', error=?, completed_at=? "
+                         "WHERE attempt_id=?", (_safe_error(e), store.now(), aid))
+            except Exception:                                 # noqa: BLE001
+                # el intento ya no existe (caso borrado, base recreada): el worker es un hilo de
+                # fondo y no tiene a quién reportarle. Se descarta el job, no se cae el proceso.
+                pass
         finally:
-            _jobs.task_done()
+            try:
+                _jobs.task_done()
+            except ValueError:
+                # la cola fue reemplazada debajo del hilo (pasa al recargar el módulo en los
+                # tests). Un worker de fondo no tiene a quién reportarle: sigue vivo y calla.
+                pass
 
 
 def enqueue(attempt_id: str) -> None:
@@ -459,16 +482,16 @@ def review(attempt_id: str, fidelity: str, quality: Optional[int], publication: 
         if not 1 <= quality <= 5:
             raise ReviewError("La calidad tiene que ser un número entre 1 y 5.")
         reasons = []
-    if a["benchmark_id"] and publication == "APPROVE":
-        # un intento de benchmark se juzga igual pero NUNCA se publica a un cliente
-        estado = "APPROVED"
-    else:
-        estado = "APPROVED" if publication == "APPROVE" else "REJECTED"
+    estado = "APPROVED" if publication == "APPROVE" else "REJECTED"
     store.ex("UPDATE staging_attempts SET fidelity_status=?, quality_score=?, review_status=?, "
              "failure_reasons=?, review_notes=?, reviewer=?, reviewed_at=? WHERE attempt_id=?",
              (fidelity, quality, estado, json.dumps(reasons), (notes or "")[:2000],
               (reviewer or "")[:80], store.now(), attempt_id))
-    if estado == "APPROVED" and not a["benchmark_id"]:
+    # Un intento de benchmark o de smoke se juzga con la misma vara —su veredicto es el dato del
+    # bake-off— pero jamás se convierte en entregable. Lo mismo un intento atendido por un
+    # proveedor sin aprobar: §I, "experimental candidates must not silently become customer
+    # deliverables".
+    if estado == "APPROVED" and a["purpose"] == "PRODUCT" and not a["experimental"]:
         _publish(attempt_id)
     return require(attempt_id)
 
@@ -477,6 +500,9 @@ def _publish(attempt_id: str) -> str:
     """§22 — el candidato aprobado se convierte en PHOTO_STAGED con procedencia a la foto original
     y al intento. Para el pack base hay UNA sola: la anterior se retira (el intento queda)."""
     a = require(attempt_id)
+    if a["purpose"] != "PRODUCT" or a["experimental"]:
+        raise ReviewError("Un candidato experimental no se publica: se generó para un experimento "
+                          "o con un proveedor que nadie aprobó.")
     ruta = candidate_path(a)
     if not ruta or not os.path.exists(ruta):
         raise ReviewError("El candidato aprobado no está en el volumen.")
@@ -555,7 +581,8 @@ def approved_hero(property_id: str) -> Optional[Dict]:
 def state(property_id: str) -> Dict:
     h = hero(property_id)
     aprobado = approved_hero(property_id)
-    prov = visual.get_provider()
+    prov = visual.get_provider()                       # el APROBADO, o el no-configurado
+    hay_proveedor = pilot.approved_provider_name() is not None
     intentos = list_for(property_id, h["asset_id"], None) if h else []
     activos = [a for a in intentos if a["status"] in ("QUEUED", "RUNNING")]
     por_revisar = [a for a in intentos if a["status"] == "GENERATED" and a["review_status"] == "PENDING"]
@@ -574,8 +601,13 @@ def state(property_id: str) -> Dict:
         # persona mire el caso, tenga o no credencial el entorno de hoy
         st, razon, man = ("STAGING_NEEDS_MANUAL_REVIEW",
                           "se agotaron los intentos sin una imagen aprobada", "not_generated")
+    elif not hay_proveedor:
+        # §I — mientras nadie apruebe un proveedor, el producto lo dice con esas palabras.
+        st, razon, man = ("STAGING_PROVIDER_NOT_APPROVED",
+                          "todavía no hay un proveedor de ambientación aprobado", "not_generated")
     elif not prov.available():
-        st, razon, man = "STAGING_UNAVAILABLE", "no hay proveedor de ambientación configurado", "not_generated"
+        st, razon, man = ("STAGING_UNAVAILABLE",
+                          "el proveedor aprobado no tiene credencial en este entorno", "not_generated")
     else:
         st, razon, man = "NEEDS_STAGING", "foto principal elegida; falta generar y aprobar", "not_generated"
     return {"state": st, "reason": razon, "manifest_status": man,
@@ -588,6 +620,7 @@ def state(property_id: str) -> Dict:
 
 #: Cómo se le cuenta cada estado al cliente. Sin vocabulario de proveedor ni de QA.
 CUSTOMER_TEXT = {
+    "STAGING_PROVIDER_NOT_APPROVED": "Todavía no disponible",
     "STAGING_UNAVAILABLE": "Todavía no disponible",
     "NOT_REQUESTED": "Elegí la foto principal para que la ambientemos",
     "NEEDS_STAGING": "En preparación",
@@ -610,6 +643,29 @@ def needing_staging_all() -> List[Dict]:
     out = []
     for r in store.q("SELECT property_id FROM properties WHERE hero_photo_asset_id IS NOT NULL"):
         st = state(r["property_id"])
-        if st["state"] in ("NEEDS_STAGING", "STAGING_NEEDS_MANUAL_REVIEW", "STAGING_UNAVAILABLE"):
+        if st["state"] in ("NEEDS_STAGING", "STAGING_NEEDS_MANUAL_REVIEW", "STAGING_UNAVAILABLE",
+                           "STAGING_PROVIDER_NOT_APPROVED"):
             out.append(dict(st, property=properties.require(r["property_id"])))
     return out
+
+
+# =================================================================================================
+# E32 §C — SMOKE TEST: UNA llamada real para verificar que el adaptador habla con el proveedor
+# =================================================================================================
+def smoke_test(provider_name: str, source_asset_id: str, property_id: str,
+               style: str = "CONTEMPORARY") -> Dict:
+    """Una sola llamada real. Verifica endpoint, autenticación, formato, parseo, costo y latencia.
+
+    Lo que un smoke test NO hace, y conviene tenerlo escrito porque la tentación es evidente: no
+    aprueba al proveedor, no lo selecciona, y su salida no se publica. Que una API responda una
+    imagen no dice nada sobre si esa imagen respeta la arquitectura del lugar."""
+    aid = create_attempt(property_id, source_asset_id, style, provider_name=provider_name,
+                         purpose="SMOKE")
+    a = run_attempt(aid)
+    ok = a["status"] == "GENERATED"
+    detalle = {"provider": provider_name, "model": a["model"], "ok": ok,
+               "attempt_id": aid, "latency_ms": a["latency_ms"],
+               "cost_usd": a["cost_usd"], "cost_basis": a["cost_basis"],
+               "error": a["error"], "auto_warnings": a["auto_warnings_list"]}
+    pilot.log_event("PROVIDER_SMOKE", property_id=property_id, detail=detalle)
+    return dict(detalle, attempt=a)

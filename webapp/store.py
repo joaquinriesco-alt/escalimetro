@@ -245,6 +245,40 @@ CREATE TABLE IF NOT EXISTS staging_attempts (
   completed_at      TEXT,
   created_at        TEXT NOT NULL
 );
+-- ==============================================================================================
+-- E32 — ESCALÍMETRO LAB. Tres tablas y ninguna duplica lo que ya se puede derivar:
+--   benchmark_photos  qué fotos reales entran al bake-off, con sus rasgos difíciles
+--   lab_notes         lo que Joaquín escribe mientras prueba ("el pilar quedó mal detectado")
+--   lab_events        SÓLO acciones humanas sin otro hogar (aprobar proveedor, smoke test).
+-- La línea de tiempo de una propiedad NO se guarda: se deriva de los artefactos, igual que su
+-- estado. Un registro de eventos paralelo se desincroniza el día que alguien olvide escribirlo.
+-- ==============================================================================================
+CREATE TABLE IF NOT EXISTS benchmark_photos (
+  asset_id    TEXT PRIMARY KEY REFERENCES property_assets(asset_id) ON DELETE CASCADE,
+  property_id TEXT NOT NULL REFERENCES properties(property_id) ON DELETE CASCADE,
+  tags        TEXT,                        -- JSON: rasgos difíciles declarados por un humano
+  reason      TEXT DEFAULT '',             -- por qué entra al benchmark
+  added_at    TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS lab_notes (
+  note_id     TEXT PRIMARY KEY,
+  property_id TEXT NOT NULL REFERENCES properties(property_id) ON DELETE CASCADE,
+  fit_id      TEXT,
+  scope       TEXT NOT NULL DEFAULT 'PROPERTY',   -- PROPERTY | FIT | LAYOUT | STAGING
+  body        TEXT NOT NULL,
+  author      TEXT DEFAULT '',
+  created_at  TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS lab_events (
+  event_id    TEXT PRIMARY KEY,
+  kind        TEXT NOT NULL,               -- PROVIDER_APPROVED | PROVIDER_SMOKE | BENCHMARK_RUN...
+  property_id TEXT,
+  detail      TEXT,                        -- JSON saneado: nunca credenciales
+  author      TEXT DEFAULT '',
+  created_at  TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_notes_prop ON lab_notes(property_id, created_at);
+CREATE INDEX IF NOT EXISTS ix_events_kind ON lab_events(kind, created_at);
 CREATE INDEX IF NOT EXISTS ix_staging_prop ON staging_attempts(property_id, created_at);
 CREATE INDEX IF NOT EXISTS ix_staging_review ON staging_attempts(review_status, status);
 CREATE INDEX IF NOT EXISTS ix_fits_prop ON fit_requests(property_id, created_at);
@@ -319,6 +353,19 @@ def init() -> None:
         conn.execute("ALTER TABLE properties ADD COLUMN hero_photo_asset_id TEXT")
     if "pack_override_reason" not in tiene_props:
         conn.execute("ALTER TABLE properties ADD COLUMN pack_override_reason TEXT")
+    # E32 — la valoración interna de una propiedad mientras se prueba (§17). No la ve el cliente.
+    if "lab_feedback" not in tiene_props:
+        conn.execute("ALTER TABLE properties ADD COLUMN lab_feedback TEXT")
+    # E32 §I — para qué se pidió un intento y si puede llegar a un cliente. Un candidato
+    # experimental (smoke, bake-off, proveedor no aprobado) NUNCA se publica como entregable.
+    tiene_att = {r["name"] for r in conn.execute("PRAGMA table_info(staging_attempts)").fetchall()}
+    if "purpose" not in tiene_att:
+        conn.execute("ALTER TABLE staging_attempts ADD COLUMN purpose TEXT NOT NULL DEFAULT 'PRODUCT'")
+    if "experimental" not in tiene_att:
+        conn.execute("ALTER TABLE staging_attempts ADD COLUMN experimental INTEGER NOT NULL DEFAULT 0")
+    tiene_fits = {r["name"] for r in conn.execute("PRAGMA table_info(fit_requests)").fetchall()}
+    if "lab_feedback" not in tiene_fits:
+        conn.execute("ALTER TABLE fit_requests ADD COLUMN lab_feedback TEXT")
     # E31 — un intento de ambientación que decía RUNNING murió con el proceso. Misma regla que
     # las corridas: no se reanuda solo ni se deja "generando" para siempre.
     conn.execute("UPDATE staging_attempts SET status='FAILED', completed_at=?, "

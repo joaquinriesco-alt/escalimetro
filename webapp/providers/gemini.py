@@ -35,6 +35,10 @@ PRICE_PER_M = {"gemini-3.1-flash-image": {"in": 0.50, "out": 60.0},
                "gemini-3-pro-image": {"in": 2.00, "out": 120.0}}
 LIST_PRICE_1K = {"gemini-3.1-flash-image": 0.067, "gemini-3.1-flash-lite-image": 0.0336,
                  "gemini-3-pro-image": 0.134}
+#: Estimación PREVIA para confirmar un gasto (§D). Es el precio de lista de una imagen 1K más el
+#: costo de la foto de entrada; el real se mide después desde `usageMetadata`.
+ESTIMATE_USD = {"gemini-3.1-flash-image": 0.07, "gemini-3.1-flash-lite-image": 0.04,
+                "gemini-3-pro-image": 0.14}
 
 
 class GeminiProvider:

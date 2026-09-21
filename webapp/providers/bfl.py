@@ -30,6 +30,8 @@ ENV = "BFL_API_KEY"
 DEFAULT_MODEL = "flux-kontext-pro"
 HOST = "https://api.bfl.ai"
 LIST_PRICE = {"flux-kontext-pro": 0.04, "flux-kontext-max": 0.08}
+ESTIMATE_USD = dict(LIST_PRICE)                              # precio fijo por imagen: la estimación
+                                                             # y el costo real coinciden
 CREDIT_USD = 0.01
 POLL_S = float(os.environ.get("BFL_POLL_S", "0.5"))
 POLL_MAX_S = int(os.environ.get("BFL_POLL_MAX_S", "180"))

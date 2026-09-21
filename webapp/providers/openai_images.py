@@ -35,6 +35,13 @@ PRICE_PER_M = {"gpt-image-2.5-sunburst": {"img_in": 8.0, "txt_in": 5.0, "out": 3
                "gpt-image-2": {"img_in": 8.0, "txt_in": 5.0, "out": 30.0},
                "gpt-image-1.5": {"img_in": 8.0, "txt_in": 5.0, "out": 32.0},
                "gpt-image-1": {"img_in": 10.0, "txt_in": 5.0, "out": 40.0}}
+#: Estimación PREVIA para confirmar un gasto (§D). Una edición 1536×1024 en calidad alta ronda los
+#: 6.200 tokens de salida ($30/M) más la foto de entrada: ~USD 0.20. Deliberadamente generosa: una
+#: confirmación de gasto que subestima no sirve para confirmar nada. El real se mide desde `usage`.
+ESTIMATE_USD = {"gpt-image-2.5-sunburst": 0.20, "gpt-image-2.5-flare": 0.20,
+                "gpt-image-2": 0.20, "gpt-image-1.5": 0.21, "gpt-image-1": 0.28,
+                "gpt-image-1-mini": 0.06}
+
 MIN_PX, MAX_PX, MAX_EDGE = 655_360, 8_294_400, 3840
 
 
