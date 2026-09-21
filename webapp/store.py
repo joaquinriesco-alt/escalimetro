@@ -110,6 +110,54 @@ CREATE TABLE IF NOT EXISTS reviews (
   engine_commit TEXT,
   brief_sha256  TEXT
 );
+
+-- ==============================================================================================
+-- E28 — capa de PRODUCTO. Convive con las tablas del motor sin tocarlas: `properties` apunta a
+-- `cases`, nunca al revés, y un caso sin propiedad sigue siendo perfectamente válido.
+-- ==============================================================================================
+CREATE TABLE IF NOT EXISTS properties (
+  property_id       TEXT PRIMARY KEY,
+  schema_version    TEXT NOT NULL,
+  title             TEXT NOT NULL,
+  asset_type        TEXT NOT NULL DEFAULT 'OFFICE',
+  country           TEXT DEFAULT '',
+  city              TEXT DEFAULT '',
+  reference         TEXT DEFAULT '',
+  published_area_m2 REAL,
+  floorplan_case_id TEXT REFERENCES cases(case_id) ON DELETE SET NULL,
+  status            TEXT NOT NULL DEFAULT 'DRAFT',
+  notes             TEXT DEFAULT '',
+  created_at        TEXT NOT NULL,
+  updated_at        TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS property_assets (
+  asset_id          TEXT PRIMARY KEY,
+  property_id       TEXT NOT NULL REFERENCES properties(property_id) ON DELETE CASCADE,
+  kind              TEXT NOT NULL,
+  original_filename TEXT NOT NULL,
+  stored_name       TEXT NOT NULL,    -- nombre interno; el del usuario nunca toca el filesystem
+  mime_type         TEXT NOT NULL,
+  size_bytes        INTEGER NOT NULL,
+  sha256            TEXT NOT NULL,
+  width_px          INTEGER,
+  height_px         INTEGER,
+  sort_order        INTEGER NOT NULL DEFAULT 0,
+  source_asset_id   TEXT REFERENCES property_assets(asset_id) ON DELETE SET NULL,
+  metadata          TEXT,             -- JSON: procedencia y lo que haga falta sin migrar
+  created_at        TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS packs (
+  pack_id        TEXT PRIMARY KEY,
+  property_id    TEXT NOT NULL REFERENCES properties(property_id) ON DELETE CASCADE,
+  schema_version TEXT NOT NULL,
+  status         TEXT NOT NULL,
+  manifest       TEXT,               -- JSON
+  export_name    TEXT,               -- nombre del ZIP dentro del directorio de la propiedad
+  created_at     TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_assets_prop ON property_assets(property_id, kind, sort_order);
+CREATE INDEX IF NOT EXISTS ix_props_case ON properties(floorplan_case_id);
+CREATE INDEX IF NOT EXISTS ix_packs_prop ON packs(property_id);
 CREATE INDEX IF NOT EXISTS ix_reviews_run ON reviews(run_id, alt);
 CREATE INDEX IF NOT EXISTS ix_runs_case ON runs(case_id);
 CREATE INDEX IF NOT EXISTS ix_briefs_case ON briefs(case_id);
@@ -118,6 +166,13 @@ CREATE INDEX IF NOT EXISTS ix_briefs_case ON briefs(case_id);
 
 def now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def property_dir(property_id: str) -> str:
+    """Directorio de assets de una propiedad, dentro del mismo volumen persistente que los casos.
+    El `property_id` es generado por nosotros, así que no hay forma de que un nombre del usuario
+    escape del directorio."""
+    return os.path.join(DATA_DIR, "properties", property_id)
 
 
 def case_dir(case_id: str) -> str:
@@ -141,6 +196,7 @@ def connect() -> sqlite3.Connection:
 def init() -> None:
     os.makedirs(DATA_DIR, exist_ok=True)
     os.makedirs(os.path.join(DATA_DIR, "cases"), exist_ok=True)
+    os.makedirs(os.path.join(DATA_DIR, "properties"), exist_ok=True)
     conn = connect()
     conn.executescript(SCHEMA)
     # Migración en sitio para bases creadas antes de E27.3: SQLite no tiene ADD COLUMN IF NOT
