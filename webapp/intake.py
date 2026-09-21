@@ -165,6 +165,9 @@ def write_case_json(case_id: str) -> str:
         "source_name": c["source_name"] or "",
         "shell_declared_clean": {"yes": "yes", "no": "no"}.get(
             (it["declared_clean"] if it else None) or "", "unknown"),
+        # E16.5 — hecho de la fuente, no inferido. `multi_unit` mientras nadie diga lo contrario.
+        "drawing_scope": (it["drawing_scope"] if it and "drawing_scope" in it.keys() else None)
+                         or "multi_unit",
         "_contract": "E27 — generado por la web app desde el intake. Sólo hechos de entrada.",
     }
     p = os.path.join(cdir, "case.json")
@@ -211,6 +214,17 @@ def _run_pipeline(case_id: str, confirm: Optional[List[str]] = None) -> Dict:
     p = subprocess.run([sys.executable, "-m", "escalimetro", "run", "--case", cdir],
                        cwd=REPO_ROOT, env=env, capture_output=True, text=True, timeout=900)
     return {"log": ((p.stdout or "") + (p.stderr or ""))[-8000:], "returncode": p.returncode}
+
+
+def set_drawing_scope(case_id: str, scope: str) -> None:
+    """Declara si la lámina es una sola oficina (`whole_shell`) o varias (`multi_unit`).
+
+    Sólo lo llama una persona desde la revisión: el motor no lo deduce a propósito (E16.5), porque
+    la ausencia de una etiqueta no prueba que el dibujo sea de una sola unidad."""
+    if scope not in ("multi_unit", "whole_shell"):
+        raise IntakeError(f"alcance de dibujo desconocido: {scope}")
+    store.ex("UPDATE intake SET drawing_scope=?, updated_at=? WHERE case_id=?",
+             (scope, store.now(), case_id))
 
 
 def load_floorplate(case_id: str) -> Optional[Dict]:

@@ -320,6 +320,25 @@ CREATE TABLE IF NOT EXISTS product_reviews (
   author          TEXT DEFAULT '',
   created_at      TEXT NOT NULL
 );
+-- ==============================================================================================
+-- E34 — QUÉ DEDUJO EL SISTEMA AL INGERIR UNA PLANTA, y con cuánta confianza. Existe para poder
+-- correlacionar después "este layout quedó malo" con "la escala se dedujo de 3 puertas con 0.62 de
+-- confianza". Sin esto, el feedback no distingue un mal motor de un mal ingest.
+-- ==============================================================================================
+CREATE TABLE IF NOT EXISTS ingest_inference (
+  property_id      TEXT PRIMARY KEY REFERENCES properties(property_id) ON DELETE CASCADE,
+  case_id          TEXT,
+  scale_source     TEXT,        -- PUBLISHED_AREA | AUTO_DOOR | MANUAL | UNKNOWN
+  scale_value      REAL,        -- px_per_m finalmente usado
+  scale_confidence REAL,
+  evidence_count   INTEGER,
+  cross_checks     TEXT,        -- JSON: área publicada vs derivada, acuerdo entre métodos
+  access_source    TEXT,        -- AUTO | MANUAL | NONE
+  access_confidence REAL,
+  geometry_source  TEXT,        -- AUTO_ACCEPTED_BY_RULE | HUMAN_CONFIRMED | PENDING
+  notes            TEXT,
+  updated_at       TEXT NOT NULL
+);
 CREATE INDEX IF NOT EXISTS ix_reviews_prop ON product_reviews(property_id, created_at);
 CREATE INDEX IF NOT EXISTS ix_reviews_kind ON product_reviews(artifact_type, rating);
 CREATE INDEX IF NOT EXISTS ix_notes_prop ON lab_notes(property_id, created_at);
@@ -385,6 +404,11 @@ def init() -> None:
     for col in ("analyzed_at", "answers", "scale_points"):
         if col not in tiene:
             conn.execute(f"ALTER TABLE intake ADD COLUMN {col} TEXT")
+    # E34 — `drawing_scope` es un HECHO DE LA FUENTE (E16.5): si la lámina es una sola oficina o
+    # varias. El motor se niega a deducirlo de la ausencia de datos, y hace bien. Se guarda cuando
+    # una persona lo declara, que es la única forma honesta de saberlo.
+    if "drawing_scope" not in tiene:
+        conn.execute("ALTER TABLE intake ADD COLUMN drawing_scope TEXT")
     # E30 — un pack ahora puede ser el BASE de la propiedad o el de un fit request concreto.
     # Las bases de E28 ya tienen la tabla creada, así que la columna se añade en sitio.
     tiene_packs = {r["name"] for r in conn.execute("PRAGMA table_info(packs)").fetchall()}
