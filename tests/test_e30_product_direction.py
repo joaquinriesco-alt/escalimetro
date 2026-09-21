@@ -117,6 +117,13 @@ def _run_con_alternativas(store, case_id, run_id="r1", alts=(("A", "FIT", True),
     return run_id
 
 
+def _pack_exportable(dom, pid):
+    """E31 §21 — ver test_e28: el pack BASE exige plano comercial y motivo interno si falta algo."""
+    dom["assets"].save_bytes(pid, dom["assets"].FLOORPLAN_COMMERCIAL, "plano_comercial.png",
+                             _png(), "image/png")
+    dom["packs"].set_override(pid, "test: sin motor de ambientación en el entorno de pruebas")
+
+
 def _propiedad_con_layouts(dom, store, alts=(("A", "FIT", True),), best_alt=None, cid="c_lay"):
     pid = _prop(dom)
     _subir(dom, pid, dom["assets"].FLOORPLAN_ORIGINAL, "plano.png")
@@ -456,6 +463,7 @@ def test_el_pack_base_y_el_de_un_prospecto_conviven(client, dom):
     pid, _ = _propiedad_con_layouts(dom, store)
     fid = dom["fits"].create_prospect(pid, "Falabella", 40)
     dom["floorplan"].publish_layouts(pid)
+    _pack_exportable(dom, pid)
     dom["packs"].export_zip(pid)
     dom["packs"].export_zip(pid, fid)
     assert dom["packs"].get(pid)["kind"] == "BASE"
@@ -467,6 +475,7 @@ def test_el_zip_trae_la_propuesta_y_dice_que_trae(client, dom):
     from webapp import store
     pid, _ = _propiedad_con_layouts(dom, store)
     dom["floorplan"].publish_layouts(pid)
+    _pack_exportable(dom, pid)
     z = dom["packs"].export_zip(pid)
     blob = open(dom["assets"].path_of(dom["assets"].get(z["asset_id"], pid)), "rb").read()
     with zipfile.ZipFile(io.BytesIO(blob)) as zf:
@@ -491,6 +500,7 @@ def test_regenerar_el_pack_de_un_prospecto_no_borra_el_de_la_propiedad(client, d
     pid, _ = _propiedad_con_layouts(dom, store)
     fid = dom["fits"].create_prospect(pid, "Falabella", 40)
     dom["floorplan"].publish_layouts(pid)
+    _pack_exportable(dom, pid)
     base = dom["packs"].export_zip(pid)["asset_id"]
     dom["packs"].export_zip(pid, fid)
     dom["packs"].export_zip(pid, fid)

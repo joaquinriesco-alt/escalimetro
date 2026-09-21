@@ -76,6 +76,15 @@ def _subir(dom, pid, kind, nombre="x.png", blob=None):
         pid, FileStorage(stream=io.BytesIO(blob or _png()), filename=nombre), kind)
 
 
+def _pack_exportable(dom, pid):
+    """E31 §21 — el pack BASE ya no se exporta con lo que haya: exige plano comercial y, si falta
+    layout o imagen ambientada, un motivo interno escrito. Los tests que sólo prueban la mecánica
+    del ZIP (rutas, aislamiento) declaran ese motivo en vez de fingir que el producto está entero."""
+    dom["assets"].save_bytes(pid, dom["assets"].FLOORPLAN_COMMERCIAL, "plano_comercial.png",
+                             _png(), "image/png")
+    dom["packs"].set_override(pid, "test: sin motor de ambientación en el entorno de pruebas")
+
+
 def _case_listo(store, case_id="c_test", estado="READY"):
     """Un CASE con geometría declarada lista, sin correr el motor."""
     store.ex("INSERT INTO cases(case_id,title,original_filename,source_file,mime,uploaded_at,"
@@ -201,10 +210,11 @@ def test_borrar_un_asset_de_otra_propiedad_no_hace_nada(client, dom):
 
 
 def test_no_se_pueden_crear_tipos_reservados(client, dom):
-    """Los tipos futuros existen en el vocabulario pero nada en E28 los produce."""
+    """Los tipos futuros existen en el vocabulario pero nada los produce. (PHOTO_STAGED dejó de ser
+    reservado en E31: lo crea la aprobación humana, y hay tests de que un rechazo nunca lo crea.)"""
     pid = _prop(dom)
     with pytest.raises(dom["assets"].AssetError):
-        dom["assets"].save_bytes(pid, dom["assets"].PHOTO_STAGED, "x.png", _png(), "image/png")
+        dom["assets"].save_bytes(pid, dom["assets"].VIDEO, "x.mp4", b"\x00" * 64, "video/mp4")
 
 
 # ===================================================================================================
@@ -360,7 +370,8 @@ def test_el_manifiesto_declara_pendientes_las_imagenes_ambientadas(client, dom):
     pid = _prop(dom)
     man = dom["packs"].build_manifest(pid)
     assert man["photos_staged"] == [] and man["before_after"] == [] and man["video"] == []
-    assert man["visuals_status"]["status"] == "not_generated"
+    assert man["visuals_status"]["status"] in ("not_generated", "not_requested")
+    assert man["visuals_status"]["status"] != "approved"
     assert man["schema_version"] == "marketing_pack_v1"
 
 
@@ -369,6 +380,12 @@ def test_el_export_contiene_lo_que_existe_y_solo_eso(client, dom):
     _subir(dom, pid, dom["assets"].FLOORPLAN_ORIGINAL, "plano.png")
     _subir(dom, pid, dom["assets"].PHOTO_ORIGINAL, "f1.png")
     _subir(dom, pid, dom["assets"].PHOTO_ORIGINAL, "f2.png")
+    # E31 §21 — incompleto y sin motivo: NO se exporta, y dice exactamente qué falta
+    with pytest.raises(dom["packs"].PackNotReady) as e:
+        dom["packs"].export_zip(pid)
+    assert "imagen ambientada" in str(e.value)
+    assert dom["properties"].view(pid)["status"] != "PACK_READY"
+    _pack_exportable(dom, pid)
     res = dom["packs"].export_zip(pid)
     z = dom["assets"].get(res["asset_id"], pid)
     with zipfile.ZipFile(dom["assets"].path_of(z)) as zf:
@@ -378,7 +395,8 @@ def test_el_export_contiene_lo_que_existe_y_solo_eso(client, dom):
     assert any(n.startswith("floorplan/plano_original") for n in nombres)
     assert len([n for n in nombres if n.startswith("photos_original/")]) == 2
     assert not any("staged" in n for n in nombres)                 # nada inventado
-    assert man["visuals_status"]["status"] == "not_generated"
+    assert man["visuals_status"]["status"] != "approved"
+    assert man["readiness"]["state"] == "DEGRADED" and man["readiness"]["override_reason"]
     assert dom["properties"].view(pid)["status"] == "PACK_READY"
 
 
@@ -393,6 +411,7 @@ def test_el_manifiesto_no_filtra_rutas_del_servidor(client, dom):
 def test_el_zip_no_contiene_rutas_que_escapen(client, dom):
     pid = _prop(dom)
     _subir(dom, pid, dom["assets"].PHOTO_ORIGINAL, "../../evil.png")
+    _pack_exportable(dom, pid)
     res = dom["packs"].export_zip(pid)
     z = dom["assets"].get(res["asset_id"], pid)
     with zipfile.ZipFile(dom["assets"].path_of(z)) as zf:
@@ -403,6 +422,7 @@ def test_el_zip_no_contiene_rutas_que_escapen(client, dom):
 def test_no_se_descarga_el_pack_de_otra_propiedad(client, dom):
     a_pid, b_pid = _prop(dom, "A"), _prop(dom, "B")
     _subir(dom, a_pid, dom["assets"].PHOTO_ORIGINAL)
+    _pack_exportable(dom, a_pid)
     dom["packs"].export_zip(a_pid)
     assert client.get(f"/properties/{a_pid}/pack.zip").status_code == 200
     assert client.get(f"/properties/{b_pid}/pack.zip").status_code == 404
