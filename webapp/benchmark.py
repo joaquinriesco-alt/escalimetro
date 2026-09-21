@@ -24,7 +24,7 @@ import uuid
 from typing import Dict, List, Optional
 
 from . import store
-from .domain import assets, presets, properties, staging, visual
+from .domain import assets, pilot, presets, properties, staging, visual
 
 MANIFEST_VERSION = "staging_benchmark_v1"
 RESULTS_VERSION = "staging_benchmark_results_v1"
@@ -32,12 +32,89 @@ DEFAULT_STYLE = "CONTEMPORARY"
 MIN_PHOTOS, IDEAL_PHOTOS = 8, 10
 MIN_SPACES = 3
 
-DIFFICULT_FEATURES = ("windows", "columns", "doors", "glazing", "ceiling", "corner", "wide_angle",
-                      "backlight", "open_space", "reflections", "other")
+#: E32 §B — los rasgos que hacen difícil una foto. Los declara un humano al sumarla al dataset;
+#: no se infieren ni se inventan. Sirven para leer después POR QUÉ falló un proveedor: si todos
+#: sus fallos de fidelidad son fotos con COLUMNS, eso es un patrón y no mala suerte.
+DIFFICULT_FEATURES = ("WINDOWS", "COLUMNS", "DOORS", "GLAZING", "CEILING", "CORNER",
+                      "WIDE_ANGLE", "EXTERIOR_VIEW", "OPEN_PLAN", "OTHER_DIFFICULT")
 
 #: §14 — la compuerta provisional. Con muestras chicas es evidencia de piloto, no prueba.
 GATE = {"fidelity_pass_rate": 0.85, "approval_rate": 0.75, "max_cost_per_approved_usd": 4.0,
         "min_sample_for_confidence": 20}
+
+
+# =================================================================================================
+# E32 §B — EL DATASET VIVE EN LA BASE, no en un archivo que alguien tiene que editar a mano.
+# El JSON se sigue escribiendo (lo lee la CLI y es el artefacto que se archiva), pero se GENERA
+# desde la tabla en cada cambio: una sola fuente de verdad, editable desde el navegador.
+# =================================================================================================
+def manifest_path() -> str:
+    """El manifiesto vivo va al VOLUMEN, no al repo: es estado de ejecución, y un deploy no puede
+    borrarlo. La copia del repo queda como plantilla y documentación."""
+    return os.path.join(store.DATA_DIR, "benchmarks", "staging_benchmark_v1.json")
+
+
+def add_photo(asset_id: str, property_id: str, tags: Optional[List[str]] = None,
+              reason: str = "") -> None:
+    """Suma una foto real al dataset. Los rasgos difíciles los declara un humano: no se inventan."""
+    a = assets.get(asset_id, property_id)
+    if a is None or a["kind"] != assets.PHOTO_ORIGINAL:
+        raise ValueError("esa foto no pertenece a la propiedad o no es una foto original")
+    limpias = [(t or "").strip().upper() for t in (tags or []) if (t or "").strip()]
+    malos = [t for t in limpias if t not in DIFFICULT_FEATURES]
+    if malos:
+        raise ValueError(f"rasgos difíciles desconocidos: {malos}")
+    store.ex("INSERT INTO benchmark_photos(asset_id, property_id, tags, reason, added_at) "
+             "VALUES (?,?,?,?,?) ON CONFLICT(asset_id) DO UPDATE SET tags=excluded.tags, "
+             "reason=excluded.reason",
+             (asset_id, property_id, json.dumps(sorted(set(limpias))), reason[:300], store.now()))
+    write_manifest()
+
+
+def remove_photo(asset_id: str) -> None:
+    store.ex("DELETE FROM benchmark_photos WHERE asset_id=?", (asset_id,))
+    write_manifest()
+
+
+def dataset() -> Dict:
+    """El manifiesto, generado desde la tabla. Nunca se lee de disco para decidir nada."""
+    man = empty_manifest()
+    for r in store.q("SELECT * FROM benchmark_photos ORDER BY added_at"):
+        a = assets.get(r["asset_id"], r["property_id"])
+        if a is None:
+            continue                                          # la foto se borró: deja de contar
+        man["photos"].append({
+            "photo_id": a["asset_id"], "property_id": r["property_id"], "asset_id": a["asset_id"],
+            "original_sha256": a["sha256"], "width_px": a["width_px"], "height_px": a["height_px"],
+            "notes": r["reason"] or "", "inclusion_reason": r["reason"] or "",
+            "difficult_features": store.js(r["tags"], []) or []})
+    espacios = len({f["property_id"] for f in man["photos"]})
+    man["status"] = ("READY" if len(man["photos"]) >= MIN_PHOTOS and espacios >= MIN_SPACES
+                     else ("INSUFFICIENT_PHOTOS" if man["photos"] else "AWAITING_REAL_PHOTOS"))
+    man["distinct_spaces"] = espacios
+    if man["photos"]:
+        man.pop("_nota", None)
+    return man
+
+
+def write_manifest() -> str:
+    man = dataset()
+    _write(manifest_path(), man)
+    return manifest_path()
+
+
+def eligible_photos() -> List[Dict]:
+    """Todas las PHOTO_ORIGINAL del sistema, marcando cuáles ya están en el dataset."""
+    dentro = {r["asset_id"] for r in store.q("SELECT asset_id FROM benchmark_photos")}
+    tags = {r["asset_id"]: store.js(r["tags"], []) or []
+            for r in store.q("SELECT asset_id, tags FROM benchmark_photos")}
+    out = []
+    for p in store.q("SELECT property_id, title FROM properties ORDER BY created_at"):
+        for a in assets.list_of_kind(p["property_id"], assets.PHOTO_ORIGINAL):
+            out.append({"asset": a, "property_id": p["property_id"], "title": p["title"],
+                        "selected": a["asset_id"] in dentro,
+                        "tags": tags.get(a["asset_id"], [])})
+    return out
 
 
 # =================================================================================================
@@ -251,6 +328,81 @@ def select(metrics: Dict[str, Dict], rights: Optional[Dict[str, bool]] = None) -
     return {"winner": ganador, "verdict": "SELECTED", "gates": veredictos}
 
 
+def estimate(providers: List[str], n_photos: int, runs: int) -> Dict:
+    """Cuánto costaría el lote, según precios de lista. Para pedir confirmación ANTES de gastar."""
+    from . import providers as provmod                        # noqa: PLC0415
+    por: Dict[str, Optional[float]] = {}
+    total = 0.0
+    desconocido = False
+    for p in providers:
+        u = provmod.estimate_usd(p)
+        por[p] = u
+        if u is None:
+            desconocido = True
+        else:
+            total += u * n_photos * runs
+    return {"per_generation": por, "attempts": len(providers) * n_photos * runs,
+            "total_usd": round(total, 2), "complete": not desconocido, "basis": "list_price"}
+
+
+def start(providers: List[str], runs: int = 2, style: str = DEFAULT_STYLE,
+          author: str = "") -> Dict:
+    """Crea los intentos del bake-off y los ENCOLA. No bloquea: el worker los va tomando de a uno y
+    la consola sondea el progreso.
+
+    Cada intento cuenta. No hay reintento silencioso dentro del lote: si uno falla, falla y queda
+    contado, porque una tasa de éxito que esconde los reintentos no es una tasa de éxito."""
+    man = dataset()
+    errs = validate_manifest(man)
+    if errs:
+        raise ValueError("; ".join(errs))
+    excluidos = [p for p in providers if p in pilot.EXCLUDED]
+    if excluidos:
+        raise ValueError(f"proveedor excluido del piloto: {', '.join(excluidos)}")
+    sin = [p for p in providers if not visual.get_provider(p).available()]
+    if sin:
+        raise ValueError(f"sin credencial para: {', '.join(sin)}")
+    if len(providers) < 2:
+        raise ValueError("el bake-off compara al menos dos proveedores: con uno no hay comparación")
+    bid = "bm_" + uuid.uuid4().hex[:10]
+    creados = []
+    for item in plan(man, providers, runs, style):
+        aid = staging.create_attempt(item["property_id"], item["asset_id"], style,
+                                     provider_name=item["provider"], benchmark_id=bid,
+                                     purpose="BENCHMARK")
+        creados.append(aid)
+        staging.enqueue(aid)
+    pilot.log_event("BENCHMARK_RUN", detail={"benchmark_id": bid, "providers": providers,
+                                             "runs": runs, "style": style,
+                                             "attempts": len(creados),
+                                             "estimate": estimate(providers, len(man["photos"]), runs)},
+                    author=author)
+    return {"benchmark_id": bid, "attempts": creados, "planned": len(creados)}
+
+
+def progress(benchmark_id: str) -> Dict:
+    """Para el sondeo de la consola: cuántos van, cuánto se gastó, cuánto falta por revisar."""
+    filas = attempts_of(benchmark_id)
+    por_estado: Dict[str, int] = {}
+    for a in filas:
+        por_estado[a["status"]] = por_estado.get(a["status"], 0) + 1
+    gasto = sum(float(a["cost_usd"]) for a in filas if a.get("cost_usd") is not None)
+    hechos = por_estado.get("GENERATED", 0) + por_estado.get("FAILED", 0)
+    return {"benchmark_id": benchmark_id, "total": len(filas), "by_status": por_estado,
+            "done": hechos, "running": por_estado.get("RUNNING", 0),
+            "queued": por_estado.get("QUEUED", 0), "failed": por_estado.get("FAILED", 0),
+            "spend_usd": round(gasto, 4),
+            "pending_review": sum(1 for a in filas if a["status"] == "GENERATED"
+                                  and a["review_status"] == "PENDING"),
+            "finished": hechos == len(filas) and len(filas) > 0}
+
+
+def latest_run() -> Optional[str]:
+    r = store.q1("SELECT benchmark_id FROM staging_attempts WHERE benchmark_id IS NOT NULL "
+                 "ORDER BY created_at DESC LIMIT 1")
+    return r["benchmark_id"] if r else None
+
+
 def attempts_of(benchmark_id: str) -> List[Dict]:
     return [staging.get(r["attempt_id"]) for r in store.q(
         "SELECT attempt_id FROM staging_attempts WHERE benchmark_id=? ORDER BY created_at",
@@ -305,11 +457,16 @@ def main(argv: Optional[List[str]] = None) -> int:
     store.init()
     if args.cmd == "init":
         ids = [x.strip() for x in args.from_properties.split(",") if x.strip()]
-        man = manifest_from_properties(ids) if ids else empty_manifest()
+        if ids:
+            for pid in ids:
+                for a in assets.list_of_kind(pid, assets.PHOTO_ORIGINAL):
+                    add_photo(a["asset_id"], pid, [], "añadida desde la CLI")
+        man = dataset()
         _write(args.out, man)
         print(f"manifiesto: {args.out} · fotos: {len(man['photos'])} · estado: {man['status']}")
         return 0
-    man = json.load(open(args.manifest, encoding="utf-8"))
+    man = dataset() if not os.path.exists(args.manifest) else json.load(
+        open(args.manifest, encoding="utf-8"))
     provs = [x.strip() for x in args.providers.split(",") if x.strip()]
     if args.cmd == "run":
         errs = validate_manifest(man)
