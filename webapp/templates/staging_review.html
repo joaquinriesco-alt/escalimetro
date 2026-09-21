@@ -2,10 +2,19 @@
 {% block body %}
 <p class="crumb"><a href="{{ url_for('staging.queue') }}">Ambientación</a> / {{ p.title }} / {{ a.attempt_id }}</p>
 <h1>{{ p.title }} — candidato {{ a.attempt_id }}</h1>
-<p class="sub">{{ a.provider }} · {{ a.model }} · estilo {{ a.visual_style }} · petición {{ a.request_version }}
-  · <span class="mono">{{ a.prompt_hash[:12] }}</span>
-  {% if a.benchmark_id %}· <span class="chip">benchmark {{ a.benchmark_id }}</span>{% endif %}
-  {% if a.fit_id %}· propuesta {{ a.fit_id }}{% endif %}</p>
+{% if ciego %}
+  <p class="sub"><span class="chip">REVISIÓN A CIEGAS</span> estilo {{ a.visual_style }} ·
+    petición {{ a.request_version }} · <span class="mono">{{ a.prompt_hash[:12] }}</span></p>
+  <p class="hint">No se muestra el proveedor, el modelo ni el costo hasta que guardes el veredicto:
+    saber quién hizo la imagen antes de mirarla sesga lo que ves.</p>
+{% else %}
+  <p class="sub">{{ a.provider }} · {{ a.model }} · estilo {{ a.visual_style }} · petición {{ a.request_version }}
+    · <span class="mono">{{ a.prompt_hash[:12] }}</span>
+    {% if a.benchmark_id %}· <span class="chip">benchmark {{ a.benchmark_id }}</span>{% endif %}
+    {% if a.purpose != 'PRODUCT' %}· <span class="chip">{{ a.purpose }}</span>{% endif %}
+    {% if a.experimental %}· <span class="chip s-FAILED">experimental: no se publica</span>{% endif %}
+    {% if a.fit_id %}· propuesta {{ a.fit_id }}{% endif %}</p>
+{% endif %}
 
 {% if errores %}<div class="panel-bad"><ul>{% for e in errores %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
 
@@ -13,8 +22,10 @@
    <span class="chip">revisión: {{ a.review_status }}</span>
    <span class="chip">fidelidad: {{ a.fidelity_status }}</span>
    {% if a.quality_score %}<span class="chip">calidad {{ a.quality_score }}/5</span>{% endif %}
-   {% if a.latency_ms %}<span class="sub">{{ a.latency_ms }} ms proveedor · {{ a.pipeline_ms }} ms total</span>{% endif %}
-   {% if a.cost_usd is not none %}<span class="sub">· USD {{ '%.4f'|format(a.cost_usd) }} ({{ a.cost_basis }})</span>{% endif %}</p>
+   {% if not ciego %}
+     {% if a.latency_ms %}<span class="sub">{{ a.latency_ms }} ms proveedor · {{ a.pipeline_ms }} ms total</span>{% endif %}
+     {% if a.cost_usd is not none %}<span class="sub">· USD {{ '%.4f'|format(a.cost_usd) }} ({{ a.cost_basis }})</span>{% endif %}
+   {% endif %}</p>
 
 {% if a.status in ('QUEUED','RUNNING') %}
   <div class="nota">Generando. Recargá en unos segundos.</div>
@@ -64,7 +75,9 @@
       <label class="op"><input type="radio" name="publication" value="REJECT"> Rechazar — se conserva como evidencia, no se publica</label></fieldset>
     <label>Notas internas <span class="opt">(nunca salen al pack)</span><input name="notes"></label>
     <input type="hidden" name="reviewer" value="{{ reviewer }}">
-    <button type="submit" {{ 'disabled' if a.review_status != 'PENDING' }}>Guardar veredicto</button>
+    {% if a.purpose == 'BENCHMARK' %}<input type="hidden" name="next_after" value="1">{% endif %}
+    <button type="submit" {{ 'disabled' if a.review_status != 'PENDING' }}>
+      {{ 'Guardar y siguiente' if a.purpose == 'BENCHMARK' else 'Guardar veredicto' }}</button>
   </form>
 {% endif %}
 
@@ -74,12 +87,17 @@
   {% if retries_left is not none and retries_left <= 0 %}<p class="sub">Se agotaron los intentos internos: corresponde revisión manual, no otro intento automático.</p>{% endif %}
 {% endif %}
 
+{% if pendientes %}
+  <p><a class="btn sec" href="{{ url_for('lab.next_unreviewed', after=a.attempt_id) }}">Siguiente sin revisar ({{ pendientes }})</a>
+     <a class="btn sec" href="{{ url_for('lab.benchmark') }}">Volver al benchmark</a></p>
+{% endif %}
+
 <h2>Intentos sobre esta foto</h2>
 <table class="detect"><tbody>
 {% for i in intentos %}
   <tr><td><a href="{{ url_for('staging.review_page', attempt_id=i.attempt_id) }}" class="mono">{{ i.attempt_id }}</a></td>
       <td><span class="chip s-{{ i.status }}">{{ i.status }}</span> {{ i.review_status }} · fidelidad {{ i.fidelity_status }}{% if i.quality_score %} · {{ i.quality_score }}/5{% endif %}</td>
-      <td class="sub">{{ i.provider }} · {{ i.created_at }}{% if i.output_asset_id %} · <b>publicada</b>{% endif %}</td></tr>
+      <td class="sub">{{ '—' if ciego and i.review_status == 'PENDING' else i.provider }} · {{ i.created_at[:16] }}{% if i.output_asset_id %} · <b>publicada</b>{% endif %}</td></tr>
 {% endfor %}
 </tbody></table>
 <p class="sub">Estado de la propiedad: <b>{{ estado.state }}</b> — {{ estado.reason }}.</p>

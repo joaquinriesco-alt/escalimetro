@@ -73,20 +73,35 @@ def generate(property_id):
     return redirect(url_for("staging.review_page", attempt_id=aid))
 
 
-@bp.get("/attempt/<attempt_id>")
-@auth.require
-def review_page(attempt_id):
+def _es_ciego(a) -> bool:
+    """E32 §F — un candidato del bake-off se juzga SIN saber quién lo hizo.
+
+    Si el revisor ve "openai" antes de mirar la imagen, ya no está evaluando la imagen. Se revela
+    después de guardar el veredicto, que es cuando el dato sirve y ya no puede sesgar."""
+    return a["purpose"] == "BENCHMARK" and a["review_status"] == "PENDING"
+
+
+def _render_review(attempt_id, errores=None, code=200):
     a = staging.get(attempt_id)
     if a is None:
         abort(404)
     src = assets.get(a["source_asset_id"], a["property_id"])
-    return render_template(
+    ciego = _es_ciego(a) and request.args.get("reveal") != "1"
+    html = render_template(
         "staging_review.html", a=a, src=src, p=properties.require(a["property_id"]),
-        motivos=staging.FAILURE_REASONS, reviewer=REVIEWER,
+        motivos=staging.FAILURE_REASONS, reviewer=REVIEWER, ciego=ciego,
         intentos=staging.list_for(a["property_id"], a["source_asset_id"], a["fit_id"],
                                   include_benchmark=True),
         retries_left=staging.retries_left(a["property_id"], a["source_asset_id"], a["fit_id"]),
-        estado=staging.state(a["property_id"]), errores=[])
+        estado=staging.state(a["property_id"]),
+        pendientes=len(staging.pending_review_all()), errores=errores or [])
+    return (html, code) if code != 200 else html
+
+
+@bp.get("/attempt/<attempt_id>")
+@auth.require
+def review_page(attempt_id):
+    return _render_review(attempt_id)
 
 
 @bp.get("/attempt/<attempt_id>/image")
@@ -115,16 +130,11 @@ def review(attempt_id):
                        reasons=f.getlist("reasons"), notes=f.get("notes") or "",
                        reviewer=f.get("reviewer") or REVIEWER)
     except staging.ReviewError as e:
-        a = staging.get(attempt_id)
-        src = assets.get(a["source_asset_id"], a["property_id"])
-        return render_template(
-            "staging_review.html", a=a, src=src, p=properties.require(a["property_id"]),
-            motivos=staging.FAILURE_REASONS, reviewer=REVIEWER,
-            intentos=staging.list_for(a["property_id"], a["source_asset_id"], a["fit_id"],
-                                      include_benchmark=True),
-            retries_left=staging.retries_left(a["property_id"], a["source_asset_id"], a["fit_id"]),
-            estado=staging.state(a["property_id"]), errores=[str(e)]), 400
-    return redirect(url_for("staging.review_page", attempt_id=attempt_id))
+        return _render_review(attempt_id, [str(e)], 400)
+    # tras guardar, el siguiente sin revisar: así se revisan 40 candidatos sin volver a la cola
+    if f.get("next_after") and staging.get(attempt_id)["purpose"] == "BENCHMARK":
+        return redirect(url_for("lab.next_unreviewed", after=attempt_id))
+    return redirect(url_for("staging.review_page", attempt_id=attempt_id, reveal=1))
 
 
 @bp.post("/attempt/<attempt_id>/retry")
