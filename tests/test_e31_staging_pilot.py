@@ -454,13 +454,13 @@ def test_one_off_tiene_reintentos_internos_acotados_y_sin_boton_para_el_cliente(
 
 def test_pro_permite_ambientar_por_propuesta(client, dom, fake):
     pid, foto = _prop_con_foto(dom)
-    dom["entitlements"].set_mode("PRO")
+    dom["entitlements"].set_product(pid, "PRO")        # el producto es de la propiedad (E32.2)
     fid = dom["fits"].create_prospect(pid, "Falabella", 30, style="PREMIUM")
     a = _generado(dom, pid, foto, style="PREMIUM", fit_id=fid)
     assert a["status"] == "GENERATED" and a["fit_id"] == fid
     dom["staging"].review(a["attempt_id"], "PASS", 4, "APPROVE")
     assert dom["packs"].staging_assets(pid, fid) and not dom["packs"].staging_assets(pid, None)
-    dom["entitlements"].set_mode("ONE_OFF")
+    dom["entitlements"].set_product(pid, "ONE_OFF")
     with pytest.raises(dom["entitlements"].EntitlementError):
         dom["staging"].create_attempt(pid, foto, "PREMIUM", fit_id=fid, provider_name="fake")
 

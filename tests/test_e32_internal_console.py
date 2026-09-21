@@ -154,7 +154,7 @@ def test_todas_las_pantallas_exigen_autenticacion(tmp_path, monkeypatch):
 
 def test_la_consola_abre_en_todas_sus_secciones(client, dom, fake):
     pid = _prop(dom, client)
-    dom["entitlements"].set_mode("PRO")
+    dom["entitlements"].set_product(pid, "PRO")
     fid = dom["fits"].create_prospect(pid, "Falabella", 40)
     urls = ["/lab/", "/lab/new", "/lab/config", "/lab/benchmark", "/lab/feedback.json"]
     urls += [f"/lab/p/{pid}{t}" for t in ("", "/plano", "/fotos", "/material", "/prospectos",
@@ -482,8 +482,8 @@ def test_el_pack_no_se_arma_incompleto_desde_la_consola(client, dom, fake):
 
 
 def test_los_prospectos_no_se_pisan_entre_si(client, dom, fake):
-    dom["entitlements"].set_mode("PRO")
     pid = _prop(dom, client)
+    dom["entitlements"].set_product(pid, "PRO")
     a = client.post(f"/lab/p/{pid}/prospectos", data={"prospect_name": "Falabella",
                                                       "headcount": "40"}, follow_redirects=True)
     b = client.post(f"/lab/p/{pid}/prospectos", data={"prospect_name": "Cencosud",
@@ -661,12 +661,15 @@ def test_la_ambientacion_se_abre_dentro_del_shell_del_lab(client, dom, fake):
     assert 'href="/lab/"' in client.get("/").get_data(as_text=True)
 
 
-def test_el_lab_no_aplica_el_tope_de_propiedades_y_lo_dice(client, dom, fake):
-    """El tope de ONE_OFF sigue vigente en la superficie de cliente; la consola lo salta a
-    propósito para poder probar, y lo declara en pantalla."""
-    _prop(dom, client, "A")
+def test_el_lab_crea_una_compra_simulada_por_propiedad(client, dom, fake):
+    """E32.2 — en el LAB cada propiedad representa su propia compra, así que no hay tope; en el
+    cliente hace falta un Pack sin usar, que es otra cosa que "necesitás Pro"."""
+    from webapp.domain import grants
+    a = _prop(dom, client, "A")
+    assert grants.of_property(a)["source"] == "SIMULATED_LAB"
     assert client.post("/properties/new", data={"title": "B"}).status_code == 403
-    html = client.get("/lab/new").get_data(as_text=True)
-    assert "no aplica ese tope" in html
-    _prop(dom, client, "B")
-    assert len(dom["properties"].listing()) == 2
+    for i in range(4):
+        _prop(dom, client, f"Lab {i}")
+    assert len(dom["properties"].listing()) == 5
+    assert all(grants.of_property(v["property"]["property_id"])
+               for v in dom["properties"].listing())

@@ -198,10 +198,13 @@ def test_un_preset_desconocido_no_se_inventa(dom):
 # B — DERECHOS DE PRODUCTO (§17)
 # ===================================================================================================
 def test_el_modo_por_defecto_entrega_de_menos_no_de_mas(client, dom):
-    """Si alguien olvida configurar el producto, se entrega el pack, no Pro."""
+    """Si alguien olvida configurar el producto, se entrega el pack, no Pro.
+    (E32.2: la capacidad se pregunta por PROPIEDAD, no por cuenta.)"""
     e = dom["entitlements"]
-    assert e.mode() == "ONE_OFF"
-    assert e.allows(e.PROSPECT_FIT_REQUESTS) is False
+    assert e.default_product() == "ONE_OFF"
+    pid = _prop(dom)
+    assert e.product_of(pid) == "ONE_OFF"
+    assert e.allows(pid, e.PROSPECT_FIT_REQUESTS) is False
 
 
 def test_la_matriz_cubre_todas_las_capacidades(client, dom):
@@ -225,11 +228,16 @@ def test_el_pack_de_publicacion_cubre_una_sola_propiedad(client, dom):
     assert "Escalímetro Pro" in r.get_data(as_text=True)
 
 
-def test_en_pro_se_pueden_crear_varias_propiedades(client, dom):
-    dom["entitlements"].set_mode("PRO")
+def test_con_otro_pack_se_prepara_otra_propiedad_sin_pro(client, dom):
+    """E32.2 — la segunda propiedad NO necesita Pro: necesita otro Pack."""
+    from webapp.domain import grants
     _prop(dom)
+    assert client.post("/properties/new", data={"title": "Otra"}).status_code == 403
+    grants.create("ONE_OFF", "PURCHASE", "segunda compra")
     assert client.post("/properties/new", data={"title": "Otra"},
                        follow_redirects=True).status_code == 200
+    assert dom["entitlements"].product_of(dom["properties"].listing()[0]["property"]
+                                          ["property_id"]) == "ONE_OFF"
 
 
 def test_one_off_entrega_una_alternativa_y_pro_las_tres(client, dom):
@@ -238,7 +246,7 @@ def test_one_off_entrega_una_alternativa_y_pro_las_tres(client, dom):
     pid, _ = _propiedad_con_layouts(
         dom, store, alts=(("A", "FIT", True), ("B", "FIT", True), ("C", "FIT", True)))
     assert len(dom["floorplan"].publish_layouts(pid)) == 1
-    dom["entitlements"].set_mode("PRO")
+    dom["entitlements"].set_product(pid, "PRO")
     assert len(dom["floorplan"].publish_layouts(pid)) == 3
 
 
