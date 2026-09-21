@@ -158,22 +158,49 @@ def publish_commercial_floorplan(property_id: str) -> Optional[str]:
                   "_nota": "planta base: NO es la alternativa A"})
 
 
-def publish_layouts(property_id: str, run_id: Optional[str] = None) -> List[str]:
-    """Publica como assets comerciales los renders que el motor YA produjo para las alternativas
-    con layout. No genera geometría ni vuelve a correr nada."""
-    from . import assets                                      # noqa: PLC0415
-    ultimo = latest_layouts(property_id)
-    if ultimo is None:
-        return []
-    if run_id and ultimo["run"]["run_id"] != run_id:
-        ultimo = next((r for r in layout_runs(property_id) if r["run"]["run_id"] == run_id), None)
+def publish_layouts(property_id: str, run_id: Optional[str] = None,
+                    fit_id: Optional[str] = None) -> List[str]:
+    """Publica como assets comerciales los renders que el motor YA produjo. No genera geometría,
+    no vuelve a correr nada y no elige por calidad arquitectónica.
+
+    E30 §4/§18 — CUÁNTAS se publican lo decide el producto, no el solver:
+
+        Pro      las alternativas con layout de la corrida (hasta tres).
+        ONE_OFF  exactamente UNA, la representativa, elegida por el criterio declarado en
+                 `fits.pick_representative` y con el motivo guardado en el asset.
+
+    El motor sigue calculando A/B/C en los dos casos: eso es cómo está hecho y no se toca. La
+    diferencia es comercial y vive acá."""
+    from . import assets, entitlements, fits                  # noqa: PLC0415
+    if fit_id:
+        f = fits.require(fit_id, property_id)
+        ultimo = fits.latest_run(fit_id)
         if ultimo is None:
             return []
+        entregar = fits.delivered(fit_id)
+        rep = fits.representative(fit_id)
+        etiqueta, clase = f["label"], f["kind"]
+    else:
+        # camino heredado de E28: la propiedad está vinculada a un caso que ya tenía corridas y
+        # ninguna nació de un fit request. Sigue funcionando, con el mismo tope de producto.
+        ultimo = latest_layouts(property_id)
+        if run_id and ultimo and ultimo["run"]["run_id"] != run_id:
+            ultimo = next((r for r in layout_runs(property_id)
+                           if r["run"]["run_id"] == run_id), None)
+        if ultimo is None:
+            return []
+        rep = fits.pick_representative(ultimo["run"], ultimo["alternatives"])
+        entregar = ([a for a in ultimo["alternatives"] if a["status"] == "FIT"]
+                    if entitlements.allows(entitlements.ABC_ALTERNATIVES)
+                    else ([rep["alt"]] if rep else []))
+        etiqueta, clase = "", None
+
     p = properties.require(property_id)
     assets.purge_kind(property_id, assets.LAYOUT_RENDER)
     origen = assets.first_of_kind(property_id, assets.FLOORPLAN_ORIGINAL)
+    rep_alt = (rep or {}).get("alt", {}).get("alt")
     creados = []
-    for alt in ultimo["alternatives"]:
+    for alt in entregar:
         if alt["status"] != "FIT":
             continue
         ruta = layout_asset_path(property_id, ultimo["run"]["run_id"], alt["alt"])
@@ -181,6 +208,7 @@ def publish_layouts(property_id: str, run_id: Optional[str] = None) -> List[str]
             continue
         with open(ruta, "rb") as fh:
             blob = fh.read()
+        es_rep = alt["alt"] == rep_alt
         creados.append(assets.save_bytes(
             property_id, assets.LAYOUT_RENDER, f"alternativa_{alt['alt']}.png", blob, "image/png",
             source_asset_id=(origen or {}).get("asset_id"),
@@ -189,13 +217,16 @@ def publish_layouts(property_id: str, run_id: Optional[str] = None) -> List[str]
                       "brief_id": ultimo["run"]["brief_id"],
                       "engine_commit": ultimo["run"]["engine_commit"],
                       "layout_sha256": alt["layout_sha256"],
+                      "fit_id": fit_id, "fit_label": etiqueta, "fit_kind": clase,
+                      "representative": es_rep,
+                      "selected_by": (rep or {}).get("selected_by") if es_rep else None,
                       "quality": store.js(alt["quality"], {})}))
     return creados
 
 
-def publish_all(property_id: str) -> Dict:
+def publish_all(property_id: str, fit_id: Optional[str] = None) -> Dict:
     """Lo que hace el botón «Preparar material comercial»."""
     plano = publish_commercial_floorplan(property_id)
-    layouts = publish_layouts(property_id)
+    layouts = publish_layouts(property_id, fit_id=fit_id)
     properties.touch(property_id)
     return {"floorplan_commercial": plano, "layouts": layouts}
