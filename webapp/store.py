@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 import os
 import sqlite3
+import uuid
 import threading
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
@@ -277,6 +278,24 @@ CREATE TABLE IF NOT EXISTS lab_events (
   author      TEXT DEFAULT '',
   created_at  TEXT NOT NULL
 );
+-- ==============================================================================================
+-- E32.2 — DERECHOS DE COMPRA. Un Pack cubre UNA propiedad; una cuenta puede comprar muchos Packs.
+-- El derecho vive en la COMPRA y en la PROPIEDAD, nunca en "cuántas propiedades hay en la base".
+-- No hay dinero acá: una concesión se crea simulada desde el LAB o se otorgaría al cobrar.
+-- ==============================================================================================
+CREATE TABLE IF NOT EXISTS pack_grants (
+  grant_id    TEXT PRIMARY KEY,
+  source      TEXT NOT NULL,           -- SIMULATED_LAB | PURCHASE | LEGACY
+  product     TEXT NOT NULL,           -- ONE_OFF | PRO
+  status      TEXT NOT NULL,           -- AVAILABLE | ASSIGNED
+  property_id TEXT REFERENCES properties(property_id) ON DELETE SET NULL,
+  note        TEXT DEFAULT '',
+  created_at  TEXT NOT NULL,
+  assigned_at TEXT
+);
+CREATE UNIQUE INDEX IF NOT EXISTS ix_grant_prop ON pack_grants(property_id)
+  WHERE property_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS ix_grant_status ON pack_grants(status, product);
 CREATE INDEX IF NOT EXISTS ix_notes_prop ON lab_notes(property_id, created_at);
 CREATE INDEX IF NOT EXISTS ix_events_kind ON lab_events(kind, created_at);
 CREATE INDEX IF NOT EXISTS ix_staging_prop ON staging_attempts(property_id, created_at);
@@ -356,6 +375,11 @@ def init() -> None:
     # E32 — la valoración interna de una propiedad mientras se prueba (§17). No la ve el cliente.
     if "lab_feedback" not in tiene_props:
         conn.execute("ALTER TABLE properties ADD COLUMN lab_feedback TEXT")
+    # E32.2 — el producto es de la PROPIEDAD, no de la cuenta. Las propiedades que ya existían
+    # entran como ONE_OFF: es el default conservador, y tener muchos outputs históricos no es
+    # evidencia de que alguien pagara Pro.
+    if "product" not in tiene_props:
+        conn.execute("ALTER TABLE properties ADD COLUMN product TEXT NOT NULL DEFAULT 'ONE_OFF'")
     # E32 §I — para qué se pidió un intento y si puede llegar a un cliente. Un candidato
     # experimental (smoke, bake-off, proveedor no aprobado) NUNCA se publica como entregable.
     tiene_att = {r["name"] for r in conn.execute("PRAGMA table_info(staging_attempts)").fetchall()}
@@ -366,6 +390,18 @@ def init() -> None:
     tiene_fits = {r["name"] for r in conn.execute("PRAGMA table_info(fit_requests)").fetchall()}
     if "lab_feedback" not in tiene_fits:
         conn.execute("ALTER TABLE fit_requests ADD COLUMN lab_feedback TEXT")
+    # E32.2 — toda propiedad tiene que tener su concesión. Las heredadas reciben una LEGACY ya
+    # asignada: así el modelo queda completo sin inventar una compra que nadie hizo. El SELECT se
+    # materializa antes de insertar: iterar un cursor mientras se escribe la tabla que su subconsulta
+    # lee es pedirle a SQLite que decida por nosotros.
+    huerfanas = conn.execute(
+        "SELECT property_id, product FROM properties p WHERE NOT EXISTS "
+        "(SELECT 1 FROM pack_grants g WHERE g.property_id=p.property_id)").fetchall()
+    for row in huerfanas:
+        conn.execute("INSERT INTO pack_grants(grant_id, source, product, status, property_id, "
+                     "note, created_at, assigned_at) VALUES (?,?,?,'ASSIGNED',?,?,?,?)",
+                     ("gr_lg_" + uuid.uuid4().hex[:10], "LEGACY", row["product"] or "ONE_OFF",
+                      row["property_id"], "propiedad anterior a E32.2", now(), now()))
     # E31 — un intento de ambientación que decía RUNNING murió con el proceso. Misma regla que
     # las corridas: no se reanuda solo ni se deja "generando" para siempre.
     conn.execute("UPDATE staging_attempts SET status='FAILED', completed_at=?, "

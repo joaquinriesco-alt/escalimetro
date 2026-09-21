@@ -59,16 +59,20 @@ def new_id() -> str:
 def create(title: str, asset_type: str = "OFFICE", city: str = "", country: str = "",
            reference: str = "", published_area_m2: Optional[float] = None,
            notes: str = "") -> str:
+    from . import entitlements                                # noqa: PLC0415 (ciclo de import)
     if asset_type not in ASSET_TYPES:
         raise ValueError(f"tipo de propiedad no soportado en V1: {asset_type}")
     pid = new_id()
     now = store.now()
+    # E32.2 — una propiedad nace con un PRODUCTO propio. Sale del default de la cuenta, y quien la
+    # crea con una concesión (el LAB o una compra) lo sobrescribe con el de esa concesión. Lo que
+    # ya no existe es un producto global que decida por todas a la vez.
     store.ex("INSERT INTO properties(property_id, schema_version, title, asset_type, country, city,"
-             " reference, published_area_m2, floorplan_case_id, status, notes, created_at,"
-             " updated_at) VALUES (?,?,?,?,?,?,?,?,NULL,'DRAFT',?,?,?)",
+             " reference, published_area_m2, floorplan_case_id, status, notes, product, created_at,"
+             " updated_at) VALUES (?,?,?,?,?,?,?,?,NULL,'DRAFT',?,?,?,?)",
              (pid, SCHEMA_VERSION, (title or "Propiedad").strip()[:160], asset_type,
               country.strip()[:80], city.strip()[:80], reference.strip()[:200],
-              published_area_m2, notes.strip()[:2000], now, now))
+              published_area_m2, notes.strip()[:2000], entitlements.default_product(), now, now))
     return pid
 
 
