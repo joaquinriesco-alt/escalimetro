@@ -281,3 +281,213 @@ def feedback_export() -> List[Dict]:
                                  "reasons": a["failure_reasons_list"]}
                                 for a in staging.list_for(pid, include_benchmark=True)]})
     return out
+
+
+# =================================================================================================
+# E33 — PACK 1 y PACK 2 en lenguaje de producto.
+#
+# Todo lo de abajo traduce el pipeline real a tres o cuatro filas que un corredor entiende. No hay
+# lógica nueva: hay una capa que decide qué mostrar y qué esconder. Los estados técnicos
+# (SEARCH_EXHAUSTED, NEEDS_CONFIRMATION, STAGING_PROVIDER_NOT_APPROVED) no cruzan esta frontera;
+# se traducen a "Necesita revisión", "Preparando" o "No pudimos generarlo" y el código original
+# queda disponible en el detalle técnico para quien lo necesite.
+# =================================================================================================
+PENDIENTE, PREPARANDO, REVISION, LISTO, FALLO = (
+    "Pendiente", "Preparando", "Necesita revisión", "Listo", "No pudimos generarlo")
+
+
+def _paso(nombre, estado, detalle="", accion=None, ruta=None, tecnico=""):
+    return {"name": nombre, "state": estado, "detail": detalle, "action": accion, "route": ruta,
+            "done": estado == LISTO, "tech": tecnico}
+
+
+def pack1(property_id: str) -> Dict:
+    """PACK 1 — PUBLICACIÓN. Plano comercial, un layout tipo y una imagen ambientada.
+
+    Nunca tres layouts, nunca prospectos, nunca proveedor: eso es Pack 2 o backstage."""
+    t = floorplan.technical_state(property_id)
+    plano_orig = assets.first_of_kind(property_id, assets.FLOORPLAN_ORIGINAL)
+    plano_com = assets.first_of_kind(property_id, assets.FLOORPLAN_COMMERCIAL)
+    layouts = packs.layout_assets(property_id)
+    base = fits.base_of(property_id)
+    st = staging.state(property_id)
+    hero = staging.hero(property_id)
+    pack = packs.get(property_id)
+    listo = packs.readiness(property_id)
+
+    # ---- plano comercial
+    if plano_com:
+        p_plano = _paso("Plano comercial", LISTO, "listo para presentar", tecnico=t["case_status"])
+    elif not plano_orig:
+        p_plano = _paso("Plano comercial", PENDIENTE, "falta subir el plano")
+    elif t["case_status"] in ("INPUT_NOT_READY", "FAILED"):
+        p_plano = _paso("Plano comercial", FALLO,
+                        "el plano que subiste no se puede leer en esta versión",
+                        tecnico=t["case_status"])
+    elif not t["ready"]:
+        p_plano = _paso("Plano comercial", REVISION,
+                        "necesitamos medir la escala y marcar el acceso",
+                        accion="Revisar plano", ruta="revisar", tecnico=t["case_status"])
+    else:
+        p_plano = _paso("Plano comercial", PREPARANDO, "listo para generar")
+
+    # ---- layout tipo
+    corrida = fits.latest_run(base["fit_id"]) if base else None
+    estado_run = (corrida or {}).get("run", {}).get("status")
+    if layouts:
+        p_layout = _paso("Layout tipo", LISTO, "una distribución representativa")
+    elif not (base and base["headcount"]):
+        p_layout = _paso("Layout tipo", PENDIENTE, "falta decirnos cuántas personas trabajarían acá")
+    elif estado_run in ("QUEUED", "RUNNING"):
+        p_layout = _paso("Layout tipo", PREPARANDO, "generando la distribución", tecnico=estado_run)
+    elif corrida and not fits.fit_alternatives(base["fit_id"]):
+        p_layout = _paso("Layout tipo", FALLO,
+                         "no encontramos una distribución válida para ese programa en esta planta",
+                         tecnico="SEARCH_EXHAUSTED")
+    elif not t["ready"]:
+        p_layout = _paso("Layout tipo", PENDIENTE, "primero hay que preparar el plano")
+    else:
+        p_layout = _paso("Layout tipo", PREPARANDO, "listo para generar")
+
+    # ---- ambientación
+    mapa = {"APPROVED": (LISTO, "imagen ambientada de tu foto principal"),
+            "STAGING_REVIEW": (PREPARANDO, "revisando la imagen"),
+            "GENERATING": (PREPARANDO, "generando la imagen"),
+            "NEEDS_STAGING": (PREPARANDO, "listo para generar"),
+            "NOT_REQUESTED": (PENDIENTE, "elegí cuál de tus fotos ambientamos"),
+            "STAGING_PROVIDER_NOT_APPROVED": (PENDIENTE, "pendiente de validar proveedor"),
+            "STAGING_UNAVAILABLE": (PENDIENTE, "pendiente de validar proveedor"),
+            "STAGING_NEEDS_MANUAL_REVIEW": (REVISION, "necesita que lo miremos")}
+    e, d = mapa.get(st["state"], (PENDIENTE, st["reason"]))
+    if e == PENDIENTE and not hero and assets.list_of_kind(property_id, assets.PHOTO_ORIGINAL):
+        d = "elegí cuál de tus fotos ambientamos"
+    p_staging = _paso("Ambientación", e, d, tecnico=st["state"])
+
+    pasos = [p_plano, p_layout, p_staging]
+    return {
+        "steps": pasos,
+        "ready": all(p["done"] for p in pasos),
+        "any": any(p["done"] for p in pasos),
+        "can_run": bool(plano_orig) and not all(p["done"] for p in pasos),
+        "floorplan": plano_com, "layout": layouts[0] if layouts else None,
+        "staged": staging.approved_hero(property_id),
+        "before_after": (packs.before_after_assets(property_id) or [None])[0],
+        "hero": hero,
+        "photos": assets.list_of_kind(property_id, assets.PHOTO_ORIGINAL),
+        "original": plano_orig,
+        "headcount": (base or {}).get("headcount"),
+        "pack": pack, "downloadable": bool(pack and pack["export_name"]),
+        "missing": listo["missing"], "readiness": listo["state"],
+    }
+
+
+def pack1_advance(property_id: str) -> Dict:
+    """«GENERAR PACK 1»: hace TODO lo que se pueda hacer solo, y se detiene donde hace falta una
+    persona. No falla ruidosamente en el medio: devuelve lo que hizo y lo que quedó pendiente."""
+    hecho: List[str] = []
+    p = properties.require(property_id)
+    if not assets.first_of_kind(property_id, assets.FLOORPLAN_ORIGINAL):
+        return {"done": hecho, "blocked": "Subí el plano de la propiedad."}
+    if not p["floorplan_case_id"]:
+        floorplan.ensure_case(property_id)
+        hecho.append("preparamos el plano")
+    t = floorplan.technical_state(property_id)
+    if not t["ready"]:
+        return {"done": hecho, "blocked": "Necesitamos medir la escala y marcar el acceso.",
+                "action": "revisar"}
+    if not assets.first_of_kind(property_id, assets.FLOORPLAN_COMMERCIAL):
+        floorplan.publish_commercial_floorplan(property_id)
+        hecho.append("generamos el plano comercial")
+    base = fits.base_of(property_id)
+    if not (base and base["headcount"]):
+        return {"done": hecho, "blocked": "Decinos cuántas personas trabajarían acá.",
+                "action": "programa"}
+    if not packs.layout_assets(property_id):
+        corrida = fits.latest_run(base["fit_id"])
+        estado = (corrida or {}).get("run", {}).get("status")
+        if corrida and fits.fit_alternatives(base["fit_id"]):
+            floorplan.publish_layouts(property_id, fit_id=base["fit_id"])
+            hecho.append("publicamos el layout tipo")
+        elif estado not in ("QUEUED", "RUNNING"):
+            fits.generate(base["fit_id"])
+            hecho.append("empezamos a generar el layout")
+    st = staging.state(property_id)
+    if st["state"] == "NEEDS_STAGING" and st["hero_asset_id"]:
+        aid = staging.create_attempt(property_id, st["hero_asset_id"],
+                                     (base or {}).get("visual_style") or presets.DEFAULT_STYLE)
+        staging.enqueue(aid)
+        hecho.append("empezamos a ambientar la foto")
+    properties.touch(property_id)
+    return {"done": hecho, "blocked": None}
+
+
+def enable_pack2(property_id: str) -> None:
+    """En el laboratorio, pedir una propuesta implica el producto que la permite.
+
+    §21 — el LAB existe para evaluar el producto, no para que Joaquín piense en ONE_OFF vs Pro.
+    En el CLIENTE eso sigue siendo una decisión comercial con su pantalla y su tope, y los tests de
+    E32.2 la protegen. Acá se ajusta el producto simulado de ESTA propiedad y de ninguna otra."""
+    from . import entitlements                                # noqa: PLC0415
+    if entitlements.product_of(property_id) != "PRO":
+        entitlements.set_product(property_id, "PRO")
+
+
+def pack2_list(property_id: str) -> List[Dict]:
+    """Las propuestas de esta propiedad, la más nueva primero, en lenguaje de producto."""
+    out = []
+    for f in fits.list_for(property_id, include_base=False):
+        fv = fits.view(f["fit_id"], property_id)
+        r = fv.get("run") or {}
+        alts = fv["alternatives"]
+        con_layout = [a for a in alts if a["status"] == "FIT"]
+        if r.get("status") in ("QUEUED", "RUNNING"):
+            estado, detalle = PREPARANDO, "generando las alternativas"
+        elif con_layout:
+            estado, detalle = LISTO, f"{len(con_layout)} alternativa(s)"
+        elif alts:
+            estado, detalle = (FALLO,
+                               "no encontramos distribuciones válidas para ese programa en esta planta")
+        else:
+            estado, detalle = PENDIENTE, "falta generar"
+        out.append({"fit": f, "view": fv, "state": estado, "detail": detalle,
+                    "run": r or None, "alternatives": alts, "fit_alternatives": con_layout,
+                    "pack": packs.get(property_id, f["fit_id"])})
+    return out
+
+
+def property_view(property_id: str) -> Dict:
+    """Todo lo que la ÚNICA página de una propiedad necesita, ya traducido."""
+    from . import reviews                                     # noqa: PLC0415
+    v = properties.view(property_id)
+    p1 = pack1(property_id)
+    hist = reviews.history(property_id)
+    # Lookup por artefacto para la plantilla. Se arma acá y no con un bucle en Jinja porque un
+    # `{% set %}` dentro de un `{% for %}` NO sale del bucle: la calificación guardada se veía en
+    # la base y no en pantalla. Verlo exigió abrir el navegador; ningún test de ruta lo habría dicho.
+    clave = lambda t, a, f: f"{t}|{a or ''}|{f or ''}"        # noqa: E731
+    return {"v": v, "p": v["property"], "pack1": p1, "pack2": pack2_list(property_id),
+            "reviews": hist,
+            "revs": {clave(r["artifact_type"], r["artifact_id"], r["fit_id"]): r for r in hist},
+            "presets": presets.CATALOG, "styles": presets.VISUAL_STYLES,
+            "preset_default": presets.DEFAULT_PRESET, "style_default": presets.DEFAULT_STYLE,
+            "notes": notes(property_id)}
+
+
+def simple_rows() -> List[Dict]:
+    """Las tarjetas de la portada. Sin case_id, sin run_id, sin estado técnico."""
+    out = []
+    for v in properties.listing():
+        pid = v["property"]["property_id"]
+        p1 = pack1(pid)
+        props = pack2_list(pid)
+        listas = sum(1 for x in props if x["state"] == LISTO)
+        out.append({
+            "p": v["property"],
+            "pack1": (LISTO if p1["ready"] else (PREPARANDO if p1["any"] else PENDIENTE)),
+            "pack1_done": sum(1 for s in p1["steps"] if s["done"]), "pack1_total": len(p1["steps"]),
+            "pack2": (f"{listas} propuesta(s)" if listas else
+                      ("generando" if any(x["state"] == PREPARANDO for x in props) else "ninguna")),
+            "photos": len(p1["photos"]),
+            "cover": p1["floorplan"] or p1["layout"] or p1["original"],
+        })
+    return out
