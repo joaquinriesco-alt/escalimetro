@@ -70,9 +70,12 @@ GRANTS: Dict[str, Dict[str, bool]] = {
 #: Cuántas de cada cosa. `None` = sin tope.
 LIMITS: Dict[str, Dict[str, int]] = {
     "ONE_OFF": {"properties": 1, "fit_requests_per_property": 1, "layouts_per_pack": 1,
-                "staged_images_per_property": 1},
+                "staged_images_per_property": 1,
+                # E31 §20 — reintentos INTERNOS para cumplir esa única imagen. Son mecánica de
+                # producción, no créditos del cliente: el cliente no ve un botón "probar de nuevo".
+                "staging_attempts_per_hero": 3},
     "PRO": {"properties": None, "fit_requests_per_property": None, "layouts_per_pack": 3,
-            "staged_images_per_property": None},
+            "staged_images_per_property": None, "staging_attempts_per_hero": None},
 }
 
 #: Por qué se niega cada cosa, en castellano y sin culpar al usuario.
@@ -84,7 +87,8 @@ DENIAL = {
                       "alternativas son parte de Escalímetro Pro.",
     REGENERATE: "Volver a generar alternativas es parte de Escalímetro Pro.",
     PROSPECT_BRANDING: "La marca del prospecto se aplica en las propuestas de Escalímetro Pro.",
-    MULTIPLE_STAGING: "El pack de publicación incluye una imagen ambientada.",
+    MULTIPLE_STAGING: "El pack de publicación incluye una imagen ambientada de la foto principal. "
+                      "Ambientar más fotos, o una por prospecto, es parte de Escalímetro Pro.",
     ADVANCED_BRIEF: "El programa detallado es parte de Escalímetro Pro. El pack de publicación "
                     "usa un programa equilibrado a partir del número de personas.",
 }

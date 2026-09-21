@@ -94,6 +94,28 @@ class StagingRequest:
 
 
 @dataclass(frozen=True)
+class ProviderOutput:
+    """E31 §16 — lo que un ADAPTADOR devuelve: la imagen y los metadatos medidos, nada más.
+
+    Bytes y no un asset a propósito: dónde se guardan, con qué nombre y quién puede verlos lo decide
+    el dominio (`staging.py`), que es quien conoce las reglas de seguridad de los assets. Un
+    adaptador que escribiera en disco por su cuenta sería un adaptador con opinión sobre el
+    producto, y eso es lo que §16 prohíbe ("do not leak vendor API semantics into product domain")."""
+    image_bytes: bytes
+    mime_type: str
+    provider: str
+    model: str
+    latency_ms: int
+    #: Costo en USD: medido si el proveedor devolvió consumo (tokens/créditos), de lista si sólo se
+    #: conoce la tarifa publicada, None si no se sabe. `cost_basis` dice cuál de los tres.
+    cost_usd: Optional[float]
+    cost_basis: str                      # measured | list_price | unknown
+    seed: Optional[str] = None
+    #: Metadatos del proveedor YA SANEADOS por el adaptador: sin claves, sin prompt, sin URLs firmadas.
+    raw: Dict = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
 class StagingResult:
     """Lo que un proveedor tiene que devolver para que el asset derivado sea trazable."""
     derived_asset_id: str
@@ -112,13 +134,15 @@ class StagingResult:
 
 
 class VisualStagingProvider(Protocol):
-    """Lo que E29 tendrá que implementar. Una sola operación."""
+    """Una sola operación. E31 la implementa tres veces (`webapp/providers/`)."""
 
     name: str
+    model: str
 
     def available(self) -> bool: ...
 
-    def stage_photo(self, request: StagingRequest) -> StagingResult: ...
+    def stage_photo(self, request: StagingRequest, image_bytes: bytes = b"",
+                    mime_type: str = "image/png") -> ProviderOutput: ...
 
 
 class NotConfiguredProvider:
@@ -126,27 +150,45 @@ class NotConfiguredProvider:
     preguntarle si está disponible y recibir un no honesto."""
 
     name = "not_configured"
+    model = ""
 
     def available(self) -> bool:
         return False
 
-    def stage_photo(self, request: StagingRequest) -> StagingResult:
+    def stage_photo(self, request: StagingRequest, image_bytes: bytes = b"",
+                    mime_type: str = "image/png") -> ProviderOutput:
         raise ProviderNotConfigured(
-            "El motor de ambientación todavía no existe. E28 deja el contrato; la integración y "
-            "sus compuertas de fidelidad son trabajo de E29.")
+            "No hay proveedor de ambientación configurado: falta la credencial en el entorno "
+            "(GEMINI_API_KEY, OPENAI_API_KEY o BFL_API_KEY) o ESCALIMETRO_STAGING_PROVIDER no "
+            "apunta a ninguno. Nada se genera hasta que una persona lo resuelva.")
 
 
-def get_provider() -> VisualStagingProvider:
-    """Punto único de obtención. Hoy siempre devuelve el no-configurado."""
-    return NotConfiguredProvider()
+def get_provider(name: Optional[str] = None) -> VisualStagingProvider:
+    """Punto único de obtención.
+
+    Devuelve un adaptador REAL sólo si su credencial está en el entorno; si no, el no-configurado,
+    que falla ruidosamente. Nunca un fallback silencioso a otro proveedor: comparar proveedores
+    exige saber exactamente cuál respondió."""
+    from .. import providers                                  # noqa: PLC0415 (raíz de composición)
+    return providers.resolve(name)
 
 
-def staging_status() -> Dict:
-    """Lo que el manifiesto del pack debe decir sobre las imágenes ambientadas."""
+def staging_status(property_id: Optional[str] = None) -> Dict:
+    """Lo que el manifiesto del pack debe decir sobre las imágenes ambientadas.
+
+    Con `property_id`, refleja el estado REAL de esa propiedad (aprobada, en revisión, sin foto
+    principal…). Sin él, sólo si hay proveedor disponible."""
     p = get_provider()
-    return {"contract_version": CONTRACT_VERSION, "provider": p.name,
-            "available": p.available(), "status": "not_generated",
-            "reason": "no hay motor de ambientación integrado en esta versión"}
+    base = {"contract_version": CONTRACT_VERSION, "provider": p.name, "model": p.model,
+            "available": p.available()}
+    if property_id is None:
+        return dict(base, status="not_generated",
+                    reason=("proveedor disponible; ninguna imagen generada todavía" if p.available()
+                            else "no hay proveedor de ambientación configurado en este entorno"))
+    from . import staging                                     # noqa: PLC0415
+    st = staging.state(property_id)
+    return dict(base, status=st["manifest_status"], reason=st["reason"],
+                state=st["state"], approved_asset_id=st["approved_asset_id"])
 
 
 # =================================================================================================

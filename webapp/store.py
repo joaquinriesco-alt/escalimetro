@@ -206,6 +206,47 @@ CREATE TABLE IF NOT EXISTS brand_logos (
   sha256      TEXT NOT NULL,
   created_at  TEXT NOT NULL
 );
+-- ==============================================================================================
+-- E31 — INTENTOS DE AMBIENTACIÓN. Un libro mayor, no una galería: cada intento es independiente,
+-- auditable y se conserva aunque se rechace. Lo que sale de acá NO es un asset del cliente hasta
+-- que un humano lo aprueba; recién entonces se publica como PHOTO_STAGED en property_assets.
+-- ==============================================================================================
+CREATE TABLE IF NOT EXISTS staging_attempts (
+  attempt_id        TEXT PRIMARY KEY,
+  property_id       TEXT NOT NULL REFERENCES properties(property_id) ON DELETE CASCADE,
+  source_asset_id   TEXT NOT NULL,             -- la PHOTO_ORIGINAL de la que sale
+  fit_id            TEXT,                      -- NULL = pack base; con valor = propuesta Pro
+  benchmark_id      TEXT,                      -- con valor = nació del bake-off, no de un cliente
+  visual_style      TEXT NOT NULL,
+  provider          TEXT NOT NULL,
+  model             TEXT,
+  request_version   TEXT NOT NULL,
+  prompt_hash       TEXT NOT NULL,
+  input_sha256      TEXT NOT NULL,
+  output_stored     TEXT,                      -- nombre interno del candidato; NO es un asset
+  output_sha256     TEXT,
+  output_asset_id   TEXT,                      -- PHOTO_STAGED publicado; sólo si APPROVED
+  status            TEXT NOT NULL,             -- QUEUED | RUNNING | GENERATED | FAILED
+  review_status     TEXT NOT NULL DEFAULT 'PENDING',   -- PENDING | APPROVED | REJECTED
+  fidelity_status   TEXT NOT NULL DEFAULT 'PENDING',   -- PENDING | PASS | FAIL
+  quality_score     INTEGER,                   -- 1..5, sólo si fidelity PASS
+  failure_reasons   TEXT,                      -- JSON lista
+  auto_warnings     TEXT,                      -- JSON lista (diagnóstico automático, NUNCA veredicto)
+  cost_usd          REAL,
+  cost_basis        TEXT,                      -- measured | list_price | unknown
+  latency_ms        INTEGER,                   -- del proveedor
+  pipeline_ms       INTEGER,                   -- total, de punta a punta
+  seed              TEXT,
+  error             TEXT,
+  reviewer          TEXT,
+  reviewed_at       TEXT,
+  review_notes      TEXT,                      -- interno: NUNCA sale al pack
+  started_at        TEXT,
+  completed_at      TEXT,
+  created_at        TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_staging_prop ON staging_attempts(property_id, created_at);
+CREATE INDEX IF NOT EXISTS ix_staging_review ON staging_attempts(review_status, status);
 CREATE INDEX IF NOT EXISTS ix_fits_prop ON fit_requests(property_id, created_at);
 CREATE INDEX IF NOT EXISTS ix_fitruns_fit ON fit_runs(fit_id);
 CREATE INDEX IF NOT EXISTS ix_assets_prop ON property_assets(property_id, kind, sort_order);
@@ -272,6 +313,17 @@ def init() -> None:
         conn.execute("ALTER TABLE packs ADD COLUMN fit_id TEXT")
     if "kind" not in tiene_packs:
         conn.execute("ALTER TABLE packs ADD COLUMN kind TEXT NOT NULL DEFAULT 'BASE'")
+    # E31 — la foto principal elegida y el motivo de un pack degradado son hechos de la propiedad.
+    tiene_props = {r["name"] for r in conn.execute("PRAGMA table_info(properties)").fetchall()}
+    if "hero_photo_asset_id" not in tiene_props:
+        conn.execute("ALTER TABLE properties ADD COLUMN hero_photo_asset_id TEXT")
+    if "pack_override_reason" not in tiene_props:
+        conn.execute("ALTER TABLE properties ADD COLUMN pack_override_reason TEXT")
+    # E31 — un intento de ambientación que decía RUNNING murió con el proceso. Misma regla que
+    # las corridas: no se reanuda solo ni se deja "generando" para siempre.
+    conn.execute("UPDATE staging_attempts SET status='FAILED', completed_at=?, "
+                 "error=COALESCE(error,'') || '[reinicio] el servicio se reinició durante la generación' "
+                 "WHERE status IN ('RUNNING','QUEUED')", (now(),))
     # Honestidad al reiniciar: un job que decía RUNNING murió con el proceso anterior. No se
     # reanuda solo y no se deja mintiendo en pantalla.
     conn.execute("UPDATE runs SET status='FAILED', finished_at=?, "

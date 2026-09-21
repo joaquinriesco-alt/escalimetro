@@ -29,19 +29,22 @@ FLOORPLAN_ORIGINAL = "FLOORPLAN_ORIGINAL"
 PHOTO_ORIGINAL = "PHOTO_ORIGINAL"
 FLOORPLAN_COMMERCIAL = "FLOORPLAN_COMMERCIAL"
 LAYOUT_RENDER = "LAYOUT_RENDER"
-#: Tipos RESERVADOS: existen en el vocabulario para que E29 no tenga que migrar, pero nada en E28
-#: los produce. Que un tipo esté declarado no significa que la capacidad exista.
+#: E31 — una PHOTO_STAGED sólo nace en `staging._publish`, después de que un humano aprobó el
+#: intento. Nadie más la crea, y un candidato rechazado nunca llega a ser asset.
 PHOTO_STAGED = "PHOTO_STAGED"
+#: E31 — compuesto antes/después (foto real + ambientada aprobada). No es contenido generativo.
 BEFORE_AFTER = "BEFORE_AFTER"
+#: Tipos RESERVADOS: existen en el vocabulario, pero nada los produce. Que un tipo esté declarado
+#: no significa que la capacidad exista.
 VIDEO = "VIDEO"
 BROCHURE = "BROCHURE"
 PACK_EXPORT = "PACK_EXPORT"
 
 KINDS = (FLOORPLAN_ORIGINAL, PHOTO_ORIGINAL, FLOORPLAN_COMMERCIAL, LAYOUT_RENDER,
          PHOTO_STAGED, BEFORE_AFTER, VIDEO, BROCHURE, PACK_EXPORT)
-#: Los únicos que E28 sabe producir. El resto se rechaza si alguien intenta crearlos a mano.
+#: Los únicos que el sistema sabe producir. El resto se rechaza si alguien intenta crearlos a mano.
 IMPLEMENTED_KINDS = (FLOORPLAN_ORIGINAL, PHOTO_ORIGINAL, FLOORPLAN_COMMERCIAL, LAYOUT_RENDER,
-                     PACK_EXPORT)
+                     PHOTO_STAGED, BEFORE_AFTER, PACK_EXPORT)
 
 ALLOWED_UPLOAD = {".pdf": "application/pdf", ".png": "image/png",
                   ".jpg": "image/jpeg", ".jpeg": "image/jpeg"}
@@ -56,6 +59,7 @@ class AssetError(ValueError):
 def _dir(property_id: str, kind: str) -> str:
     sub = {FLOORPLAN_ORIGINAL: "floorplan", PHOTO_ORIGINAL: "photos",
            FLOORPLAN_COMMERCIAL: "floorplan", LAYOUT_RENDER: "layouts",
+           PHOTO_STAGED: "photos_staged", BEFORE_AFTER: "photos_staged",
            PACK_EXPORT: "pack"}.get(kind, "other")
     return os.path.join(store.property_dir(property_id), sub)
 
