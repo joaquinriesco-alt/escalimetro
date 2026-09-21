@@ -155,6 +155,54 @@ CREATE TABLE IF NOT EXISTS packs (
   export_name    TEXT,               -- nombre del ZIP dentro del directorio de la propiedad
   created_at     TEXT NOT NULL
 );
+-- ==============================================================================================
+-- E30 — capa de PRODUCTO COMERCIAL. Tres ideas nuevas y nada más:
+--   settings      configuración de la cuenta (modo de producto, marca de la corredora)
+--   fit_requests  "evaluá esta propiedad para este prospecto"; una propiedad tiene muchas
+--   fit_runs      qué corrida del motor pertenece a qué fit request
+-- Ninguna toca las tablas del motor. Un run sin fit sigue siendo válido (los de E27 lo son).
+-- ==============================================================================================
+CREATE TABLE IF NOT EXISTS settings (
+  key        TEXT PRIMARY KEY,
+  value      TEXT,
+  updated_at TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS fit_requests (
+  fit_id           TEXT PRIMARY KEY,
+  property_id      TEXT NOT NULL REFERENCES properties(property_id) ON DELETE CASCADE,
+  schema_version   TEXT NOT NULL,
+  kind             TEXT NOT NULL,          -- BASE | PROSPECT
+  label            TEXT NOT NULL,
+  prospect_name    TEXT DEFAULT '',
+  prospect_color   TEXT DEFAULT '',
+  prospect_logo_id TEXT,                   -- brand_logos.logo_id
+  headcount        INTEGER,
+  workplace_preset TEXT NOT NULL,
+  visual_style     TEXT NOT NULL,
+  brief_mode       TEXT NOT NULL,          -- EXPRESS | ADVANCED
+  brief_json       TEXT,                   -- BriefV1 compilado (JSON), tal como se manda al motor
+  notes            TEXT DEFAULT '',
+  archived         INTEGER NOT NULL DEFAULT 0,
+  created_at       TEXT NOT NULL,
+  updated_at       TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS fit_runs (
+  fit_id     TEXT NOT NULL REFERENCES fit_requests(fit_id) ON DELETE CASCADE,
+  run_id     TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  PRIMARY KEY (fit_id, run_id)
+);
+CREATE TABLE IF NOT EXISTS brand_logos (
+  logo_id     TEXT PRIMARY KEY,
+  scope       TEXT NOT NULL,               -- BROKERAGE | PROSPECT
+  stored_name TEXT NOT NULL,
+  mime_type   TEXT NOT NULL,
+  size_bytes  INTEGER NOT NULL,
+  sha256      TEXT NOT NULL,
+  created_at  TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_fits_prop ON fit_requests(property_id, created_at);
+CREATE INDEX IF NOT EXISTS ix_fitruns_fit ON fit_runs(fit_id);
 CREATE INDEX IF NOT EXISTS ix_assets_prop ON property_assets(property_id, kind, sort_order);
 CREATE INDEX IF NOT EXISTS ix_props_case ON properties(floorplan_case_id);
 CREATE INDEX IF NOT EXISTS ix_packs_prop ON packs(property_id);
@@ -173,6 +221,12 @@ def property_dir(property_id: str) -> str:
     El `property_id` es generado por nosotros, así que no hay forma de que un nombre del usuario
     escape del directorio."""
     return os.path.join(DATA_DIR, "properties", property_id)
+
+
+def brand_dir() -> str:
+    """Los logos de marca no pertenecen a ninguna propiedad: la corredora es una sola y el logo
+    de un prospecto se reusa entre fit requests. Viven aparte, en el mismo volumen."""
+    return os.path.join(DATA_DIR, "brand")
 
 
 def case_dir(case_id: str) -> str:
@@ -197,6 +251,7 @@ def init() -> None:
     os.makedirs(DATA_DIR, exist_ok=True)
     os.makedirs(os.path.join(DATA_DIR, "cases"), exist_ok=True)
     os.makedirs(os.path.join(DATA_DIR, "properties"), exist_ok=True)
+    os.makedirs(os.path.join(DATA_DIR, "brand"), exist_ok=True)
     conn = connect()
     conn.executescript(SCHEMA)
     # Migración en sitio para bases creadas antes de E27.3: SQLite no tiene ADD COLUMN IF NOT
@@ -205,6 +260,13 @@ def init() -> None:
     for col in ("analyzed_at", "answers", "scale_points"):
         if col not in tiene:
             conn.execute(f"ALTER TABLE intake ADD COLUMN {col} TEXT")
+    # E30 — un pack ahora puede ser el BASE de la propiedad o el de un fit request concreto.
+    # Las bases de E28 ya tienen la tabla creada, así que la columna se añade en sitio.
+    tiene_packs = {r["name"] for r in conn.execute("PRAGMA table_info(packs)").fetchall()}
+    if "fit_id" not in tiene_packs:
+        conn.execute("ALTER TABLE packs ADD COLUMN fit_id TEXT")
+    if "kind" not in tiene_packs:
+        conn.execute("ALTER TABLE packs ADD COLUMN kind TEXT NOT NULL DEFAULT 'BASE'")
     # Honestidad al reiniciar: un job que decía RUNNING murió con el proceso anterior. No se
     # reanuda solo y no se deja mintiendo en pantalla.
     conn.execute("UPDATE runs SET status='FAILED', finished_at=?, "
