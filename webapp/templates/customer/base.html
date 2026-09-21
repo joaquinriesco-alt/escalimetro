@@ -7,8 +7,7 @@
 <header class="top">
   <a class="brand" href="{{ url_for('customer.index') }}">ESCALÍMETRO<span>tus propiedades</span></a>
   <nav><a href="{{ url_for('customer.index') }}">Mis propiedades</a>
-       {% if puede_crear %}
-       <a href="{{ url_for('customer.new') }}">Nueva propiedad</a>{% endif %}
+       <a href="{{ url_for('customer.new') }}">Nueva propiedad{% if not puede_crear %} (requiere otro Pack){% endif %}</a>
        <a href="{{ url_for('customer.brand') }}">Mi marca</a>
        <span class="chip plan">{{ producto.label }}</span></nav>
 </header>

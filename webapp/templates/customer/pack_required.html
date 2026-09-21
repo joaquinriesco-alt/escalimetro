@@ -1,0 +1,26 @@
+{% extends "customer/base.html" %}{% block title %}Necesitás otro Pack{% endblock %}
+{% block body %}
+<h1>Necesitás otro Pack para preparar una nueva propiedad</h1>
+<div class="nota">
+  <p>Cada Pack de publicación corresponde a una propiedad. Podés preparar otra propiedad con un
+     <b>Pack nuevo</b>, o usar <b>Escalímetro Pro</b> si trabajás un portafolio de manera recurrente.</p>
+</div>
+
+<div class="cols">
+<div>
+  <h2>Otro Pack de publicación</h2>
+  <p class="sub">Prepara una propiedad más para salir al mercado: plano comercial, una alternativa
+    representativa, una imagen ambientada y el pack descargable.</p>
+  <p class="sub">Es una compra por propiedad. No hace falta cambiar de plan.</p>
+</div>
+<div>
+  <h2>Escalímetro Pro</h2>
+  <p class="sub">No es «la forma de tener otra propiedad». Sirve para <b>seguir trabajando</b> las
+    que ya preparaste: una propuesta distinta para cada prospecto, las tres alternativas, volver a
+    generar, marca del prospecto y ambientación repetida.</p>
+</div>
+</div>
+
+<p class="sub">Packs: {{ resumen.assigned }} asignado(s) · {{ resumen.available }} sin usar.</p>
+<p><a class="btn" href="{{ url_for('customer.index') }}">Volver a mis propiedades</a></p>
+{% endblock %}

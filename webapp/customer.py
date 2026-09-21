@@ -25,8 +25,8 @@ import os
 from flask import (Blueprint, abort, redirect, render_template, request, send_file, url_for)
 
 from . import auth, briefs as briefmod, store
-from .domain import (assets, branding, entitlements, fits, floorplan, packs, presets, properties,
-                     staging)
+from .domain import (assets, branding, entitlements, fits, floorplan, grants, packs, presets,
+                     properties, staging)
 
 bp = Blueprint("customer", __name__, url_prefix="/properties")
 
@@ -44,15 +44,25 @@ def _sin_derecho_global(e):
                            modo=entitlements.summary()), 403
 
 
+@bp.errorhandler(grants.PackRequired)
+@bp.app_errorhandler(grants.PackRequired)
+def _falta_pack(e):
+    """Que falte un Pack NO es que falte Pro. Son dos caminos distintos y la pantalla los separa:
+    acá se ofrece otra compra, y Pro se menciona por lo que de verdad hace."""
+    return render_template("customer/pack_required.html", msg=str(e),
+                           resumen=grants.summary()), 403
+
+
 @bp.context_processor
 def _ctx():
     """`puede_crear` se calcula acá y no en la plantilla: el tope de propiedades es una regla de
     producto, y una plantilla que la adivine con un `or not lista` termina mintiendo en las
     pantallas donde esa lista no existe."""
-    tope = entitlements.limit("properties")
     return {"producto": entitlements.summary(), "corredora": branding.brokerage(),
-            "puede_crear": tope is None or len(properties.listing()) < tope,
-            "porque": fits.SELECTED_BY_LABEL}
+            # "puede crear otra propiedad" ya no depende de cuántas tenga: depende de si le queda
+            # algún Pack sin usar. Ésa es la pregunta correcta.
+            "puede_crear": grants.has_available(),
+            "packs": grants.summary(), "porque": fits.SELECTED_BY_LABEL}
 
 
 def _pasos(v):
@@ -64,7 +74,7 @@ def _pasos(v):
     fotos = assets.list_of_kind(pid, assets.PHOTO_ORIGINAL)
     pack = packs.get(pid)
     base = fits.base_of(pid)
-    una = not entitlements.allows(entitlements.ABC_ALTERNATIVES)
+    una = not entitlements.allows(pid, entitlements.ABC_ALTERNATIVES)
     st = staging.state(pid)
     listo = packs.readiness(pid)
     return [
@@ -122,21 +132,21 @@ def index():
 @bp.get("/new")
 @auth.require
 def new():
-    _comprobar_cupo_propiedades()
+    _exigir_pack()
     return render_template("customer/new.html", errors={}, form=None)
 
 
-def _comprobar_cupo_propiedades():
-    """§17 — el pack de publicación cubre una propiedad. El tope se comprueba en el servidor."""
-    tope = entitlements.limit("properties")
-    if tope is not None and len(properties.listing()) >= tope:
-        raise entitlements.EntitlementError(entitlements.MULTIPLE_PROPERTIES)
+def _exigir_pack():
+    """Un Pack cubre UNA propiedad. Para preparar otra hace falta otro Pack — no Escalímetro Pro.
+    La comprobación es del servidor, no del formulario."""
+    if not grants.has_available():
+        raise grants.PackRequired()
 
 
 @bp.post("/new")
 @auth.require
 def create():
-    _comprobar_cupo_propiedades()
+    _exigir_pack()
     f = request.form
     titulo = (f.get("title") or "").strip()
     if not titulo:
@@ -153,6 +163,8 @@ def create():
                                                             "mayor que cero."}), 400
     pid = properties.create(titulo, "OFFICE", city=f.get("city") or "",
                             reference=f.get("reference") or "", published_area_m2=area_v)
+    # el Pack se consume acá: a partir de este momento esa compra cubre ESTA propiedad y no otra
+    grants.consume(grants.available()[0]["product"], pid)
     errores = _recibir_archivos(pid, request)
     if errores:
         return render_template("customer/uploaded.html", pid=pid, errores=errores,
@@ -185,6 +197,7 @@ def _detalle(property_id, errores=None, code=200):
     base = fits.base_of(property_id)
     html = render_template(
         "customer/detail.html", v=v, p=v["property"], pasos=_pasos(v),
+        producto=entitlements.summary(property_id),
         plano=assets.first_of_kind(property_id, assets.FLOORPLAN_ORIGINAL),
         plano_com=assets.first_of_kind(property_id, assets.FLOORPLAN_COMMERCIAL),
         fotos=assets.list_of_kind(property_id, assets.PHOTO_ORIGINAL),
@@ -302,7 +315,7 @@ def create_fit(property_id):
     archivo = request.files.get("prospect_logo")
     try:
         if archivo and archivo.filename:
-            entitlements.require(entitlements.PROSPECT_BRANDING)
+            entitlements.require(property_id, entitlements.PROSPECT_BRANDING)
             logo_id = branding.save_logo(archivo, branding.PROSPECT)
         headcount, preset, estilo, _ = _leer_express(f)
         fid = fits.create_prospect(property_id, f.get("prospect_name") or "", headcount,
@@ -373,6 +386,7 @@ def _fit_page(property_id, fit_id, errores=None, code=200):
     fv = fits.view(fit_id, property_id)
     html = render_template(
         "customer/fit.html", v=v, p=v["property"], fv=fv, f=fv["fit"],
+        producto=entitlements.summary(property_id),
         errores=errores or [], presets_wp=presets.CATALOG, estilos=presets.VISUAL_STYLES,
         modules=briefmod.MODULE_LABELS,
         sugeridos=(presets.rooms_for_form(fv["fit"]["workplace_preset"], fv["fit"]["headcount"])

@@ -2,11 +2,10 @@
 {% block body %}
 <h1>Esto es parte de otro producto</h1>
 <div class="panel-bad"><p>{{ msg }}</p></div>
-<h2>Qué tenés hoy</h2>
+<h2>Qué cubre esta propiedad</h2>
 <p class="sub"><b>{{ modo.label }}</b> — {{ modo.pitch }}</p>
+<p class="sub">Preparar <b>otra</b> propiedad no necesita Pro: necesita otro Pack.</p>
 <table class="pasos"><tbody>
-  <tr><td class="ic {{ 'listo' if modo.capabilities.MULTIPLE_PROPERTIES }}">{{ '✓' if modo.capabilities.MULTIPLE_PROPERTIES else '○' }}</td>
-      <td>Varias propiedades a la vez</td><td class="sub">{{ modo.limits.properties or 'sin tope' }}</td></tr>
   <tr><td class="ic {{ 'listo' if modo.capabilities.PROSPECT_FIT_REQUESTS }}">{{ '✓' if modo.capabilities.PROSPECT_FIT_REQUESTS else '○' }}</td>
       <td>Propuestas por prospecto</td><td class="sub">una propuesta distinta para cada interesado</td></tr>
   <tr><td class="ic {{ 'listo' if modo.capabilities.ABC_ALTERNATIVES }}">{{ '✓' if modo.capabilities.ABC_ALTERNATIVES else '○' }}</td>
