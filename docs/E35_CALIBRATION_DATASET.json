@@ -1,0 +1,204 @@
+{
+  "_doc": "E35 §11 — dataset de calibración de autoaceptación. Generado por scripts/e35_calibrate.py sobre los casos reales del repositorio y las marcas humanas que ya existían en ellos. NINGUNA etiqueta fue creada para este ejercicio.",
+  "cases": [
+    "001_gps_403",
+    "002_gps_401",
+    "003_res_unknown"
+  ],
+  "rows": [
+    {
+      "case_id": "001_gps_403",
+      "component": "perimeter",
+      "engine_confidence": 0.7,
+      "human_verdict": "CONFIRMED",
+      "note": "confirmado sin corregir",
+      "confidence_provenance": "pase automático de 001_gps_403 (vision=ocr, overrides={})",
+      "label_provenance": [
+        "overrides_assisted.json:confirm",
+        "overrides_shell.json:confirm"
+      ]
+    },
+    {
+      "case_id": "001_gps_403",
+      "component": "core",
+      "engine_confidence": 0.5,
+      "human_verdict": "CONFIRMED",
+      "note": "confirmado sin corregir",
+      "confidence_provenance": "pase automático de 001_gps_403 (vision=ocr, overrides={})",
+      "label_provenance": [
+        "overrides_assisted.json:confirm",
+        "overrides_shell.json:confirm"
+      ]
+    },
+    {
+      "case_id": "001_gps_403",
+      "component": "primary_entrance",
+      "engine_confidence": 0.95,
+      "human_verdict": "CONFIRMED",
+      "note": "coincide con la marca humana (3.0 px)",
+      "confidence_provenance": "pase automático de 001_gps_403 (vision=ocr, overrides={})",
+      "label_provenance": [
+        "overrides_assisted.json:entrances",
+        "overrides_shell.json:confirm"
+      ]
+    },
+    {
+      "case_id": "001_gps_403",
+      "component": "columns",
+      "engine_confidence": 0.7,
+      "human_verdict": "CORRECTED_INCOMPLETE",
+      "note": "una persona agregó/reclasificó 7",
+      "confidence_provenance": "pase automático de 001_gps_403 (vision=ocr, overrides={})",
+      "label_provenance": [
+        "overrides_assisted.json:columns.add",
+        "overrides_shell.json:confirm",
+        "overrides_shell.json:columns.add"
+      ]
+    },
+    {
+      "case_id": "001_gps_403",
+      "component": "daylight",
+      "engine_confidence": 0.6,
+      "human_verdict": "CORRECTED_INCOMPLETE",
+      "note": "una persona agregó/reclasificó 2",
+      "confidence_provenance": "pase automático de 001_gps_403 (vision=ocr, overrides={})",
+      "label_provenance": [
+        "overrides_shell.json:confirm",
+        "overrides_shell.json:daylight_confirm"
+      ]
+    },
+    {
+      "case_id": "001_gps_403",
+      "component": "scale",
+      "engine_confidence": 0.4,
+      "human_verdict": "CONFIRMED",
+      "note": "method=published_area_inferred px_per_m=8.35652390128259",
+      "confidence_provenance": "scale.meta.confidence del pase automático de 001_gps_403",
+      "label_provenance": [
+        "overrides_shell.json:confirm"
+      ]
+    },
+    {
+      "case_id": "002_gps_401",
+      "component": "perimeter",
+      "engine_confidence": 0.7,
+      "human_verdict": "CONFIRMED",
+      "note": "confirmado sin corregir",
+      "confidence_provenance": "pase automático de 002_gps_401 (vision=null, overrides={'seed_points': [[621, 226]], 'segmentation_params': {'mode': 'color'}})",
+      "label_provenance": [
+        "overrides_assisted.json:confirm"
+      ]
+    },
+    {
+      "case_id": "002_gps_401",
+      "component": "core",
+      "engine_confidence": 0.5,
+      "human_verdict": "CONFIRMED",
+      "note": "confirmado sin corregir",
+      "confidence_provenance": "pase automático de 002_gps_401 (vision=null, overrides={'seed_points': [[621, 226]], 'segmentation_params': {'mode': 'color'}})",
+      "label_provenance": [
+        "overrides_assisted.json:confirm"
+      ]
+    },
+    {
+      "case_id": "002_gps_401",
+      "component": "primary_entrance",
+      "engine_confidence": 0.9,
+      "human_verdict": "DISAGREES_WITH_HUMAN",
+      "note": "la persona marcó otro vano: 64.3 px de distancia",
+      "confidence_provenance": "pase automático de 002_gps_401 (vision=null, overrides={'seed_points': [[621, 226]], 'segmentation_params': {'mode': 'color'}})",
+      "label_provenance": [
+        "overrides_assisted.json:entrances"
+      ]
+    },
+    {
+      "case_id": "002_gps_401",
+      "component": "columns",
+      "engine_confidence": 0.6,
+      "human_verdict": "CORRECTED_INCOMPLETE",
+      "note": "una persona agregó/reclasificó 1",
+      "confidence_provenance": "pase automático de 002_gps_401 (vision=null, overrides={'seed_points': [[621, 226]], 'segmentation_params': {'mode': 'color'}})",
+      "label_provenance": [
+        "overrides_assisted.json:confirm",
+        "overrides_assisted.json:columns.add"
+      ]
+    },
+    {
+      "case_id": "002_gps_401",
+      "component": "daylight",
+      "engine_confidence": 0.6,
+      "human_verdict": "CORRECTED_INCOMPLETE",
+      "note": "una persona agregó/reclasificó 2",
+      "confidence_provenance": "pase automático de 002_gps_401 (vision=null, overrides={'seed_points': [[621, 226]], 'segmentation_params': {'mode': 'color'}})",
+      "label_provenance": [
+        "overrides_assisted.json:confirm",
+        "overrides_assisted.json:daylight_confirm"
+      ]
+    },
+    {
+      "case_id": "002_gps_401",
+      "component": "scale",
+      "engine_confidence": 0.4,
+      "human_verdict": "CONFIRMED",
+      "note": "method=published_area_inferred px_per_m=8.599412816794574",
+      "confidence_provenance": "scale.meta.confidence del pase automático de 002_gps_401",
+      "label_provenance": [
+        "overrides_assisted.json:confirm"
+      ]
+    },
+    {
+      "case_id": "003_res_unknown",
+      "component": "perimeter",
+      "engine_confidence": 0.65,
+      "human_verdict": "UNLABELLED",
+      "note": "sin etiqueta humana registrada",
+      "confidence_provenance": "pase automático de 003_res_unknown (vision=ocr, overrides={})",
+      "label_provenance": []
+    },
+    {
+      "case_id": "003_res_unknown",
+      "component": "core",
+      "engine_confidence": null,
+      "human_verdict": "UNLABELLED",
+      "note": "sin etiqueta humana registrada",
+      "confidence_provenance": "pase automático de 003_res_unknown (vision=ocr, overrides={})",
+      "label_provenance": []
+    },
+    {
+      "case_id": "003_res_unknown",
+      "component": "primary_entrance",
+      "engine_confidence": null,
+      "human_verdict": "UNLABELLED",
+      "note": "el motor no propuso acceso",
+      "confidence_provenance": "pase automático de 003_res_unknown (vision=ocr, overrides={})",
+      "label_provenance": []
+    },
+    {
+      "case_id": "003_res_unknown",
+      "component": "columns",
+      "engine_confidence": 0.56,
+      "human_verdict": "UNLABELLED",
+      "note": "sin etiqueta humana registrada",
+      "confidence_provenance": "pase automático de 003_res_unknown (vision=ocr, overrides={})",
+      "label_provenance": []
+    },
+    {
+      "case_id": "003_res_unknown",
+      "component": "daylight",
+      "engine_confidence": 0.4,
+      "human_verdict": "UNLABELLED",
+      "note": "sin etiqueta humana registrada",
+      "confidence_provenance": "pase automático de 003_res_unknown (vision=ocr, overrides={})",
+      "label_provenance": []
+    },
+    {
+      "case_id": "003_res_unknown",
+      "component": "scale",
+      "engine_confidence": null,
+      "human_verdict": "UNLABELLED",
+      "note": "method=published_area_rejected px_per_m=None",
+      "confidence_provenance": "scale.meta.confidence del pase automático de 003_res_unknown",
+      "label_provenance": []
+    }
+  ]
+}

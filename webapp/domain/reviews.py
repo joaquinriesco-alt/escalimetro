@@ -68,13 +68,24 @@ def save(property_id: str, artifact_type: str, rating: str, artifact_id: Optiona
     tags = [t for t in (reason_tags or []) if t in validas]
     pr = provenance or {}
     rid = "rv_" + uuid.uuid4().hex[:12]
+    # E35 §15 — junto con la calificación se guarda CON QUÉ INGEST se produjo lo calificado. Sin
+    # esto, un "PÉSIMO" en el plano comercial no distingue tres causas muy distintas: un motor que
+    # dibuja mal, una unidad mal elegida sobre una lámina multiunidad, y una escala supuesta a
+    # partir de una superficie publicada que no correspondía. Es lo que permitirá calibrar los
+    # umbrales con uso real, cuando haya uso real. NO se aprende ningún umbral todavía (§15).
+    geo = pr.get("geometry_confidences")
     store.ex("INSERT INTO product_reviews(review_id, property_id, artifact_type, artifact_id, "
              "fit_id, rating, reason_tags, comment, engine_version, artifact_sha256, provider, "
-             "model, run_id, author, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+             "model, run_id, author, unit_selection_source, unit_selection_confidence, "
+             "scale_source, scale_confidence, geometry_confidences, created_at) "
+             "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
              (rid, property_id, artifact_type, artifact_id, fit_id, rating,
               json.dumps(tags, ensure_ascii=False), (comment or "").strip()[:2000],
               pr.get("engine_version"), pr.get("artifact_sha256"), pr.get("provider"),
-              pr.get("model"), pr.get("run_id"), (author or "")[:80], store.now()))
+              pr.get("model"), pr.get("run_id"), (author or "")[:80],
+              pr.get("unit_selection_source"), pr.get("unit_selection_confidence"),
+              pr.get("scale_source"), pr.get("scale_confidence"),
+              None if geo is None else json.dumps(geo, ensure_ascii=False), store.now()))
     return rid
 
 

@@ -29,6 +29,42 @@
 </tbody></table>
 {% endif %}
 
+<h2>Cuántas veces hizo falta una persona</h2>
+<p class="sub">E35 §17 — un ingest "automático" se demuestra contando, no con una captura de
+  pantalla. Acá, no en la pantalla principal: a quien está publicando una oficina no le sirve.</p>
+<div class="kpis">
+  <div><b>{{ manual.fully_automatic }}</b><span>propiedades sin intervención</span></div>
+  <div><b>{{ manual.with_intervention }}</b><span>necesitaron una persona</span></div>
+</div>
+<table class="detect"><tbody>
+{% for k, n in manual.by_reason.items() %}
+  <tr><td>{{ manual.labels.get(k, k) }}</td><td>{{ n }}</td></tr>
+{% endfor %}
+</tbody></table>
+
+<h2>Autoaceptación: ¿los umbrales separan algo?</h2>
+<p class="sub">E35 §11–§13 — precisión y cobertura por componente sobre las marcas humanas que ya
+  existían en el repositorio. <b>No</b> se mide accuracy global: aceptar todo da cobertura perfecta
+  y es peligroso; rechazar todo da precisión perfecta y no entrega nada.
+  Estado: <b>{{ calib.status }}</b> ({{ calib.labelled_rows }} filas con etiqueta humana,
+  {{ calib.unlabelled_rows }} sin ella; hacen falta {{ propuesta.min_sample }} por componente).</p>
+<table class="detect"><tbody>
+<tr><td></td><td class="sub">vara</td><td class="sub">n</td><td class="sub">aceptaría</td>
+    <td class="sub">falsos aceptos</td><td class="sub">aceptos incompletos</td>
+    <td class="sub">precisión</td><td class="sub">cobertura</td><td class="sub">estado</td></tr>
+{% for c in calib.components %}
+  <tr><td><b>{{ c.component }}</b> <span class="sub">{{ c.visibility|lower }}</span></td>
+      <td>{{ c.effective_threshold if c.effective_threshold is not none else '—' }}{% if c.band %}
+        <span class="sub">({{ c.threshold }}+{{ c.band }})</span>{% endif %}</td>
+      <td>{{ c.sample_count }}</td><td>{{ c.would_accept }}</td>
+      <td>{{ c.false_accept }}</td><td>{{ c.accepted_incomplete }}</td>
+      <td>{{ c.auto_accept_precision if c.auto_accept_precision is not none else '—' }}</td>
+      <td>{{ c.auto_accept_coverage if c.auto_accept_coverage is not none else '—' }}</td>
+      <td class="sub">{{ c.status }}</td></tr>
+{% endfor %}
+</tbody></table>
+<p class="sub">{{ propuesta.why }}</p>
+
 <h2>Últimas</h2>
 <table class="detect"><tbody>
 {% for r in filas %}
