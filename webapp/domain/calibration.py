@@ -165,20 +165,25 @@ def metrics(rows: Optional[List[Dict]] = None) -> Dict:
                        "CALIBRATED" if n >= MIN_SAMPLE and d["threshold_exercised"]
                        else THRESHOLD_UNCALIBRATED)
         d["min_sample"] = MIN_SAMPLE
-    return {"components": [por[k] for k in sorted(por)],
+    comps = [por[k] for k in sorted(por)]
+    return {"components": comps,
             "cases": dataset().get("cases", []),
+            # §10 — los dos totales que hay que poder leer de un vistazo. No hay accuracy global.
+            "false_accept_count": sum(c["false_accept"] for c in comps),
+            "false_review_count": sum(c["false_review"] for c in comps),
+            "accepted_incomplete_count": sum(c["accepted_incomplete"] for c in comps),
             "labelled_rows": sum(d["sample_count"] for d in por.values()),
             "unlabelled_rows": sum(d["unlabelled"] for d in por.values()),
             "status": THRESHOLD_UNCALIBRATED if any(
                 d["status"] == THRESHOLD_UNCALIBRATED for d in por.values()) else "CALIBRATED"}
 
 
-def proposal() -> Dict:
+def proposal(m: Optional[Dict] = None) -> Dict:
     """Qué umbrales propone la medición. §13: si la muestra no alcanza, NO se propone nada.
 
     Devolver los mismos números no es pereza: es el resultado. Cambiarlos con doce filas sería
     presentar una opinión como si fuera una calibración."""
-    m = metrics()
+    m = metrics() if m is None else m
     return {"status": m["status"], "min_sample": MIN_SAMPLE,
             "current": dict(AUTO_CONFIRM_THRESHOLDS), "bands": dict(UNCERTAINTY_BAND),
             "proposed": None if m["status"] == THRESHOLD_UNCALIBRATED

@@ -19,14 +19,17 @@ from .. import store
 UNIT_SELECTION = "UNIT_SELECTION"
 SCALE = "SCALE"
 GEOMETRY = "GEOMETRY"
+#: E36 §14 — el acceso principal va aparte de la geometría: E35 midió que es el componente con
+#: el falso acepto confiado, y meterlo en la misma bolsa taparía justo lo que hay que vigilar.
+ACCESS = "ACCESS"
 STAGING = "STAGING"
 OTHER = "OTHER"
-REASONS = (UNIT_SELECTION, SCALE, GEOMETRY, STAGING, OTHER)
+REASONS = (UNIT_SELECTION, SCALE, GEOMETRY, ACCESS, STAGING, OTHER)
 
 #: Cómo se llama cada motivo cuando hay que enseñarlo.
 LABELS = {UNIT_SELECTION: "elegir la oficina en la lámina", SCALE: "fijar la escala",
-          GEOMETRY: "corregir la geometría", STAGING: "rehacer la ambientación",
-          OTHER: "otra intervención"}
+          GEOMETRY: "corregir la geometría", ACCESS: "corregir el acceso principal",
+          STAGING: "rehacer la ambientación", OTHER: "otra intervención"}
 
 
 class InterventionError(ValueError):

@@ -133,6 +133,17 @@ CREATE TABLE IF NOT EXISTS properties (
   floorplan_case_id TEXT REFERENCES cases(case_id) ON DELETE SET NULL,
   status            TEXT NOT NULL DEFAULT 'DRAFT',
   notes             TEXT DEFAULT '',
+  -- E36 §5/§7 — piloto real y procedencia del material. `source_type` nace NULL a propósito:
+  -- "sin declarar" no es lo mismo que "real", y sólo lo REAL_* cuenta para calibrar.
+  in_pilot          INTEGER NOT NULL DEFAULT 0,
+  source_type       TEXT,
+  source_reference  TEXT,
+  -- E36 §15 — cuánto demora de verdad preparar una propiedad. Seis marcas, ningún tracking.
+  pack1_started_at  TEXT,
+  geometry_ready_at TEXT,
+  layout_ready_at   TEXT,
+  staging_ready_at  TEXT,
+  pack1_ready_at    TEXT,
   created_at        TEXT NOT NULL,
   updated_at        TEXT NOT NULL
 );
@@ -379,6 +390,24 @@ CREATE TABLE IF NOT EXISTS manual_interventions (
   created_at      TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS ix_interv_prop ON manual_interventions(property_id, created_at);
+-- ==============================================================================================
+-- E36 §8/§9 — ETIQUETA DE VERDAD sobre la GEOMETRÍA, separada de la calificación de producto.
+-- Que un Pack 1 haya quedado "Bueno" NO prueba que el núcleo estuviera bien recortado: son dos
+-- juicios distintos sobre dos cosas distintas, y mezclarlos haría inútil la calibración. Una fila
+-- por (propiedad, componente); la última vale.
+-- ==============================================================================================
+CREATE TABLE IF NOT EXISTS gold_labels (
+  property_id       TEXT NOT NULL REFERENCES properties(property_id) ON DELETE CASCADE,
+  component         TEXT NOT NULL,   -- unit | perimeter | core | primary_entrance | columns | daylight | scale
+  verdict           TEXT NOT NULL,   -- CORRECTO | INCORRECTO | INCOMPLETO | NO_APLICA
+  note              TEXT DEFAULT '',
+  engine_confidence REAL,            -- la confianza que el motor tenía CUANDO se etiquetó
+  engine_version    TEXT,
+  author            TEXT DEFAULT '',
+  created_at        TEXT NOT NULL,
+  PRIMARY KEY (property_id, component)
+);
+CREATE INDEX IF NOT EXISTS ix_gold_comp ON gold_labels(component, verdict);
 CREATE INDEX IF NOT EXISTS ix_reviews_prop ON product_reviews(property_id, created_at);
 CREATE INDEX IF NOT EXISTS ix_reviews_kind ON product_reviews(artifact_type, rating);
 CREATE INDEX IF NOT EXISTS ix_notes_prop ON lab_notes(property_id, created_at);
@@ -398,6 +427,19 @@ CREATE INDEX IF NOT EXISTS ix_briefs_case ON briefs(case_id);
 
 def now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def seconds_between(a: Optional[str], b: Optional[str]) -> Optional[float]:
+    """Segundos entre dos marcas ISO, o None si falta alguna o no se dejan leer.
+
+    Devuelve None en vez de 0 cuando no se puede medir: un cero se promedia y miente; un None se
+    excluye de la muestra y se cuenta como lo que es, una medición que no existe."""
+    if not a or not b:
+        return None
+    try:
+        return (datetime.fromisoformat(b) - datetime.fromisoformat(a)).total_seconds()
+    except (TypeError, ValueError):
+        return None
 
 
 def property_dir(property_id: str) -> str:
@@ -470,6 +512,15 @@ def init() -> None:
     # evidencia de que alguien pagara Pro.
     if "product" not in tiene_props:
         conn.execute("ALTER TABLE properties ADD COLUMN product TEXT NOT NULL DEFAULT 'ONE_OFF'")
+    # E36 §5/§7 — si la propiedad entra en el piloto real y de dónde salió su material. El default
+    # de `source_type` es NULL —"sin declarar"— y no un valor cómodo: una propiedad heredada NO es
+    # evidencia real hasta que alguien diga de dónde vino. Inventarle procedencia infla la muestra.
+    for col in ("source_type", "source_reference", "pack1_started_at", "geometry_ready_at",
+                "layout_ready_at", "staging_ready_at", "pack1_ready_at"):
+        if col not in tiene_props:
+            conn.execute(f"ALTER TABLE properties ADD COLUMN {col} TEXT")
+    if "in_pilot" not in tiene_props:
+        conn.execute("ALTER TABLE properties ADD COLUMN in_pilot INTEGER NOT NULL DEFAULT 0")
     # E32 §I — para qué se pidió un intento y si puede llegar a un cliente. Un candidato
     # experimental (smoke, bake-off, proveedor no aprobado) NUNCA se publica como entregable.
     tiene_att = {r["name"] for r in conn.execute("PRAGMA table_info(staging_attempts)").fetchall()}
