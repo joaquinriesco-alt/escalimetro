@@ -252,3 +252,17 @@ details.motivos summary{font-size:13px;color:var(--mut)}
 /* La lámina y los botones tienen que verse JUNTOS: si la pregunta queda arriba del pliegue y la
    respuesta abajo, el operador elige sin mirar. */
 .candidatos-img{max-height:46vh;width:auto;display:block;margin:0 auto}
+
+/* E36 §8 — la revisión de VERDAD es interna y tiene que verse como tal: no compite con el
+   producto, no usa los colores de las calificaciones y no aparece antes de que haya algo hecho. */
+.interna{border:1px dashed var(--line);border-radius:10px;padding:16px;margin:22px 0;
+  background:color-mix(in srgb, var(--mut) 4%, transparent)}
+.interna h2{margin-top:0}
+.pilotform{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:10px 0 16px}
+.chip{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;
+  padding:4px 11px;font-size:13px;cursor:pointer;margin-right:5px}
+.chip:hover{border-color:var(--ink)}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+/* El SVG de lo detectado no trae tamaño intrínseco útil: sin esto se dibuja diminuto y nadie
+   puede juzgar un contorno que no ve. */
+img.candidatos-img[src$=".svg"]{width:100%;max-width:640px}

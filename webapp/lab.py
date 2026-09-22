@@ -21,13 +21,14 @@ from __future__ import annotations
 import os
 from typing import Optional
 
-from flask import (Blueprint, abort, jsonify, redirect, render_template, request, send_file,
-                   url_for)
+from flask import (Blueprint, abort, current_app, jsonify, redirect, render_template, request,
+                   send_file, url_for)
 
-from . import auth, benchmark as bench, briefs as briefmod, engine, intake, store
-from .domain import (assets, branding, calibration, entitlements, fits, floorplan, grants,
-                     ingest, interventions, lab as labdom, packs, pilot, presets, properties,
-                     reviews, staging, units)
+from . import (auth, benchmark as bench, briefs as briefmod, detected, engine, intake,
+               store)
+from .domain import (assets, branding, calibration, entitlements, fits, floorplan, gold,
+                     grants, ingest, interventions, lab as labdom, packs, pilot, presets,
+                     properties, realpilot, reviews, staging, units)
 
 bp = Blueprint("lab", __name__, url_prefix="/lab")
 OPERATOR = os.environ.get("ESCALIMETRO_REVIEWER", "Joaquín Riesco")
@@ -127,6 +128,7 @@ def _pagina(property_id, errores=None, code=200):
     html = render_template("lab/property.html", errores=errores or [],
                            ratings=reviews.RATINGS, rating_label=reviews.RATING_LABEL,
                            fail_tags=reviews.FAIL_TAGS, good_tags=reviews.GOOD_TAGS,
+                           source_labels=realpilot.SOURCE_LABEL,
                            modules=briefmod.MODULE_LABELS, **datos)
     return (html, code) if code != 200 else html
 
@@ -215,6 +217,9 @@ def generar_pack1(property_id):
     if res.get("action") == "elegir_oficina":
         # E35 §16 — la ambigüedad de unidad se resuelve EN la página, no en otra pantalla.
         return redirect(url_for("lab.propiedad", property_id=property_id) + "#oficina")
+    if res.get("action") == "revisar_inline":
+        # E36 §3 — y la confirmación de geometría tampoco saca a nadie de acá.
+        return redirect(url_for("lab.propiedad", property_id=property_id) + "#revision")
     if res.get("action") == "revisar":
         return redirect(url_for("lab.revisar_plano", property_id=property_id))
     return redirect(url_for("lab.propiedad", property_id=property_id) + "#pack1")
@@ -285,6 +290,92 @@ def plano_completo(property_id):
     except (ValueError, intake.IntakeError) as e:
         return _pagina(property_id, [str(e)], 400)
     return redirect(url_for("lab.propiedad", property_id=property_id) + "#pack1")
+
+
+@bp.get("/p/<property_id>/deteccion.svg")
+@auth.require
+def deteccion_svg(property_id):
+    """Lo que el motor leyó de esta planta, servido desde el LAB.
+
+    Existe como ruta propia y no como enlace al caso técnico por una razón de E36 §25: el objetivo
+    es UN shell. Mandar al operador a /case/<id> para ver un dibujo lo saca de la experiencia."""
+    p = _p(property_id)
+    case_id = p["floorplan_case_id"]
+    if not case_id:
+        abort(404)
+    fp = intake.load_floorplate(case_id)
+    svg = detected.overlay_svg(fp) if fp else None
+    if svg is None:
+        abort(404)
+    # Se dibuja desde el artefacto y no se sirve un archivo: un SVG en disco puede ser de una
+    # corrida anterior, y mostrar geometría vieja mientras se pide confirmarla sería pedir un
+    # "sí" sobre algo que ya no es lo que se va a usar.
+    return current_app.response_class(svg, mimetype="image/svg+xml")
+
+
+@bp.post("/p/<property_id>/confirmar-geometria")
+@auth.require
+def confirmar_geometria(property_id):
+    """E36 §3.B — «¿esto corresponde a la oficina?» → Sí. Inline, sin cambiar de pantalla."""
+    _p(property_id)
+    try:
+        ingest.confirm_pending(property_id)
+        interventions.record(property_id, interventions.GEOMETRY,
+                             "confirmó la geometría detectada, inline")
+        labdom.pack1_advance(property_id)
+    except (ValueError, intake.IntakeError, floorplan.FloorplanError,
+            entitlements.EntitlementError) as e:
+        return _pagina(property_id, [str(e)], 400)
+    return redirect(url_for("lab.propiedad", property_id=property_id) + "#pack1")
+
+
+@bp.post("/p/<property_id>/gold")
+@auth.require
+def gold_label(property_id):
+    """E36 §8/§9 — el juicio de VERDAD sobre un componente de la geometría.
+
+    No es la calificación del producto y no se guarda en la misma tabla: que un Pack quedara
+    «Bueno» no prueba que el núcleo estuviera bien recortado."""
+    _p(property_id)
+    f = request.form
+    try:
+        gold.save(property_id, (f.get("component") or "").strip(),
+                  (f.get("verdict") or "").strip(), f.get("note") or "", OPERATOR)
+        if (f.get("verdict") or "") == gold.INCORRECTO:
+            motivo = {gold.PRIMARY_ENTRANCE: interventions.ACCESS,
+                      gold.UNIT: interventions.UNIT_SELECTION,
+                      gold.SCALE: interventions.SCALE}.get(f.get("component"),
+                                                           interventions.GEOMETRY)
+            interventions.record(property_id, motivo,
+                                 f"marcado INCORRECTO en la revisión de verdad: {f.get('component')}")
+    except gold.GoldError as e:
+        return _pagina(property_id, [str(e)], 400)
+    return redirect(url_for("lab.propiedad", property_id=property_id) + "#revision-verdad")
+
+
+@bp.post("/p/<property_id>/piloto")
+@auth.require
+def piloto(property_id):
+    """E36 §5/§7 — marcar la propiedad como parte del piloto real y declarar de dónde salió.
+
+    La procedencia se DECLARA, no se infiere: no hay forma de mirar un archivo y saber si vino de
+    una corredora o de un fixture, y adivinarlo inflaría la muestra con material que no es real."""
+    _p(property_id)
+    f = request.form
+    try:
+        realpilot.mark(property_id, in_pilot=f.get("in_pilot") == "1",
+                       source_type=(f.get("source_type") or "").strip() or None,
+                       source_reference=f.get("source_reference"))
+    except realpilot.PilotError as e:
+        return _pagina(property_id, [str(e)], 400)
+    return redirect(url_for("lab.propiedad", property_id=property_id) + "#revision-verdad")
+
+
+@bp.get("/pilot/export.json")
+@auth.require
+def pilot_export():
+    """E36 §22 — el dataset para auditar después. Sin nombres, sin rutas, sin credenciales."""
+    return jsonify(realpilot.export())
 
 
 @bp.post("/p/<property_id>/confirmar-plano")
@@ -467,9 +558,15 @@ def evaluaciones():
 
     E35 §12/§17 añade las dos cifras que dicen si el ingest está mejorando o sólo lo parece: la
     precisión de autoaceptación por componente y cuántas veces hizo falta una persona."""
+    panel = realpilot.dashboard()
+    # Dos tablas de calibración a propósito: la del PILOTO REAL —que es la que manda (§7: REAL_*
+    # only)— y la de E35 sobre los casos del repositorio, que sigue siendo la única evidencia
+    # medida mientras el piloto no llegue a muestra. Mezclarlas escondería cuál es cuál.
     return render_template("lab/evaluaciones.html", stats=reviews.stats(),
-                           calib=calibration.metrics(), propuesta=calibration.proposal(),
+                           calib=panel["calibration"], propuesta=panel["proposal"],
+                           historico=calibration.metrics(), panel=panel,
                            manual=interventions.summary(),
+                           source_labels=realpilot.SOURCE_LABEL,
                            filas=[dict(r, prop=properties.get(r["property_id"]))
                                   for r in (reviews._row(x) for x in store.q(
                                       "SELECT * FROM product_reviews ORDER BY created_at DESC "

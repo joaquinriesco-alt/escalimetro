@@ -65,6 +65,43 @@
 </section>
 {% endif %}
 
+{# =================== E36 §3.B/§3.C — REVISIÓN INLINE DE GEOMETRÍA Y ESCALA #}
+{# Esto es QA INTERNO, no datos que el cliente deba completar (§4). Por eso el texto dice qué
+   tenemos que revisar nosotros y no "complete los siguientes campos". #}
+{% if qa and qa.kind in ('GEOMETRY', 'SCALE') %}
+<section id="revision" class="ambigua">
+{% if qa.kind == 'GEOMETRY' %}
+<h2>¿Esto corresponde a la oficina?</h2>
+<p class="sub">Así leímos la planta. Falta que demos por bueno
+  <b>{{ qa.gates.labels|join(', ') }}</b>.</p>
+<img class="big candidatos-img" src="{{ url_for('lab.deteccion_svg', property_id=p.property_id) }}"
+     alt="lo que detectamos sobre la planta">
+<form method="post" action="{{ url_for('lab.confirmar_geometria', property_id=p.property_id) }}"
+      class="inline">
+  <button>Sí, corresponde</button></form>
+<a class="btn sec" href="{{ url_for('lab.revisar_plano', property_id=p.property_id) }}">Necesita corrección</a>
+<details><summary>Por qué se pregunta</summary>
+  <p class="sub">Los umbrales de aceptación automática están
+    <b>{{ qa.gates.calibration_status }}</b>: lo que cae cerca del límite lo mira una persona.</p>
+  <table class="detect"><tbody>
+  {% for g, partes in qa.gates.detail.items() %}{% for parte, v in partes.items() %}
+    <tr><td class="sub mono">{{ parte }}</td><td class="sub mono">confianza {{ v.confidence }}</td>
+        <td class="sub mono">vara {{ v.effective_threshold }}</td>
+        <td class="sub mono">{{ v.verdict or '' }}</td></tr>
+  {% endfor %}{% endfor %}
+  </tbody></table>
+</details>
+{% else %}
+<h2>No pudimos deducir la escala</h2>
+<p class="sub">Ni la superficie publicada ni el dibujo alcanzaron. Si la lámina es una sola oficina,
+  decinoslo acá; si no, hay que medirla a mano.</p>
+<form method="post" action="{{ url_for('lab.plano_completo', property_id=p.property_id) }}" class="inline">
+  <button>El dibujo completo es esta oficina</button></form>
+<a class="btn sec" href="{{ url_for('lab.revisar_plano', property_id=p.property_id) }}">Medirla a mano</a>
+{% endif %}
+</section>
+{% endif %}
+
 {# ============================================================ PACK 1 #}
 <section id="pack1">
 <div class="pack-head">
@@ -86,6 +123,8 @@
         <span class="sub">{{ s.detail }}</span></td>
       <td class="ans">{% if s.action == 'Elegir la oficina' %}
         <a class="btn sec" href="#oficina">Elegir la oficina</a>
+        {% elif s.action == 'Revisar acá' %}
+        <a class="btn sec" href="#revision">Revisar acá</a>
         {% elif s.action == 'Revisar plano' %}
         <a class="btn sec" href="{{ url_for('lab.revisar_plano', property_id=p.property_id) }}">Revisar plano</a>{% endif %}</td></tr>
 {% endfor %}
@@ -225,6 +264,47 @@
 </section>
 
 {# ============================================================ EVALUACIONES #}
+{# ================= E36 §5-§9 — PILOTO REAL Y REVISIÓN DE VERDAD (uso interno) #}
+{% if gold %}
+<section id="revision-verdad" class="interna">
+<h2>Revisión del plano <span class="sub">(interno)</span></h2>
+<p class="sub">Esto NO es «¿cómo quedó?». Es «¿el motor leyó bien el plano?». Son dos juicios
+  distintos y se guardan por separado: un Pack puede quedar bueno con el núcleo mal recortado.</p>
+
+<form method="post" action="{{ url_for('lab.piloto', property_id=p.property_id) }}" class="pilotform">
+  <label><input type="checkbox" name="in_pilot" value="1" {{ 'checked' if p.in_pilot }}>
+    Cuenta para el piloto real</label>
+  <select name="source_type">
+    <option value="">— de dónde salió —</option>
+    {% for k, lbl in source_labels.items() %}
+      <option value="{{ k }}" {{ 'selected' if p.source_type == k }}>{{ lbl }}</option>
+    {% endfor %}
+  </select>
+  <button class="sec">Guardar</button>
+</form>
+
+<table class="detect"><tbody>
+{% for r in gold.rows %}
+  <tr><td><b>{{ r.label }}</b> <span class="sub mono">conf {{ r.confidence }}</span></td>
+      <td>
+      {% for v in gold_verdicts %}
+        <form method="post" action="{{ url_for('lab.gold_label', property_id=p.property_id) }}" class="inline">
+          <input type="hidden" name="component" value="{{ r.component }}">
+          <input type="hidden" name="verdict" value="{{ v }}">
+          <button class="chip {{ 'on' if r.verdict == v }}">{{ gold_verdict_label[v] }}</button>
+        </form>
+      {% endfor %}
+      </td></tr>
+{% endfor %}
+</tbody></table>
+{% if gold.missing %}
+  <p class="sub">Falta juzgar: {{ gold.missing|join(', ') }}.</p>
+{% elif gold.judgeable %}
+  <p class="sub"><b>Revisión completa.</b> Esta propiedad ya sirve como evidencia de calibración.</p>
+{% endif %}
+</section>
+{% endif %}
+
 <section id="evaluaciones">
 <h2>Evaluaciones</h2>
 {% if reviews %}

@@ -335,9 +335,15 @@ def pack1(property_id: str) -> Dict:
                         accion="Elegir la oficina", ruta="oficina", tecnico=t["case_status"])
     elif not t["ready"]:
         inf = ingest.get(property_id) or {}
+        # E36 §3 — si la revisión se puede hacer acá mismo, el botón apunta acá mismo. Ofrecer
+        # "Revisar plano" cuando la respuesta está tres párrafos más arriba manda a la gente a
+        # otra pantalla a resolver algo que ya tenía delante.
+        qa = qa_state(property_id)
+        inline = bool(qa and qa["kind"] in ("GEOMETRY", "SCALE"))
         p_plano = _paso("Plano comercial", REVISION,
                         (inf or {}).get("review_reason") or "necesitamos revisar el plano",
-                        accion="Revisar plano", ruta="revisar", tecnico=t["case_status"])
+                        accion="Revisar acá" if inline else "Revisar plano",
+                        ruta="revision" if inline else "revisar", tecnico=t["case_status"])
     else:
         p_plano = _paso("Plano comercial", PREPARANDO, "listo para generar")
 
@@ -391,6 +397,56 @@ def pack1(property_id: str) -> Dict:
     }
 
 
+def qa_state(property_id: str) -> Optional[Dict]:
+    """E36 §3/§4 — qué necesita una persona AHORA, para resolverlo en esta misma página.
+
+    Tres tipos, y ninguno se presenta como "completá estos campos". Esto es **QA interno**: el
+    cliente entrega plano, fotos, nombre y quizá los m²; todo lo demás —unidad, geometría, escala,
+    acceso, núcleo— es trabajo nuestro, y la interfaz tiene que decirlo con esas palabras (§4).
+
+        UNIT      «¿Cuál es la oficina?»     → un clic sobre un candidato
+        GEOMETRY  «¿Esto corresponde?»       → sí / necesita corrección
+        SCALE     sólo si NINGUNA fuente alcanzó → último recurso técnico
+
+    Se devuelve `None` cuando no hace falta nadie, que es el caso que queremos que sea la norma."""
+    p = properties.get(property_id)
+    if not p or not p["floorplan_case_id"]:
+        return None
+    sel = units.get(property_id)
+    if sel and sel["status"] == units.NEEDS_INTERNAL_REVIEW:
+        return {"kind": "UNIT", "units": sel}
+    t = floorplan.technical_state(property_id)
+    if t["ready"]:
+        return None
+    if intake.load_floorplate(p["floorplan_case_id"]) is None:
+        return None                                # no hay geometría que revisar: falla más honda
+    compuertas = ingest.pending_gates(property_id)
+    if compuertas["asked"]:
+        return {"kind": "GEOMETRY", "gates": compuertas}
+    inf = ingest.get(property_id) or {}
+    if inf.get("scale_source") in (None, ingest.UNKNOWN):
+        return {"kind": "SCALE", "inference": inf}
+    return {"kind": "GEOMETRY", "gates": compuertas}
+
+
+def _stamp_timings(property_id: str, *, started: bool = False) -> None:
+    """E36 §15 — los hitos se marcan donde efectivamente ocurren. Son marcas de reloj de pared, no
+    un sistema de tracking: sirven para contestar «¿cuánto demora preparar una propiedad?»."""
+    from . import realpilot                                    # noqa: PLC0415
+    if started:
+        realpilot.stamp(property_id, "pack1_started_at")
+    if floorplan.technical_state(property_id)["ready"]:
+        realpilot.stamp(property_id, "geometry_ready_at")
+    if packs.layout_assets(property_id):
+        realpilot.stamp(property_id, "layout_ready_at")
+    if assets.first_of_kind(property_id, assets.PHOTO_STAGED):
+        realpilot.stamp(property_id, "staging_ready_at")
+    if packs.readiness(property_id)["state"] in ("READY", "DEGRADED"):
+        # DEGRADADO cuenta: el pack existe y se puede entregar con su motivo escrito. Excluirlo
+        # diría que esas propiedades nunca estuvieron listas, que es falso.
+        realpilot.stamp(property_id, "pack1_ready_at")
+
+
 def pack1_advance(property_id: str) -> Dict:
     """«GENERAR PACK 1»: hace TODO lo que se pueda hacer solo y se detiene donde hace falta una
     persona. No falla ruidosamente en el medio: devuelve lo que hizo y lo que quedó pendiente.
@@ -400,6 +456,7 @@ def pack1_advance(property_id: str) -> Dict:
     cuánta confianza, y sólo pide una persona cuando el motor mismo dice que le falta algo."""
     hecho: List[str] = []
     p = properties.require(property_id)
+    _stamp_timings(property_id, started=True)
     # La foto principal no depende del plano: si hay fotos, se elige una ya, aunque la geometría
     # todavía necesite una vuelta. Atarla al avance del plano la dejaba sin elegir justo en los
     # casos en que el usuario más necesita ver que algo pasó.
@@ -422,12 +479,15 @@ def pack1_advance(property_id: str) -> Dict:
         t = floorplan.technical_state(property_id)
     if not t["ready"]:
         inf = ingest.get(property_id) or {}
-        # E35 §16 — si lo único que falta es saber cuál de las oficinas de la lámina es ésta, no se
-        # manda a nadie a la herramienta técnica: se pregunta acá mismo, con la planta a la vista.
-        sel = units.get(property_id)
-        if sel and sel["status"] == units.NEEDS_INTERNAL_REVIEW:
+        # E36 §3 — TODA intervención humana de Pack 1 ocurre en esta misma página. E35 todavía
+        # mandaba la confirmación de geometría a otra pantalla; ése era el último salto de UX.
+        qa = qa_state(property_id)
+        if qa and qa["kind"] == "UNIT":
             return {"done": hecho, "blocked": "Necesitamos que nos indiques cuál es la oficina.",
-                    "action": "elegir_oficina", "inference": inf, "units": sel}
+                    "action": "elegir_oficina", "inference": inf, "qa": qa}
+        if qa and qa["kind"] in ("GEOMETRY", "SCALE"):
+            return {"done": hecho, "blocked": "Necesitamos revisar el plano.",
+                    "action": "revisar_inline", "inference": inf, "qa": qa}
         return {"done": hecho,
                 "blocked": "Necesitamos revisar el plano antes de continuar.",
                 "action": "revisar", "inference": inf}
@@ -454,6 +514,7 @@ def pack1_advance(property_id: str) -> Dict:
         staging.enqueue(aid)
         hecho.append("empezamos a ambientar la foto")
     properties.touch(property_id)
+    _stamp_timings(property_id)
     return {"done": hecho, "blocked": None}
 
 
@@ -515,7 +576,7 @@ def pack2_list(property_id: str) -> List[Dict]:
 
 def property_view(property_id: str) -> Dict:
     """Todo lo que la ÚNICA página de una propiedad necesita, ya traducido."""
-    from . import reviews                                     # noqa: PLC0415
+    from . import gold, reviews                               # noqa: PLC0415
     v = properties.view(property_id)
     p1 = pack1(property_id)
     hist = reviews.history(property_id)
@@ -525,8 +586,11 @@ def property_view(property_id: str) -> Dict:
     clave = lambda t, a, f: f"{t}|{a or ''}|{f or ''}"        # noqa: E731
     return {"v": v, "p": v["property"], "pack1": p1, "pack2": pack2_list(property_id),
             "inference": ingest.get(property_id),
-            # E35 §6 — la pregunta de la unidad viaja con la página, no con una pantalla aparte.
+            # E35 §6 / E36 §3 — TODO el QA que necesita una persona viaja con la página.
             "units": units.get(property_id),
+            "qa": qa_state(property_id),
+            "gold": gold.review_state(property_id) if v["property"]["floorplan_case_id"] else None,
+            "gold_verdicts": gold.VERDICTS, "gold_verdict_label": gold.VERDICT_LABEL,
             "reviews": hist,
             "revs": {clave(r["artifact_type"], r["artifact_id"], r["fit_id"]): r for r in hist},
             "presets": presets.CATALOG, "styles": presets.VISUAL_STYLES,
