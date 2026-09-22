@@ -147,6 +147,29 @@ def px_per_m_from_two_points(p1, p2, metres: float) -> float:
     return d / float(metres)
 
 
+def _property_of_case(case_id: str) -> Optional[str]:
+    r = store.q1("SELECT property_id FROM properties WHERE floorplan_case_id=?", (case_id,))
+    return r["property_id"] if r else None
+
+
+def _overrides_de_unidad(case_id: str) -> Dict:
+    """Lo que la selección de unidad aporta a `overrides.json`, o nada si no hay propiedad LAB
+    detrás del caso. El import es diferido porque `units` necesita OpenCV y este módulo se importa
+    en rutas que no miran ninguna imagen."""
+    pid = _property_of_case(case_id)
+    if not pid:
+        return {}
+    from .domain import units                                  # noqa: PLC0415
+    try:
+        return units.overrides_for(pid)
+    except units.UnitError:
+        return {}
+
+
+def _tiene_seleccion_de_unidad(case_id: str) -> bool:
+    return bool(_overrides_de_unidad(case_id).get("seed_points"))
+
+
 def write_case_json(case_id: str) -> str:
     """`case.json` con el MISMO contrato que consumen `cli.run` y `case_context.from_case_dir`.
     Sólo hechos de entrada; ningún resultado (contrato E15.1)."""
@@ -156,11 +179,21 @@ def write_case_json(case_id: str) -> str:
     payload = {
         "case_id": case_id,
         "image": c["source_file"],
+        # E35 §7 — `unit_label` sigue existiendo porque el motor lo exige y porque de él salen el
+        # slug del caso y el nombre que se imprime en las láminas: eso es IDENTIDAD COMERCIAL. Lo
+        # que E35 le quita es el papel geométrico. Ver `vision` abajo.
         "unit_label": c["title"],
         "known_area_m2": c["published_area_m2"],
         "known_area_kind": "unknown",
         "overrides": "overrides.json",
-        "vision": "ocr", "segmentation": "auto",
+        # E35 §7 — cuando esta aplicación ya sabe QUÉ región es la unidad (webapp/domain/units.py),
+        # el intérprete de visión se apaga. No basta con que `seed_points` tenga prioridad sobre el
+        # hint de OCR: mientras el intérprete corra, el título sigue decidiendo `has_color_hint` y
+        # con eso la estrategia de segmentación. Con `null` el nombre no puede tocar la geometría
+        # por ninguna puerta. Sin selección resuelta se conserva "ocr": es el camino histórico de
+        # los casos que no vienen del LAB, y E35 no los cambia.
+        "vision": "null" if _tiene_seleccion_de_unidad(case_id) else "ocr",
+        "segmentation": "auto",
         "simplify_eps_frac": 0.004, "mask_open_px": 5,
         "source_name": c["source_name"] or "",
         "shell_declared_clean": {"yes": "yes", "no": "no"}.get(
@@ -196,6 +229,11 @@ def write_overrides(case_id: str, confirm: Optional[List[str]] = None) -> str:
             o["entrances"] = [{"point": [int(ent[0]), int(ent[1])], "kind": "main"}]
         if conf:
             o["confirm"] = conf
+    # E35 — la localización que dedujo (o que un operador eligió con un clic) el modelo de
+    # candidatos entra por el MISMO vocabulario HITL. La marca humana del intake manda: si alguien
+    # puso un seed_point a mano, no se le pisa con uno automático.
+    for k, v in _overrides_de_unidad(case_id).items():
+        o.setdefault(k, v)
     p = os.path.join(store.case_dir(case_id), "overrides.json")
     with open(p, "w", encoding="utf-8") as fh:
         json.dump(o, fh, indent=2, ensure_ascii=False)

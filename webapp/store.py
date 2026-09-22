@@ -318,6 +318,13 @@ CREATE TABLE IF NOT EXISTS product_reviews (
   model           TEXT,
   run_id          TEXT,
   author          TEXT DEFAULT '',
+  -- E35 §15 — con qué ingest se produjo lo que se está calificando. Sin esto, un "PÉSIMO" no
+  -- distingue un motor malo de una unidad mal elegida o una escala supuesta.
+  unit_selection_source     TEXT,
+  unit_selection_confidence REAL,
+  scale_source              TEXT,
+  scale_confidence          REAL,
+  geometry_confidences      TEXT,   -- JSON: la confianza del motor por elemento
   created_at      TEXT NOT NULL
 );
 -- ==============================================================================================
@@ -337,8 +344,41 @@ CREATE TABLE IF NOT EXISTS ingest_inference (
   access_confidence REAL,
   geometry_source  TEXT,        -- AUTO_ACCEPTED_BY_RULE | HUMAN_CONFIRMED | PENDING
   notes            TEXT,
+  -- E35 — POR QUÉ hace falta una persona, en palabras. E34 lo calculaba y lo tiraba: la pantalla
+  -- terminaba mostrando la nota de la escala como si fuera el motivo de la revisión.
+  review_reason    TEXT,
   updated_at       TEXT NOT NULL
 );
+-- ==============================================================================================
+-- E35 — QUÉ REGIÓN DE LA LÁMINA ES LA UNIDAD, y de dónde salió esa respuesta. Existe separada de
+-- `ingest_inference` porque son dos certezas distintas (E35 §8): saber QUÉ polígono es la oficina
+-- es previo e independiente de saber CUÁNTOS metros mide. Confundirlas fue el defecto de E34.
+-- ==============================================================================================
+CREATE TABLE IF NOT EXISTS unit_selection (
+  property_id           TEXT PRIMARY KEY REFERENCES properties(property_id) ON DELETE CASCADE,
+  case_id               TEXT,
+  status                TEXT NOT NULL,   -- RESOLVED | NEEDS_INTERNAL_REVIEW | NO_DRAWING
+  source                TEXT,            -- AUTO | HUMAN_PICK | DECLARED | PRE_EXISTING
+  confidence            REAL,
+  candidate_count       INTEGER,
+  selected_candidate_id TEXT,
+  candidates            TEXT,            -- JSON: el modelo completo, evidencia incluida
+  evidence_summary      TEXT,
+  reason_codes          TEXT,            -- JSON
+  updated_at            TEXT NOT NULL
+);
+-- ==============================================================================================
+-- E35 §17 — cuántas veces el flujo "automático" necesitó de verdad a una persona. Una fila por
+-- intervención, con su motivo. Es la única forma de saber si el ingest mejora o sólo lo parece.
+-- ==============================================================================================
+CREATE TABLE IF NOT EXISTS manual_interventions (
+  intervention_id TEXT PRIMARY KEY,
+  property_id     TEXT NOT NULL REFERENCES properties(property_id) ON DELETE CASCADE,
+  reason          TEXT NOT NULL,   -- UNIT_SELECTION | SCALE | GEOMETRY | STAGING | OTHER
+  detail          TEXT DEFAULT '',
+  created_at      TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_interv_prop ON manual_interventions(property_id, created_at);
 CREATE INDEX IF NOT EXISTS ix_reviews_prop ON product_reviews(property_id, created_at);
 CREATE INDEX IF NOT EXISTS ix_reviews_kind ON product_reviews(artifact_type, rating);
 CREATE INDEX IF NOT EXISTS ix_notes_prop ON lab_notes(property_id, created_at);
@@ -440,6 +480,17 @@ def init() -> None:
     tiene_fits = {r["name"] for r in conn.execute("PRAGMA table_info(fit_requests)").fetchall()}
     if "lab_feedback" not in tiene_fits:
         conn.execute("ALTER TABLE fit_requests ADD COLUMN lab_feedback TEXT")
+    # E35 §15 — el feedback de E33 se guardó sin saber de qué ingest venía. Las filas anteriores
+    # se quedan con NULL: eso es "no se registró", que es la verdad, y no se rellena con supuestos.
+    tiene_inf = {r["name"] for r in conn.execute("PRAGMA table_info(ingest_inference)").fetchall()}
+    if "review_reason" not in tiene_inf:
+        conn.execute("ALTER TABLE ingest_inference ADD COLUMN review_reason TEXT")
+    tiene_rev = {r["name"] for r in conn.execute("PRAGMA table_info(product_reviews)").fetchall()}
+    for col, tipo in (("unit_selection_source", "TEXT"), ("unit_selection_confidence", "REAL"),
+                      ("scale_source", "TEXT"), ("scale_confidence", "REAL"),
+                      ("geometry_confidences", "TEXT")):
+        if col not in tiene_rev:
+            conn.execute(f"ALTER TABLE product_reviews ADD COLUMN {col} {tipo}")
     # E32.2 — toda propiedad tiene que tener su concesión. Las heredadas reciben una LEGACY ya
     # asignada: así el modelo queda completo sin inventar una compra que nadie hizo. El SELECT se
     # materializa antes de insertar: iterar un cursor mientras se escribe la tabla que su subconsulta

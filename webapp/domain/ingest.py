@@ -94,6 +94,25 @@ GATE_LABELS = {
     "scale_assumption": "la escala del plano",
 }
 
+#: E35 §13/§14 — BANDA DE INCERTIDUMBRE, PROVISIONAL. Un elemento no se acepta por rozar su vara:
+#: tiene que superarla con margen. Existe porque la medición de E35 §11 encontró que el núcleo de
+#: las DOS plantas reales del repositorio sale en 0.50 contra un umbral de 0.50 — pasar o no pasar
+#: queda a merced del redondeo, no de la evidencia.
+#: El margen no se eligió al gusto: las confianzas que emite el motor sobre estos artefactos están
+#: cuantizadas de a 0.10 (0.50, 0.60, 0.70, 0.80), así que un paso de su propia cuantización es el
+#: número menos arbitrario disponible. NO es una calibración; es una espera hasta tenerla.
+UNCERTAINTY_BAND = {"core": 0.10}
+#: E35 §13 — mientras la muestra no alcance, los umbrales se declaran NO calibrados. El flag viaja
+#: con cada decisión para que nadie lea estos números como si estuvieran respaldados por datos.
+THRESHOLD_UNCALIBRATED = "THRESHOLD_UNCALIBRATED"
+#: E35 §10 — la escala por puertas NO es apta para producto. E34 midió que los vanos que expone el
+#: motor son ACCESOS del perímetro (0.48–1.91 m sobre la 403), no puertas simples de 0.90 m, y que
+#: a 8 px/m un píxel son 12 cm. Se conserva como señal débil de contraste y NO se refina: mejorarla
+#: sobre estos mismos datos sería afinar un instrumento que mide otra cosa.
+DOOR_SCALE_NOT_PRODUCT_READY = "DOOR_SCALE_NOT_PRODUCT_READY"
+#: E35 §8 — por qué se rechazó una escala que por sí sola habría sido aceptable.
+UNIT_NOT_SELECTED = "UNIT_NOT_SELECTED"
+
 PUBLISHED_AREA, AUTO_DOOR, MANUAL, UNKNOWN = "PUBLISHED_AREA", "AUTO_DOOR", "MANUAL", "UNKNOWN"
 AUTO, NONE = "AUTO", "NONE"
 AUTO_ACCEPTED_BY_RULE, HUMAN_CONFIRMED, PENDING = ("AUTO_ACCEPTED_BY_RULE", "HUMAN_CONFIRMED",
@@ -213,15 +232,31 @@ def cross_check(fp: Dict, hypothesis: Optional[Dict]) -> Dict:
 # =================================================================================================
 # la decisión
 # =================================================================================================
-def decide(fp: Dict) -> Dict:
+def decide(fp: Dict, *, unit_resolved: bool = True) -> Dict:
     """Qué escala se usa, con qué confianza y por qué. No escribe nada; sólo decide.
 
     Orden del §4: superficie publicada cuando la hay (es lo que el motor ya aplica y lo que mejor
-    funciona en las plantas reales), y puertas como último recurso cuando no la hay."""
+    funciona en las plantas reales), y puertas como último recurso cuando no la hay.
+
+    E35 §8 — CERTEZA DE UNIDAD Y CERTEZA DE ESCALA SON DOS COSAS. `scale = sqrt(área_px / área
+    publicada)` sólo significa algo si el área en píxeles es la de ESTA oficina. Si todavía no se
+    sabe qué polígono es la unidad, el número sale igual de bien formado y es una escala de otra
+    cosa: de la planta entera, o de la oficina de al lado. Por eso el orden es unidad → escala →
+    contraste, y `unit_resolved=False` bloquea la superficie publicada en vez de dejarla pasar con
+    una confianza más baja. Una escala equivocada no es una escala poco confiable."""
     esc = fp.get("scale") or {}
     puertas = scale_from_doors(fp)
     cc = cross_check(fp, puertas)
     metodo = esc.get("method") or ""
+
+    if not unit_resolved and metodo.startswith("published_area"):
+        return {"scale_source": UNKNOWN, "scale_value": None, "scale_confidence": 0.0,
+                "evidence_count": 0, "cross_checks": cc, "door_hypothesis": puertas,
+                "access_source": NONE, "access_confidence": 0.0, "geometry_source": PENDING,
+                "ready": False, "needs_review": True, "blocked_on": UNIT_NOT_SELECTED,
+                "review_reason": "todavía no sabemos cuál de las oficinas de la lámina es ésta",
+                "notes": "escala en espera: la superficie publicada no se puede repartir sobre un "
+                         "polígono que aún no está elegido"}
 
     if metodo == "manual":
         fuente, ppm, conf = MANUAL, esc.get("px_per_m"), 1.0
@@ -236,7 +271,7 @@ def decide(fp: Dict) -> Dict:
         nota = "escala deducida de la superficie publicada"
     elif puertas:
         fuente, ppm, conf = AUTO_DOOR, puertas["px_per_m"], puertas["confidence"]
-        nota = puertas["notes"]
+        nota = f"{puertas['notes']} [{DOOR_SCALE_NOT_PRODUCT_READY}]"
     else:
         fuente, ppm, conf = UNKNOWN, None, 0.0
         nota = "sin superficie publicada, sin cota y sin vanos medibles"
@@ -269,6 +304,8 @@ def decide(fp: Dict) -> Dict:
         "evidence_count": (puertas or {}).get("evidence_count", 0),
         "cross_checks": cc, "door_hypothesis": puertas,
         "access_source": acceso_fuente, "access_confidence": round(acceso_conf, 3),
+        "door_scale_status": DOOR_SCALE_NOT_PRODUCT_READY,
+        "calibration_status": THRESHOLD_UNCALIBRATED,
         "geometry_source": AUTO_ACCEPTED_BY_RULE if listo else PENDING,
         "ready": listo, "needs_review": revisar,
         "review_reason": (None if not revisar else
@@ -284,18 +321,18 @@ def decide(fp: Dict) -> Dict:
 def save(property_id: str, case_id: str, d: Dict) -> None:
     store.ex("INSERT INTO ingest_inference(property_id, case_id, scale_source, scale_value, "
              "scale_confidence, evidence_count, cross_checks, access_source, access_confidence, "
-             "geometry_source, notes, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?) "
+             "geometry_source, notes, review_reason, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?) "
              "ON CONFLICT(property_id) DO UPDATE SET case_id=excluded.case_id, "
              "scale_source=excluded.scale_source, scale_value=excluded.scale_value, "
              "scale_confidence=excluded.scale_confidence, evidence_count=excluded.evidence_count, "
              "cross_checks=excluded.cross_checks, access_source=excluded.access_source, "
              "access_confidence=excluded.access_confidence, "
              "geometry_source=excluded.geometry_source, notes=excluded.notes, "
-             "updated_at=excluded.updated_at",
+             "review_reason=excluded.review_reason, updated_at=excluded.updated_at",
              (property_id, case_id, d["scale_source"], d["scale_value"], d["scale_confidence"],
               d["evidence_count"], json.dumps(d["cross_checks"], ensure_ascii=False),
               d["access_source"], d["access_confidence"], d["geometry_source"], d["notes"],
-              store.now()))
+              d.get("review_reason"), store.now()))
 
 
 def get(property_id: str) -> Optional[Dict]:
@@ -304,6 +341,76 @@ def get(property_id: str) -> Optional[Dict]:
         return None
     d = dict(r)
     d["cross_checks_obj"] = store.js(d["cross_checks"], {}) or {}
+    return d
+
+
+def pending_gates(property_id: str) -> Dict:
+    """Qué compuertas quedaron pendientes y con qué números. Es lo que hay que poder ENSEÑAR antes
+    de pedirle a alguien que confirme: pedir un «sí» sobre algo que no se muestra no es revisar."""
+    p = properties.require(property_id)
+    case_id = p["floorplan_case_id"]
+    fp = intake.load_floorplate(case_id) if case_id else None
+    if fp is None:
+        return {"pending": [], "labels": [], "detail": {}}
+    auto = auto_confirmations(fp)
+    # `asked` es lo que el MOTOR todavía exige; `pending` es lo que además no pasa nuestra vara.
+    # Son distintos y la pantalla necesita los dos: si sólo mirara `pending`, una planta a la que
+    # le falta confirmar el acceso —aceptable por regla, pero no aplicado— diría "no queda nada
+    # por confirmar" mientras la propiedad sigue trabada. Eso ya pasó una vez.
+    return {"asked": auto["asked"], "pending": auto["pending"], "accept": auto["accept"],
+            "labels": [GATE_LABELS.get(g, g) for g in auto["asked"]],
+            "pending_labels": auto["pending_labels"],
+            "detail": {g: auto["detail"].get(g, {}) for g in auto["asked"]},
+            "uncertainty_band": auto["uncertainty_band"],
+            "calibration_status": auto["calibration_status"]}
+
+
+def confirm_pending(property_id: str) -> Dict:
+    """Una persona mira lo detectado y lo da por bueno. UN clic para todo lo pendiente.
+
+    La diferencia con la aceptación por regla no es cosmética y por eso queda escrita: lo que pasa
+    por acá es `HUMAN_CONFIRMED`, y eso significa que alguien lo miró de verdad. Confundir las dos
+    procedencias haría inútil toda la medición de §11."""
+    from . import units                                        # noqa: PLC0415
+    p = properties.require(property_id)
+    case_id = p["floorplan_case_id"]
+    if not case_id:
+        raise ValueError("la propiedad todavía no tiene un caso técnico")
+    pend = pending_gates(property_id)
+    if not pend["asked"]:
+        return auto_prepare(property_id)
+    # «Sí, está bien» significa que una persona miró lo dibujado y lo dio por bueno: se confirma
+    # TODO lo que el motor todavía pide, no sólo lo que no pasaba nuestra vara.
+    claves = [k for g in pend["asked"] for k in CONFIRM_KEYS.get(g, [])]
+    fp = intake.load_floorplate(case_id) or {}
+    if (fp.get("scale") or {}).get("px_per_m"):
+        claves.append("scale_assumption")
+    # Lo YA confirmado sigue vigente. `overrides.confirm` se reescribe entero en cada corrida, así
+    # que omitir lo aceptado en la pasada anterior lo devolvería a pendiente y la planta no
+    # avanzaría nunca: se confirmaría el contorno y se perderían el acceso y los pilares. La
+    # memoria de qué está confirmado vive en `intake.confirmed`, que es para eso.
+    fila = store.q1("SELECT confirmed FROM intake WHERE case_id=?", (case_id,))
+    claves += list(store.js(fila["confirmed"], []) or []) if fila else []
+    claves += [k for g in auto_confirmations(fp).get("accept", []) for k in CONFIRM_KEYS.get(g, [])]
+    intake.apply_confirmations(case_id, {k: "ok" for k in dict.fromkeys(claves)})
+    # NO se llama a `auto_prepare`: empieza por `intake.analyze`, que corre el pipeline con
+    # `confirm=[]` y pone `answers=NULL` a propósito —«mirar de nuevo desde cero»—. Encadenarlo
+    # acá borraría la confirmación humana que se acaba de aplicar, y la planta volvería a pedir lo
+    # mismo. `apply_confirmations` ya dejó el artefacto al día; sólo falta volver a decidir.
+    fp = intake.load_floorplate(case_id)
+    if fp is None:
+        raise ValueError("la planta dejó de tener geometría después de confirmar")
+    d = decide(fp, unit_resolved=True)
+    d["unit_selection"] = units.get(property_id)
+    d["auto_confirmations"] = auto_confirmations(fp)
+    d["geometry_source"] = HUMAN_CONFIRMED
+    if d["auto_confirmations"]["pending"]:
+        d["needs_review"] = True
+        d["review_reason"] = "necesitamos revisar " + ", ".join(
+            d["auto_confirmations"]["pending_labels"])
+    else:
+        d["needs_review"], d["review_reason"] = not d["ready"], None
+    save(property_id, case_id, d)
     return d
 
 
@@ -333,6 +440,26 @@ def auto_prepare(property_id: str) -> Dict:
     if p["published_area_m2"]:
         store.ex("UPDATE cases SET published_area_m2=? WHERE case_id=?",
                  (p["published_area_m2"], case_id))
+
+    # E35 §8 — PRIMERO la unidad. Antes de mirar escala, acceso o geometría hay que saber qué
+    # región de la lámina es esta oficina; todo lo demás se mide sobre ese polígono. Si la lámina
+    # demarca varias unidades y no hay forma de saber cuál es, se PARA acá: correr el motor igual
+    # significaría localizar por el nombre de la propiedad (el defecto que E35 corrige) o entregar
+    # el plano de la oficina de al lado, que es peor que no entregar nada.
+    from . import units                                        # noqa: PLC0415
+    sel = units.resolve(property_id, case_id)
+    if sel["status"] != units.RESOLVED:
+        d = {"scale_source": UNKNOWN, "scale_value": None, "scale_confidence": 0.0,
+             "evidence_count": 0, "cross_checks": {}, "access_source": NONE,
+             "access_confidence": 0.0, "geometry_source": PENDING, "ready": False,
+             "needs_review": True, "door_hypothesis": None, "blocked_on": "unit_selection",
+             "unit_selection": sel,
+             "review_reason": "necesitamos que nos indiques cuál es la oficina",
+             "notes": f"la lámina demarca {sel['candidate_count']} unidades; "
+                      f"{sel['evidence_summary']}"}
+        save(property_id, case_id, d)
+        return d
+
     res = intake.analyze(case_id)
     fp = intake.load_floorplate(case_id)
 
@@ -350,9 +477,9 @@ def auto_prepare(property_id: str) -> Dict:
         auto = dict(auto, applied=confirmar)
 
     if fp is None:
-        # el motivo más común y el único que una persona puede resolver en un clic: la lámina
-        # tiene varias unidades y no se pudo saber cuál es ésta. El motor localiza por el nombre
-        # de la propiedad (OCR sobre el dibujo), así que "Oficina 403" funciona y "Mi oficina" no.
+        # E35 — con la unidad ya resuelta, un fallo de localización aquí ya NO puede venir del
+        # nombre de la propiedad: el seed está escrito en overrides y la visión está apagada. Si
+        # aun así falla, es la lámina la que no se deja leer, y eso no se arregla con un clic.
         sin_localizar = "Sin localización" in (res.get("log") or "")
         d = {"scale_source": UNKNOWN, "scale_value": None, "scale_confidence": 0.0,
              "evidence_count": 0, "cross_checks": {}, "access_source": NONE,
@@ -365,7 +492,8 @@ def auto_prepare(property_id: str) -> Dict:
              "notes": ("la lámina parece tener más de una unidad" if sin_localizar
                        else "el plano no se pudo procesar")}
     else:
-        d = decide(fp)
+        d = decide(fp, unit_resolved=True)
+        d["unit_selection"] = sel
         d["auto_confirmations"] = auto
         if auto.get("pending"):
             d["needs_review"] = True
@@ -421,12 +549,21 @@ def auto_confirmations(fp: Dict) -> Dict:
         detalle[gate] = {}
         for parte in partes:
             umbral = AUTO_CONFIRM_THRESHOLDS.get(parte)
+            banda = UNCERTAINTY_BAND.get(parte, 0.0)
             c = confs.get(parte)
-            detalle[gate][parte] = {"confidence": c, "threshold": umbral}
-            if umbral is None or c is None or c < umbral:
+            # §14 — la vara efectiva es umbral + banda. Se guardan las tres cifras por separado:
+            # quien audite esto tiene que poder ver que el núcleo no se rechazó por estar mal, sino
+            # por estar demasiado cerca del borde como para que su aceptación signifique algo.
+            detalle[gate][parte] = {"confidence": c, "threshold": umbral, "band": banda,
+                                    "effective_threshold": None if umbral is None else
+                                    round(umbral + banda, 3)}
+            if umbral is None or c is None or c < umbral + banda:
                 ok = False
+                if c is not None and umbral is not None and c >= umbral:
+                    detalle[gate][parte]["verdict"] = "IN_UNCERTAINTY_BAND"
         (aceptados if ok else pendientes).append(gate)
     claves = [k for g in aceptados for k in CONFIRM_KEYS.get(g, [])]
     return {"accept": aceptados, "confirm_keys": claves, "pending": pendientes, "detail": detalle,
-            "asked": piden,
+            "asked": piden, "calibration_status": THRESHOLD_UNCALIBRATED,
+            "uncertainty_band": dict(UNCERTAINTY_BAND),
             "pending_labels": [GATE_LABELS.get(g, g) for g in pendientes]}
