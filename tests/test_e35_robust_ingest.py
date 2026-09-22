@@ -413,8 +413,12 @@ def test_las_intervenciones_manuales_se_cuentan_con_su_motivo(client, dom):
     iv.record(pid, iv.GEOMETRY, "confirmó el contorno")
     iv.record(pid, iv.GEOMETRY, "otra vez")
     assert iv.count(pid) == 3
-    assert iv.by_reason(pid) == {"UNIT_SELECTION": 1, "SCALE": 0, "GEOMETRY": 2, "STAGING": 0,
-                                "OTHER": 0}
+    # Se comprueban los conteos y que NINGÚN motivo del vocabulario quede sin fila: un cero es
+    # información. No se fija el diccionario completo, porque ampliar el vocabulario -E36 agrega
+    # ACCESS- es una extensión legítima y no debería romper esto.
+    c = iv.by_reason(pid)
+    assert set(c) == set(iv.REASONS)
+    assert c["UNIT_SELECTION"] == 1 and c["GEOMETRY"] == 2 and c["SCALE"] == 0
     with pytest.raises(iv.InterventionError):
         iv.record(pid, "LO_QUE_SEA")
     s = iv.summary()

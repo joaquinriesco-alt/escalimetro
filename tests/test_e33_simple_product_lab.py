@@ -245,7 +245,11 @@ def test_un_solo_boton_avanza_todo_lo_que_puede(client, dom):
                               dom["assets"].FLOORPLAN_ORIGINAL)
     r = client.post(f"/lab/p/{pid}/pack1", data={"headcount": "40"})
     assert r.status_code == 302
-    assert "revisar-plano" in r.headers["Location"]     # se detiene donde hace falta un humano
+    # Se detiene donde hace falta un humano — y desde E36 §3 se detiene SIN salir de la página:
+    # toda intervención de Pack 1 ocurre inline. El destino cambió; lo que el test protege, no.
+    destino = r.headers["Location"]
+    assert destino.startswith(f"/lab/p/{pid}#"), destino
+    assert "revisar-plano" not in destino
     assert dom["properties"].require(pid)["floorplan_case_id"]   # pero ya preparó el caso
 
 
