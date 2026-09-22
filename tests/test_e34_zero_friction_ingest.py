@@ -255,7 +255,12 @@ def test_las_claves_de_confirmacion_se_traducen_al_vocabulario_del_motor(dom):
     fp = dict(_fp403(), shell_readiness={"requires_confirmation":
                                          ["perimeter/core", "primary_entrance", "columns"]})
     auto = i.auto_confirmations(fp)
-    assert "perimeter" in auto["confirm_keys"] and "entrance" in auto["confirm_keys"]
+    # Lo que este test protege es la TRADUCCIÓN de nombres, no qué compuerta pasa. Desde E35 §14
+    # `perimeter/core` ya no se acepta sola en la 403: el núcleo sale en 0.50 contra un umbral de
+    # 0.50 y cae dentro de la banda de incertidumbre. Se comprueba la traducción sobre una
+    # compuerta que sí pasa, y que la que no pasa quede pendiente con su nombre.
+    assert "entrance" in auto["confirm_keys"] and "columns" in auto["confirm_keys"]
+    assert "perimeter/core" in auto["pending"]
     assert "perimeter/core" not in auto["confirm_keys"]
 
 
