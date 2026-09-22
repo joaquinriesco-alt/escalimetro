@@ -29,6 +29,56 @@
 </tbody></table>
 {% endif %}
 
+<h2>Piloto real</h2>
+<p class="sub">E36 — sólo cuentan propiedades con procedencia <b>REAL_*</b> y planos distintos: tres
+  propiedades con el mismo plano son una sola planta vista tres veces, y contarlas como tres daría
+  por calibrado algo que no lo está.</p>
+<div class="kpis">
+  <div><b>{{ panel.properties }} / {{ panel.target }}</b><span>propiedades reales</span></div>
+  <div><b>{{ panel.gold_complete }}</b><span>con revisión de verdad completa</span></div>
+  <div><b>{{ panel.interventions.fully_automatic_pct if panel.interventions.fully_automatic_pct is not none else '—' }}%</b><span>totalmente automáticas</span></div>
+  <div><b>{{ panel.interventions.median_interventions if panel.interventions.median_interventions is not none else '—' }}</b><span>intervenciones (mediana)</span></div>
+  <div><b>{{ panel.pack1.overall.good_pct if panel.pack1.overall.good_pct is not none else '—' }}%</b><span>Pack 1 Excelente/Bueno</span></div>
+  <div><b>{{ panel.pack2.with_good_pct if panel.pack2.with_good_pct is not none else '—' }}%</b><span>Pack 2 con alguna buena</span></div>
+</div>
+{% if panel.duplicate_floorplans %}
+  <p class="sub">{{ panel.duplicate_floorplans }} plano(s) repetido(s): sirven para repetibilidad,
+    no para tamaño de muestra.</p>
+{% endif %}
+<table class="detect"><tbody>
+<tr><td class="sub">Tiempo mediano hasta el plano listo</td>
+    <td class="mono">{{ panel.timings.median_seconds.pack1_started_to_geometry if panel.timings.median_seconds.pack1_started_to_geometry is not none else '—' }} s
+      <span class="sub">(n={{ panel.timings.sample.pack1_started_to_geometry }})</span></td></tr>
+<tr><td class="sub">Tiempo mediano de creación a Pack 1 listo</td>
+    <td class="mono">{{ panel.timings.median_seconds.created_to_pack1_ready if panel.timings.median_seconds.created_to_pack1_ready is not none else '—' }} s
+      <span class="sub">(n={{ panel.timings.sample.created_to_pack1_ready }})</span></td></tr>
+<tr><td class="sub">Motivo de intervención más frecuente</td>
+    <td class="mono">{{ panel.interventions.labels.get(panel.interventions.top_reason, '—') }}</td></tr>
+</tbody></table>
+
+<h2>Corpus de ambientación</h2>
+<p class="sub">E36 §18/§19 — lo que le falta a E31.1 para poder correr el bake-off. Sólo fotos de
+  propiedades con procedencia real: una foto de fixture no dice nada sobre cómo se comporta un
+  proveedor con material de un cliente.</p>
+<div class="kpis">
+  <div><b>{{ panel.staging.corpus.unique_photos }} / {{ panel.staging.corpus.min_photos }}</b><span>fotos reales elegibles</span></div>
+  <div><b>{{ panel.staging.corpus.properties }} / {{ panel.staging.corpus.min_properties }}</b><span>propiedades distintas</span></div>
+  <div><b>{{ panel.staging.credentials_present }} / 2</b><span>credenciales presentes</span></div>
+</div>
+<table class="detect"><tbody>
+{% for c in panel.staging.credentials %}
+  <tr><td class="mono">{{ c.name }}</td><td class="sub mono">{{ c.env }}</td>
+      <td>{{ 'configured' if c.configured else 'missing' }}</td>
+      <td class="sub">{{ 'excluido del piloto' if c.excluded else ('en el piloto' if c.in_pilot else '') }}</td></tr>
+{% endfor %}
+</tbody></table>
+{% if panel.staging.ready %}
+  <p><b>LISTO PARA BAKE-OFF.</b> No se ejecuta nada sin una acción explícita.</p>
+{% else %}
+  <p class="sub">Falta: {{ panel.staging.blockers|join(' · ') }}</p>
+{% endif %}
+<p class="sub"><a href="{{ url_for('lab.pilot_export') }}">Descargar el dataset del piloto (JSON)</a></p>
+
 <h2>Cuántas veces hizo falta una persona</h2>
 <p class="sub">E35 §17 — un ingest "automático" se demuestra contando, no con una captura de
   pantalla. Acá, no en la pantalla principal: a quien está publicando una oficina no le sirve.</p>
@@ -42,12 +92,14 @@
 {% endfor %}
 </tbody></table>
 
-<h2>Autoaceptación: ¿los umbrales separan algo?</h2>
-<p class="sub">E35 §11–§13 — precisión y cobertura por componente sobre las marcas humanas que ya
-  existían en el repositorio. <b>No</b> se mide accuracy global: aceptar todo da cobertura perfecta
-  y es peligroso; rechazar todo da precisión perfecta y no entrega nada.
-  Estado: <b>{{ calib.status }}</b> ({{ calib.labelled_rows }} filas con etiqueta humana,
-  {{ calib.unlabelled_rows }} sin ella; hacen falta {{ propuesta.min_sample }} por componente).</p>
+<h2>Autoaceptación sobre el piloto real</h2>
+<p class="sub">Precisión y cobertura por componente sobre las <b>etiquetas de verdad</b> de las
+  propiedades reales del piloto. <b>No</b> se mide accuracy global: aceptar todo da cobertura
+  perfecta y es peligroso; rechazar todo da precisión perfecta y no entrega nada.
+  Estado: <b>{{ calib.status }}</b> ({{ calib.labelled_rows }} filas etiquetadas;
+  hacen falta {{ propuesta.min_sample }} por componente, y que el umbral llegue a discriminar).
+  Falsos aceptos {{ calib.false_accept_count }} · falsos rechazos {{ calib.false_review_count }} ·
+  aceptos incompletos {{ calib.accepted_incomplete_count }}.</p>
 <table class="detect"><tbody>
 <tr><td></td><td class="sub">vara</td><td class="sub">n</td><td class="sub">aceptaría</td>
     <td class="sub">falsos aceptos</td><td class="sub">aceptos incompletos</td>
@@ -64,6 +116,27 @@
 {% endfor %}
 </tbody></table>
 <p class="sub">{{ propuesta.why }}</p>
+{% if not calib.components %}
+  <p class="sub">Todavía no hay ninguna propiedad real con revisión de verdad completa. Hasta que
+    la haya, la única evidencia medida es la de abajo, que es de los casos del repositorio.</p>
+{% endif %}
+
+<h3>Referencia histórica — casos del repositorio (E35)</h3>
+<p class="sub">No es el piloto: son las marcas humanas que ya existían en `cases/`. Se conserva
+  porque hoy es la única medición que hay, y porque su hallazgo sigue vigente.
+  Estado: <b>{{ historico.status }}</b> · falsos aceptos {{ historico.false_accept_count }} ·
+  falsos rechazos {{ historico.false_review_count }}.</p>
+<table class="detect"><tbody>
+<tr><td></td><td class="sub">vara</td><td class="sub">n</td><td class="sub">falsos aceptos</td>
+    <td class="sub">precisión</td><td class="sub">cobertura</td></tr>
+{% for c in historico.components %}
+  <tr><td><b>{{ c.component }}</b></td>
+      <td>{{ c.effective_threshold if c.effective_threshold is not none else '—' }}</td>
+      <td>{{ c.sample_count }}</td><td>{{ c.false_accept }}</td>
+      <td>{{ c.auto_accept_precision if c.auto_accept_precision is not none else '—' }}</td>
+      <td>{{ c.auto_accept_coverage if c.auto_accept_coverage is not none else '—' }}</td></tr>
+{% endfor %}
+</tbody></table>
 
 <h2>Últimas</h2>
 <table class="detect"><tbody>
