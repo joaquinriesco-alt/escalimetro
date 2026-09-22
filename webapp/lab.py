@@ -25,8 +25,9 @@ from flask import (Blueprint, abort, jsonify, redirect, render_template, request
                    url_for)
 
 from . import auth, benchmark as bench, briefs as briefmod, engine, intake, store
-from .domain import (assets, branding, entitlements, fits, floorplan, grants, ingest,
-                     lab as labdom, packs, pilot, presets, properties, reviews, staging)
+from .domain import (assets, branding, calibration, entitlements, fits, floorplan, grants,
+                     ingest, interventions, lab as labdom, packs, pilot, presets, properties,
+                     reviews, staging, units)
 
 bp = Blueprint("lab", __name__, url_prefix="/lab")
 OPERATOR = os.environ.get("ESCALIMETRO_REVIEWER", "Joaquín Riesco")
@@ -211,8 +212,45 @@ def generar_pack1(property_id):
     except (fits.FitError, presets.PresetError, floorplan.FloorplanError,
             entitlements.EntitlementError, briefmod.BriefFormError, ValueError) as e:
         return _pagina(property_id, [str(e)], 400)
+    if res.get("action") == "elegir_oficina":
+        # E35 §16 — la ambigüedad de unidad se resuelve EN la página, no en otra pantalla.
+        return redirect(url_for("lab.propiedad", property_id=property_id) + "#oficina")
     if res.get("action") == "revisar":
         return redirect(url_for("lab.revisar_plano", property_id=property_id))
+    return redirect(url_for("lab.propiedad", property_id=property_id) + "#pack1")
+
+
+@bp.get("/p/<property_id>/candidatos.png")
+@auth.require
+def candidatos_png(property_id):
+    """La lámina con las zonas candidatas pintadas y numeradas. Es toda la interfaz de la pregunta:
+    el operador no lee un id, mira la planta."""
+    _p(property_id)
+    destino = os.path.join(store.property_dir(property_id), "unit_candidates.png")
+    try:
+        ruta = units.overlay(property_id, destino)
+    except units.UnitError:
+        ruta = None
+    if not ruta:
+        abort(404)
+    return send_file(ruta, mimetype="image/png", max_age=0)
+
+
+@bp.post("/p/<property_id>/elegir-oficina")
+@auth.require
+def elegir_oficina(property_id):
+    """UN clic (§6). Ni nombre técnico, ni unit id, ni coordenadas, ni escala, ni acceso.
+
+    Después de elegir, el pipeline sigue solo: se vuelve a preparar la planta con la unidad ya
+    resuelta y se cae en el camino normal de Pack 1."""
+    _p(property_id)
+    try:
+        units.pick(property_id, (request.form.get("candidate_id") or "").strip())
+        interventions.record(property_id, interventions.UNIT_SELECTION,
+                             "el operador eligió la oficina sobre la lámina")
+        ingest.auto_prepare(property_id)
+    except (units.UnitError, ValueError) as e:
+        return _pagina(property_id, [str(e)], 400)
     return redirect(url_for("lab.propiedad", property_id=property_id) + "#pack1")
 
 
@@ -232,6 +270,8 @@ def revisar_plano(property_id):
     return render_template("lab/revisar.html", property_id=property_id, case_id=case_id,
                            p=properties.require(property_id),
                            tecnico=floorplan.technical_state(property_id),
+                           compuertas=ingest.pending_gates(property_id),
+                           unidad=units.get(property_id),
                            inferencia=ingest.get(property_id))
 
 
@@ -242,6 +282,21 @@ def plano_completo(property_id):
     _p(property_id)
     try:
         ingest.declare_whole_drawing(property_id)
+    except (ValueError, intake.IntakeError) as e:
+        return _pagina(property_id, [str(e)], 400)
+    return redirect(url_for("lab.propiedad", property_id=property_id) + "#pack1")
+
+
+@bp.post("/p/<property_id>/confirmar-plano")
+@auth.require
+def confirmar_plano(property_id):
+    """«Lo que detectaron está bien.» E35 §14 — desde que el núcleo cae en la banda de
+    incertidumbre, esta confirmación deja de ser excepcional y tiene que costar UN clic."""
+    _p(property_id)
+    try:
+        ingest.confirm_pending(property_id)
+        interventions.record(property_id, interventions.GEOMETRY,
+                             "el operador confirmó la geometría detectada")
     except (ValueError, intake.IntakeError) as e:
         return _pagina(property_id, [str(e)], 400)
     return redirect(url_for("lab.propiedad", property_id=property_id) + "#pack1")
@@ -346,6 +401,20 @@ def _procedencia(property_id, f):
     Nada de esto se le muestra al usuario; existe para poder saber QUÉ versión produjo un 'malo'."""
     tipo, aid = f.get("artifact_type"), f.get("artifact_id") or None
     pr = {"engine_version": engine.engine_commit()}
+    # E35 §15 — de qué ingest salió esto. Se lee del registro, no se recalcula: lo que importa es
+    # con qué se produjo el artefacto que se está calificando, no lo que diría el motor hoy.
+    sel = units.get(property_id)
+    if sel:
+        pr["unit_selection_source"] = sel["source"]
+        pr["unit_selection_confidence"] = sel["confidence"]
+    inf = ingest.get(property_id)
+    if inf:
+        pr["scale_source"] = inf["scale_source"]
+        pr["scale_confidence"] = inf["scale_confidence"]
+    case_id = properties.require(property_id)["floorplan_case_id"]
+    fp = intake.load_floorplate(case_id) if case_id else None
+    if fp:
+        pr["geometry_confidences"] = ingest.element_confidences(fp)
     a = assets.get(aid, property_id) if aid else None
     if a:
         pr["artifact_sha256"] = a["sha256"]
@@ -394,8 +463,13 @@ def config():
 @bp.get("/ajustes/evaluaciones")
 @auth.require
 def evaluaciones():
-    """§18 — el resumen de aprendizaje. Acá, no en la navegación principal."""
+    """§18 — el resumen de aprendizaje. Acá, no en la navegación principal.
+
+    E35 §12/§17 añade las dos cifras que dicen si el ingest está mejorando o sólo lo parece: la
+    precisión de autoaceptación por componente y cuántas veces hizo falta una persona."""
     return render_template("lab/evaluaciones.html", stats=reviews.stats(),
+                           calib=calibration.metrics(), propuesta=calibration.proposal(),
+                           manual=interventions.summary(),
                            filas=[dict(r, prop=properties.get(r["property_id"]))
                                   for r in (reviews._row(x) for x in store.q(
                                       "SELECT * FROM product_reviews ORDER BY created_at DESC "

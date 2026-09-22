@@ -23,7 +23,8 @@ import uuid
 from typing import Dict, List, Optional
 
 from .. import intake, store
-from . import assets, fits, floorplan, ingest, packs, pilot, presets, properties, staging
+from . import (assets, fits, floorplan, ingest, packs, pilot, presets, properties,
+               staging, units)
 
 #: §17 — valoración interna. Tres estados y nada más: esto no es un CRM.
 PROPERTY_FEEDBACK = (("GOOD", "Funcionó"), ("NEEDS_WORK", "Hay que ajustar"),
@@ -324,10 +325,18 @@ def pack1(property_id: str) -> Dict:
         p_plano = _paso("Plano comercial", FALLO,
                         "el plano que subiste no se puede leer en esta versión",
                         tecnico=t["case_status"])
+    elif (units.get(property_id) or {}).get("status") == units.NEEDS_INTERNAL_REVIEW:
+        # E35 §16 — cuando lo único que falta es saber cuál de las oficinas de la lámina es ésta,
+        # el paso tiene que decir ESO. Mandar a "revisar el plano" era ofrecerle a alguien la
+        # herramienta técnica para un problema que se resuelve con un clic más arriba en la
+        # misma página.
+        p_plano = _paso("Plano comercial", REVISION,
+                        "necesitamos que nos indiques cuál es la oficina",
+                        accion="Elegir la oficina", ruta="oficina", tecnico=t["case_status"])
     elif not t["ready"]:
         inf = ingest.get(property_id) or {}
         p_plano = _paso("Plano comercial", REVISION,
-                        inf.get("review_reason") or "necesitamos revisar el plano",
+                        (inf or {}).get("review_reason") or "necesitamos revisar el plano",
                         accion="Revisar plano", ruta="revisar", tecnico=t["case_status"])
     else:
         p_plano = _paso("Plano comercial", PREPARANDO, "listo para generar")
@@ -413,6 +422,12 @@ def pack1_advance(property_id: str) -> Dict:
         t = floorplan.technical_state(property_id)
     if not t["ready"]:
         inf = ingest.get(property_id) or {}
+        # E35 §16 — si lo único que falta es saber cuál de las oficinas de la lámina es ésta, no se
+        # manda a nadie a la herramienta técnica: se pregunta acá mismo, con la planta a la vista.
+        sel = units.get(property_id)
+        if sel and sel["status"] == units.NEEDS_INTERNAL_REVIEW:
+            return {"done": hecho, "blocked": "Necesitamos que nos indiques cuál es la oficina.",
+                    "action": "elegir_oficina", "inference": inf, "units": sel}
         return {"done": hecho,
                 "blocked": "Necesitamos revisar el plano antes de continuar.",
                 "action": "revisar", "inference": inf}
@@ -510,6 +525,8 @@ def property_view(property_id: str) -> Dict:
     clave = lambda t, a, f: f"{t}|{a or ''}|{f or ''}"        # noqa: E731
     return {"v": v, "p": v["property"], "pack1": p1, "pack2": pack2_list(property_id),
             "inference": ingest.get(property_id),
+            # E35 §6 — la pregunta de la unidad viaja con la página, no con una pantalla aparte.
+            "units": units.get(property_id),
             "reviews": hist,
             "revs": {clave(r["artifact_type"], r["artifact_id"], r["fit_id"]): r for r in hist},
             "presets": presets.CATALOG, "styles": presets.VISUAL_STYLES,

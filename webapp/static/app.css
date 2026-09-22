@@ -229,3 +229,26 @@ details.motivos{margin:2px 0 14px}
 details.motivos summary{font-size:13px;color:var(--mut)}
 .propuesta{border:1px solid var(--line);border-radius:8px;padding:16px 18px;margin:16px 0;background:#fff}
 .propuesta h3{margin-top:0}
+
+/* E35 §6 — «¿Cuál es la oficina?»: un clic sobre una zona pintada del plano. Los colores de los
+   botones son los mismos de PALETTE en webapp/domain/units.py y en el mismo orden: si no
+   coincidieran, el número del plano y el del botón dirían cosas distintas. */
+.ambigua{border:1px solid var(--work);border-radius:10px;padding:16px;margin:18px 0;
+  background:color-mix(in srgb, var(--work) 6%, transparent)}
+.ambigua h2{margin-top:0}
+.candidatos{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+.cand{display:flex;align-items:center;gap:8px;padding:8px 14px 8px 8px;border-radius:999px;
+  border:2px solid var(--line);background:#fff;cursor:pointer;font:inherit;color:var(--ink,#111)}
+.cand:hover{border-color:#111}
+.cand .num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;
+  border-radius:50%;color:#fff;font-weight:700;font-size:13px}
+.cand .txt{font-weight:600}
+.cand.c1 .num{background:rgb(220,90,0)}
+.cand.c2 .num{background:rgb(90,170,0)}
+.cand.c3 .num{background:rgb(0,70,200)}
+.cand.c4 .num{background:rgb(180,0,150)}
+.cand.c5 .num{background:rgb(200,160,0)}
+.cand.c6 .num{background:rgb(90,90,90)}
+/* La lámina y los botones tienen que verse JUNTOS: si la pregunta queda arriba del pliegue y la
+   respuesta abajo, el operador elige sin mirar. */
+.candidatos-img{max-height:46vh;width:auto;display:block;margin:0 auto}

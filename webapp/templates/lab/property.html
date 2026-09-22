@@ -43,6 +43,28 @@
 </details>
 </section>
 
+{# ======================================= E35 §6 — ¿CUÁL ES LA OFICINA? #}
+{# Aparece SÓLO cuando la lámina demarca varias unidades y el sistema no puede saber cuál es ésta.
+   Es un clic sobre una zona pintada: ni nombre técnico, ni unit id, ni coordenadas, ni escala. #}
+{% if units and units.status == 'NEEDS_INTERNAL_REVIEW' %}
+<section id="oficina" class="ambigua">
+<h2>¿Cuál es la oficina?</h2>
+<p class="sub">Este plano publica {{ units.candidate_count }} unidades. Marcá cuál es la tuya y
+   seguimos solos con el resto.</p>
+<img class="big candidatos-img" src="{{ url_for('lab.candidatos_png', property_id=p.property_id) }}"
+     alt="zonas candidatas sobre el plano">
+<form method="post" action="{{ url_for('lab.elegir_oficina', property_id=p.property_id) }}"
+      class="candidatos">
+  {% for c in units.candidates %}
+  <button type="submit" name="candidate_id" value="{{ c.candidate_id }}" class="cand c{{ loop.index }}">
+    <span class="num">{{ loop.index }}</span>
+    <span class="txt">{% if c.ocr_labels %}{{ c.ocr_labels|join(' ') }}{% else %}Zona {{ loop.index }}{% endif %}</span>
+  </button>
+  {% endfor %}
+</form>
+</section>
+{% endif %}
+
 {# ============================================================ PACK 1 #}
 <section id="pack1">
 <div class="pack-head">
@@ -62,7 +84,9 @@
       <td><b>{{ s.name }}</b></td>
       <td><span class="estado e-{{ s.state|replace(' ','-')|lower }}">{{ s.state }}</span>
         <span class="sub">{{ s.detail }}</span></td>
-      <td class="ans">{% if s.action == 'Revisar plano' %}
+      <td class="ans">{% if s.action == 'Elegir la oficina' %}
+        <a class="btn sec" href="#oficina">Elegir la oficina</a>
+        {% elif s.action == 'Revisar plano' %}
         <a class="btn sec" href="{{ url_for('lab.revisar_plano', property_id=p.property_id) }}">Revisar plano</a>{% endif %}</td></tr>
 {% endfor %}
 </tbody></table>

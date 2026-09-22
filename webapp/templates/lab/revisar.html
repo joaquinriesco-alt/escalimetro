@@ -4,22 +4,48 @@
   <a href="{{ url_for('lab.propiedad', property_id=property_id) }}">{{ p.title }}</a> / Revisar el plano</p>
 <h1>Revisar el plano</h1>
 
-{% if inferencia and inferencia.notes %}
-<p class="sub">{{ inferencia.notes }}.</p>
+{% if inferencia and inferencia.review_reason %}
+<p class="sub">{{ inferencia.review_reason|capitalize }}.</p>
 {% endif %}
 
-{% if inferencia and inferencia.scale_source == 'UNKNOWN' %}
-<h2>¿La lámina es de una sola oficina?</h2>
-<p class="sub">No pudimos identificar cuál de las oficinas del dibujo es ésta. Buscamos el nombre de
-  la propiedad sobre el plano: si la llamaras <b>«Oficina 403»</b> y ese número estuviera en la
-  lámina, la encontraríamos sola.</p>
-<form method="post" action="{{ url_for('lab.plano_completo', property_id=property_id) }}" class="inline">
-  <button>Sí, el dibujo completo es esta oficina</button></form>
-<p class="hint">Si la lámina tiene varias unidades, hay que señalar cuál es desde la herramienta de
-  medición.</p>
+{% if unidad and unidad.status == 'NEEDS_INTERNAL_REVIEW' %}
+{# E35 §7 — acá vivía el texto que pedía que la propiedad se llamara «Oficina 403» para que el
+   sistema la encontrara. Eso ya no es cierto ni deseable: la unidad se elige con un clic sobre la
+   lámina, en la página de la propiedad, sin escribir nada. #}
+<h2>¿Cuál es la oficina?</h2>
+<p class="sub">Esta lámina publica {{ unidad.candidate_count }} unidades. Se elige con un clic sobre
+  el plano, en la página de la propiedad.</p>
+<p><a class="btn" href="{{ url_for('lab.propiedad', property_id=property_id) }}#oficina">Elegir la oficina</a></p>
+
+{% elif compuertas and compuertas.asked %}
+<h2>Mirá lo que detectamos</h2>
+<p class="sub">Falta confirmar: <b>{{ compuertas.labels|join(', ') }}</b>. Si se ve bien, un clic y
+  seguimos.</p>
+<img class="big" src="{{ url_for('detected_svg', case_id=case_id) }}" alt="lo detectado sobre la planta">
+<p>
+  <form method="post" action="{{ url_for('lab.confirmar_plano', property_id=property_id) }}" class="inline">
+    <button>Sí, está bien</button></form>
+  <form method="post" action="{{ url_for('lab.plano_completo', property_id=property_id) }}" class="inline">
+    <button class="sec">El dibujo completo es esta oficina</button></form>
+</p>
+<details><summary>Por qué se pregunta</summary>
+  <p class="sub">E35 §14 — un elemento no se acepta solo por rozar su vara: tiene que superarla con
+    margen. Los umbrales todavía están <b>{{ compuertas.calibration_status }}</b>, así que lo que
+    cae cerca del límite lo mira una persona.</p>
+  <table class="detect"><tbody>
+  {% for g, partes in compuertas.detail.items() %}
+    {% for parte, v in partes.items() %}
+      <tr><td class="sub mono">{{ parte }}</td><td class="sub mono">confianza {{ v.confidence }}</td>
+          <td class="sub mono">vara {{ v.effective_threshold }}{% if v.band %} ({{ v.threshold }}+{{ v.band }}){% endif %}</td>
+          <td class="sub mono">{{ v.verdict or '' }}</td></tr>
+    {% endfor %}
+  {% endfor %}
+  </tbody></table>
+</details>
+
 {% else %}
-<h2>Falta confirmar algo de la planta</h2>
-<p class="sub">{{ 'Pendiente: ' ~ (tecnico.pending|join(', ')) if tecnico.pending else 'El plano ya está listo.' }}</p>
+<h2>El plano ya está listo</h2>
+<p class="sub">No queda nada por confirmar.</p>
 {% endif %}
 
 <h2>Herramienta de medición</h2>
