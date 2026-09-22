@@ -69,6 +69,29 @@ VERDICT_LABEL = {CORRECTO: "Correcto", INCORRECTO: "Incorrecto", INCOMPLETO: "In
 #: se cuenta aparte, porque un acepto sucio no es un acepto correcto (E35 §12).
 GOOD = (CORRECTO,)
 
+#: =============================================================================================
+#: E36.1 — DE QUÉ CLASE DE JUICIO VIENE UNA ETIQUETA
+#: =============================================================================================
+#: Un veredicto sólo es ground truth si una persona miró el output y lo juzgó. En el dogfood de
+#: E36 se crearon etiquetas a partir de mediciones previas de E35: son útiles para probar que el
+#: instrumento funciona y **no** son evidencia sobre el motor. Contarlas como tal sería calibrar
+#: contra un eco de nuestras propias conclusiones.
+#:
+#: `author` NO sirve para distinguirlas: es un valor por defecto del servidor
+#: (`ESCALIMETRO_REVIEWER`), no un registro de quién miró. De hecho todas las etiquetas del
+#: dogfood quedaron firmadas con el nombre de Joaquín sin que él las hubiera visto. Por eso hace
+#: falta un campo propio.
+HUMAN_VERIFIED = "HUMAN_VERIFIED"          # una persona miró el output y lo juzgó
+PROVISIONAL_DOGFOOD = "PROVISIONAL_DOGFOOD"  # etiqueta de prueba; NO es evidencia
+PROVENANCES = (HUMAN_VERIFIED, PROVISIONAL_DOGFOOD)
+PROVENANCE_LABEL = {HUMAN_VERIFIED: "revisado por una persona",
+                    PROVISIONAL_DOGFOOD: "provisional, sin revisar"}
+
+#: El default es el conservador a propósito: quien quiera reclamar verificación humana tiene que
+#: decirlo explícitamente. Si el default fuera HUMAN_VERIFIED, cualquier llamada programática
+#: —un script, un test, un seed— entraría a la calibración sin que nadie la hubiera mirado.
+DEFAULT_PROVENANCE = PROVISIONAL_DOGFOOD
+
 
 class GoldError(ValueError):
     """Componente o veredicto fuera del vocabulario."""
@@ -94,22 +117,27 @@ def _engine_confidences(property_id: str) -> Dict[str, Optional[float]]:
 
 
 def save(property_id: str, component: str, verdict: str, note: str = "",
-         author: str = "") -> None:
-    """Un juicio humano sobre un componente. Reemplaza el anterior: la última mirada es la válida."""
+         author: str = "", provenance: str = DEFAULT_PROVENANCE) -> None:
+    """Un juicio sobre un componente. Reemplaza el anterior: la última mirada es la válida.
+
+    `provenance` distingue un juicio humano de una etiqueta de prueba, y sólo el primero cuenta
+    como evidencia. Nótese el default: hay que PEDIR `HUMAN_VERIFIED`, nunca se hereda."""
     if component not in COMPONENTS:
         raise GoldError(f"componente desconocido: {component}")
     if verdict not in VERDICTS:
         raise GoldError(f"veredicto desconocido: {verdict}")
+    if provenance not in PROVENANCES:
+        raise GoldError(f"procedencia de juicio desconocida: {provenance}")
     from .. import engine                                      # noqa: PLC0415
     conf = _engine_confidences(property_id).get(component)
     store.ex("INSERT INTO gold_labels(property_id, component, verdict, note, engine_confidence, "
-             "engine_version, author, created_at) VALUES (?,?,?,?,?,?,?,?) "
+             "engine_version, author, provenance, created_at) VALUES (?,?,?,?,?,?,?,?,?) "
              "ON CONFLICT(property_id, component) DO UPDATE SET verdict=excluded.verdict, "
              "note=excluded.note, engine_confidence=excluded.engine_confidence, "
              "engine_version=excluded.engine_version, author=excluded.author, "
-             "created_at=excluded.created_at",
+             "provenance=excluded.provenance, created_at=excluded.created_at",
              (property_id, component, verdict, (note or "").strip()[:500], conf,
-              engine.engine_commit(), (author or "")[:80], store.now()))
+              engine.engine_commit(), (author or "")[:80], provenance, store.now()))
 
 
 def of_property(property_id: str) -> Dict[str, Dict]:
@@ -125,23 +153,39 @@ def judgeable(property_id: str) -> List[str]:
 
 
 def review_state(property_id: str) -> Dict:
-    """Qué falta para que esta propiedad sirva de evidencia de calibración."""
+    """Qué falta para que esta propiedad sirva de evidencia de calibración.
+
+    Hay DOS nociones de "completa" y no son la misma: tener una etiqueta en cada componente, y
+    tener un juicio humano en cada componente. Sólo la segunda habilita calibrar. Mantenerlas
+    separadas es lo que impide que una propiedad de prueba se cuele como muestra."""
     puede = judgeable(property_id)
     hay = of_property(property_id)
     faltan = [c for c in puede if c not in hay]
-    confs = _engine_confidences(property_id)
+    humanos = {c for c, v in hay.items() if v["provenance"] == HUMAN_VERIFIED}
+    provisionales = sorted(c for c in hay if c not in humanos)
     return {
         "judgeable": puede, "labelled": sorted(hay), "missing": faltan,
         "complete": bool(puede) and not faltan,
-        "labels": hay, "confidences": confs,
+        "human_missing": [c for c in puede if c not in humanos],
+        "human_complete": bool(puede) and all(c in humanos for c in puede),
+        "provisional": provisionales,
+        "labels": hay, "confidences": (confs := _engine_confidences(property_id)),
         "rows": [{"component": c, "label": COMPONENT_LABEL[c], "confidence": confs.get(c),
                   "verdict": (hay.get(c) or {}).get("verdict"),
+                  "provenance": (hay.get(c) or {}).get("provenance"),
+                  "provisional": c in provisionales,
                   "note": (hay.get(c) or {}).get("note") or ""} for c in puede],
     }
 
 
 def complete(property_id: str) -> bool:
+    """Tiene etiqueta en todo lo juzgable — sea provisional o humana."""
     return review_state(property_id)["complete"]
+
+
+def human_complete(property_id: str) -> bool:
+    """Tiene juicio HUMANO en todo lo juzgable. Es la única que habilita calibrar."""
+    return review_state(property_id)["human_complete"]
 
 
 def rows_for_calibration(property_ids: List[str]) -> List[Dict]:
@@ -155,6 +199,10 @@ def rows_for_calibration(property_ids: List[str]) -> List[Dict]:
     out = []
     for r in store.q(f"SELECT * FROM gold_labels WHERE property_id IN ({marcas})",
                      tuple(property_ids)):
+        # E36.1 — la compuerta. Una etiqueta provisional NO es evidencia sobre el motor, y dejarla
+        # entrar calibraría contra un eco de nuestras propias conclusiones.
+        if r["provenance"] != HUMAN_VERIFIED:
+            continue
         if r["engine_confidence"] is None or r["verdict"] == NO_APLICA:
             continue
         out.append({
@@ -163,7 +211,31 @@ def rows_for_calibration(property_ids: List[str]) -> List[Dict]:
             "human_verdict": {CORRECTO: "CONFIRMED", INCORRECTO: "DISAGREES_WITH_HUMAN",
                               INCOMPLETO: "CORRECTED_INCOMPLETE"}[r["verdict"]],
             "note": r["note"] or "", "engine_version": r["engine_version"],
+            "review_provenance": r["provenance"],
             "confidence_provenance": f"artefacto de {r['property_id']} al etiquetar",
-            "label_provenance": [f"gold_labels:{r['property_id']}:{r['component']}"],
+            "label_provenance": [f"gold_labels:{r['property_id']}:{r['component']}"
+                                 f":{r['provenance']}"],
         })
     return out
+
+
+def provenance_summary(property_ids: Optional[List[str]] = None) -> Dict:
+    """Cuántas etiquetas son juicio humano y cuántas siguen provisionales (§5).
+
+    Existe para que el número de muestra del panel se pueda auditar de un vistazo: si alguien ve
+    "n=7" tiene que poder saber cuántas de esas siete miró una persona."""
+    if property_ids is None:
+        filas = list(store.q("SELECT provenance FROM gold_labels"))
+    elif not property_ids:
+        filas = []
+    else:
+        marcas = ",".join("?" * len(property_ids))
+        filas = list(store.q(f"SELECT provenance FROM gold_labels WHERE property_id IN ({marcas})",
+                             tuple(property_ids)))
+    cuenta = {p: 0 for p in PROVENANCES}
+    for r in filas:
+        if r["provenance"] in cuenta:
+            cuenta[r["provenance"]] += 1
+    return {"by_provenance": cuenta, "total": len(filas),
+            "human": cuenta[HUMAN_VERIFIED], "provisional": cuenta[PROVISIONAL_DOGFOOD],
+            "labels": PROVENANCE_LABEL}

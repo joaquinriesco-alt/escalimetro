@@ -266,3 +266,6 @@ details.motivos summary{font-size:13px;color:var(--mut)}
 /* El SVG de lo detectado no trae tamaño intrínseco útil: sin esto se dibuja diminuto y nadie
    puede juzgar un contorno que no ve. */
 img.candidatos-img[src$=".svg"]{width:100%;max-width:640px}
+/* E36.1 — una etiqueta provisional tiene que verse como lo que es: de prueba, no evidencia. */
+.prov{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--work);
+  border:1px solid var(--work);border-radius:999px;padding:1px 7px;margin-left:6px}

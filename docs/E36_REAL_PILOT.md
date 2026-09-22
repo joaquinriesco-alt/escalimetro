@@ -67,6 +67,33 @@ mal detectado; forzar CORRECTO/INCORRECTO ahí fabricaría muestra.
 Sólo se pide juicio sobre los componentes que el motor **efectivamente decidió**. Pedirlo sobre lo
 que nadie emitió no produce evidencia, sólo fricción.
 
+## 4.1 Procedencia del juicio (E36.1)
+
+Una etiqueta sólo es ground truth si **una persona miró el output y lo juzgó**. En el dogfood de
+E36 se crearon siete etiquetas a partir de mediciones previas de E35: sirvieron para probar que el
+instrumento funciona y **no** son evidencia sobre el motor. Contarlas como tal sería calibrar
+contra un eco de nuestras propias conclusiones.
+
+```
+HUMAN_VERIFIED       una persona miró el output y lo juzgó   → cuenta
+PROVISIONAL_DOGFOOD  etiqueta de prueba                      → NO cuenta
+```
+
+`author` **no sirve** para distinguirlas: es un valor por defecto del servidor
+(`ESCALIMETRO_REVIEWER`), no un registro de quién miró. De hecho las siete etiquetas del dogfood
+quedaron firmadas con el nombre de Joaquín sin que él las hubiera visto. Por eso hace falta un
+campo propio, y por eso el default de `gold.save()` es **`PROVISIONAL_DOGFOOD`**: hay que *pedir*
+`HUMAN_VERIFIED`, nunca se hereda. La única vía que lo reclama es el clic en la UI de revisión.
+
+Sólo `HUMAN_VERIFIED` entra en `sample_count`, en precisión/cobertura, en falsos aceptos/rechazos
+y en las propuestas de umbral. Las etiquetas anteriores **no se borraron**: quedan visibles en la
+propiedad marcadas como provisionales, y el panel dice cuántas se excluyeron.
+
+Efecto colateral que esto destapó: con cero componentes medidos, `metrics()` reportaba
+`CALIBRATED`, porque `any()` sobre una lista vacía es `False`. Era el peor error posible en una
+tabla cuyo trabajo es decir qué se sabe, y sólo se hizo visible al excluir lo provisional y quedar
+sin filas. Corregido: sin componentes, el estado es `THRESHOLD_UNCALIBRATED`.
+
 ## 5. Cuándo un umbral queda calibrado
 
 Dos condiciones, las dos necesarias:

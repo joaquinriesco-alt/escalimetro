@@ -404,6 +404,10 @@ CREATE TABLE IF NOT EXISTS gold_labels (
   engine_confidence REAL,            -- la confianza que el motor tenía CUANDO se etiquetó
   engine_version    TEXT,
   author            TEXT DEFAULT '',
+  -- E36.1 — DE QUÉ CLASE DE JUICIO viene esta etiqueta. `author` no sirve para esto: es un valor
+  -- por defecto del servidor (ESCALIMETRO_REVIEWER), no un registro de quién miró. Sólo
+  -- HUMAN_VERIFIED es ground truth y sólo eso entra a calibración.
+  provenance        TEXT NOT NULL DEFAULT 'PROVISIONAL_DOGFOOD',
   created_at        TEXT NOT NULL,
   PRIMARY KEY (property_id, component)
 );
@@ -533,6 +537,14 @@ def init() -> None:
         conn.execute("ALTER TABLE fit_requests ADD COLUMN lab_feedback TEXT")
     # E35 §15 — el feedback de E33 se guardó sin saber de qué ingest venía. Las filas anteriores
     # se quedan con NULL: eso es "no se registró", que es la verdad, y no se rellena con supuestos.
+    # E36.1 — las etiquetas que ya existían NO pueden reclamar verificación humana: se crearon
+    # antes de que hubiera forma de registrar de qué clase de juicio venían. El default conservador
+    # las deja como PROVISIONAL_DOGFOOD. No se borra ninguna: se excluyen de la calibración y se
+    # muestran como pendientes de confirmar, que es lo que honestamente son.
+    tiene_gold = {r["name"] for r in conn.execute("PRAGMA table_info(gold_labels)").fetchall()}
+    if tiene_gold and "provenance" not in tiene_gold:
+        conn.execute("ALTER TABLE gold_labels ADD COLUMN provenance TEXT NOT NULL "
+                     "DEFAULT 'PROVISIONAL_DOGFOOD'")
     tiene_inf = {r["name"] for r in conn.execute("PRAGMA table_info(ingest_inference)").fetchall()}
     if "review_reason" not in tiene_inf:
         conn.execute("ALTER TABLE ingest_inference ADD COLUMN review_reason TEXT")

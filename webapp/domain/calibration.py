@@ -174,8 +174,14 @@ def metrics(rows: Optional[List[Dict]] = None) -> Dict:
             "accepted_incomplete_count": sum(c["accepted_incomplete"] for c in comps),
             "labelled_rows": sum(d["sample_count"] for d in por.values()),
             "unlabelled_rows": sum(d["unlabelled"] for d in por.values()),
-            "status": THRESHOLD_UNCALIBRATED if any(
-                d["status"] == THRESHOLD_UNCALIBRATED for d in por.values()) else "CALIBRATED"}
+            # Sin componentes medidos el estado es NO CALIBRADO, no "calibrado".
+            # `any()` sobre una lista vacía es False, así que un dataset vacío habría reportado
+            # CALIBRATED — el peor error posible en una tabla cuyo trabajo es decir qué se sabe.
+            # Se ve en cuanto se excluyen las etiquetas provisionales y no queda ninguna.
+            "status": ("CALIBRATED"
+                       if comps and all(d["status"] != THRESHOLD_UNCALIBRATED
+                                        for d in por.values())
+                       else THRESHOLD_UNCALIBRATED)}
 
 
 def proposal(m: Optional[Dict] = None) -> Dict:

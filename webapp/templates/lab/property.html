@@ -285,7 +285,8 @@
 
 <table class="detect"><tbody>
 {% for r in gold.rows %}
-  <tr><td><b>{{ r.label }}</b> <span class="sub mono">conf {{ r.confidence }}</span></td>
+  <tr><td><b>{{ r.label }}</b> <span class="sub mono">conf {{ r.confidence }}</span>
+      {% if r.provisional %}<span class="prov">provisional</span>{% endif %}</td>
       <td>
       {% for v in gold_verdicts %}
         <form method="post" action="{{ url_for('lab.gold_label', property_id=p.property_id) }}" class="inline">
@@ -297,10 +298,13 @@
       </td></tr>
 {% endfor %}
 </tbody></table>
-{% if gold.missing %}
-  <p class="sub">Falta juzgar: {{ gold.missing|join(', ') }}.</p>
+{% if gold.human_missing %}
+  <p class="sub">Falta tu juicio en: {{ gold.human_missing|join(', ') }}.
+  {% if gold.provisional %}Lo marcado <span class="prov">provisional</span> son etiquetas de
+    prueba: <b>no cuentan</b> hasta que las confirmes vos.{% endif %}</p>
 {% elif gold.judgeable %}
-  <p class="sub"><b>Revisión completa.</b> Esta propiedad ya sirve como evidencia de calibración.</p>
+  <p class="sub"><b>Revisión humana completa.</b> Esta propiedad ya cuenta como evidencia de
+    calibración.</p>
 {% endif %}
 </section>
 {% endif %}

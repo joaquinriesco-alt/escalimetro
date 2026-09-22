@@ -129,6 +129,7 @@ def _pagina(property_id, errores=None, code=200):
                            ratings=reviews.RATINGS, rating_label=reviews.RATING_LABEL,
                            fail_tags=reviews.FAIL_TAGS, good_tags=reviews.GOOD_TAGS,
                            source_labels=realpilot.SOURCE_LABEL,
+                           gold_provenance_label=gold.PROVENANCE_LABEL,
                            modules=briefmod.MODULE_LABELS, **datos)
     return (html, code) if code != 200 else html
 
@@ -339,8 +340,12 @@ def gold_label(property_id):
     _p(property_id)
     f = request.form
     try:
+        # E36.1 — esta ruta es el clic de una persona sobre el output que tiene delante, así que
+        # es el ÚNICO lugar del sistema que puede reclamar HUMAN_VERIFIED. Cualquier otra vía
+        # —un script, un seed, un test— entra como PROVISIONAL_DOGFOOD por defecto.
         gold.save(property_id, (f.get("component") or "").strip(),
-                  (f.get("verdict") or "").strip(), f.get("note") or "", OPERATOR)
+                  (f.get("verdict") or "").strip(), f.get("note") or "", OPERATOR,
+                  provenance=gold.HUMAN_VERIFIED)
         if (f.get("verdict") or "") == gold.INCORRECTO:
             motivo = {gold.PRIMARY_ENTRANCE: interventions.ACCESS,
                       gold.UNIT: interventions.UNIT_SELECTION,

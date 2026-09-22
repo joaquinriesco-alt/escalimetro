@@ -130,7 +130,12 @@ def unique_members() -> List[Dict]:
     a igualdad, la más antigua. Determinista, para que dos lecturas del panel no difieran.
 
     Las propiedades sin plano no se pueden deduplicar por su plano y se cuentan aparte: son piloto
-    incompleto, no evidencia."""
+    incompleto, no evidencia.
+
+    Nota sobre el desempate: `created_at` tiene resolución de segundos, así que dos propiedades
+    creadas en el mismo segundo empatan y decide el `property_id`. Cuál gane es arbitrario, pero
+    **no cambia entre lecturas**, que es lo que el panel necesita: un panel que alternara de
+    representante mostraría números distintos sobre los mismos datos."""
     from . import gold                                         # noqa: PLC0415
     por_sha: Dict[str, Dict] = {}
     for m in members():
@@ -336,14 +341,21 @@ def dashboard() -> Dict:
     """§21 — el panel compacto. Sin BI: los números que contestan «¿ya tenemos muestra?»."""
     from . import calibration, gold                            # noqa: PLC0415
     todas, unicas = members(), unique_members()
+    # E36.1 — la muestra la forman las propiedades con revisión HUMANA completa. Una etiqueta
+    # provisional sirve para probar el instrumento y no para medir con él; si entrara acá,
+    # estaríamos calibrando contra un eco de nuestras propias conclusiones.
+    con_humana = [m for m in unicas if gold.human_complete(m["property_id"])]
     con_gold = [m for m in unicas if gold.complete(m["property_id"])]
     calib = calibration.metrics(
-        gold.rows_for_calibration([m["property_id"] for m in con_gold]))
+        gold.rows_for_calibration([m["property_id"] for m in con_humana]))
     return {
         "properties": len(unicas), "properties_raw": len(todas),
         "target": target(len(unicas)),
         "duplicate_floorplans": sum(1 for n in duplicates().values() if n > 1),
-        "gold_complete": len(con_gold),
+        "gold_complete": len(con_humana),
+        "gold_any_labels": len(con_gold),
+        "gold_provisional_only": len(con_gold) - len(con_humana),
+        "gold_provenance": gold.provenance_summary([m["property_id"] for m in unicas]),
         "interventions": intervention_metrics(unicas),
         "timings": timing_metrics(unicas),
         "pack1": pack1_ratings(unicas),
@@ -387,23 +399,29 @@ def export() -> Dict:
             "interventions": interventions.by_reason(pid),
             "intervention_count": interventions.count(pid),
             "engine_confidences": g["confidences"],
+            # §6 — el provenance viaja con cada etiqueta: sin él, quien audite el dataset no
+            # puede saber cuáles miró una persona.
             "gold_labels": {c: {"verdict": v["verdict"], "engine_confidence":
-                                v["engine_confidence"], "engine_version": v["engine_version"]}
+                                v["engine_confidence"], "engine_version": v["engine_version"],
+                                "review_provenance": v["provenance"]}
                             for c, v in g["labels"].items()},
             "gold_complete": g["complete"],
+            "gold_human_complete": g["human_complete"],
+            "gold_provisional_components": g["provisional"],
             "product_ratings": [{k: v for k, v in r.items() if k not in EXPORT_FORBIDDEN}
                                 for r in ratings],
             "negative_tags": sorted({t for r in ratings if r["rating"] in ("MALO", "PESIMO")
                                      for t in (store.js(r["reason_tags"], []) or [])}),
         })
-    con_gold = [m["property_id"] for m in unicas if gold.complete(m["property_id"])]
-    calib = calibration.metrics(gold.rows_for_calibration(con_gold))
+    con_humana = [m["property_id"] for m in unicas if gold.human_complete(m["property_id"])]
+    calib = calibration.metrics(gold.rows_for_calibration(con_humana))
     return {"_doc": "E36 §22 — dataset del piloto real para auditoría. Sin nombres, sin rutas, "
                     "sin credenciales, sin referencias de origen.",
             "schema_version": "e36_pilot_export_v1",
             "generated_at": store.now(),
             "properties": filas,
             "calibration": calib,
+            "gold_provenance": gold.provenance_summary([m["property_id"] for m in unicas]),
             "proposal": calibration.proposal(calib),
             "interventions": intervention_metrics(unicas),
             "timings": timing_metrics(unicas),

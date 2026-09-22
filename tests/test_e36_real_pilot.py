@@ -198,10 +198,17 @@ def test_el_representante_del_grupo_es_el_que_tiene_etiquetas(client, dom):
     rp, g = dom["realpilot"], dom["gold"]
     a = _prop(dom, "Primera")
     b = _prop(dom, "Segunda")
-    assert rp.unique_members()[0]["property_id"] == a
-    _listo(dom, b)
-    g.save(b, g.PERIMETER, g.CORRECTO)
-    assert rp.unique_members()[0]["property_id"] == b
+    # Sin etiquetas, el desempate es (created_at, property_id): estable entre lecturas, aunque
+    # cuál de las dos gane sea arbitrario si se crearon en el mismo segundo. Lo que el panel
+    # promete es que no cambie de opinión, no cuál elige.
+    primero = rp.unique_members()[0]["property_id"]
+    assert primero in (a, b)
+    assert rp.unique_members()[0]["property_id"] == primero
+    # Con juicio humano, gana el que lo tiene: es el que puede representar al grupo como evidencia.
+    otra = b if primero == a else a
+    _listo(dom, otra)
+    g.save(otra, g.PERIMETER, g.CORRECTO, provenance=g.HUMAN_VERIFIED)
+    assert rp.unique_members()[0]["property_id"] == otra
 
 
 # ===================================================================================================
@@ -234,7 +241,7 @@ def test_la_etiqueta_de_verdad_es_distinta_de_la_calificacion_de_producto(client
     pid = _prop(dom, "Apoquindo 3000")
     _listo(dom, pid)
     rev.save(pid, "PACK1", "EXCELENTE")
-    g.save(pid, g.CORE, g.INCORRECTO)
+    g.save(pid, g.CORE, g.INCORRECTO, provenance=g.HUMAN_VERIFIED)
     assert set(g.VERDICTS).isdisjoint(set(rev.RATINGS))
     assert store.q1("SELECT COUNT(*) n FROM product_reviews WHERE property_id=?", (pid,))["n"] == 1
     assert store.q1("SELECT COUNT(*) n FROM gold_labels WHERE property_id=?", (pid,))["n"] == 1
@@ -337,7 +344,7 @@ def test_la_calibracion_del_piloto_sale_de_etiquetas_reales(client, dom):
     pid = _prop(dom, "Apoquindo 3000")
     _listo(dom, pid)
     for c in g.review_state(pid)["judgeable"]:
-        g.save(pid, c, g.CORRECTO)
+        g.save(pid, c, g.CORRECTO, provenance=g.HUMAN_VERIFIED)
     panel = rp.dashboard()
     assert panel["gold_complete"] == 1
     comps = {c["component"] for c in panel["calibration"]["components"]}
@@ -466,7 +473,7 @@ def test_el_export_no_lleva_datos_sensibles(client, dom):
     pid = _prop(dom, "Apoquindo 3000 · piso 4")
     dom["realpilot"].mark(pid, source_reference="corredora X, contacto interno")
     _listo(dom, pid)
-    g.save(pid, g.PERIMETER, g.CORRECTO)
+    g.save(pid, g.PERIMETER, g.CORRECTO, provenance=g.HUMAN_VERIFIED)
     dom["reviews"].save(pid, "PACK1", "MALO", reason_tags=["Incompleto"], comment="feo")
     r = client.get("/lab/pilot/export.json")
     assert r.status_code == 200
@@ -544,3 +551,124 @@ def test_no_se_toco_ninguna_heuristica(client, dom):
     assert dom["ingest"].UNCERTAINTY_BAND == {"core": 0.10}
     assert dom["units"].MIN_RELATIVE_AREA == 0.15 and dom["units"].MIN_DRAWING_FRAC == 0.02
     assert dom["calibration"].MIN_SAMPLE == 10
+
+
+# ===================================================================================================
+# E36.1 — PROCEDENCIA DEL JUICIO: qué puede reclamar ser ground truth
+# ===================================================================================================
+def test_una_etiqueta_nace_provisional(client, dom):
+    """El default es el conservador. Si fuera al revés, cualquier script, seed o test entraría a
+    la calibración sin que nadie hubiera mirado nada — que es exactamente lo que pasó en E36."""
+    g = dom["gold"]
+    pid = _prop(dom, "Apoquindo 3000")
+    _listo(dom, pid)
+    g.save(pid, g.CORE, g.CORRECTO)
+    assert g.DEFAULT_PROVENANCE == g.PROVISIONAL_DOGFOOD
+    assert g.of_property(pid)["core"]["provenance"] == g.PROVISIONAL_DOGFOOD
+    with pytest.raises(g.GoldError):
+        g.save(pid, g.CORE, g.CORRECTO, provenance="LO_QUE_SEA")
+
+
+def test_lo_provisional_no_entra_a_calibracion(client, dom):
+    """Requisito 2/3 — no cuenta en sample_count, no alimenta precisión ni cobertura, no produce
+    falsos aceptos ni falsos rechazos, y no participa de ninguna propuesta de umbral."""
+    g, rp, cal = dom["gold"], dom["realpilot"], dom["calibration"]
+    pid = _prop(dom, "Apoquindo 3000")
+    _listo(dom, pid)
+    for c in g.review_state(pid)["judgeable"]:
+        g.save(pid, c, g.CORRECTO)                             # provisional por defecto
+    est = g.review_state(pid)
+    assert est["complete"] is True, "tiene etiqueta en todo lo juzgable"
+    assert est["human_complete"] is False, "pero nadie lo miró"
+    assert g.rows_for_calibration([pid]) == []
+    panel = rp.dashboard()
+    assert panel["gold_complete"] == 0 and panel["gold_provisional_only"] == 1
+    assert panel["calibration"]["labelled_rows"] == 0
+    assert panel["calibration"]["components"] == []
+    # y con cero componentes el estado NO puede ser "calibrado": any() sobre lista vacía es False
+    assert panel["calibration"]["status"] == "THRESHOLD_UNCALIBRATED"
+    assert cal.proposal(panel["calibration"])["proposed"] is None
+
+
+def test_lo_verificado_por_una_persona_si_entra(client, dom):
+    """Requisito 4 — el otro lado del contrato. Sin esto, la compuerta podría estar cerrada para
+    todo y nadie lo notaría hasta tener diez propiedades cargadas."""
+    g, rp = dom["gold"], dom["realpilot"]
+    pid = _prop(dom, "Apoquindo 3000")
+    _listo(dom, pid)
+    for c in g.review_state(pid)["judgeable"]:
+        g.save(pid, c, g.CORRECTO, provenance=g.HUMAN_VERIFIED)
+    est = g.review_state(pid)
+    assert est["human_complete"] is True and est["provisional"] == []
+    filas = g.rows_for_calibration([pid])
+    assert filas and all(f["review_provenance"] == g.HUMAN_VERIFIED for f in filas)
+    panel = rp.dashboard()
+    assert panel["gold_complete"] == 1 and panel["calibration"]["labelled_rows"] > 0
+    assert any(c["component"] == "perimeter" for c in panel["calibration"]["components"])
+
+
+def test_la_ruta_de_la_ui_marca_revision_humana(client, dom):
+    """Requisito 4 — el clic de una persona sobre el output que tiene delante es el ÚNICO lugar
+    que puede reclamar HUMAN_VERIFIED."""
+    g = dom["gold"]
+    pid = _prop(dom, "Apoquindo 3000")
+    _listo(dom, pid)
+    client.post(f"/lab/p/{pid}/gold", data={"component": "core", "verdict": "CORRECTO"})
+    assert g.of_property(pid)["core"]["provenance"] == g.HUMAN_VERIFIED
+
+
+def test_una_revision_humana_reemplaza_a_la_provisional(client, dom):
+    """Requisito 3 — lo provisional no se borra en silencio: queda visible y se convierte en
+    evidencia sólo cuando una persona lo confirma."""
+    g = dom["gold"]
+    pid = _prop(dom, "Apoquindo 3000")
+    _listo(dom, pid)
+    g.save(pid, g.CORE, g.CORRECTO)
+    assert g.review_state(pid)["provisional"] == ["core"]
+    assert "provisional" in client.get(f"/lab/p/{pid}").get_data(as_text=True)
+    client.post(f"/lab/p/{pid}/gold", data={"component": "core", "verdict": "INCORRECTO"})
+    fila = g.of_property(pid)["core"]
+    assert fila["provenance"] == g.HUMAN_VERIFIED and fila["verdict"] == g.INCORRECTO
+    assert g.review_state(pid)["provisional"] == []
+
+
+def test_el_export_lleva_la_procedencia_de_cada_etiqueta(client, dom):
+    """Requisito 6 — sin provenance, quien audite el dataset no puede saber cuáles miró alguien."""
+    g = dom["gold"]
+    pid = _prop(dom, "Apoquindo 3000")
+    _listo(dom, pid)
+    g.save(pid, g.CORE, g.CORRECTO)
+    g.save(pid, g.PERIMETER, g.CORRECTO, provenance=g.HUMAN_VERIFIED)
+    d = json.loads(client.get("/lab/pilot/export.json").get_data(as_text=True))
+    fila = d["properties"][0]
+    assert fila["gold_labels"]["core"]["review_provenance"] == g.PROVISIONAL_DOGFOOD
+    assert fila["gold_labels"]["perimeter"]["review_provenance"] == g.HUMAN_VERIFIED
+    assert fila["gold_provisional_components"] == ["core"]
+    assert fila["gold_human_complete"] is False
+    assert d["gold_provenance"]["provisional"] == 1 and d["gold_provenance"]["human"] == 1
+
+
+def test_el_panel_dice_cuantas_quedaron_excluidas(client, dom):
+    """Requisito 5 — discreto, pero auditable: si alguien ve «n=7» tiene que poder saber cuántas
+    de esas siete miró una persona."""
+    g = dom["gold"]
+    pid = _prop(dom, "Apoquindo 3000")
+    _listo(dom, pid)
+    g.save(pid, g.CORE, g.CORRECTO)
+    html = client.get("/lab/ajustes/evaluaciones").get_data(as_text=True)
+    assert "provisional" in html and "revisión humana completa" in html
+    resumen = g.provenance_summary()
+    assert resumen["provisional"] == 1 and resumen["human"] == 0
+
+
+def test_la_procedencia_no_agrega_identidad_personal(client, dom):
+    """Requisito 7 — provenance del JUICIO, no de la persona. Ni email, ni roles, ni permisos."""
+    g = dom["gold"]
+    assert set(g.PROVENANCES) == {"HUMAN_VERIFIED", "PROVISIONAL_DOGFOOD"}
+    pid = _prop(dom, "Apoquindo 3000")
+    _listo(dom, pid)
+    client.post(f"/lab/p/{pid}/gold", data={"component": "core", "verdict": "CORRECTO"})
+    d = json.loads(client.get("/lab/pilot/export.json").get_data(as_text=True))
+    crudo = json.dumps(d)
+    assert "@" not in crudo and "author" not in crudo
+    assert "role" not in crudo and "permission" not in crudo

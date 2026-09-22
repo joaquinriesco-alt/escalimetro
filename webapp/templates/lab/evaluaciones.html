@@ -35,12 +35,17 @@
   por calibrado algo que no lo está.</p>
 <div class="kpis">
   <div><b>{{ panel.properties }} / {{ panel.target }}</b><span>propiedades reales</span></div>
-  <div><b>{{ panel.gold_complete }}</b><span>con revisión de verdad completa</span></div>
+  <div><b>{{ panel.gold_complete }}</b><span>con revisión humana completa</span></div>
   <div><b>{{ panel.interventions.fully_automatic_pct if panel.interventions.fully_automatic_pct is not none else '—' }}%</b><span>totalmente automáticas</span></div>
   <div><b>{{ panel.interventions.median_interventions if panel.interventions.median_interventions is not none else '—' }}</b><span>intervenciones (mediana)</span></div>
   <div><b>{{ panel.pack1.overall.good_pct if panel.pack1.overall.good_pct is not none else '—' }}%</b><span>Pack 1 Excelente/Bueno</span></div>
   <div><b>{{ panel.pack2.with_good_pct if panel.pack2.with_good_pct is not none else '—' }}%</b><span>Pack 2 con alguna buena</span></div>
 </div>
+{% if panel.gold_provenance.provisional %}
+  <p class="sub">{{ panel.gold_provenance.provisional }} etiqueta(s) <b>provisional(es)</b>
+    excluida(s) de la calibración: son de prueba, no las miró nadie.
+    {{ panel.gold_provenance.human }} con revisión humana.</p>
+{% endif %}
 {% if panel.duplicate_floorplans %}
   <p class="sub">{{ panel.duplicate_floorplans }} plano(s) repetido(s): sirven para repetibilidad,
     no para tamaño de muestra.</p>
