@@ -41,10 +41,15 @@
   <div><b>{{ panel.pack1.overall.good_pct if panel.pack1.overall.good_pct is not none else '—' }}%</b><span>Pack 1 Excelente/Bueno</span></div>
   <div><b>{{ panel.pack2.with_good_pct if panel.pack2.with_good_pct is not none else '—' }}%</b><span>Pack 2 con alguna buena</span></div>
 </div>
-{% if panel.gold_provenance.provisional %}
-  <p class="sub">{{ panel.gold_provenance.provisional }} etiqueta(s) <b>provisional(es)</b>
-    excluida(s) de la calibración: son de prueba, no las miró nadie.
-    {{ panel.gold_provenance.human }} con revisión humana.</p>
+{% if panel.gold_provenance.total %}
+  {# El denominador va SIEMPRE. Sin él, "6 provisionales excluidas" no dice si son 6 de 6 o 6 de
+     7, y el lector no puede saber si falta algo. Un contador de auditoría sin total no se puede
+     auditar. #}
+  <p class="sub">Etiquetas de geometría: <b>{{ panel.gold_provenance.human }}</b> con revisión
+    humana y <b>{{ panel.gold_provenance.provisional }}</b> provisional(es), de
+    {{ panel.gold_provenance.total }} en total.
+    {% if panel.gold_provenance.provisional %}Las provisionales son de prueba —no las miró
+    nadie— y <b>no entran</b> a la calibración.{% endif %}</p>
 {% endif %}
 {% if panel.duplicate_floorplans %}
   <p class="sub">{{ panel.duplicate_floorplans }} plano(s) repetido(s): sirven para repetibilidad,

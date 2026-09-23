@@ -94,6 +94,19 @@ Efecto colateral que esto destapó: con cero componentes medidos, `metrics()` re
 tabla cuyo trabajo es decir qué se sabe, y sólo se hizo visible al excluir lo provisional y quedar
 sin filas. Corregido: sin componentes, el estado es `THRESHOLD_UNCALIBRATED`.
 
+### Dos semánticas del contador que conviene tener presentes
+
+**El contador cuenta provisionales, no "las que faltan por mirar de un total desconocido".** Un
+reporte intermedio de E36.1 decía «7 etiquetas provisionales» y «6 excluidas» en el mismo párrafo:
+no era un defecto del contador sino dos instantes distintos, con una etiqueta marcada como humana
+entre medio. El copy del panel lleva ahora el denominador siempre —«0 con revisión humana y 7
+provisional(es), de 7 en total»— porque un contador de auditoría sin total no se puede auditar.
+
+**Una propiedad entra a calibrar cuando TODO lo juzgable tiene juicio humano, no con el primero.**
+Una revisión a medias aportaría el subconjunto que al revisor le resultó fácil, que es justo el
+sesgo que arruinaría la muestra. La salida para lo que no se puede juzgar es `NO_APLICA`: cuenta
+como juicio y no entra a las métricas.
+
 ## 5. Cuándo un umbral queda calibrado
 
 Dos condiciones, las dos necesarias:

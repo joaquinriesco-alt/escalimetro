@@ -672,3 +672,107 @@ def test_la_procedencia_no_agrega_identidad_personal(client, dom):
     crudo = json.dumps(d)
     assert "@" not in crudo and "author" not in crudo
     assert "role" not in crudo and "permission" not in crudo
+
+
+# ===================================================================================================
+# E36.2 — EL CONTADOR DE PROCEDENCIA NO PIERDE ETIQUETAS
+# ===================================================================================================
+def test_el_contador_de_procedencia_cuadra_siempre(client, dom):
+    """Auditoría de E36.2 — «7 registros, contador de 6».
+
+    No era un defecto del contador: el 7 y el 6 eran dos instantes distintos, con una etiqueta
+    recién marcada como humana entre medio. Este test fija esa semántica de forma que no se pueda
+    volver a leer mal: `total` no se mueve nunca, `human + provisional == total`, y marcar una
+    etiqueta como humana mueve exactamente una unidad de un lado al otro."""
+    g, rp = dom["gold"], dom["realpilot"]
+    pid = _prop(dom, "Apoquindo 3000")
+    _listo(dom, pid)
+    juzgables = g.review_state(pid)["judgeable"]
+    assert len(juzgables) >= 3
+    for c in juzgables:
+        g.save(pid, c, g.CORRECTO)                             # provisionales
+    n = len(juzgables)
+
+    r = rp.dashboard()["gold_provenance"]
+    assert (r["total"], r["human"], r["provisional"]) == (n, 0, n)
+
+    # una sola pasa a humana: el total NO cambia, y el reparto se mueve en uno
+    g.save(pid, juzgables[0], g.CORRECTO, provenance=g.HUMAN_VERIFIED)
+    r = rp.dashboard()["gold_provenance"]
+    assert (r["total"], r["human"], r["provisional"]) == (n, 1, n - 1)
+
+    # y vuelve
+    g.save(pid, juzgables[0], g.CORRECTO)
+    r = rp.dashboard()["gold_provenance"]
+    assert (r["total"], r["human"], r["provisional"]) == (n, 0, n)
+
+    # invariante, pase lo que pase con el resto
+    for i, c in enumerate(juzgables, start=1):
+        g.save(pid, c, g.CORRECTO, provenance=g.HUMAN_VERIFIED)
+        r = rp.dashboard()["gold_provenance"]
+        assert r["human"] + r["provisional"] == r["total"] == n
+        assert r["human"] == i
+
+
+def test_el_panel_muestra_el_denominador(client, dom):
+    """El copy no puede inducir a pensar que el número son todas. Si dice «6 provisionales», el
+    lector tiene que poder ver de cuántas."""
+    g = dom["gold"]
+    pid = _prop(dom, "Apoquindo 3000")
+    _listo(dom, pid)
+    juzgables = g.review_state(pid)["judgeable"]
+    for c in juzgables:
+        g.save(pid, c, g.CORRECTO)
+    g.save(pid, juzgables[0], g.CORRECTO, provenance=g.HUMAN_VERIFIED)
+    html = client.get("/lab/ajustes/evaluaciones").get_data(as_text=True)
+    assert "en total" in html
+    assert f"<b>{len(juzgables)}</b>" not in html.split("Etiquetas de geometría")[0][-200:]
+    bloque = html.split("Etiquetas de geometría")[1][:400]
+    assert "1</b> con revisión" in bloque and f"{len(juzgables)} en total" in bloque
+
+
+def test_una_sola_etiqueta_humana_no_habilita_la_propiedad(client, dom):
+    """Semántica que conviene dejar fijada: una propiedad entra a la calibración cuando TODO lo
+    juzgable tiene juicio humano, no cuando tiene el primero. Una revisión a medias aportaría el
+    subconjunto que al revisor le resultó fácil, que es justo el sesgo que arruinaría la muestra."""
+    g, rp = dom["gold"], dom["realpilot"]
+    pid = _prop(dom, "Apoquindo 3000")
+    _listo(dom, pid)
+    juzgables = g.review_state(pid)["judgeable"]
+    g.save(pid, juzgables[0], g.CORRECTO, provenance=g.HUMAN_VERIFIED)
+    assert g.review_state(pid)["human_complete"] is False
+    assert rp.dashboard()["calibration"]["labelled_rows"] == 0
+    for c in juzgables[1:]:
+        g.save(pid, c, g.CORRECTO, provenance=g.HUMAN_VERIFIED)
+    assert g.review_state(pid)["human_complete"] is True
+    assert rp.dashboard()["calibration"]["labelled_rows"] > 0
+    # NO_APLICA cuenta como juicio y es la salida honesta para lo que no se puede juzgar
+    g.save(pid, juzgables[-1], g.NO_APLICA, provenance=g.HUMAN_VERIFIED)
+    assert g.review_state(pid)["human_complete"] is True
+
+
+def test_las_seis_compuertas_de_e36_1(client, dom):
+    """Las seis condiciones que E36.2 pide verificar, en un solo lugar y sobre el mismo dato."""
+    g, rp, cal = dom["gold"], dom["realpilot"], dom["calibration"]
+    pid = _prop(dom, "Apoquindo 3000")
+    _listo(dom, pid)
+    juzgables = g.review_state(pid)["judgeable"]
+    for c in juzgables:
+        g.save(pid, c, g.INCORRECTO)                           # provisionales, y todas "malas"
+
+    p = rp.dashboard()["calibration"]
+    assert sum(c["sample_count"] for c in p["components"]) == 0      # 1. sample_count
+    assert p["components"] == []                                      # 2. precision/coverage
+    assert p["false_accept_count"] == 0 and p["false_review_count"] == 0   # 3. FA/FR
+    assert cal.proposal(p)["proposed"] is None                        # 4. threshold proposals
+
+    for c in juzgables:
+        g.save(pid, c, g.INCORRECTO, provenance=g.HUMAN_VERIFIED)
+    h = rp.dashboard()["calibration"]
+    assert sum(c["sample_count"] for c in h["components"]) > 0        # 5. HUMAN_VERIFIED sí entra
+    assert h["false_accept_count"] > 0, "un INCORRECTO aceptado por regla es un falso acepto"
+
+    d = json.loads(client.get("/lab/pilot/export.json").get_data(as_text=True))  # 6. export
+    assert all(v["review_provenance"] == g.HUMAN_VERIFIED
+               for v in d["properties"][0]["gold_labels"].values())
+    assert d["gold_provenance"]["human"] == len(juzgables)
