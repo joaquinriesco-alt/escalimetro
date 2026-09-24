@@ -475,3 +475,233 @@ def test_las_heuristicas_del_motor_siguen_donde_estaban(client, dom):
                                               "daylight": 0.45}
     assert ingest.UNCERTAINTY_BAND == {"core": 0.10}
     assert units.MIN_RELATIVE_AREA == 0.15 and calibration.MIN_SAMPLE == 10
+
+
+# ===================================================================================================
+# E17.1 — MULTIUNIDAD, JERARQUÍA DEL INFORME Y REVISIÓN HUMANA
+# ===================================================================================================
+def test_el_selector_de_unidades_reutiliza_e35_y_no_lo_copia(client, dom):
+    """§1 / §7 — el algoritmo de candidatos es UNO SOLO. `/property` importa `domain.units` y
+    llama a sus funciones; si alguien copiara el ranking, las dos superficies empezarían a
+    responder distinto sobre la misma lámina el día que una cambie."""
+    import inspect as _i
+    from webapp.domain import units
+    from webapp.domain.potential import plans
+    fuente = _i.getsource(plans)
+    assert "from .. import units" in fuente
+    for propio in ("def candidates(", "def _color_clusters(", "PALETTE ="):
+        assert propio not in fuente, f"{propio} está duplicado en plans.py"
+    # y las funciones puras que usa son las de E35, no copias
+    assert plans.unit_overrides.__module__ == "webapp.domain.potential.plans"
+    assert callable(units.overrides_for_candidate) and callable(units.draw_candidates)
+
+
+def test_una_lamina_multiunidad_pide_un_clic_dentro_de_property(client, dom):
+    """§1 — la pregunta aparece INLINE en `/property`, con los candidatos visuales de E35."""
+    lid = _listing(dom, area_m2=543)
+    dom["listings"].add_media(lid, FSPath(PLANO_403), dom["listings"].PLAN)
+    sel = dom["plans"].resolve_units(lid)
+    assert sel["candidate_count"] == 3
+    assert dom["plans"].needs_unit_pick(lid) is True
+    assert dom["plans"].state(lid)["status"] == dom["plans"].NEEDS_UNIT_PICK
+    html = client.get(f"/property/l/{lid}").get_data(as_text=True)
+    assert "¿Cuál es la oficina de este aviso?" in html
+    assert f"/property/l/{lid}/unidad" in html
+    assert client.get(f"/property/l/{lid}/unidades.png").status_code == 200
+
+
+def test_el_clic_desbloquea_el_motor_y_no_crea_nada_del_lab(client, dom):
+    """§1 / §8 — un clic: persiste, vuelve a correr el motor, sigue en `/property`, y NO crea
+    `property`, ni `pack_grant`, ni fila en la tabla de selección del LAB."""
+    from webapp import store
+    from webapp.domain import units
+    lid = _listing(dom, area_m2=543)
+    dom["listings"].add_media(lid, FSPath(PLANO_403), dom["listings"].PLAN)
+    dom["plans"].resolve_units(lid)
+    r = client.post(f"/property/l/{lid}/unidad", data={"candidate_id": "u1"})
+    assert r.status_code == 302 and r.headers["Location"].startswith(f"/property/l/{lid}")
+    sel = dom["plans"].unit_state(lid)
+    assert sel["source"] == units.HUMAN_PICK and sel["selected_candidate_id"] == "u1"
+    st = dom["plans"].state(lid)
+    assert st["status"] == dom["plans"].NEEDS_REVIEW and round(st["area_m2"]) == 543
+    assert store.q1("SELECT COUNT(*) n FROM properties")["n"] == 0
+    assert store.q1("SELECT COUNT(*) n FROM pack_grants")["n"] == 0
+    assert store.q1("SELECT COUNT(*) n FROM unit_selection")["n"] == 0
+
+
+def test_un_reanalisis_no_borra_el_clic(client, dom):
+    from webapp.domain import units
+    lid = _listing(dom, area_m2=543)
+    dom["listings"].add_media(lid, FSPath(PLANO_403), dom["listings"].PLAN)
+    dom["plans"].resolve_units(lid)
+    dom["plans"].pick_unit(lid, "u2")
+    de_nuevo = dom["plans"].resolve_units(lid)
+    assert de_nuevo["source"] == units.HUMAN_PICK
+    assert de_nuevo["selected_candidate_id"] == "u2"
+
+
+def test_el_motor_no_corre_antes_de_saber_cual_es_la_unidad(client, dom):
+    """§1 — correr el pipeline sobre una lámina multiunidad sin elegir no falla de forma
+    interesante: falla siempre. Y el mensaje «no pudimos leerlo» sería falso: se puede leer,
+    falta saber cuál."""
+    lid = _listing(dom, area_m2=543)
+    dom["listings"].add_media(lid, FSPath(PLANO_403), dom["listings"].PLAN)
+    r = dom["plans"].analyze(lid)
+    assert r["status"] == dom["plans"].NEEDS_UNIT_PICK
+    assert dom["listings"].get(lid)["plan_case_id"] is None, "no se creó caso al pedo"
+
+
+def test_el_informe_empieza_por_las_oportunidades_no_por_el_puntaje(client, dom):
+    """§2 — ESCALÍMETRO no vende un score. El puntaje sigue existiendo, detrás de un resumen."""
+    lid = _listing(dom, area_m2=543)
+    for i in range(3):
+        dom["listings"].add_media(lid, FS(_png(tinte=(150, 150, 150)), f"{i}.png"))
+    dom["analyzer"].run(lid)
+    html = client.get(f"/property/l/{lid}").get_data(as_text=True)
+    i_oport = html.index("Oportunidades para mostrar mejor esta propiedad")
+    i_score = html.index("Ver diagnóstico completo")
+    assert i_oport < i_score, "el puntaje aparece antes que las oportunidades"
+    assert "scorecard" in html.split("Ver diagnóstico completo")[1], \
+        "el puntaje tiene que estar DENTRO del detalle"
+
+
+def test_los_hallazgos_se_separan_en_dos_clases(client, dom):
+    """§2 — lo que resolvemos nosotros y lo que resuelve quien publica son dos conversaciones."""
+    a = dom["analyzer"]
+    lid = _listing(dom, property_type=dom["listings"].RETAIL)
+    for i in range(3):
+        dom["listings"].add_media(lid, FS(_png(tinte=(150, 150, 150)), f"{i}.png"))
+    r = a.analyze(lid)
+    assert r["resolvable"] and r["recommendations"]
+    assert all(f["intervention"] for f in r["resolvable"])
+    assert all(f["intervention"] is None for f in r["recommendations"])
+    # y lo resoluble va primero
+    assert r["findings"][0]["kind"] == a.RESOLVABLE
+    # la oportunidad principal es una que podamos resolver, no la mayor carencia del aviso
+    assert r["primary"]["kind"] == a.RESOLVABLE
+
+
+def test_no_se_ofrece_lo_que_no_existe(client, dom):
+    """§3 — un hallazgo sólo dice «Escalímetro puede resolverlo» si hay algo detrás. La mejora de
+    imagen no está implementada en ningún lado, así que no se ofrece."""
+    iv = dom["iv"]
+    assert iv.support(iv.PHOTO_ENHANCE) == iv.NOT_BUILT
+    assert iv.resolvable(iv.PHOTO_ENHANCE) is False
+    lid = _listing(dom)
+    dom["listings"].add_media(lid, FS(_png(tinte=(20, 20, 20)), "oscura.png"))
+    dom["listings"].add_media(lid, FS(_png(ruido=True), "buena.png"))
+    r = dom["analyzer"].analyze(lid)
+    oscura = next(f for f in r["findings"] if f["code"] == "SET_NO_DARK")
+    assert oscura["kind"] == dom["analyzer"].RECOMMENDATION
+    assert oscura["intervention"] is None
+
+
+def test_lo_pendiente_de_proveedor_se_ofrece_pero_no_se_entrega(client, dom):
+    """§3 — «disponible para prueba interna / pendiente de proveedor aprobado» es una respuesta
+    válida. Un resultado ficticio, no."""
+    iv = dom["iv"]
+    assert iv.support(iv.SPACE_REIMAGINATION) == iv.PENDING_PROVIDER
+    assert iv.resolvable(iv.SPACE_REIMAGINATION) is True
+    assert iv.deliverable_today(iv.SPACE_REIMAGINATION) is False
+    lid = _listing(dom, property_type=dom["listings"].RETAIL)
+    for i in range(3):
+        dom["listings"].add_media(lid, FS(_png(tinte=(150, 150, 150)), f"{i}.png"))
+    dom["analyzer"].run(lid)
+    html = client.get(f"/property/l/{lid}").get_data(as_text=True)
+    assert "pendiente de proveedor aprobado" in html
+    vacio = next(f for f in dom["analyzer"].latest(lid)["resolvable"]
+                 if f["code"] == "POT_EMPTY_SPACE_SHOWN")
+    assert vacio["deliverable_today"] is False
+
+
+def test_demostrar_cabida_si_se_puede_entregar_hoy(client, dom):
+    """El motor de layouts existe y corre desde E28: es la capacidad más fuerte que tenemos."""
+    iv = dom["iv"]
+    assert iv.deliverable_today(iv.SPATIAL_LAYOUT) is True
+    assert iv.deliverable_today(iv.COVER_SELECTION) is True
+    lid = _listing(dom, area_m2=543)
+    dom["listings"].add_media(lid, FSPath(PLANO_403), dom["listings"].PLAN)
+    dom["plans"].resolve_units(lid)
+    dom["plans"].pick_unit(lid, "u1")
+    r = dom["analyzer"].analyze(lid)
+    plano = next(f for f in r["resolvable"] if f["code"] == "POT_PLAN_DEMONSTRATED")
+    assert plano["intervention"] == iv.SPATIAL_LAYOUT and plano["deliverable_today"] is True
+
+
+# ---- revisión humana y tablero ------------------------------------------------------------------
+def test_la_revision_humana_guarda_los_tres_juicios(client, dom):
+    """§4 — tres juicios cerrados y un comentario. Ningún score nuevo."""
+    from webapp.domain.potential import reviews as pr
+    lid = _listing(dom)
+    dom["analyzer"].run(lid)
+    assert pr.get(lid) is None and pr.complete(lid) is False
+    r = client.post(f"/property/l/{lid}/revision",
+                    data={"diagnosis": "ACERTADO", "opportunity": pr.HAY_OPORTUNIDAD,
+                          "worth_contacting": "SI", "comment": "el plano vale oro"})
+    assert r.status_code == 302
+    d = pr.get(lid)
+    assert d["diagnosis"] == "ACERTADO" and d["worth_contacting"] == "SI"
+    assert d["comment"] == "el plano vale oro" and d["report_id"]
+    assert pr.complete(lid) is True
+    with pytest.raises(pr.ReviewError):
+        pr.save(lid, diagnosis="MAS_O_MENOS")
+
+
+def test_los_tres_juicios_son_independientes(client, dom):
+    """Pueden discrepar, y esa discrepancia es lo más valioso de la muestra: un diagnóstico
+    acertado sin oportunidad dice que el instrumento anda y el negocio no está ahí."""
+    from webapp.domain.potential import reviews as pr
+    lid = _listing(dom)
+    dom["analyzer"].run(lid)
+    pr.save(lid, diagnosis="ACERTADO")
+    assert pr.complete(lid) is False
+    pr.save(lid, opportunity=pr.SIN_OPORTUNIDAD)
+    assert pr.get(lid)["diagnosis"] == "ACERTADO", "guardar uno no borra el otro"
+    pr.save(lid, worth_contacting="NO")
+    d = pr.get(lid)
+    assert (d["diagnosis"], d["opportunity"], d["worth_contacting"]) == (
+        "ACERTADO", pr.SIN_OPORTUNIDAD, "NO")
+
+
+def test_el_tablero_de_la_muestra(client, dom):
+    """§5 — secundario y simple: cuántos avisos, cuántos revisados, cuántos con oportunidad,
+    cuántos vale la pena contactar, y qué propuso el sistema."""
+    from webapp.domain.potential import reviews as pr
+    a = _listing(dom, property_type=dom["listings"].RETAIL)
+    for i in range(3):
+        dom["listings"].add_media(a, FS(_png(tinte=(150, 150, 150)), f"{i}.png"))
+    dom["analyzer"].run(a)
+    b = _listing(dom, title="Otro")
+    dom["analyzer"].run(b)
+    pr.save(a, diagnosis="ACERTADO", opportunity=pr.HAY_OPORTUNIDAD, worth_contacting="SI")
+    pr.save(b, diagnosis="PARCIAL", opportunity=pr.SIN_OPORTUNIDAD, worth_contacting="NO")
+    p = pr.dashboard()
+    assert p["listings"] == 2 and p["reviewed"] == 2 and p["target"] == 20
+    assert p["by_diagnosis"]["ACERTADO"] == 1 and p["by_diagnosis"]["PARCIAL"] == 1
+    assert p["with_opportunity"] == 1 and p["with_opportunity_pct"] == 50.0
+    assert p["worth_contacting"] == 1 and p["worth_contacting_pct"] == 50.0
+    assert dom["iv"].SPACE_REIMAGINATION in p["by_intervention"]
+    assert client.get("/property/dogfood").status_code == 200
+
+
+def test_el_tablero_separa_lo_propuesto_de_lo_validado(client, dom):
+    """Lo que proponemos no es lo que un humano validó. Confundirlos haría que el instrumento se
+    auto-confirme: contaríamos como oportunidad cada cosa que el sistema quiso vender."""
+    from webapp.domain.potential import reviews as pr
+    lid = _listing(dom, property_type=dom["listings"].RETAIL)
+    for i in range(3):
+        dom["listings"].add_media(lid, FS(_png(tinte=(150, 150, 150)), f"{i}.png"))
+    dom["analyzer"].run(lid)
+    p = pr.dashboard()
+    assert p["proposed_any"] == 1, "el sistema propuso algo"
+    assert p["with_opportunity"] == 0, "pero nadie lo validó todavía"
+    assert p["reviewed"] == 0
+
+
+def test_el_tablero_no_tapa_el_producto(client, dom):
+    """§5 — el tablero es secundario. El informe es el producto."""
+    lid = _listing(dom)
+    dom["analyzer"].run(lid)
+    home = client.get("/property/").get_data(as_text=True)
+    assert "Muestra de 20" not in home
+    assert "¿Cuánto potencial está dejando sin mostrar tu propiedad?" in home
