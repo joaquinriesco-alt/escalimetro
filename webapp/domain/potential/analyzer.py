@@ -58,6 +58,44 @@ RECOMMENDATION = "RECOMMENDATION"  # lo arregla quien publica; nosotros sólo lo
 KIND_LABEL = {RESOLVABLE: "Escalímetro puede resolverlo",
               RECOMMENDATION: "Recomendación para la publicación"}
 
+#: =============================================================================================
+#: E17.2 §11 — NO TODOS LOS AVISOS SON LEADS
+#: =============================================================================================
+#: Tres estados comerciales, y el tercero es el que hace honesto al experimento. Una publicación
+#: bien hecha NO es un problema que haya que inventar: rebajarla para crear mercado arruinaría la
+#: única pregunta que la muestra contesta, que es en cuántas publicaciones hay de verdad algo que
+#: podamos producir.
+RESOLVABLE_OPPORTUNITY = "RESOLVABLE_OPPORTUNITY"
+RECOMMENDATION_ONLY = "RECOMMENDATION_ONLY"
+ALREADY_STRONG = "ALREADY_STRONG"
+COMMERCIAL_STATES = (RESOLVABLE_OPPORTUNITY, RECOMMENDATION_ONLY, ALREADY_STRONG)
+STATE_LABEL = {
+    RESOLVABLE_OPPORTUNITY: "Hay algo concreto que podemos producir",
+    RECOMMENDATION_ONLY: "Hay mejoras, pero hoy no las entregamos nosotros",
+    ALREADY_STRONG: "El aviso ya presenta bien la propiedad",
+}
+
+#: §13 — SEÑALES POSITIVAS. Hasta ahora el informe sólo sabía nombrar defectos, y eso lo empujaba
+#: a encontrar uno siempre. Guardar lo que está BIEN permite contestar la pregunta comercial que
+#: importa: «14 de 20 ya tenían fotos buenas» es un dato de negocio, no un consuelo.
+GOOD_COVER = "good_cover"
+GOOD_RESOLUTION = "good_resolution"
+GOOD_EXPOSURE = "good_exposure"
+GOOD_VERTICALS = "good_verticals"
+SUFFICIENT_GALLERY = "sufficient_gallery"
+VISUAL_STRONG = "visual_presentation_strong"
+SIGNAL_LABEL = {
+    GOOD_COVER: "la portada es la mejor foto disponible",
+    GOOD_RESOLUTION: "las fotos tienen resolución suficiente",
+    GOOD_EXPOSURE: "la exposición es correcta",
+    GOOD_VERTICALS: "las verticales están derechas",
+    SUFFICIENT_GALLERY: "la galería cubre bien el inmueble",
+    VISUAL_STRONG: "la presentación visual es sólida",
+}
+#: Cuándo la presentación visual se declara fuerte: las dos dimensiones de imagen por encima de
+#: esta proporción de su máximo. Es un umbral escrito, sin calibrar, como todos los de esta fase.
+VISUAL_STRONG_RATIO = 0.80
+
 #: Mínimos de conjunto. Como todo umbral de esta fase: escritos, visibles y sin calibrar.
 MIN_PHOTOS = 6
 IDEAL_PHOTOS = 12
@@ -421,6 +459,10 @@ def analyze(listing_id: str) -> Dict:
     hallazgos = _findings(por_dim, ctx)
     resolubles = [f for f in hallazgos if f["kind"] == RESOLVABLE]
     recomendaciones = [f for f in hallazgos if f["kind"] == RECOMMENDATION]
+    senales = _positive_signals(por_dim, ctx)
+    estado = (RESOLVABLE_OPPORTUNITY if resolubles else
+              (ALREADY_STRONG if VISUAL_STRONG in senales else
+               (RECOMMENDATION_ONLY if recomendaciones else ALREADY_STRONG)))
     return {"listing_id": listing_id, "score": int(total), "max_score": sum(DIMENSIONS.values()),
             "dimensions": por_dim, "findings": hallazgos,
             "resolvable": resolubles, "recommendations": recomendaciones,
@@ -429,6 +471,8 @@ def analyze(listing_id: str) -> Dict:
             # tarea. Encabezar con ella convertiría el informe en una lista de reproches.
             "primary": (resolubles or hallazgos or [None])[0],
             "capabilities": _capabilities(ctx),
+            "signals": senales, "signal_labels": SIGNAL_LABEL,
+            "commercial_state": estado, "commercial_label": STATE_LABEL[estado],
             "analyzer_version": ANALYZER_VERSION,
             "context": {"photos": len(ctx["photos"]), "conceptual": len(ctx["conceptual"]),
                         "plan": ctx["plan"]["status"]}}
@@ -436,6 +480,31 @@ def analyze(listing_id: str) -> Dict:
 
 #: Por debajo de esto, un criterio cuenta como carencia que vale la pena contar.
 FINDING_THRESHOLD = 0.85
+#: Por encima de esto, un criterio cuenta como algo que está BIEN y se dice.
+SIGNAL_THRESHOLD = 0.85
+
+
+def _positive_signals(por_dim: Dict, ctx: Dict) -> List[str]:
+    """Lo que esta publicación ya hace bien. Sale de los MISMOS criterios que los hallazgos, leídos
+    por el otro lado: si `COVER_IS_BEST_AVAILABLE` vale 1.0, la portada es la mejor foto, y eso es
+    tan medible como su ausencia."""
+    valores = {c["code"]: c["value"] for d in por_dim.values() for c in d["criteria"]
+               if c["applies"]}
+    out = []
+    for codigo, senal in (("COVER_IS_BEST_AVAILABLE", GOOD_COVER),
+                          ("COVER_RESOLUTION", GOOD_RESOLUTION),
+                          ("COVER_BRIGHTNESS", GOOD_EXPOSURE),
+                          ("COVER_FRAMING", GOOD_VERTICALS),
+                          ("SET_PHOTO_COUNT", SUFFICIENT_GALLERY)):
+        if valores.get(codigo, 0.0) >= SIGNAL_THRESHOLD:
+            out.append(senal)
+    visual = por_dim.get(VISUAL) or {}
+    portada = por_dim.get(COVER) or {}
+    if (ctx["photos"] and visual.get("max") and portada.get("max")
+            and visual["score"] / visual["max"] >= VISUAL_STRONG_RATIO
+            and portada["score"] / portada["max"] >= VISUAL_STRONG_RATIO):
+        out.append(VISUAL_STRONG)
+    return out
 
 
 def _findings(por_dim: Dict, ctx: Dict) -> List[Dict]:
@@ -601,8 +670,9 @@ def run(listing_id: str) -> Dict:
              (rid, listing_id, r["score"], r["max_score"],
               json.dumps(r["dimensions"], ensure_ascii=False),
               json.dumps(r["primary"], ensure_ascii=False) if r["primary"] else None,
-              json.dumps(r["capabilities"], ensure_ascii=False), ANALYZER_VERSION,
-              engine.engine_commit(), store.now()))
+              json.dumps({"capabilities": r["capabilities"], "signals": r["signals"],
+                          "commercial_state": r["commercial_state"]}, ensure_ascii=False),
+              ANALYZER_VERSION, engine.engine_commit(), store.now()))
     for f in r["findings"]:
         store.ex("INSERT INTO potential_findings(finding_id, report_id, listing_id, dimension, "
                  "code, level, headline, explanation, evidence, intervention, score_delta, "
@@ -630,7 +700,13 @@ def latest(listing_id: str) -> Optional[Dict]:
     d = dict(r)
     d["dimensions_obj"] = store.js(d["dimensions"], {}) or {}
     d["primary_obj"] = store.js(d["primary_opportunity"], None)
-    d["capabilities_obj"] = store.js(d["capabilities"], {}) or {}
+    caps = store.js(d["capabilities"], {}) or {}
+    # Compatibilidad con informes de E17.0/E17.1, donde la columna guardaba sólo las capacidades.
+    d["capabilities_obj"] = caps.get("capabilities", caps)
+    d["signals"] = caps.get("signals", [])
+    d["signal_labels"] = SIGNAL_LABEL
+    d["commercial_state"] = caps.get("commercial_state", RECOMMENDATION_ONLY)
+    d["commercial_label"] = STATE_LABEL.get(d["commercial_state"], "")
     d["findings"] = findings_of(d["report_id"])
     d["top_findings"] = d["findings"][:TOP_FINDINGS]
     d["resolvable"] = [f for f in d["findings"] if f["kind"] == RESOLVABLE][:TOP_FINDINGS]

@@ -104,6 +104,14 @@ def dashboard() -> Dict:
         filas.append({
             "listing_id": l["listing_id"], "title": l["title"] or "Sin título",
             "score": (rep or {}).get("score"),
+            "url_ingest_status": l.get("url_ingest_status"),
+            "url_ingest_reason": l.get("url_ingest_reason"),
+            "fields": l.get("fields_extracted_count") or 0,
+            "photos": l.get("photos_extracted_count") or 0,
+            "floorplans": l.get("floorplans_detected_count") or 0,
+            "domain": (l.get("source_url") or "").split("/")[2] if l.get("source_url") else None,
+            "commercial_state": (rep or {}).get("commercial_state"),
+            "signals": (rep or {}).get("signals") or [],
             "resolvable": len(resolubles),
             "deliverable_today": sum(1 for f in resolubles if f["deliverable_today"]),
             "interventions": sorted({f["intervention"] for f in resolubles if f["intervention"]}),
@@ -119,6 +127,37 @@ def dashboard() -> Dict:
             por_inter[i] = por_inter.get(i, 0) + 1
     con_oportunidad = sum(1 for f in revisados if f["opportunity"] == HAY_OPORTUNIDAD)
     contactar = sum(1 for f in revisados if f["worth_contacting"] == SI)
+    # E17.2 §15 — las dos preguntas reales de la muestra, cada una con su bloque de métricas:
+    #   1) ¿podemos analizar una URL casi solos?
+    #   2) ¿hay oportunidad comercial aun cuando las fotos ya son buenas?
+    con_url = [f for f in filas if f["url_ingest_status"]]
+    por_estado = {e: sum(1 for f in con_url if f["url_ingest_status"] == e)
+                  for e in ("SUCCESS", "PARTIAL", "FAILED")}
+    fotos = [f["photos"] for f in con_url if f["url_ingest_status"] != "FAILED"]
+    from .analyzer import (ALREADY_STRONG, RECOMMENDATION_ONLY, RESOLVABLE_OPPORTUNITY,
+                           STATE_LABEL, VISUAL_STRONG)          # noqa: PLC0415
+    estados = {e: sum(1 for f in filas if f["commercial_state"] == e)
+               for e in (RESOLVABLE_OPPORTUNITY, RECOMMENDATION_ONLY, ALREADY_STRONG)}
+    fuertes = sum(1 for f in filas if VISUAL_STRONG in f["signals"])
+    analizados = len(filas) or 1
+    ingest = {
+        "with_url": len(con_url), "by_status": por_estado,
+        "no_manual_pct": (round(100.0 * por_estado["SUCCESS"] / len(con_url), 1)
+                          if con_url else None),
+        "avg_photos": round(sum(fotos) / len(fotos), 1) if fotos else None,
+        "with_floorplan": sum(1 for f in con_url if f["floorplans"]),
+        "with_floorplan_pct": (round(100.0 * sum(1 for f in con_url if f["floorplans"])
+                                     / len(con_url), 1) if con_url else None),
+        "failures": {f["url_ingest_reason"]: sum(
+            1 for g in con_url if g["url_ingest_reason"] == f["url_ingest_reason"])
+            for f in con_url if f["url_ingest_status"] == "FAILED"},
+        "domains": sorted({f["domain"] for f in con_url if f["domain"]}),
+    }
+    visual = {"strong": fuertes, "strong_pct": round(100.0 * fuertes / analizados, 1),
+              "with_defect": analizados - fuertes,
+              "with_defect_pct": round(100.0 * (analizados - fuertes) / analizados, 1)}
+    comercial = {"by_state": estados, "state_labels": STATE_LABEL,
+                 "pct": {k: round(100.0 * v / analizados, 1) for k, v in estados.items()}}
     return {
         "listings": len(filas), "target": TARGET, "reviewed": len(revisados),
         "by_diagnosis": por_diag, "diagnosis_labels": DIAGNOSIS_LABEL,
@@ -130,6 +169,7 @@ def dashboard() -> Dict:
                                  if revisados else None),
         # Lo que el sistema PROPUSO, que no es lo mismo que lo que un humano validó. Las dos
         # columnas juntas son las que dicen si el instrumento está viendo lo que hay.
+        "ingest": ingest, "visual": visual, "commercial": comercial,
         "by_intervention": {k: por_inter[k] for k in sorted(por_inter)},
         "intervention_labels": {k: iv.label(k) for k in iv.TYPES},
         "support_labels": {k: iv.support_label(k) for k in iv.TYPES},
