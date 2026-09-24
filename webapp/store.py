@@ -426,6 +426,111 @@ CREATE INDEX IF NOT EXISTS ix_packs_prop ON packs(property_id);
 CREATE INDEX IF NOT EXISTS ix_reviews_run ON reviews(run_id, alt);
 CREATE INDEX IF NOT EXISTS ix_runs_case ON runs(case_id);
 CREATE INDEX IF NOT EXISTS ix_briefs_case ON briefs(case_id);
+
+-- ================================================================================================
+-- E17.0 — POTENCIAL DE UNA PUBLICACIÓN
+-- ================================================================================================
+-- Un LISTING no es una PROPERTY del LAB. Comparten la palabra y poco más: una property del LAB es
+-- una oficina que nosotros preparamos para publicar, con su pack, su producto, sus concesiones y
+-- su piloto; un listing es un aviso YA PUBLICADO por otro, del que sólo tenemos lo que el aviso
+-- muestra. Meterlos en la misma tabla habría hecho aparecer cada aviso analizado en la portada del
+-- LAB, en el contador del piloto y en las concesiones de pack —la migración de E32.2 le crea una a
+-- toda propiedad sin ella—, que es exactamente el comportamiento existente que E17.0 no debe
+-- romper. Tablas separadas; lo que sí se comparte es el PIPELINE DE PLANOS, vía `plan_case_id`.
+CREATE TABLE IF NOT EXISTS listings (
+  listing_id      TEXT PRIMARY KEY,
+  title           TEXT NOT NULL DEFAULT '',
+  property_type   TEXT NOT NULL DEFAULT 'UNKNOWN',  -- APARTMENT|HOUSE|OFFICE|RETAIL|WAREHOUSE|LAND|UNKNOWN
+  operation       TEXT,                             -- SALE | RENT
+  source          TEXT NOT NULL,                    -- MANUAL | URL
+  source_url      TEXT,
+  location        TEXT DEFAULT '',
+  price           REAL,
+  currency        TEXT,
+  area_m2         REAL,
+  bedrooms        INTEGER,
+  bathrooms       INTEGER,
+  parking         INTEGER,
+  storage         INTEGER,
+  orientation     TEXT,
+  common_expenses REAL,
+  description     TEXT DEFAULT '',
+  cover_media_id  TEXT,
+  -- El enlace al motor EXISTENTE. No se copia ni se reimplementa nada del pipeline de planos: se
+  -- crea un caso con el mismo alta que usa el resto del sistema y se guarda su id.
+  plan_case_id    TEXT REFERENCES cases(case_id) ON DELETE SET NULL,
+  notes           TEXT DEFAULT '',
+  created_at      TEXT NOT NULL,
+  updated_at      TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS listing_media (
+  media_id          TEXT PRIMARY KEY,
+  listing_id        TEXT NOT NULL REFERENCES listings(listing_id) ON DELETE CASCADE,
+  kind              TEXT NOT NULL,    -- PHOTO | PLAN | CONCEPTUAL
+  original_filename TEXT NOT NULL,
+  stored_name       TEXT NOT NULL,    -- nombre interno; el del usuario nunca toca el filesystem
+  mime_type         TEXT NOT NULL,
+  size_bytes        INTEGER NOT NULL,
+  sha256            TEXT NOT NULL,
+  width_px          INTEGER,
+  height_px         INTEGER,
+  sort_order        INTEGER NOT NULL DEFAULT 0,
+  -- Las MEDICIONES de esta imagen (luminancia, nitidez, huella perceptual…). Se guardan con el
+  -- medio y no se recalculan al vuelo: el informe tiene que poder mostrar de dónde salió cada
+  -- punto aunque el analizador cambie después.
+  analysis          TEXT,
+  metadata          TEXT,
+  created_at        TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS potential_reports (
+  report_id           TEXT PRIMARY KEY,
+  listing_id          TEXT NOT NULL REFERENCES listings(listing_id) ON DELETE CASCADE,
+  score               INTEGER NOT NULL,
+  max_score           INTEGER NOT NULL,
+  dimensions          TEXT NOT NULL,   -- JSON: por dimensión, cada criterio con su medición y sus puntos
+  primary_opportunity TEXT,            -- JSON
+  capabilities        TEXT,            -- JSON: qué sabemos hacer con ESTE material
+  analyzer_version    TEXT NOT NULL,
+  engine_version      TEXT,
+  created_at          TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS potential_findings (
+  finding_id   TEXT PRIMARY KEY,
+  report_id    TEXT NOT NULL REFERENCES potential_reports(report_id) ON DELETE CASCADE,
+  listing_id   TEXT NOT NULL,
+  dimension    TEXT NOT NULL,
+  code         TEXT NOT NULL,
+  level        TEXT NOT NULL,   -- HIGH | MEDIUM | LOW: tamaño de la OPORTUNIDAD, no gravedad
+  headline     TEXT NOT NULL,
+  explanation  TEXT NOT NULL,
+  evidence     TEXT,            -- JSON: las mediciones que lo sostienen
+  intervention TEXT,            -- tipo recomendado
+  score_delta  REAL,            -- HEURÍSTICO: los puntos que recuperaría. No es una predicción.
+  media_id     TEXT,
+  rank         INTEGER NOT NULL DEFAULT 0,
+  created_at   TEXT NOT NULL
+);
+-- Contrato del ANTES / DESPUÉS. Existe desde ya aunque la generación visual todavía no esté
+-- conectada: es preferible un contrato honesto con estado NOT_AVAILABLE a una demo simulada.
+CREATE TABLE IF NOT EXISTS intervention_demos (
+  demo_id             TEXT PRIMARY KEY,
+  listing_id          TEXT NOT NULL REFERENCES listings(listing_id) ON DELETE CASCADE,
+  intervention        TEXT NOT NULL,
+  source_media_id     TEXT,
+  result_media_id     TEXT,
+  status              TEXT NOT NULL,   -- NOT_AVAILABLE | REQUESTED | GENERATING | READY | FAILED
+  visualization_class TEXT NOT NULL,   -- CONCEPTUAL_VISUALIZATION
+  disclosure          TEXT NOT NULL,
+  provider            TEXT,
+  model               TEXT,
+  notes               TEXT DEFAULT '',
+  created_at          TEXT NOT NULL,
+  updated_at          TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_media_listing ON listing_media(listing_id, kind, sort_order);
+CREATE INDEX IF NOT EXISTS ix_reports_listing ON potential_reports(listing_id, created_at);
+CREATE INDEX IF NOT EXISTS ix_findings_report ON potential_findings(report_id, rank);
+CREATE INDEX IF NOT EXISTS ix_demos_listing ON intervention_demos(listing_id, created_at);
 """
 
 
@@ -451,6 +556,14 @@ def property_dir(property_id: str) -> str:
     El `property_id` es generado por nosotros, así que no hay forma de que un nombre del usuario
     escape del directorio."""
     return os.path.join(DATA_DIR, "properties", property_id)
+
+
+def listing_dir(listing_id: str) -> str:
+    """Directorio de medios de un aviso. Separado de `properties/` a propósito: son dos productos
+    distintos sobre el mismo volumen, y mezclar sus archivos haría imposible borrar uno sin mirar
+    el otro. El `listing_id` lo generamos nosotros, así que ningún nombre del usuario puede
+    escapar del directorio."""
+    return os.path.join(DATA_DIR, "listings", listing_id)
 
 
 def brand_dir() -> str:
@@ -481,6 +594,7 @@ def init() -> None:
     os.makedirs(DATA_DIR, exist_ok=True)
     os.makedirs(os.path.join(DATA_DIR, "cases"), exist_ok=True)
     os.makedirs(os.path.join(DATA_DIR, "properties"), exist_ok=True)
+    os.makedirs(os.path.join(DATA_DIR, "listings"), exist_ok=True)
     os.makedirs(os.path.join(DATA_DIR, "brand"), exist_ok=True)
     conn = connect()
     conn.executescript(SCHEMA)
