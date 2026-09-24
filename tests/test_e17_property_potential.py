@@ -1,0 +1,477 @@
+"""E17.0 §TESTS — contrato de la capa de POTENCIAL.
+
+Lo que se protege acá son dos promesas y un aislamiento:
+
+    el score es TRAZABLE      cada punto sale de un criterio con nombre, peso y medición;
+    el score NO predice ventas mide el aviso, no el mercado, y el producto lo dice;
+    nada de esto toca el LAB  ni su navegación, ni sus tablas, ni el motor de layouts.
+"""
+from __future__ import annotations
+
+import importlib
+import io
+import json
+import os
+import shutil
+import struct
+import subprocess
+import sys
+import zlib
+
+import pytest
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, "src"))
+
+MODULOS = ("webapp.store", "webapp.auth", "webapp.intake", "webapp.engine",
+           "webapp.domain.assets", "webapp.domain.units", "webapp.domain.potential.listings",
+           "webapp.domain.potential.vision", "webapp.domain.potential.plans",
+           "webapp.domain.potential.interventions", "webapp.domain.potential.analyzer",
+           "webapp.domain.potential.demos", "webapp.potential", "webapp.app")
+
+PLANO_403 = os.path.join(ROOT, "cases", "001_gps_403", "original.png")
+
+
+def _png(w=1200, h=900, tinte=(150, 150, 150), ruido=False) -> bytes:
+    """Un PNG real, con tamaño y color controlados, para mover las mediciones a voluntad."""
+    import random
+    random.seed(7)
+    filas = []
+    for y in range(h):
+        fila = bytearray([0])
+        for x in range(w):
+            if ruido and (x + y) % 3 == 0:
+                fila += bytes((random.randrange(256), random.randrange(256),
+                               random.randrange(256)))
+            else:
+                fila += bytes(tinte)
+        filas.append(bytes(fila))
+
+    def chunk(tag, data):
+        return (struct.pack(">I", len(data)) + tag + data
+                + struct.pack(">I", zlib.crc32(tag + data) & 0xFFFFFFFF))
+
+    return (b"\x89PNG\r\n\x1a\n"
+            + chunk(b"IHDR", struct.pack(">IIBBBBB", w, h, 8, 2, 0, 0, 0))
+            + chunk(b"IDAT", zlib.compress(b"".join(filas))) + chunk(b"IEND", b""))
+
+
+class FS:
+    """Un archivo subido, sin depender de werkzeug."""
+
+    def __init__(self, blob: bytes, filename: str = "f.png"):
+        self.filename, self._blob = filename, blob
+
+    def save(self, dest):
+        with open(dest, "wb") as fh:
+            fh.write(self._blob)
+
+
+class FSPath(FS):
+    def __init__(self, path):
+        self.filename, self._path = os.path.basename(path), path
+
+    def save(self, dest):
+        shutil.copy2(self._path, dest)
+
+
+@pytest.fixture()
+def app(tmp_path, monkeypatch):
+    monkeypatch.setenv("ESCALIMETRO_DATA_DIR", str(tmp_path / "data"))
+    monkeypatch.setenv("ESCALIMETRO_DEV", "1")
+    monkeypatch.setenv("ESCALIMETRO_PASSWORD", "")
+    monkeypatch.setenv("ESCALIMETRO_MIGRATE", "0")
+    for m in MODULOS:
+        if m in sys.modules:
+            importlib.reload(importlib.import_module(m))
+    from webapp.app import create_app
+    return create_app()
+
+
+@pytest.fixture()
+def client(app):
+    return app.test_client()
+
+
+@pytest.fixture()
+def dom(app):
+    from webapp.domain.potential import (analyzer, demos, interventions, listings, plans, vision)
+    return {"analyzer": analyzer, "demos": demos, "iv": interventions, "listings": listings,
+            "plans": plans, "vision": vision}
+
+
+def _listing(dom, **kw):
+    kw.setdefault("title", "Oficina Apoquindo")
+    kw.setdefault("property_type", dom["listings"].OFFICE)
+    return dom["listings"].create(source=dom["listings"].MANUAL, **kw)
+
+
+# ===================================================================================================
+# A — ENTRADA: pegar una publicación
+# ===================================================================================================
+def test_la_pantalla_inicial_pide_una_sola_cosa(client):
+    html = client.get("/property/").get_data(as_text=True)
+    assert "¿Cuánto potencial está dejando sin mostrar tu propiedad?" in html
+    assert "Analizar propiedad" in html
+    # una sola pregunta: nada de formulario largo por adelantado
+    assert html.count("<input") <= 2
+
+
+def test_sin_url_el_flujo_sigue_igual(client, dom):
+    """§FLUJO — «Si la URL no puede importarse de forma robusta, el MVP debe poder continuar con
+    carga manual.» Sin URL tampoco se detiene."""
+    r = client.post("/property/analizar", data={"title": "Depto Providencia"})
+    assert r.status_code == 302
+    lid = r.headers["Location"].rsplit("/", 1)[-1]
+    assert dom["listings"].get(lid)["source"] == dom["listings"].MANUAL
+    assert dom["analyzer"].latest(lid) is not None
+
+
+def test_una_url_que_no_se_deja_leer_no_rompe_nada(client, dom):
+    """El adaptador de URL puede fallar; el producto no. Se guarda el enlace y se sigue a mano."""
+    r = client.post("/property/analizar",
+                    data={"url": "http://127.0.0.1:9/no-existe"})
+    assert r.status_code == 302
+    lid = r.headers["Location"].rsplit("/", 1)[-1]
+    l = dom["listings"].get(lid)
+    assert l["source"] == dom["listings"].URL
+    assert l["source_url"] == "http://127.0.0.1:9/no-existe"
+    assert client.get(f"/property/l/{lid}").status_code == 200
+
+
+def test_la_fuente_url_no_inventa_campos(dom):
+    """Un adaptador que rellena «3 dormitorios porque es lo normal» contaminaría justo la
+    dimensión que mide qué falta."""
+    res = dom["listings"].UrlSource().fetch("no-es-una-url")
+    assert res["ok"] is False and res["fields"] == {}
+    assert res["confidence"] == dom["listings"].CONFIDENCE_NONE
+
+
+# ===================================================================================================
+# B — EL SCORE ES TRAZABLE
+# ===================================================================================================
+def test_cada_punto_viene_de_un_criterio_con_nombre(client, dom):
+    lid = _listing(dom, area_m2=100, price=200)
+    dom["listings"].add_media(lid, FS(_png(), "a.png"))
+    r = dom["analyzer"].run(lid)
+    for dim, d in r["dimensions"].items():
+        assert d["criteria"], dim
+        for c in d["criteria"]:
+            assert c["code"] and c["label"] and c["weight"] > 0
+            if c["applies"]:
+                assert c["measured"] is not None and 0.0 <= c["value"] <= 1.0
+                assert c["points"] is not None and c["max_points"] is not None
+            else:
+                assert c["why"], "un criterio que no aplica tiene que decir por qué"
+
+
+def test_la_aritmetica_del_score_cuadra(client, dom):
+    """Si la suma de los puntos no da el score, el informe no se puede auditar."""
+    lid = _listing(dom, area_m2=100, price=200, description="x" * 300)
+    dom["listings"].add_media(lid, FS(_png(ruido=True), "a.png"))
+    r = dom["analyzer"].run(lid)
+    for d in r["dimensions"].values():
+        suma = sum(c["points"] for c in d["criteria"] if c["applies"])
+        assert abs(suma - d["score"]) < 0.2, d["label"]
+    assert abs(sum(d["score"] for d in r["dimensions"].values()) - r["score"]) < 0.6
+    assert r["max_score"] == sum(dom["analyzer"].DIMENSIONS.values()) == 100
+
+
+def test_un_criterio_que_no_aplica_no_resta(client, dom):
+    """Contar «dormitorios» como faltante en una bodega castigaría al aviso por algo que no puede
+    tener. El peso se reparte entre lo que sí aplica."""
+    a = _listing(dom, property_type=dom["listings"].WAREHOUSE, area_m2=500, price=1,
+                 description="x" * 300)
+    b = _listing(dom, property_type=dom["listings"].APARTMENT, area_m2=500, price=1,
+                 description="x" * 300)
+    ra, rb = dom["analyzer"].analyze(a), dom["analyzer"].analyze(b)
+    dorm_a = next(c for c in ra["dimensions"]["INFORMATION"]["criteria"]
+                  if c["code"] == "INFO_BEDROOMS")
+    dorm_b = next(c for c in rb["dimensions"]["INFORMATION"]["criteria"]
+                  if c["code"] == "INFO_BEDROOMS")
+    assert dorm_a["applies"] is False and dorm_b["applies"] is True
+    # la bodega, con los mismos datos, no puede salir peor por no tener dormitorios
+    assert ra["dimensions"]["INFORMATION"]["score"] > rb["dimensions"]["INFORMATION"]["score"]
+
+
+def test_el_delta_de_un_hallazgo_no_depende_de_lo_que_no_aplica(client, dom):
+    """Sin fotos, un solo criterio de la dimensión aplica. Si el delta usara el peso
+    redistribuido, ese criterio prometería los 30 puntos enteros de la dimensión, que es falso:
+    al subir fotos los demás vuelven a aplicar y se reparten."""
+    lid = _listing(dom)
+    r = dom["analyzer"].analyze(lid)
+    f = next(x for x in r["findings"] if x["code"] == "SET_PHOTO_COUNT")
+    peso = next(c.weight for c in dom["analyzer"].CRITERIA if c.code == "SET_PHOTO_COUNT")
+    total = sum(c.weight for c in dom["analyzer"].CRITERIA if c.dimension == "VISUAL")
+    assert f["score_delta"] <= dom["analyzer"].DIMENSIONS["VISUAL"] * peso / total + 0.01
+
+
+def test_el_informe_se_puede_auditar_en_json(client, dom):
+    lid = _listing(dom, area_m2=100)
+    dom["listings"].add_media(lid, FS(_png(), "a.png"))
+    dom["analyzer"].run(lid)
+    j = client.get(f"/property/l/{lid}/report.json").get_json()
+    assert j["score"] >= 0 and j["analyzer_version"] and j["dimensions"]
+    assert "no es una predicción de venta" in j["_note"].lower()
+    for f in j["findings"]:
+        assert f["evidence"] is not None and f["explanation"]
+
+
+def test_el_producto_no_promete_conversion(client, dom):
+    """§IMPORTANTÍSIMO — en la UI tiene que quedar claro QUÉ mide el score."""
+    lid = _listing(dom, area_m2=100)
+    dom["analyzer"].run(lid)
+    html = client.get(f"/property/l/{lid}").get_data(as_text=True).lower()
+    assert "no es una probabilidad de venta" in html
+    for prohibido in ("probabilidad de vender", "más leads", "garantiza", "vas a vender"):
+        assert prohibido not in html, prohibido
+
+
+# ===================================================================================================
+# C — LAS MEDICIONES SON MEDICIONES
+# ===================================================================================================
+def test_las_fotos_se_miden_y_la_medicion_se_guarda(client, dom):
+    lid = _listing(dom)
+    mid = dom["listings"].add_media(lid, FS(_png(ruido=True), "a.png"))
+    dom["analyzer"].measure_media(lid)
+    a = dom["listings"].media(mid, lid)["analysis_obj"]
+    assert a["ok"] and a["width"] == 1200 and a["height"] == 900
+    for k in ("brightness", "sharpness", "edge_density", "emptiness_proxy", "dhash"):
+        assert k in a, k
+
+
+def test_una_foto_oscura_se_detecta_como_oscura(client, dom):
+    lid = _listing(dom)
+    dom["listings"].add_media(lid, FS(_png(tinte=(20, 20, 20)), "oscura.png"))
+    dom["listings"].add_media(lid, FS(_png(tinte=(150, 150, 150)), "clara.png"))
+    r = dom["analyzer"].analyze(lid)
+    c = next(x for x in r["dimensions"]["VISUAL"]["criteria"] if x["code"] == "SET_NO_DARK")
+    assert len(c["measured"]["dark"]) == 1 and c["value"] == 0.5
+
+
+def test_las_fotos_repetidas_se_detectan_por_huella(client, dom):
+    lid = _listing(dom)
+    blob = _png(ruido=True)
+    dom["listings"].add_media(lid, FS(blob, "a.png"))
+    dom["listings"].add_media(lid, FS(blob, "b.png"))
+    dom["listings"].add_media(lid, FS(_png(tinte=(90, 180, 90), ruido=True), "c.png"))
+    r = dom["analyzer"].analyze(lid)
+    c = next(x for x in r["dimensions"]["VISUAL"]["criteria"] if x["code"] == "SET_NO_DUPLICATES")
+    assert c["measured"]["redundant_photos"] == 1
+    assert len(c["measured"]["duplicate_groups"]) == 1
+
+
+def test_la_portada_se_compara_con_la_mejor_foto(client, dom):
+    """El hallazgo más barato de arreglar del informe: no cuesta producir nada, sólo elegir."""
+    lid = _listing(dom)
+    mala = dom["listings"].add_media(lid, FS(_png(w=400, h=300, tinte=(25, 25, 25)), "mala.png"))
+    dom["listings"].add_media(lid, FS(_png(ruido=True), "buena.png"))
+    dom["listings"].set_cover(lid, mala)
+    r = dom["analyzer"].analyze(lid)
+    c = next(x for x in r["dimensions"]["COVER"]["criteria"]
+             if x["code"] == "COVER_IS_BEST_AVAILABLE")
+    assert c["measured"]["is_best"] is False
+    f = next(x for x in r["findings"] if x["code"] == "COVER_IS_BEST_AVAILABLE")
+    assert f["intervention"] == dom["iv"].COVER_SELECTION
+
+
+# ===================================================================================================
+# D — LA DIMENSIÓN DIFERENCIAL
+# ===================================================================================================
+def test_un_espacio_vacio_comercial_propone_mostrar_usos(client, dom):
+    lid = _listing(dom, property_type=dom["listings"].RETAIL)
+    for i in range(3):
+        dom["listings"].add_media(lid, FS(_png(tinte=(150, 150, 150)), f"{i}.png"))
+    r = dom["analyzer"].analyze(lid)
+    f = next(x for x in r["findings"] if x["code"] == "POT_EMPTY_SPACE_SHOWN")
+    assert f["intervention"] == dom["iv"].SPACE_REIMAGINATION
+    assert f["evidence"]["proxy"].startswith("densidad de bordes")
+
+
+def test_un_espacio_vacio_residencial_propone_amoblar(client, dom):
+    """La misma carencia, dos conversaciones distintas según qué se está vendiendo."""
+    lid = _listing(dom, property_type=dom["listings"].APARTMENT)
+    for i in range(3):
+        dom["listings"].add_media(lid, FS(_png(tinte=(150, 150, 150)), f"{i}.png"))
+    r = dom["analyzer"].analyze(lid)
+    f = next(x for x in r["findings"] if x["code"] == "POT_EMPTY_SPACE_SHOWN")
+    assert f["intervention"] == dom["iv"].VIRTUAL_STAGE
+
+
+def test_el_proxy_de_vacio_no_penaliza_si_ya_hay_una_visualizacion(client, dom):
+    """El proxy nunca decide solo: hacen falta las dos señales, espacio que se lee vacío Y ninguna
+    visualización que muestre un uso."""
+    lid = _listing(dom, property_type=dom["listings"].APARTMENT)
+    for i in range(3):
+        dom["listings"].add_media(lid, FS(_png(tinte=(150, 150, 150)), f"{i}.png"))
+    antes = dom["analyzer"].analyze(lid)
+    dom["listings"].add_media(lid, FS(_png(ruido=True), "idea.png"),
+                              dom["listings"].CONCEPTUAL)
+    despues = dom["analyzer"].analyze(lid)
+    def _v(r):
+        return next(c["value"] for c in r["dimensions"]["POTENTIAL"]["criteria"]
+                    if c["code"] == "POT_EMPTY_SPACE_SHOWN")
+    assert _v(antes) < 1.0 and _v(despues) == 1.0
+
+
+# ===================================================================================================
+# E — CAPACIDAD ESPACIAL: el motor existente, invocado, no copiado
+# ===================================================================================================
+def test_se_detecta_el_plano_y_se_ofrece_la_capacidad(client, dom):
+    lid = _listing(dom, area_m2=543)
+    dom["listings"].add_media(lid, FSPath(PLANO_403), dom["listings"].PLAN)
+    cap = dom["plans"].capability(lid)
+    assert cap["available"] is True and cap["commercial"] is True
+    assert "Detectamos un plano" in cap["headline"]
+    assert cap["plan"]["status"] == dom["plans"].LOOKS_MULTI_UNIT
+    r = dom["analyzer"].analyze(lid)
+    assert r["capabilities"][dom["iv"].SPATIAL_LAYOUT] is True
+    f = next(x for x in r["findings"] if x["code"] == "POT_PLAN_DEMONSTRATED")
+    assert f["intervention"] == dom["iv"].SPATIAL_LAYOUT
+
+
+def test_la_mirada_barata_no_corre_el_motor(client, dom):
+    """`inspect()` contesta en milisegundos y NO deja caso creado: hacer esperar el pipeline a
+    quien sólo quería su score sería cobrarle una capacidad que no pidió."""
+    lid = _listing(dom)
+    dom["listings"].add_media(lid, FSPath(PLANO_403), dom["listings"].PLAN)
+    st = dom["plans"].inspect(lid)
+    assert st["analyzed"] is False
+    assert dom["listings"].get(lid)["plan_case_id"] is None
+
+
+def test_analizar_el_plano_usa_el_pipeline_existente(client, dom):
+    """El plano entra al motor por el MISMO alta de caso que usa el resto del sistema."""
+    from webapp import store
+    lid = _listing(dom, area_m2=543)
+    dom["listings"].add_media(lid, FSPath(PLANO_403), dom["listings"].PLAN)
+    case_id = dom["plans"].ensure_case(lid)
+    assert store.q1("SELECT 1 FROM cases WHERE case_id=?", (case_id,))
+    assert dom["listings"].get(lid)["plan_case_id"] == case_id
+    assert store.q1("SELECT published_area_m2 FROM cases WHERE case_id=?",
+                    (case_id,))["published_area_m2"] == 543
+    assert dom["plans"].ensure_case(lid) == case_id            # idempotente
+
+
+def test_sin_plano_no_se_ofrece_capacidad_espacial(client, dom):
+    lid = _listing(dom)
+    assert dom["plans"].inspect(lid)["status"] == dom["plans"].NO_PLAN
+    assert dom["plans"].capability(lid)["available"] is False
+    assert dom["analyzer"].analyze(lid)["capabilities"][dom["iv"].SPATIAL_LAYOUT] is False
+
+
+# ===================================================================================================
+# F — REGLA DE VERACIDAD
+# ===================================================================================================
+def test_toda_intervencion_generativa_declara_que_preserva(client, dom):
+    for code in dom["iv"].TYPES:
+        c = dom["iv"].contract(code)
+        assert c["preserve"] and c["forbidden"]
+        for prohibido in ("muros", "ventanas", "pilares", "dimensiones"):
+            assert prohibido in c["forbidden"], (code, prohibido)
+        if c["generative"]:
+            assert c["visualization_class"] == "CONCEPTUAL_VISUALIZATION"
+            assert c["disclosure"] == "Visualización referencial de potencial."
+
+
+def test_la_remodelacion_no_se_recomienda_sola(client, dom):
+    """No hay clasificador de recintos. Proponerla igual sería el «score diseñado para vender
+    features» que el encargo prohíbe."""
+    assert dom["iv"].auto_recommendable(dom["iv"].RENOVATION_VISUALIZATION) is False
+    assert dom["iv"].CATALOG[dom["iv"].RENOVATION_VISUALIZATION]["why_not_auto"]
+    lid = _listing(dom, property_type=dom["listings"].APARTMENT)
+    for i in range(3):
+        dom["listings"].add_media(lid, FS(_png(tinte=(150, 150, 150)), f"{i}.png"))
+    r = dom["analyzer"].analyze(lid)
+    assert all(f["intervention"] != dom["iv"].RENOVATION_VISUALIZATION for f in r["findings"])
+
+
+def test_una_demo_sin_proveedor_no_se_finge_lista(client, dom):
+    """§ENTREGA — «Prefiero contracts honestos y placeholders explícitos antes que features
+    simuladas.»"""
+    lid = _listing(dom, property_type=dom["listings"].APARTMENT)
+    mid = dom["listings"].add_media(lid, FS(_png(), "a.png"))
+    did = dom["demos"].request(lid, dom["iv"].VIRTUAL_STAGE, mid)
+    d = dom["demos"].get(did)
+    assert d["status"] == dom["demos"].NOT_AVAILABLE
+    assert d["visualization_class"] == "CONCEPTUAL_VISUALIZATION"
+    assert d["disclosure"] == dom["iv"].DISCLOSURE
+    assert "proveedor" in d["notes_obj"]["note"]
+    # el contrato de veracidad queda COPIADO con la demo, no referenciado
+    assert d["notes_obj"]["contract"]["forbidden"]
+    assert dom["demos"].before_after(did) is None, "sin resultado no hay antes/después"
+
+
+def test_una_demo_no_generativa_si_puede_quedar_lista(client, dom):
+    """Elegir mejor portada no requiere generar nada: es una decisión sobre lo que ya existe."""
+    lid = _listing(dom)
+    did = dom["demos"].request(lid, dom["iv"].COVER_SELECTION)
+    assert dom["demos"].get(did)["status"] == dom["demos"].READY
+
+
+def test_no_se_puede_marcar_lista_una_demo_sin_resultado(client, dom):
+    lid = _listing(dom)
+    mid = dom["listings"].add_media(lid, FS(_png(), "a.png"))
+    did = dom["demos"].request(lid, dom["iv"].VIRTUAL_STAGE, mid)
+    with pytest.raises(dom["demos"].DemoError):
+        dom["demos"].attach_result(did, "m_inexistente")
+
+
+# ===================================================================================================
+# G — AISLAMIENTO: no romper lo que ya existe
+# ===================================================================================================
+def test_un_aviso_no_aparece_en_el_lab(client, dom):
+    """El aislamiento que justifica tablas separadas: un aviso analizado NO puede aparecer en la
+    portada del LAB, ni en el contador del piloto, ni crear concesiones de pack."""
+    from webapp import store
+    from webapp.domain import properties, realpilot
+    lid = _listing(dom)
+    dom["listings"].add_media(lid, FS(_png(), "a.png"))
+    dom["analyzer"].run(lid)
+    assert properties.listing() == []
+    assert realpilot.members() == []
+    assert store.q1("SELECT COUNT(*) n FROM properties")["n"] == 0
+    assert store.q1("SELECT COUNT(*) n FROM pack_grants")["n"] == 0
+    assert "Mis propiedades" not in client.get("/property/").get_data(as_text=True)
+
+
+def test_la_navegacion_del_lab_no_cambio(client, dom):
+    html = client.get("/lab/").get_data(as_text=True)
+    assert "/property" not in html
+    assert html.count('href="/lab/ajustes"') == 1
+
+
+def test_las_pantallas_nuevas_no_dan_500(client, dom):
+    lid = _listing(dom)
+    dom["analyzer"].run(lid)
+    for u in ("/property/", f"/property/l/{lid}", f"/property/l/{lid}/report.json"):
+        assert client.get(u).status_code == 200, u
+    dom["listings"].add_media(lid, FS(_png(), "a.png"))
+    dom["listings"].add_media(lid, FSPath(PLANO_403), dom["listings"].PLAN)
+    dom["analyzer"].run(lid)
+    assert client.get(f"/property/l/{lid}").status_code == 200
+
+
+def test_el_material_de_un_aviso_no_se_sirve_desde_otro(client, dom):
+    """La misma barrera que protege los assets del LAB: un id ajeno no abre un archivo."""
+    a, b = _listing(dom), _listing(dom)
+    mid = dom["listings"].add_media(a, FS(_png(), "a.png"))
+    assert client.get(f"/property/l/{a}/m/{mid}").status_code == 200
+    assert client.get(f"/property/l/{b}/m/{mid}").status_code == 404
+    assert dom["listings"].media(mid, b) is None
+
+
+def test_el_motor_no_se_toco(client, dom):
+    out = subprocess.run(["git", "diff", "--name-only", "6324b1f", "HEAD", "--", "src/"],
+                         cwd=ROOT, capture_output=True, text=True)
+    assert out.stdout.strip() == "", f"el motor cambió: {out.stdout}"
+
+
+def test_las_heuristicas_del_motor_siguen_donde_estaban(client, dom):
+    from webapp.domain import calibration, ingest, units
+    assert ingest.AUTO_CONFIRM_THRESHOLDS == {"perimeter": 0.60, "core": 0.50,
+                                              "primary_entrance": 0.70, "columns": 0.55,
+                                              "daylight": 0.45}
+    assert ingest.UNCERTAINTY_BAND == {"core": 0.10}
+    assert units.MIN_RELATIVE_AREA == 0.15 and calibration.MIN_SAMPLE == 10
