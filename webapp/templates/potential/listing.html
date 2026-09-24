@@ -1,53 +1,85 @@
 {% extends "potential/base.html" %}{% block title %}{{ l.title or 'Propiedad' }}{% endblock %}
 {% block body %}
 <p class="crumb"><a href="{{ url_for('potential.home') }}">Potencial</a> /
-  {{ l.title or 'Sin título' }}</p>
+  {{ l.title or 'Sin título' }} ·
+  <a href="{{ url_for('potential.dogfood') }}">muestra</a></p>
 
-{# ===================================================== EL INFORME #}
-<section id="informe">
+{# ============ E17.1 §1 — ¿CUÁL ES LA OFICINA? Inline, un clic, sin salir de acá. ============ #}
+{% if spatial.needs_pick and units %}
+<section id="unidad" class="ambigua">
+<h2>¿Cuál es la oficina de este aviso?</h2>
+<p class="sub">El plano publica {{ units.candidate_count }} unidades. Marcá cuál es y seguimos
+  solos con el resto.</p>
+<img class="big candidatos-img"
+     src="{{ url_for('potential.unidades_png', listing_id=l.listing_id) }}"
+     alt="unidades candidatas sobre el plano">
+<form method="post" action="{{ url_for('potential.elegir_unidad', listing_id=l.listing_id) }}"
+      class="candidatos">
+  {% for c in units.candidates %}
+  <button type="submit" name="candidate_id" value="{{ c.candidate_id }}"
+          class="cand c{{ loop.index }}">
+    <span class="num">{{ loop.index }}</span>
+    <span class="txt">{% if c.ocr_labels %}{{ c.ocr_labels|join(' ') }}
+      {%- else %}Zona {{ loop.index }}{% endif %}</span>
+  </button>
+  {% endfor %}
+</form>
+</section>
+{% endif %}
+
+{# ============================ E17.1 §2 — LAS OPORTUNIDADES PRIMERO ============================ #}
+<section id="oportunidades">
+<h1>Oportunidades para mostrar mejor esta propiedad</h1>
 {% if report %}
-  <div class="scorecard">
-    <div class="score"><b>{{ report.score }}</b><span>/ {{ report.max_score }}</span></div>
-    <div>
-      <h1>{% if report.score < 60 %}Esta publicación está dejando potencial sin mostrar.
-          {% else %}Esta publicación muestra buena parte del potencial.{% endif %}</h1>
-      <p class="sub">El puntaje mide <b>qué tan bien la publicación muestra el potencial</b> del
-        inmueble. No es una probabilidad de venta.</p>
-    </div>
-  </div>
+  {% if report.resolvable %}
+    <h2>Escalímetro puede resolverlo</h2>
+    {% for f in report.resolvable %}
+      <article class="finding {{ f.level|lower }} {{ 'hoy' if f.deliverable_today }}">
+        <h3>{{ f.headline }}</h3>
+        <p>{{ f.explanation }}</p>
+        <p class="sub"><b>{{ f.intervention_label }}</b> — {{ catalog[f.intervention].what }}</p>
+        {% if f.deliverable_today %}
+          <form method="post" action="{{ url_for('potential.demo', listing_id=l.listing_id) }}"
+                class="inline">
+            <input type="hidden" name="intervention" value="{{ f.intervention }}">
+            <button class="sec">Preparar</button></form>
+        {% else %}
+          <p class="hint">{{ f.support_label }}</p>
+        {% endif %}
+      </article>
+    {% endfor %}
+  {% endif %}
 
-  <table class="detect dims"><tbody>
-  {% for code, d in report.dimensions_obj.items() %}
-    <tr><td><b>{{ d.label }}</b></td>
-        <td class="bar"><i style="width:{{ (100 * d.score / d.max)|round(0, 'floor') }}%"></i></td>
-        <td class="mono">{{ d.score }} / {{ d.max }}</td></tr>
-  {% endfor %}
-  </tbody></table>
+  {% if report.recommendations %}
+    <h2>Recomendación para la publicación</h2>
+    {% for f in report.recommendations %}
+      <article class="finding rec">
+        <h3>{{ f.headline }}</h3>
+        <p>{{ f.explanation }}</p>
+      </article>
+    {% endfor %}
+  {% endif %}
 
-  {% if report.top_findings %}
-  <h2>Principales oportunidades</h2>
-  {% for f in report.top_findings %}
-    <article class="finding {{ f.level|lower }}">
-      <h3>{{ f.headline }}</h3>
-      <p>{{ f.explanation }}</p>
-      <p class="sub">{{ f.dimension }} · recupera hasta <b>{{ f.score_delta }}</b> puntos
-        <span class="hint">(heurístico: es lo que le falta a este criterio, no una predicción)</span></p>
-      {% if f.intervention %}
-        <form method="post" action="{{ url_for('potential.demo', listing_id=l.listing_id) }}"
-              class="inline">
-          <input type="hidden" name="intervention" value="{{ f.intervention }}">
-          <button class="sec">{{ f.intervention_label }}</button>
-        </form>
-        <span class="sub">{{ catalog[f.intervention].what }}</span>
-      {% endif %}
-    </article>
-  {% endfor %}
-  {% else %}
+  {% if not report.findings %}
     <p class="sub">No encontramos oportunidades claras con el material cargado.</p>
   {% endif %}
 
-  <details><summary>Ver de dónde sale cada punto</summary>
-    <p class="sub">Cada criterio con su medición, su peso y sus puntos. También en
+  {# ==================== el diagnóstico completo, secundario ==================== #}
+  <details id="informe" class="diagnostico">
+    <summary>Ver diagnóstico completo</summary>
+    <div class="scorecard">
+      <div class="score"><b>{{ report.score }}</b><span>/ {{ report.max_score }}</span></div>
+      <p class="sub">Instrumentación interna. Mide <b>qué tan bien la publicación muestra el
+        potencial</b> del inmueble. No es una probabilidad de venta.</p>
+    </div>
+    <table class="detect dims"><tbody>
+    {% for code, d in report.dimensions_obj.items() %}
+      <tr><td><b>{{ d.label }}</b></td>
+          <td class="bar"><i style="width:{{ (100 * d.score / d.max)|round(0, 'floor') }}%"></i></td>
+          <td class="mono">{{ d.score }} / {{ d.max }}</td></tr>
+    {% endfor %}
+    </tbody></table>
+    <p class="sub">Cada criterio con su medición, su peso y sus puntos, también en
       <a href="{{ url_for('potential.report_json', listing_id=l.listing_id) }}">JSON</a>.</p>
     {% for code, d in report.dimensions_obj.items() %}
       <h4>{{ d.label }} — {{ d.score }} / {{ d.max }}</h4>
@@ -70,13 +102,11 @@
 </section>
 
 {# ===================================================== CAPACIDAD ESPACIAL #}
-{% if spatial.has_plan %}
+{% if spatial.has_plan and not spatial.needs_pick %}
 <section id="espacial" class="ambigua">
   <h2>{{ spatial.headline }}</h2>
   {% if plan.analyzed and plan.status == 'NOT_USABLE' %}
     <p>El motor miró el plano y no pudo leerlo: {{ plan.note }}.</p>
-    <p class="hint">Con la unidad indicada sobre la lámina el motor sí puede leerla. Esa
-      herramienta existe y todavía no está conectada a esta pantalla.</p>
   {% elif plan.analyzed %}
     <p class="sub">{{ plan.label }}</p>
     <table class="detect"><tbody>
@@ -84,6 +114,10 @@
           <td class="mono">{{ plan.area_m2|round(1) if plan.area_m2 else '—' }} m²</td></tr>
       <tr><td class="sub">El motor la da por lista</td>
           <td class="mono">{{ 'sí' if plan.ready else 'falta confirmar ' ~ (plan.pending|join(', ')) }}</td></tr>
+      {% if units and units.source %}
+      <tr><td class="sub">Unidad elegida</td>
+          <td class="mono">{{ units.selected_candidate_id }} · {{ units.source }}</td></tr>
+      {% endif %}
     </tbody></table>
   {% else %}
     <p class="sub">{{ plan.label }}{% if plan.note %} — {{ plan.note }}{% endif %}</p>
@@ -141,6 +175,37 @@
 </form>
 {% if l.source_url %}<p class="sub">Publicación: <a href="{{ l.source_url }}" rel="noopener"
   target="_blank">{{ l.source_url[:80] }}</a></p>{% endif %}
+</section>
+
+{# ============================ E17.1 §4 — REVISIÓN HUMANA (interno) ============================ #}
+<section id="revision" class="interna">
+<h2>Tu revisión <span class="sub">(interno · muestra de {{ 20 }})</span></h2>
+<p class="sub">Tres preguntas cerradas. Se guardan por separado porque pueden discrepar, y esa
+  discrepancia es lo más valioso de la muestra.</p>
+<form method="post" action="{{ url_for('potential.revision', listing_id=l.listing_id) }}"
+      class="revision">
+  <fieldset><legend>El diagnóstico fue</legend>
+    {% for d in diagnoses %}
+      <label class="radio"><input type="radio" name="diagnosis" value="{{ d }}"
+        {{ 'checked' if review.diagnosis == d }}> {{ diagnosis_label[d] }}</label>
+    {% endfor %}
+  </fieldset>
+  <fieldset><legend>Oportunidad comercial</legend>
+    {% for o in opportunities %}
+      <label class="radio"><input type="radio" name="opportunity" value="{{ o }}"
+        {{ 'checked' if review.opportunity == o }}> {{ opportunity_label[o] }}</label>
+    {% endfor %}
+  </fieldset>
+  <fieldset><legend>¿Vale la pena contactar?</legend>
+    {% for c in contact_opts %}
+      <label class="radio"><input type="radio" name="worth_contacting" value="{{ c }}"
+        {{ 'checked' if review.worth_contacting == c }}> {{ contact_label[c] }}</label>
+    {% endfor %}
+  </fieldset>
+  <label class="ancho">Comentario (opcional)
+    <textarea name="comment" rows="2">{{ review.comment or '' }}</textarea></label>
+  <button type="submit">Guardar revisión</button>
+</form>
 </section>
 
 {# ===================================================== DEMOS #}

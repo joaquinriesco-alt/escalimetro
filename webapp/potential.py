@@ -16,8 +16,9 @@ from typing import Optional
 from flask import (Blueprint, abort, jsonify, redirect, render_template, request, send_file,
                    url_for)
 
-from . import auth
-from .domain.potential import analyzer, demos, interventions as iv, listings, plans
+from . import auth, store
+from .domain.potential import (analyzer, demos, interventions as iv, listings, plans,
+                               reviews as previews)
 
 bp = Blueprint("potential", __name__, url_prefix="/property")
 
@@ -40,6 +41,11 @@ def _page(listing_id: str, errores=None, code: int = 200):
         demos_list=demos.of_listing(listing_id), demo_status=demos.STATUS_LABEL,
         types=listings.PROPERTY_TYPES, type_label=listings.TYPE_LABEL,
         catalog=iv.CATALOG, disclosure=iv.DISCLOSURE,
+        units=plans.unit_state(listing_id),
+        review=previews.get(listing_id) or {},
+        diagnoses=previews.DIAGNOSES, diagnosis_label=previews.DIAGNOSIS_LABEL,
+        opportunities=previews.OPPORTUNITIES, opportunity_label=previews.OPPORTUNITY_LABEL,
+        contact_opts=previews.CONTACT, contact_label=previews.CONTACT_LABEL,
         history=analyzer.history(listing_id))
     return (html, code) if code != 200 else html
 
@@ -163,6 +169,60 @@ def plano_analizar(listing_id):
         return _page(listing_id, [str(e)], 400)
     analyzer.run(listing_id)
     return redirect(url_for("potential.listing", listing_id=listing_id) + "#espacial")
+
+
+@bp.get("/l/<listing_id>/unidades.png")
+@auth.require
+def unidades_png(listing_id):
+    """La lámina con las unidades candidatas pintadas. El dibujo lo hace `domain.units`, el mismo
+    que usa el LAB: si hubiera dos paletas, el número del plano dejaría de coincidir con el del
+    botón el día que alguien toque una."""
+    _l(listing_id)
+    destino = os.path.join(store.listing_dir(listing_id), "unidades.png")
+    ruta = plans.candidates_overlay(listing_id, destino)
+    if not ruta:
+        abort(404)
+    return send_file(ruta, mimetype="image/png", max_age=0)
+
+
+@bp.post("/l/<listing_id>/unidad")
+@auth.require
+def elegir_unidad(listing_id):
+    """UN clic. Persiste la selección, vuelve a correr el motor y sigue en esta misma pantalla.
+
+    No crea una `property`, no crea una concesión de pack y no toca nada del LAB: lo único que se
+    guarda es qué región de la lámina es la de este aviso."""
+    _l(listing_id)
+    try:
+        plans.pick_unit(listing_id, (request.form.get("candidate_id") or "").strip())
+        plans.analyze(listing_id)
+    except (listings.ListingError, ValueError) as e:
+        return _page(listing_id, [str(e)], 400)
+    analyzer.run(listing_id)
+    return redirect(url_for("potential.listing", listing_id=listing_id) + "#espacial")
+
+
+@bp.post("/l/<listing_id>/revision")
+@auth.require
+def revision(listing_id):
+    """§4 — la revisión humana del diagnóstico, para el dogfood de 20 avisos."""
+    _l(listing_id)
+    f = request.form
+    try:
+        previews.save(listing_id, diagnosis=(f.get("diagnosis") or "").strip() or None,
+                      opportunity=(f.get("opportunity") or "").strip() or None,
+                      worth_contacting=(f.get("worth_contacting") or "").strip() or None,
+                      comment=f.get("comment") or "")
+    except previews.ReviewError as e:
+        return _page(listing_id, [str(e)], 400)
+    return redirect(url_for("potential.listing", listing_id=listing_id) + "#revision")
+
+
+@bp.get("/dogfood")
+@auth.require
+def dogfood():
+    """§5 — el tablero de la muestra. Secundario: el producto es el informe."""
+    return render_template("potential/dogfood.html", panel=previews.dashboard())
 
 
 @bp.post("/l/<listing_id>/demo")

@@ -1,0 +1,52 @@
+{% extends "potential/base.html" %}{% block title %}Muestra{% endblock %}
+{% block body %}
+<p class="crumb"><a href="{{ url_for('potential.home') }}">Potencial</a> / Muestra</p>
+<h1>Muestra de {{ panel.target }} avisos</h1>
+<p class="sub">La pregunta que esta muestra contesta: <b>¿en cuántas publicaciones encontramos una
+  mejora concreta que Escalímetro realmente pueda producir y que justifique contactar al
+  corredor?</b></p>
+
+<div class="kpis">
+  <div><b>{{ panel.listings }} / {{ panel.target }}</b><span>avisos analizados</span></div>
+  <div><b>{{ panel.reviewed }}</b><span>con tu revisión</span></div>
+  <div><b>{{ panel.with_opportunity_pct if panel.with_opportunity_pct is not none else '—' }}%</b>
+       <span>con oportunidad clara</span></div>
+  <div><b>{{ panel.worth_contacting_pct if panel.worth_contacting_pct is not none else '—' }}%</b>
+       <span>vale la pena contactar</span></div>
+</div>
+
+<h2>Tu diagnóstico</h2>
+<table class="detect"><tbody>
+{% for d, n in panel.by_diagnosis.items() %}
+  <tr><td>{{ panel.diagnosis_labels[d] }}</td><td class="mono">{{ n }}</td></tr>
+{% endfor %}
+</tbody></table>
+
+<h2>Qué propuso el sistema</h2>
+<p class="sub">Lo que proponemos no es lo mismo que lo que vos validás. Las dos columnas juntas
+  dicen si el instrumento está viendo lo que hay.</p>
+<div class="kpis">
+  <div><b>{{ panel.proposed_any }}</b><span>avisos con algo resoluble</span></div>
+  <div><b>{{ panel.deliverable_today }}</b><span>con algo entregable hoy</span></div>
+</div>
+<table class="detect"><tbody>
+{% for k, n in panel.by_intervention.items() %}
+  <tr><td><b>{{ panel.intervention_labels[k] }}</b></td><td class="mono">{{ n }}</td>
+      <td class="sub">{{ panel.support_labels[k] }}</td></tr>
+{% endfor %}
+</tbody></table>
+
+<h2>Avisos</h2>
+<table class="detect"><tbody>
+<tr><td></td><td class="sub">puntaje</td><td class="sub">resoluble</td><td class="sub">hoy</td>
+    <td class="sub">diagnóstico</td><td class="sub">oportunidad</td><td class="sub">contactar</td></tr>
+{% for r in panel.rows %}
+  <tr><td><a href="{{ url_for('potential.listing', listing_id=r.listing_id) }}">{{ r.title }}</a></td>
+      <td class="mono">{{ r.score if r.score is not none else '—' }}</td>
+      <td class="mono">{{ r.resolvable }}</td><td class="mono">{{ r.deliverable_today }}</td>
+      <td class="sub">{{ panel.diagnosis_labels.get(r.diagnosis, '—') }}</td>
+      <td class="sub">{{ 'sí' if r.opportunity == 'HAY_ALGO_QUE_ESCALIMETRO_PUEDE_RESOLVER' else ('no' if r.opportunity else '—') }}</td>
+      <td class="sub">{{ r.worth_contacting or '—' }}</td></tr>
+{% endfor %}
+</tbody></table>
+{% endblock %}

@@ -302,3 +302,17 @@ form.datos label.ancho{grid-column:1/-1}
 form.datos input,form.datos select,form.datos textarea{padding:8px 10px;border:1px solid var(--line);
   border-radius:6px;font:inherit;color:var(--ink)}
 form.datos button{grid-column:1/-1;justify-self:start}
+/* E17.1 — el informe empieza por las oportunidades; el puntaje queda detrás de un resumen. */
+.potential h1{font-size:22px;margin:0 0 14px}
+.finding.rec{border-left-color:var(--mut);background:color-mix(in srgb, var(--mut) 3%, transparent)}
+.finding.hoy{border-left-color:var(--ok)}
+details.diagnostico{margin:22px 0;border-top:1px solid var(--line);padding-top:12px}
+details.diagnostico summary{cursor:pointer;color:var(--mut);font-size:13px}
+details.diagnostico .scorecard{margin-top:14px}
+form.revision{display:grid;gap:14px}
+form.revision fieldset{border:1px solid var(--line);border-radius:8px;padding:8px 12px 12px;
+  display:flex;gap:14px;flex-wrap:wrap}
+label.radio{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--ink)}
+form.revision label.ancho{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mut)}
+form.revision textarea{padding:8px 10px;border:1px solid var(--line);border-radius:6px;font:inherit}
+form.revision button{justify-self:start}
