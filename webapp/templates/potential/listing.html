@@ -4,6 +4,39 @@
   {{ l.title or 'Sin título' }} ·
   <a href="{{ url_for('potential.dogfood') }}">muestra</a></p>
 
+{# ================== E17.2 §16/§19 — QUÉ PUDIMOS LEER DE LA PUBLICACIÓN ================== #}
+{% if l.source_url %}
+  {% if l.url_ingest_status == 'FAILED' %}
+  <section class="ambigua">
+    <h2>No pudimos leer automáticamente esta publicación</h2>
+    <p class="sub">{{ ingest_reasons.get(l.url_ingest_reason, l.url_ingest_reason or '') }}.</p>
+    <form method="post" action="{{ url_for('potential.reintentar', listing_id=l.listing_id) }}"
+          class="inline"><button>Reintentar</button></form>
+    <a class="btn sec" href="#material">Cargar material manualmente</a>
+  </section>
+  {% else %}
+  <section class="leido">
+    <h2>Analizamos esta publicación</h2>
+    <p class="sub">{{ ingest_status_label.get(l.url_ingest_status, '') }} ·
+      <b>{{ l.photos_extracted_count }}</b> foto(s)
+      {%- if l.floorplans_detected_count %} · <b>{{ l.floorplans_detected_count }}</b> plano
+      {%- endif %} · {{ l.fields_extracted_count }} datos</p>
+    <p class="resumen">
+      {%- if l.area_m2 %}<span>{{ l.area_m2|round(0)|int }} m²</span>{% endif %}
+      {%- if l.operation %}<span>{{ 'Arriendo' if l.operation == 'RENT' else 'Venta' }}</span>{% endif %}
+      {%- if l.price %}<span>{{ l.currency or '' }} {{ l.price|round(0)|int }}</span>{% endif %}
+      {%- if l.location %}<span>{{ l.location }}</span>{% endif %}
+      {%- if l.parking %}<span>{{ l.parking }} estacionamiento(s)</span>{% endif %}
+      {%- if l.bathrooms %}<span>{{ l.bathrooms }} baño(s)</span>{% endif %}
+      {%- if l.bedrooms %}<span>{{ l.bedrooms }} dormitorio(s)</span>{% endif %}
+      {%- if l.storage %}<span>{{ l.storage }} bodega(s)</span>{% endif %}
+      {%- if l.floor %}<span>piso {{ l.floor }}</span>{% endif %}
+    </p>
+    <a class="btn sec" href="#datos">Corregir datos</a>
+  </section>
+  {% endif %}
+{% endif %}
+
 {# ============ E17.1 §1 — ¿CUÁL ES LA OFICINA? Inline, un clic, sin salir de acá. ============ #}
 {% if spatial.needs_pick and units %}
 <section id="unidad" class="ambigua">
@@ -31,6 +64,16 @@
 <section id="oportunidades">
 <h1>Oportunidades para mostrar mejor esta propiedad</h1>
 {% if report %}
+  {% if report.commercial_state == 'ALREADY_STRONG' %}
+    {# §10/§11 — una publicación bien hecha NO es un problema. No se inventa una intervención. #}
+    <p class="fuerte">{{ report.commercial_label }}.
+      {% if 'visual_presentation_strong' in report.signals %}Las fotos ya presentan bien la
+      propiedad.{% endif %}</p>
+  {% endif %}
+  {% if report.signals %}
+    <p class="sub">Lo que ya está bien:
+      {% for s in report.signals %}{{ report.signal_labels[s] }}{% if not loop.last %} · {% endif %}{% endfor %}.</p>
+  {% endif %}
   {% if report.resolvable %}
     <h2>Escalímetro puede resolverlo</h2>
     {% for f in report.resolvable %}

@@ -2,13 +2,19 @@
 {% block body %}
 <section class="hero">
   <h1>¿Cuánto potencial está dejando sin mostrar tu propiedad?</h1>
-  <p class="sub">Pega una publicación o sube el material.</p>
+  <p class="sub">Pega el link de la publicación.</p>
+  {# E17.2 §1 — nada más arriba del pliegue. Una pregunta, un campo, un botón. #}
   <form method="post" action="{{ url_for('potential.analizar') }}" class="pegar">
-    <input type="url" name="url" placeholder="https://…" autocomplete="off">
-    <button type="submit">Analizar propiedad</button>
+    <input type="url" name="url" placeholder="https://…" autocomplete="off" autofocus>
+    <button type="submit">Analizar</button>
   </form>
-  <p class="hint">Si la publicación no se deja leer, no importa: seguimos con el material cargado
-    a mano.</p>
+  <details class="manual">
+    <summary>También puedes cargar archivos manualmente</summary>
+    <form method="post" action="{{ url_for('potential.analizar') }}" class="pegar">
+      <input type="text" name="title" placeholder="Nombre de la propiedad">
+      <button type="submit" class="sec">Crear y cargar a mano</button>
+    </form>
+  </details>
 </section>
 
 {% if rows %}
@@ -19,9 +25,11 @@
   <tr><td><a href="{{ url_for('potential.listing', listing_id=r.listing_id) }}">
         {{ r.title or 'Sin título' }}</a></td>
       <td class="sub">{{ r.location or '' }}</td>
+      <td class="sub mono">{{ r.url_ingest_status or 'manual' }}</td>
       <td class="sub mono">{{ r.created_at[:16] }}</td></tr>
 {% endfor %}
 </tbody></table>
+<p class="sub"><a href="{{ url_for('potential.dogfood') }}">Ver la muestra</a></p>
 </section>
 {% endif %}
 {% endblock %}

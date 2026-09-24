@@ -316,3 +316,13 @@ label.radio{display:flex;align-items:center;gap:5px;font-size:13px;color:var(--i
 form.revision label.ancho{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mut)}
 form.revision textarea{padding:8px 10px;border:1px solid var(--line);border-radius:6px;font:inherit}
 form.revision button{justify-self:start}
+/* E17.2 — el link es el input; lo leído se muestra como resumen, no como formulario vacío. */
+.potential details.manual{margin-top:18px}
+.potential details.manual summary{cursor:pointer;color:var(--mut);font-size:13px}
+.leido{border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:16px 0;
+  background:color-mix(in srgb, var(--ok) 4%, transparent)}
+.leido h2{margin-top:0}
+p.resumen{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+p.resumen span{border:1px solid var(--line);border-radius:999px;padding:3px 11px;font-size:13px;
+  background:#fff}
+p.fuerte{font-size:16px;font-weight:600;color:var(--ok);margin:4px 0 10px}

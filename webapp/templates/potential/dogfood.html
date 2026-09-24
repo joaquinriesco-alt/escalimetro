@@ -15,6 +15,36 @@
        <span>vale la pena contactar</span></div>
 </div>
 
+<h2>¿Podemos analizar una URL casi solos?</h2>
+<div class="kpis">
+  <div><b>{{ panel.ingest.by_status.SUCCESS }}</b><span>SUCCESS</span></div>
+  <div><b>{{ panel.ingest.by_status.PARTIAL }}</b><span>PARTIAL</span></div>
+  <div><b>{{ panel.ingest.by_status.FAILED }}</b><span>FAILED</span></div>
+  <div><b>{{ panel.ingest.no_manual_pct if panel.ingest.no_manual_pct is not none else '—' }}%</b>
+       <span>sin carga manual</span></div>
+  <div><b>{{ panel.ingest.avg_photos if panel.ingest.avg_photos is not none else '—' }}</b>
+       <span>fotos por aviso</span></div>
+  <div><b>{{ panel.ingest.with_floorplan_pct if panel.ingest.with_floorplan_pct is not none else '—' }}%</b>
+       <span>con plano detectado</span></div>
+</div>
+{% if panel.ingest.failures %}
+  <p class="sub">Fallas: {% for k, n in panel.ingest.failures.items() %}{{ k }} ({{ n }})
+    {%- if not loop.last %} · {% endif %}{% endfor %}</p>
+{% endif %}
+{% if panel.ingest.domains %}<p class="sub">Portales: {{ panel.ingest.domains|join(' · ') }}</p>{% endif %}
+
+<h2>¿Hay oportunidad aunque las fotos ya sean buenas?</h2>
+<div class="kpis">
+  <div><b>{{ panel.visual.strong_pct }}%</b><span>presentación visual fuerte</span></div>
+  <div><b>{{ panel.visual.with_defect_pct }}%</b><span>con defecto visual claro</span></div>
+</div>
+<table class="detect"><tbody>
+{% for e, n in panel.commercial.by_state.items() %}
+  <tr><td>{{ panel.commercial.state_labels[e] }}</td><td class="mono">{{ n }}</td>
+      <td class="mono">{{ panel.commercial.pct[e] }}%</td></tr>
+{% endfor %}
+</tbody></table>
+
 <h2>Tu diagnóstico</h2>
 <table class="detect"><tbody>
 {% for d, n in panel.by_diagnosis.items() %}
@@ -38,10 +68,13 @@
 
 <h2>Avisos</h2>
 <table class="detect"><tbody>
-<tr><td></td><td class="sub">puntaje</td><td class="sub">resoluble</td><td class="sub">hoy</td>
+<tr><td></td><td class="sub">ingest</td><td class="sub">fotos</td>
+    <td class="sub">puntaje</td><td class="sub">resoluble</td><td class="sub">hoy</td>
     <td class="sub">diagnóstico</td><td class="sub">oportunidad</td><td class="sub">contactar</td></tr>
 {% for r in panel.rows %}
   <tr><td><a href="{{ url_for('potential.listing', listing_id=r.listing_id) }}">{{ r.title }}</a></td>
+      <td class="sub mono">{{ r.url_ingest_status or 'manual' }}</td>
+      <td class="mono">{{ r.photos }}</td>
       <td class="mono">{{ r.score if r.score is not none else '—' }}</td>
       <td class="mono">{{ r.resolvable }}</td><td class="mono">{{ r.deliverable_today }}</td>
       <td class="sub">{{ panel.diagnosis_labels.get(r.diagnosis, '—') }}</td>

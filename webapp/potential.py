@@ -17,8 +17,8 @@ from flask import (Blueprint, abort, jsonify, redirect, render_template, request
                    url_for)
 
 from . import auth, store
-from .domain.potential import (analyzer, demos, interventions as iv, listings, plans,
-                               reviews as previews)
+from .domain.potential import (analyzer, demos, fetcher, interventions as iv, listings, plans,
+                               reviews as previews, urlingest)
 
 bp = Blueprint("potential", __name__, url_prefix="/property")
 
@@ -42,6 +42,8 @@ def _page(listing_id: str, errores=None, code: int = 200):
         types=listings.PROPERTY_TYPES, type_label=listings.TYPE_LABEL,
         catalog=iv.CATALOG, disclosure=iv.DISCLOSURE,
         units=plans.unit_state(listing_id),
+        provenance=urlingest.provenance(listing_id),
+        ingest_status_label=urlingest.STATUS_LABEL, ingest_reasons=urlingest.REASON_LABEL,
         review=previews.get(listing_id) or {},
         diagnoses=previews.DIAGNOSES, diagnosis_label=previews.DIAGNOSIS_LABEL,
         opportunities=previews.OPPORTUNITIES, opportunity_label=previews.OPPORTUNITY_LABEL,
@@ -62,19 +64,44 @@ def home():
 @bp.post("/analizar")
 @auth.require
 def analizar():
-    """«Pega tu publicación.» Una URL o nada: si no hay URL, se crea igual y se carga el material
-    a mano. El flujo NO se detiene porque una página no se deje leer."""
+    """E17.2 §1 — EL LINK ES EL INPUT. Se pega una URL y el sistema trae lo que pueda: datos,
+    fotos y plano. El usuario sólo interviene si algo queda ambiguo.
+
+    Sin URL se crea igual y se carga a mano: el camino manual no desaparece, deja de ser el
+    principal."""
     f = request.form
     url = (f.get("url") or "").strip()
-    try:
-        res = listings.ingest(url, source=listings.URL if url else listings.MANUAL,
-                              title=f.get("title") or "")
-    except listings.ListingError as e:
-        return render_template("potential/home.html", rows=listings.listing_rows(),
-                               errores=[str(e)]), 400
+    if not url:
+        lid = listings.create(title=(f.get("title") or "").strip(), source=listings.MANUAL)
+        analyzer.run(lid)
+        return redirect(url_for("potential.listing", listing_id=lid))
+    res = urlingest.ingest_url(url)
     lid = res["listing_id"]
+    # Si vino un plano en la galería, se le pregunta al modelo de candidatos de E35 cuál es la
+    # unidad ANTES de analizar: así la pregunta aparece en el primer informe y no en el segundo.
+    if res["floorplans"]:
+        plans.resolve_units(lid)
+        if not plans.needs_unit_pick(lid):
+            try:
+                plans.analyze(lid)
+            except (listings.ListingError, ValueError):
+                pass                                           # el plano no se deja leer: se dice en el informe
     analyzer.run(lid)
     return redirect(url_for("potential.listing", listing_id=lid))
+
+
+@bp.post("/l/<listing_id>/reintentar")
+@auth.require
+def reintentar(listing_id):
+    """§16 — [ Reintentar ]. Un portal que falló una vez puede no fallar la siguiente."""
+    l = _l(listing_id)
+    if not l["source_url"]:
+        return _page(listing_id, ["este aviso no tiene una publicación de origen"], 400)
+    urlingest.ingest_url(l["source_url"], listing_id=listing_id)
+    if plans.plan_media(listing_id):
+        plans.resolve_units(listing_id)
+    analyzer.run(listing_id)
+    return redirect(url_for("potential.listing", listing_id=listing_id))
 
 
 @bp.get("/l/<listing_id>")
@@ -88,8 +115,11 @@ def listing(listing_id):
 def datos(listing_id):
     _l(listing_id)
     try:
-        listings.update(listing_id, **{k: request.form.get(k) for k in listings.CAMPOS
-                                       if k in request.form})
+        # §9 — lo que corrige una persona queda marcado MANUAL_OVERRIDE y ya no lo pisa una
+        # reextracción. Corregir un dato y que el siguiente análisis lo borre haría inútil
+        # corregirlo.
+        urlingest.manual_override(listing_id, {k: request.form.get(k) for k in listings.CAMPOS
+                                               if k in request.form})
     except listings.ListingError as e:
         return _page(listing_id, [str(e)], 400)
     analyzer.run(listing_id)
