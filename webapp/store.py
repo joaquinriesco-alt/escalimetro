@@ -508,6 +508,9 @@ CREATE TABLE IF NOT EXISTS potential_findings (
   score_delta  REAL,            -- HEURÍSTICO: los puntos que recuperaría. No es una predicción.
   media_id     TEXT,
   rank         INTEGER NOT NULL DEFAULT 0,
+  -- E17.1 §2 — de qué clase es este hallazgo y qué podemos entregar hoy para resolverlo.
+  kind         TEXT,   -- RESOLVABLE | RECOMMENDATION
+  support      TEXT,   -- AVAILABLE | PENDING_PROVIDER | NOT_BUILT
   created_at   TEXT NOT NULL
 );
 -- Contrato del ANTES / DESPUÉS. Existe desde ya aunque la generación visual todavía no esté
@@ -526,6 +529,36 @@ CREATE TABLE IF NOT EXISTS intervention_demos (
   notes               TEXT DEFAULT '',
   created_at          TEXT NOT NULL,
   updated_at          TEXT NOT NULL
+);
+-- E17.1 — CUÁL DE LAS UNIDADES DE LA LÁMINA es la de este aviso. Es la misma pregunta que E35
+-- resuelve para el LAB y se contesta con el MISMO algoritmo (`domain/units.py`), pero guardada
+-- acá: un aviso no es una propiedad, no puede tener una fila en `unit_selection` —esa tabla
+-- referencia `properties`— y crearle una propiedad sólo para poder guardar un clic arrastraría
+-- concesiones de pack y conteos de piloto que E17.0 se cuidó de no tocar.
+CREATE TABLE IF NOT EXISTS listing_unit_selection (
+  listing_id            TEXT PRIMARY KEY REFERENCES listings(listing_id) ON DELETE CASCADE,
+  status                TEXT NOT NULL,   -- RESOLVED | NEEDS_INTERNAL_REVIEW
+  source                TEXT,            -- AUTO | HUMAN_PICK | DECLARED
+  confidence            REAL,
+  candidate_count       INTEGER,
+  selected_candidate_id TEXT,
+  candidates            TEXT,
+  evidence_summary      TEXT,
+  reason_codes          TEXT,
+  updated_at            TEXT NOT NULL
+);
+-- E17.1 §4 — la revisión humana del DIAGNÓSTICO, para el dogfood de 20 avisos. No es un score
+-- nuevo: son tres juicios cerrados y un comentario. La pregunta que esta muestra contesta es si
+-- encontramos mejoras concretas que justifiquen contactar al corredor.
+CREATE TABLE IF NOT EXISTS listing_reviews (
+  listing_id       TEXT PRIMARY KEY REFERENCES listings(listing_id) ON DELETE CASCADE,
+  diagnosis        TEXT,   -- ACERTADO | PARCIAL | EQUIVOCADO
+  opportunity      TEXT,   -- HAY_ALGO_QUE_ESCALIMETRO_PUEDE_RESOLVER | NO_HAY_OPORTUNIDAD_CLARA
+  worth_contacting TEXT,   -- SI | NO
+  comment          TEXT DEFAULT '',
+  report_id        TEXT,   -- sobre QUÉ informe se emitió el juicio
+  created_at       TEXT NOT NULL,
+  updated_at       TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS ix_media_listing ON listing_media(listing_id, kind, sort_order);
 CREATE INDEX IF NOT EXISTS ix_reports_listing ON potential_reports(listing_id, created_at);

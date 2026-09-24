@@ -157,13 +157,19 @@ def _overrides_de_unidad(case_id: str) -> Dict:
     detrás del caso. El import es diferido porque `units` necesita OpenCV y este módulo se importa
     en rutas que no miran ninguna imagen."""
     pid = _property_of_case(case_id)
-    if not pid:
+    if pid:
+        from .domain import units                              # noqa: PLC0415
+        try:
+            return units.overrides_for(pid)
+        except units.UnitError:
+            return {}
+    # E17.1 — un caso puede venir de un AVISO en vez de una propiedad del LAB. La traducción al
+    # vocabulario del motor es la misma; lo único distinto es dónde está guardado el clic.
+    r = store.q1("SELECT listing_id FROM listings WHERE plan_case_id=?", (case_id,))
+    if not r:
         return {}
-    from .domain import units                                  # noqa: PLC0415
-    try:
-        return units.overrides_for(pid)
-    except units.UnitError:
-        return {}
+    from .domain.potential import plans                         # noqa: PLC0415
+    return plans.unit_overrides(r["listing_id"])
 
 
 def _tiene_seleccion_de_unidad(case_id: str) -> bool:

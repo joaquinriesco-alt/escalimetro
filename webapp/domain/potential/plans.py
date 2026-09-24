@@ -32,6 +32,8 @@ from __future__ import annotations
 import os
 from typing import Dict, Optional
 
+import json
+
 from ... import intake, store
 from . import listings
 
@@ -42,6 +44,7 @@ LOOKS_USABLE = "LOOKS_USABLE"
 LOOKS_MULTI_UNIT = "LOOKS_MULTI_UNIT"
 LOOKS_UNREADABLE = "LOOKS_UNREADABLE"
 NOT_ANALYZED = "NOT_ANALYZED"
+NEEDS_UNIT_PICK = "NEEDS_UNIT_PICK"
 USABLE = "USABLE"
 NEEDS_REVIEW = "NEEDS_REVIEW"
 NOT_USABLE = "NOT_USABLE"
@@ -52,6 +55,7 @@ STATUS_LABEL = {
     LOOKS_MULTI_UNIT: "hay un plano con varias unidades",
     LOOKS_UNREADABLE: "hay un plano pero no parece legible",
     NOT_ANALYZED: "el plano todavía no se analizó",
+    NEEDS_UNIT_PICK: "hay que indicar cuál de las unidades es la de este aviso",
     USABLE: "el motor leyó la planta completa",
     NEEDS_REVIEW: "el motor leyó la planta y algo necesita revisión",
     NOT_USABLE: "el motor no pudo leer la planta",
@@ -98,6 +102,111 @@ def inspect(listing_id: str) -> Dict:
                      "el dibujo es muy chico para leerlo con precisión" if chico else "")}
 
 
+# =================================================================================================
+# E17.1 — ¿CUÁL DE LAS UNIDADES DE LA LÁMINA ES LA DE ESTE AVISO?
+# =================================================================================================
+# Es la misma pregunta que E35 resolvió para el LAB, y se contesta con el MISMO algoritmo: se
+# importa `domain.units` y se llaman sus funciones puras. Acá no se reimplementa ni el modelo de
+# candidatos, ni el ranking, ni el dibujo del overlay, ni la traducción al vocabulario del motor.
+# Lo único propio es dónde se guarda el clic, porque un aviso no es una propiedad y no puede tener
+# una fila en `unit_selection` sin arrastrar consigo una `property` que nadie pidió.
+
+
+def resolve_units(listing_id: str) -> Dict:
+    """Analiza la lámina del aviso y guarda la decisión. Idempotente, y un reanálisis NO borra un
+    clic humano: la misma regla que protege la selección en el LAB."""
+    from .. import units                                       # noqa: PLC0415
+    ya = unit_state(listing_id)
+    if ya and ya.get("source") == units.HUMAN_PICK and ya["status"] == units.RESOLVED:
+        return ya
+    m = plan_media(listing_id)
+    if not m:
+        return {"status": units.NO_DRAWING, "candidates": [], "candidate_count": 0,
+                "source": None, "selected_candidate_id": None}
+    try:
+        d = units.analyze(listings.media_path(m))
+    except units.UnitError as e:
+        return {"status": units.NO_DRAWING, "candidates": [], "candidate_count": 0,
+                "source": None, "selected_candidate_id": None, "note": str(e)}
+    _save_units(listing_id, d)
+    return unit_state(listing_id)
+
+
+def pick_unit(listing_id: str, candidate_id: str) -> Dict:
+    """UN clic del operador. No se le pide ni un nombre, ni un id técnico, ni coordenadas."""
+    from .. import units                                       # noqa: PLC0415
+    d = unit_state(listing_id)
+    if not d or not d["candidates"]:
+        raise listings.ListingError("este aviso todavía no tiene candidatos analizados")
+    if candidate_id not in [c["candidate_id"] for c in d["candidates"]]:
+        raise listings.ListingError(f"candidato desconocido: {candidate_id}")
+    d.update({"status": units.RESOLVED, "source": units.HUMAN_PICK, "confidence": 1.0,
+              "selected_candidate_id": candidate_id, "reason_codes": ["HUMAN_PICK"],
+              "evidence_summary": f"elegido por una persona entre {len(d['candidates'])}"})
+    _save_units(listing_id, d)
+    return unit_state(listing_id)
+
+
+def _save_units(listing_id: str, d: Dict) -> None:
+    store.ex("INSERT INTO listing_unit_selection(listing_id, status, source, confidence, "
+             "candidate_count, selected_candidate_id, candidates, evidence_summary, reason_codes, "
+             "updated_at) VALUES (?,?,?,?,?,?,?,?,?,?) ON CONFLICT(listing_id) DO UPDATE SET "
+             "status=excluded.status, source=excluded.source, confidence=excluded.confidence, "
+             "candidate_count=excluded.candidate_count, "
+             "selected_candidate_id=excluded.selected_candidate_id, "
+             "candidates=excluded.candidates, evidence_summary=excluded.evidence_summary, "
+             "reason_codes=excluded.reason_codes, updated_at=excluded.updated_at",
+             (listing_id, d["status"], d.get("source"), d.get("confidence"),
+              d.get("candidate_count"), d.get("selected_candidate_id"),
+              json.dumps(d.get("candidates") or [], ensure_ascii=False),
+              d.get("evidence_summary") or "",
+              json.dumps(d.get("reason_codes") or [], ensure_ascii=False), store.now()))
+
+
+def unit_state(listing_id: str) -> Optional[Dict]:
+    r = store.q1("SELECT * FROM listing_unit_selection WHERE listing_id=?", (listing_id,))
+    if not r:
+        return None
+    d = dict(r)
+    d["candidates"] = store.js(d["candidates"], []) or []
+    d["reason_codes"] = store.js(d["reason_codes"], []) or []
+    return d
+
+
+def selected_unit(listing_id: str) -> Optional[Dict]:
+    from .. import units                                       # noqa: PLC0415
+    d = unit_state(listing_id)
+    if not d or d["status"] != units.RESOLVED or not d["selected_candidate_id"]:
+        return None
+    return next((c for c in d["candidates"]
+                 if c["candidate_id"] == d["selected_candidate_id"]), None)
+
+
+def unit_overrides(listing_id: str) -> Dict:
+    """Lo que la selección le dice al motor. La traducción la hace `units`, no este módulo."""
+    from .. import units                                       # noqa: PLC0415
+    return units.overrides_for_candidate(selected_unit(listing_id))
+
+
+def candidates_overlay(listing_id: str, out_path: str) -> Optional[str]:
+    """La lámina con los candidatos pintados. El dibujo lo hace `units.draw_candidates`, que es la
+    misma rutina que usa el LAB: dos paletas distintas harían que el número del plano dejara de
+    coincidir con el del botón el día que alguien toque una."""
+    from .. import units                                       # noqa: PLC0415
+    d = unit_state(listing_id)
+    m = plan_media(listing_id)
+    if not d or not d["candidates"] or not m:
+        return None
+    return units.draw_candidates(listings.media_path(m), d["candidates"], out_path)
+
+
+def needs_unit_pick(listing_id: str) -> bool:
+    """¿Hay que preguntar? Sólo cuando la lámina demarca varias unidades y nadie eligió todavía."""
+    from .. import units                                       # noqa: PLC0415
+    d = unit_state(listing_id)
+    return bool(d and d["status"] == units.NEEDS_INTERNAL_REVIEW)
+
+
 def ensure_case(listing_id: str) -> str:
     """Entrega el plano al pipeline EXISTENTE. Copia, no mueve: el archivo que subió el cliente es
     el original y no debe cambiar nunca."""
@@ -122,6 +231,16 @@ def analyze(listing_id: str) -> Dict:
     Lo que se lee de `shell_readiness` es exactamente lo que el motor publica; no se recalcula ni
     se reinterpreta. Si el motor dice que le falta confirmar algo, acá se dice `NEEDS_REVIEW` y se
     listan sus propias razones, sin traducirlas a un juicio nuestro."""
+    from .. import units                                       # noqa: PLC0415
+    # E17.1 §1 — primero la unidad. Correr el motor sobre una lámina multiunidad sin saber cuál es
+    # la de este aviso no falla de forma interesante: falla siempre, y además el intento anterior
+    # de E17.0 terminaba en "no pudimos leerlo" cuando el problema no era leerlo sino elegir.
+    sel = resolve_units(listing_id)
+    if sel and sel.get("status") == units.NEEDS_INTERNAL_REVIEW:
+        return {"status": NEEDS_UNIT_PICK, "label": STATUS_LABEL[NEEDS_UNIT_PICK],
+                "case_id": None, "analyzed": False, "ready": False, "pending": [],
+                "candidates": sel["candidates"],
+                "note": f"la lámina demarca {sel['candidate_count']} unidades"}
     case_id = ensure_case(listing_id)
     res = intake.analyze(case_id)
     fp = intake.load_floorplate(case_id)
@@ -151,10 +270,19 @@ def analyze(listing_id: str) -> Dict:
 def state(listing_id: str) -> Dict:
     """Lo que el producto necesita saber del plano: la mirada barata, más el resultado del motor
     si alguien ya lo pidió. Nunca corre el pipeline por su cuenta."""
+    from .. import units                                       # noqa: PLC0415
     l = listings.require(listing_id)
     base = inspect(listing_id)
     case_id = l["plan_case_id"]
     if not case_id:
+        # Sin caso todavía: si la lámina demarca varias unidades, lo que falta no es correr el
+        # motor sino elegir, y la pantalla tiene que poder decir eso en vez de ofrecer un botón
+        # que ya sabemos que va a fallar.
+        sel = unit_state(listing_id)
+        if sel and sel["status"] == units.NEEDS_INTERNAL_REVIEW:
+            return dict(base, status=NEEDS_UNIT_PICK, label=STATUS_LABEL[NEEDS_UNIT_PICK],
+                        candidates=sel["candidates"], analyzed=False,
+                        note=f"la lámina demarca {sel['candidate_count']} unidades")
         return base
     fp = intake.load_floorplate(case_id)
     if fp is None:
@@ -181,7 +309,8 @@ def capability(listing_id: str) -> Dict:
     st = state(listing_id)
     l = listings.require(listing_id)
     comercial = l["property_type"] in listings.COMMERCIAL
-    disponible = st["status"] in (LOOKS_USABLE, LOOKS_MULTI_UNIT, USABLE, NEEDS_REVIEW)
+    disponible = st["status"] in (LOOKS_USABLE, LOOKS_MULTI_UNIT, USABLE, NEEDS_REVIEW,
+                                  NEEDS_UNIT_PICK)
     return {
         # `has_plan` y `available` son distintos y los dos hacen falta: si el motor miró el plano
         # y no pudo leerlo, la capacidad NO está disponible, pero la sección tiene que seguir
@@ -190,6 +319,7 @@ def capability(listing_id: str) -> Dict:
         "has_plan": st["status"] != NO_PLAN,
         "available": disponible,
         "confirmed": st["status"] == USABLE,
+        "needs_pick": st["status"] == NEEDS_UNIT_PICK,
         "commercial": comercial,
         "plan": st,
         "headline": ("Detectamos un plano. Podemos demostrar cómo podría utilizarse este espacio."

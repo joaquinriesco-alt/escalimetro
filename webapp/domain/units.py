@@ -462,14 +462,17 @@ def pick(property_id: str, candidate_id: str) -> Dict:
 # =================================================================================================
 # entrega al motor
 # =================================================================================================
-def overrides_for(property_id: str) -> Dict:
-    """Lo que la selección aporta a `overrides.json`, en el vocabulario HITL que el motor ya
+def overrides_for_candidate(c: Optional[Dict]) -> Dict:
+    """Lo que UN candidato aporta a `overrides.json`, en el vocabulario HITL que el motor ya
     entiende. Ninguna clave nueva.
 
     `segmentation_params.mode` va explícito a propósito: sin él, `strategy_for` decidiría la
     estrategia según si el OCR encontró el número del título, que es la dependencia que E35 elimina.
-    Con él, la misma lámina se segmenta igual se llame como se llame la propiedad."""
-    c = selected(property_id)
+    Con él, la misma lámina se segmenta igual se llame como se llame la propiedad.
+
+    Es una función PURA sobre el candidato: no sabe de propiedades ni de avisos. E17.1 necesita la
+    misma traducción para una superficie que no tiene `property_id`, y tenerla dos veces sería
+    tener dos definiciones de cómo se le habla al motor."""
     if not c:
         return {}
     if c["geometry_evidence"]["kind"] == "WHOLE_DRAWING":
@@ -478,20 +481,27 @@ def overrides_for(property_id: str) -> Dict:
     return {"seed_points": [c["seed_point"]], "segmentation_params": {"mode": "color"}}
 
 
-def overlay(property_id: str, out_path: str) -> Optional[str]:
-    """La lámina con los candidatos pintados y numerados: es toda la interfaz de la pregunta.
+def overrides_for(property_id: str) -> Dict:
+    """La traducción anterior, para la selección guardada de una PROPIEDAD del LAB."""
+    return overrides_for_candidate(selected(property_id))
 
-    El operador no lee un id ni un nombre técnico; ve la planta y hace clic sobre la zona."""
+
+def draw_candidates(image_path: str, cands: List[Dict], out_path: str) -> Optional[str]:
+    """Pinta y numera los candidatos sobre la lámina. Función PURA sobre la imagen y la lista: no
+    sabe de dónde salieron ni quién los va a mirar.
+
+    Existe separada porque E17.1 hace la misma pregunta —«¿cuál de éstas es?»— sobre un aviso que
+    no tiene `property_id`. Dibujarlo dos veces habría dejado dos paletas que se desincronizan el
+    día que alguien toque una, y el número del plano dejaría de coincidir con el del botón."""
     import cv2                                                # noqa: PLC0415
     import numpy as np                                        # noqa: PLC0415
-    d = get(property_id)
-    if not d or not d["candidates"]:
+    if not cands:
         return None
-    img = cv2.imread(_case_image(d["case_id"]), cv2.IMREAD_COLOR)
+    img = cv2.imread(image_path, cv2.IMREAD_COLOR)
     if img is None:
         return None
     vis = img.copy()
-    for i, c in enumerate(d["candidates"]):
+    for i, c in enumerate(cands):
         col = PALETTE[i % len(PALETTE)]
         cont = (c.get("geometry_evidence") or {}).get("contour") or []
         if cont:
@@ -510,3 +520,13 @@ def overlay(property_id: str, out_path: str) -> Optional[str]:
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     cv2.imwrite(out_path, vis)
     return out_path
+
+
+def overlay(property_id: str, out_path: str) -> Optional[str]:
+    """La lámina con los candidatos de una PROPIEDAD del LAB pintados y numerados: es toda la
+    interfaz de la pregunta. El operador no lee un id ni un nombre técnico; ve la planta y hace
+    clic sobre la zona."""
+    d = get(property_id)
+    if not d or not d["candidates"]:
+        return None
+    return draw_candidates(_case_image(d["case_id"]), d["candidates"], out_path)
