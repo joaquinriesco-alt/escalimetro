@@ -460,8 +460,44 @@ CREATE TABLE IF NOT EXISTS listings (
   -- crea un caso con el mismo alta que usa el resto del sistema y se guarda su id.
   plan_case_id    TEXT REFERENCES cases(case_id) ON DELETE SET NULL,
   notes           TEXT DEFAULT '',
+  -- E17.2 — el link es el input principal. Lo que se pudo leer de la publicación, y con qué
+  -- suerte. `url_ingest_status` es HONESTO por diseño (§16): SUCCESS sólo si de verdad trajimos
+  -- datos y material; PARTIAL si trajimos algo; FAILED con su motivo si el portal no se dejó.
+  url_ingest_status        TEXT,   -- SUCCESS | PARTIAL | FAILED
+  url_ingest_reason        TEXT,
+  url_ingest_at            TEXT,
+  fields_extracted_count   INTEGER NOT NULL DEFAULT 0,
+  photos_extracted_count   INTEGER NOT NULL DEFAULT 0,
+  floorplans_detected_count INTEGER NOT NULL DEFAULT 0,
+  -- §4 — de dónde salió cada campo. JSON {campo: {value, source, confidence}}.
+  provenance      TEXT,
+  total_area_m2   REAL,
+  usable_area_m2  REAL,
+  broker          TEXT,
+  publication_id  TEXT,
+  floor           INTEGER,
+  age_years       INTEGER,
+  amenities       TEXT,
   created_at      TEXT NOT NULL,
   updated_at      TEXT NOT NULL
+);
+-- §2/§4 — la instantánea cruda de la adquisición, para poder auditar qué salió de la URL sin
+-- volver a pedirla. No se guarda el HTML entero: pesa megabytes y no aporta nada que no esté en
+-- los campos extraídos y en las capas que respondieron.
+CREATE TABLE IF NOT EXISTS listing_snapshots (
+  snapshot_id TEXT PRIMARY KEY,
+  listing_id  TEXT NOT NULL REFERENCES listings(listing_id) ON DELETE CASCADE,
+  url         TEXT NOT NULL,
+  final_url   TEXT,
+  status      INTEGER,
+  content_type TEXT,
+  size_bytes  INTEGER,
+  redirects   TEXT,
+  layers      TEXT,
+  image_urls  TEXT,
+  fields      TEXT,
+  error       TEXT,
+  created_at  TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS listing_media (
   media_id          TEXT PRIMARY KEY,
@@ -480,6 +516,11 @@ CREATE TABLE IF NOT EXISTS listing_media (
   -- punto aunque el analizador cambie después.
   analysis          TEXT,
   metadata          TEXT,
+  -- E17.2 §5/§6 — de qué URL salió y qué resultó ser. La clasificación se guarda con su evidencia
+  -- para poder revisarla sin volver a abrir el archivo.
+  source_url        TEXT,
+  classification    TEXT,   -- PHOTO | FLOORPLAN | MAP | LOGO | OTHER
+  classification_why TEXT,
   created_at        TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS potential_reports (
@@ -692,6 +733,25 @@ def init() -> None:
     if tiene_gold and "provenance" not in tiene_gold:
         conn.execute("ALTER TABLE gold_labels ADD COLUMN provenance TEXT NOT NULL "
                      "DEFAULT 'PROVISIONAL_DOGFOOD'")
+    # E17.2 — columnas nuevas sobre tablas que pueden existir desde E17.0/E17.1.
+    tiene_lst = {r["name"] for r in conn.execute("PRAGMA table_info(listings)").fetchall()}
+    if tiene_lst:
+        for col, tipo in (("url_ingest_status", "TEXT"), ("url_ingest_reason", "TEXT"),
+                          ("url_ingest_at", "TEXT"), ("provenance", "TEXT"),
+                          ("total_area_m2", "REAL"), ("usable_area_m2", "REAL"),
+                          ("broker", "TEXT"), ("publication_id", "TEXT"), ("floor", "INTEGER"),
+                          ("age_years", "INTEGER"), ("amenities", "TEXT")):
+            if col not in tiene_lst:
+                conn.execute(f"ALTER TABLE listings ADD COLUMN {col} {tipo}")
+        for col in ("fields_extracted_count", "photos_extracted_count",
+                    "floorplans_detected_count"):
+            if col not in tiene_lst:
+                conn.execute(f"ALTER TABLE listings ADD COLUMN {col} INTEGER NOT NULL DEFAULT 0")
+    tiene_med = {r["name"] for r in conn.execute("PRAGMA table_info(listing_media)").fetchall()}
+    if tiene_med:
+        for col in ("source_url", "classification", "classification_why"):
+            if col not in tiene_med:
+                conn.execute(f"ALTER TABLE listing_media ADD COLUMN {col} TEXT")
     tiene_inf = {r["name"] for r in conn.execute("PRAGMA table_info(ingest_inference)").fetchall()}
     if "review_reason" not in tiene_inf:
         conn.execute("ALTER TABLE ingest_inference ADD COLUMN review_reason TEXT")
