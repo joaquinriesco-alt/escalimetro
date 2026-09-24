@@ -37,6 +37,27 @@ CONCEPTUAL_VISUALIZATION = "CONCEPTUAL_VISUALIZATION"
 #: Y así se muestra en producto. Una sola frase, siempre la misma.
 DISCLOSURE = "Visualización referencial de potencial."
 
+#: =============================================================================================
+#: E17.1 §3 — QUÉ PODEMOS PRODUCIR HOY, DE VERDAD
+#: =============================================================================================
+#: Un hallazgo sólo puede presentarse como «Escalímetro puede resolverlo» si detrás hay algo que
+#: podemos entregar. Lo demás no se esconde: se dice con su estado y su motivo. Tres estados,
+#: porque dos mentirían por defecto en un sentido o en el otro.
+#:
+#:   AVAILABLE        se puede producir hoy desde esta pantalla.
+#:   PENDING_PROVIDER la capacidad está diseñada y bloqueada por E31.1: no hay proveedor de
+#:                    imagen aprobado. Se puede ofrecer como prueba interna, nunca como entrega.
+#:   NOT_BUILT        no existe implementación. Aparece como recomendación, no como oferta.
+AVAILABLE = "AVAILABLE"
+PENDING_PROVIDER = "PENDING_PROVIDER"
+NOT_BUILT = "NOT_BUILT"
+
+SUPPORT_LABEL = {
+    AVAILABLE: "Escalímetro puede resolverlo",
+    PENDING_PROVIDER: "disponible para prueba interna · pendiente de proveedor aprobado",
+    NOT_BUILT: "todavía no lo producimos",
+}
+
 #: Lo que NINGUNA intervención puede tocar. Es la regla de veracidad hecha dato.
 STRUCTURAL = ("muros", "ventanas", "puertas", "pilares", "dimensiones", "vistas por la ventana",
               "terrazas", "superficie")
@@ -50,6 +71,10 @@ CATALOG: Dict[str, Dict] = {
         "preserve": STRUCTURAL + ("mobiliario existente", "colores reales de materiales"),
         "may_change": ("exposición", "balance de blancos", "contraste", "corrección de perspectiva"),
         "auto_recommendable": True,
+        # No hay implementación de corrección de imagen en este repositorio. Podría escribirse en
+        # pocas líneas, pero mientras no exista no se puede ofrecer: un hallazgo que dice "podemos
+        # mejorarlo" sobre algo que nadie escribió es la definición de fingir una capacidad.
+        "support": NOT_BUILT,
     },
     COVER_SELECTION: {
         "label": "Elegir mejor la portada y el orden",
@@ -59,6 +84,9 @@ CATALOG: Dict[str, Dict] = {
         "preserve": STRUCTURAL + ("todas las fotos originales",),
         "may_change": ("qué foto va primera", "el orden", "qué fotos repetidas se ocultan"),
         "auto_recommendable": True,
+        # Es la única que se entrega hoy de punta a punta: elegir entre las fotos que ya existen,
+        # y esta misma pantalla lo hace.
+        "support": AVAILABLE,
     },
     VIRTUAL_STAGE: {
         "label": "Mostrar un uso posible del espacio",
@@ -68,6 +96,7 @@ CATALOG: Dict[str, Dict] = {
         "preserve": STRUCTURAL + ("terminaciones", "iluminación natural"),
         "may_change": ("mobiliario", "decoración", "textiles"),
         "auto_recommendable": True,
+        "support": PENDING_PROVIDER,
     },
     RENOVATION_VISUALIZATION: {
         "label": "Mostrar una remodelación referencial",
@@ -80,6 +109,7 @@ CATALOG: Dict[str, Dict] = {
         "auto_recommendable": False,
         "why_not_auto": "requiere reconocer el recinto y juzgar su estado; hoy eso lo decide una "
                         "persona",
+        "support": PENDING_PROVIDER,
     },
     SPACE_REIMAGINATION: {
         "label": "Mostrar usos posibles del inmueble",
@@ -89,6 +119,7 @@ CATALOG: Dict[str, Dict] = {
         "preserve": STRUCTURAL,
         "may_change": ("mobiliario", "equipamiento", "señalética referencial"),
         "auto_recommendable": True,
+        "support": PENDING_PROVIDER,
     },
     SPATIAL_LAYOUT: {
         "label": "Demostrar cabida",
@@ -99,6 +130,9 @@ CATALOG: Dict[str, Dict] = {
         "may_change": ("la distribución propuesta sobre la planta",),
         "auto_recommendable": True,
         "engine": "capacidad existente de análisis de planta y layout",
+        # El motor existe, corre y produce layouts desde E28. Es la capacidad más fuerte que
+        # tenemos y la única que nadie más puede copiar en una tarde.
+        "support": AVAILABLE,
     },
 }
 
@@ -129,3 +163,24 @@ def contract(code: str) -> Dict:
 
 def auto_recommendable(code: str) -> bool:
     return bool((CATALOG.get(code) or {}).get("auto_recommendable"))
+
+
+def support(code: str) -> str:
+    """Qué podemos entregar hoy para esta intervención."""
+    return (CATALOG.get(code) or {}).get("support", NOT_BUILT)
+
+
+def support_label(code: str) -> str:
+    return SUPPORT_LABEL[support(code)]
+
+
+def resolvable(code: Optional[str]) -> bool:
+    """¿Cuenta como «Escalímetro puede resolverlo»? Incluye lo pendiente de proveedor, porque la
+    capacidad existe y está diseñada —el encargo admite mostrarla como prueba interna— y excluye
+    lo que no está escrito, que no se puede ofrecer de ninguna forma."""
+    return bool(code) and support(code) in (AVAILABLE, PENDING_PROVIDER)
+
+
+def deliverable_today(code: Optional[str]) -> bool:
+    """El subconjunto más estricto: lo que se puede entregar ahora mismo, sin esperar a nadie."""
+    return bool(code) and support(code) == AVAILABLE

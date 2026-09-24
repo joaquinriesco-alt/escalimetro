@@ -51,6 +51,13 @@ DIMENSION_LABEL = {COVER: "Portada", VISUAL: "Presentación visual",
 
 HIGH, MEDIUM, LOW = "HIGH", "MEDIUM", "LOW"
 
+#: E17.1 §2 — las dos clases de hallazgo. El informe empieza por las oportunidades, no por el
+#: puntaje: ESCALÍMETRO no vende un número, vende lo que se puede hacer con esta publicación.
+RESOLVABLE = "RESOLVABLE"          # hay una intervención nuestra detrás
+RECOMMENDATION = "RECOMMENDATION"  # lo arregla quien publica; nosotros sólo lo señalamos
+KIND_LABEL = {RESOLVABLE: "Escalímetro puede resolverlo",
+              RECOMMENDATION: "Recomendación para la publicación"}
+
 #: Mínimos de conjunto. Como todo umbral de esta fase: escritos, visibles y sin calibrar.
 MIN_PHOTOS = 6
 IDEAL_PHOTOS = 12
@@ -412,9 +419,15 @@ def analyze(listing_id: str) -> Dict:
                         "applicable_weight": peso_aplicable, "criteria": evaluados}
     total = round(sum(d["score"] for d in por_dim.values()))
     hallazgos = _findings(por_dim, ctx)
+    resolubles = [f for f in hallazgos if f["kind"] == RESOLVABLE]
+    recomendaciones = [f for f in hallazgos if f["kind"] == RECOMMENDATION]
     return {"listing_id": listing_id, "score": int(total), "max_score": sum(DIMENSIONS.values()),
             "dimensions": por_dim, "findings": hallazgos,
-            "primary": hallazgos[0] if hallazgos else None,
+            "resolvable": resolubles, "recommendations": recomendaciones,
+            # La oportunidad PRINCIPAL es la mayor que podamos resolver nosotros. Si la mayor
+            # carencia del aviso es que no dice el precio, eso no es nuestra oportunidad: es su
+            # tarea. Encabezar con ella convertiría el informe en una lista de reproches.
+            "primary": (resolubles or hallazgos or [None])[0],
             "capabilities": _capabilities(ctx),
             "analyzer_version": ANALYZER_VERSION,
             "context": {"photos": len(ctx["photos"]), "conceptual": len(ctx["conceptual"]),
@@ -440,19 +453,31 @@ def _findings(por_dim: Dict, ctx: Dict) -> List[Dict]:
             inter = _intervention_for(code, ctx)
             if inter and not iv.auto_recommendable(inter):
                 inter = None
+            # E17.1 §2/§3 — dos clases de oportunidad, y la diferencia no es de tono: una la
+            # resolvemos nosotros y la otra la resuelve quien publica. Una intervención que no
+            # está escrita (`NOT_BUILT`) no convierte un hallazgo en oferta: pasa a recomendación,
+            # que es lo que honestamente es mientras nadie la implemente.
+            resoluble = iv.resolvable(inter)
             out.append({
                 "dimension": dim, "dimension_label": DIMENSION_LABEL[dim],
                 "code": code, "headline": HEADLINES.get(code, e["label"]),
                 "explanation": _explain(code, e, ctx),
                 "level": HIGH if perdidos >= 5 else (MEDIUM if perdidos >= 2 else LOW),
                 "evidence": e["measured"], "criterion_label": e["label"],
-                "intervention": inter,
-                "intervention_label": iv.label(inter) if inter else None,
+                "intervention": inter if resoluble else None,
+                "intervention_label": iv.label(inter) if resoluble else None,
+                "kind": RESOLVABLE if resoluble else RECOMMENDATION,
+                "support": iv.support(inter) if resoluble else None,
+                "support_label": iv.support_label(inter) if resoluble else None,
+                "deliverable_today": iv.deliverable_today(inter) if resoluble else False,
                 # HEURÍSTICO: los puntos que este criterio no está sumando hoy. No es una
                 # predicción de nada; es cuánto le falta a este criterio para estar completo.
                 "score_delta": perdidos,
             })
-    out.sort(key=lambda f: (-f["score_delta"], f["code"]))
+    # Primero lo que podemos resolver nosotros, y dentro de cada grupo por puntos. El orden del
+    # informe es una decisión de producto, no un artefacto del cálculo: quien lo lee tiene que ver
+    # antes lo que puede encargarnos que lo que tiene que arreglar solo.
+    out.sort(key=lambda f: (0 if f["kind"] == RESOLVABLE else 1, -f["score_delta"], f["code"]))
     for i, f in enumerate(out):
         f["rank"] = i
     return out
@@ -581,11 +606,13 @@ def run(listing_id: str) -> Dict:
     for f in r["findings"]:
         store.ex("INSERT INTO potential_findings(finding_id, report_id, listing_id, dimension, "
                  "code, level, headline, explanation, evidence, intervention, score_delta, "
-                 "media_id, rank, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                 "media_id, rank, kind, support, created_at) "
+                 "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                  ("pf_" + uuid.uuid4().hex[:12], rid, listing_id, f["dimension"], f["code"],
                   f["level"], f["headline"], f["explanation"],
                   json.dumps(f["evidence"], ensure_ascii=False), f["intervention"],
-                  f["score_delta"], f["evidence"].get("best_media_id"), f["rank"], store.now()))
+                  f["score_delta"], f["evidence"].get("best_media_id"), f["rank"],
+                  f["kind"], f["support"], store.now()))
     r["report_id"] = rid
     return r
 
@@ -606,6 +633,8 @@ def latest(listing_id: str) -> Optional[Dict]:
     d["capabilities_obj"] = store.js(d["capabilities"], {}) or {}
     d["findings"] = findings_of(d["report_id"])
     d["top_findings"] = d["findings"][:TOP_FINDINGS]
+    d["resolvable"] = [f for f in d["findings"] if f["kind"] == RESOLVABLE][:TOP_FINDINGS]
+    d["recommendations"] = [f for f in d["findings"] if f["kind"] == RECOMMENDATION][:TOP_FINDINGS]
     return d
 
 
@@ -616,6 +645,8 @@ def findings_of(report_id: str) -> List[Dict]:
         d = dict(r)
         d["evidence_obj"] = store.js(d["evidence"], {}) or {}
         d["intervention_label"] = iv.label(d["intervention"]) if d["intervention"] else None
+        d["support_label"] = iv.SUPPORT_LABEL.get(d["support"]) if d["support"] else None
+        d["deliverable_today"] = d["support"] == iv.AVAILABLE
         out.append(d)
     return out
 
