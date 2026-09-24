@@ -61,7 +61,10 @@ class ListingError(ValueError):
 # =================================================================================================
 CAMPOS = ("title", "property_type", "operation", "source_url", "location", "price", "currency",
           "area_m2", "bedrooms", "bathrooms", "parking", "storage", "orientation",
-          "common_expenses", "description", "notes")
+          "common_expenses", "description", "notes",
+          # E17.2 — lo que la extracción por capas sabe leer de una publicación real.
+          "total_area_m2", "usable_area_m2", "broker", "publication_id", "floor", "age_years",
+          "amenities")
 
 
 def _num(v, entero=False):
@@ -98,9 +101,9 @@ def update(listing_id: str, **campos) -> None:
     for k, v in campos.items():
         if k not in CAMPOS:
             continue
-        if k in ("price", "area_m2", "common_expenses"):
+        if k in ("price", "area_m2", "common_expenses", "total_area_m2", "usable_area_m2"):
             v = _num(v)
-        elif k in ("bedrooms", "bathrooms", "parking", "storage"):
+        elif k in ("bedrooms", "bathrooms", "parking", "storage", "floor", "age_years"):
             v = _num(v, entero=True)
         elif k == "property_type" and v not in PROPERTY_TYPES:
             raise ListingError(f"tipo de inmueble desconocido: {v}")
