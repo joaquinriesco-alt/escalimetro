@@ -111,11 +111,16 @@ def _listing(dom, **kw):
 # A — ENTRADA: pegar una publicación
 # ===================================================================================================
 def test_la_pantalla_inicial_pide_una_sola_cosa(client):
+    """E17.2 §1 — el LINK es el input principal. Arriba del pliegue: una pregunta, un campo y un
+    botón. La carga manual existe, colapsada, y deja de ser el camino."""
     html = client.get("/property/").get_data(as_text=True)
     assert "¿Cuánto potencial está dejando sin mostrar tu propiedad?" in html
-    assert "Analizar propiedad" in html
-    # una sola pregunta: nada de formulario largo por adelantado
-    assert html.count("<input") <= 2
+    assert "Pega el link de la publicación" in html
+    assert 'name="url"' in html and ">Analizar<" in html
+    i_url = html.index('name="url"')
+    i_manual = html.index("También puedes cargar archivos manualmente")
+    assert i_url < i_manual, "lo manual tiene que ir DESPUÉS del link"
+    assert "<details" in html.split("También puedes")[0][-120:], "y tiene que ir colapsado"
 
 
 def test_sin_url_el_flujo_sigue_igual(client, dom):

@@ -142,3 +142,70 @@ lee **543,0 m²** y escala 8,358 px/m, con `properties = 0` y `pack_grants = 0`.
 7. Después de elegir la unidad, el motor deja la planta en `NEEDS_REVIEW`: las compuertas de E35
    siguen pidiendo confirmación y esa pantalla vive en el LAB. Para demostrar cabida de verdad
    habría que confirmarlas, y eso todavía no está en `/property`.
+
+## 8.2 E17.2 — el link es el input
+
+**Pegar una URL basta.** El sistema trae datos, fotos y plano, y corre el análisis solo. La carga
+manual sigue existiendo, colapsada, y deja de ser el camino.
+
+### Extracción por capas, de menor a mayor fragilidad
+
+| capa | qué da | por qué en ese orden |
+|---|---|---|
+| **A.** JSON-LD (`schema.org`) | nombre, precio, moneda, id | el portal lo publica PARA ser leído |
+| **B.** Open Graph / `<meta>` | título, descripción, imagen | idem, para buscadores y redes |
+| **C.** estado embebido | 12 atributos y la galería completa | es el JSON del portal, no su CSS |
+| **D.** adaptador por dominio | *no hizo falta* | las tres anteriores alcanzaron |
+| **E.** navegador headless | **no construido** | ver abajo |
+
+Lo que **no** se hace es leer el DOM con selectores de clases. Un selector visual se rompe la
+semana que el portal cambia una hoja de estilos. Medido sobre una publicación real de Portal
+Inmobiliario: **18 campos y 29 fotos sin tocar una sola clase de CSS**.
+
+La capa E queda declarada y sin implementar: §3.E la admite sólo si lo estructurado no alcanza, y
+no fue el caso. Meter un navegador headless en el servidor «por si acaso» es infraestructura
+grande para un problema que hoy no existe.
+
+### SSRF: la superficie de riesgo real
+
+Pegar una URL hace que **el servidor** se conecte a donde diga esa URL. Desde adentro de una red
+el servidor alcanza lo que el atacante no: el endpoint de metadatos de nube (credenciales en texto
+plano), bases que escuchan en loopback, paneles internos.
+
+| defensa | ataque que cierra |
+|---|---|
+| sólo `http`/`https` | `file:///etc/passwd`, `gopher://` contra Redis, `data:` |
+| resolución previa de **todas** las IP | un nombre que resuelve a pública **y** a `127.0.0.1` |
+| redirecciones seguidas a mano, revalidando | `302` → `http://169.254.169.254` |
+| tope por bytes **leídos** | un `Content-Length` que miente |
+| tipo de contenido validado | un binario servido como página |
+
+Riesgo residual escrito en el código: *DNS rebinding* entre resolver y conectar. Cerrarlo exige
+conectar por IP con `Host` a mano, lo que rompe TLS con SNI. Para una URL que pega un operador
+interno la ventana es aceptable; para una superficie pública no lo sería.
+
+### Las fotos buenas no son un problema
+
+El informe sabía nombrar defectos y eso lo empujaba a encontrar uno siempre. Ahora guarda también
+**señales positivas** —`good_cover`, `good_exposure`, `good_verticals`, `sufficient_gallery`,
+`visual_presentation_strong`— y admite un tercer estado comercial:
+
+```
+RESOLVABLE_OPPORTUNITY   hay algo concreto que podemos producir
+RECOMMENDATION_ONLY      hay mejoras, pero hoy no las entregamos nosotros
+ALREADY_STRONG           el aviso ya presenta bien la propiedad
+```
+
+Rebajar una publicación buena para crear mercado arruinaría la única pregunta que la muestra
+contesta. **De las cuatro publicaciones reales del dogfood, las cuatro salieron `ALREADY_STRONG`
+con cero oportunidades resolubles** — y ninguna traía plano en la galería, así que
+`SPATIAL_LAYOUT`, nuestra capacidad más fuerte, nunca se activó. Ése es el hallazgo comercial de
+E17.2 y no se maquilla.
+
+### Clasificación de media
+
+`FLOORPLAN` se separa de `PHOTO` por una señal trivial de medir: un plano es tinta sobre papel.
+Medido sobre el material real del repositorio —planos 0.649–0.772 de blanco, fotos 0.000–0.243— el
+corte va en 0.45 con un margen amplio. `MAP` se clasifica **sólo por la URL**: un mapa estático se
+parece demasiado a una foto aérea como para separarlos con tres estadísticos, y adivinar mal
+significaría tirar una foto buena.
