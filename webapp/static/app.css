@@ -269,3 +269,36 @@ img.candidatos-img[src$=".svg"]{width:100%;max-width:640px}
 /* E36.1 — una etiqueta provisional tiene que verse como lo que es: de prueba, no evidencia. */
 .prov{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--work);
   border:1px solid var(--work);border-radius:999px;padding:1px 7px;margin-left:6px}
+
+/* ============================================================ E17.0 — POTENCIAL */
+.potential .hero{max-width:640px;margin:8vh auto;text-align:center}
+.potential .hero h1{font-size:28px;line-height:1.25;margin-bottom:6px}
+.pegar{display:flex;gap:8px;margin:22px 0 10px}
+.pegar input{flex:1;padding:12px 14px;border:1px solid var(--line);border-radius:8px;font:inherit}
+.scorecard{display:flex;gap:22px;align-items:center;margin:10px 0 22px}
+.scorecard .score{display:flex;align-items:baseline;gap:4px}
+.scorecard .score b{font-size:52px;line-height:1}
+.scorecard .score span{color:var(--mut)}
+.scorecard h1{font-size:20px;margin:0 0 4px}
+table.dims td.bar{width:45%}
+table.dims td.bar i{display:block;height:8px;border-radius:4px;background:var(--ink)}
+.finding{border:1px solid var(--line);border-left-width:4px;border-radius:8px;padding:12px 14px;
+  margin:10px 0}
+/* El titular de un hallazgo es una frase, no un rótulo: hereda el `h3` en mayúsculas de la hoja
+   y en mayúsculas se lee como un grito, justo donde hay que explicar algo con calma. */
+.finding h3{margin:0 0 4px;font-size:16px;text-transform:none;letter-spacing:0;color:var(--ink)}
+.finding.high{border-left-color:var(--acc)}
+.finding.medium{border-left-color:var(--work)}
+.finding.low{border-left-color:var(--line)}
+.fotos{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0}
+.fotos figure{margin:0;width:180px}
+.fotos img{width:100%;height:120px;object-fit:cover;border-radius:6px;border:1px solid var(--line)}
+.fotos figure.portada img{border:2px solid var(--ink)}
+.fotos figcaption{display:flex;align-items:center;gap:6px;margin-top:4px}
+form.datos{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;
+  align-items:end}
+form.datos label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mut)}
+form.datos label.ancho{grid-column:1/-1}
+form.datos input,form.datos select,form.datos textarea{padding:8px 10px;border:1px solid var(--line);
+  border-radius:6px;font:inherit;color:var(--ink)}
+form.datos button{grid-column:1/-1;justify-self:start}

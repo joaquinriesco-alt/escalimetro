@@ -16,7 +16,7 @@ from flask import (Flask, abort, jsonify, redirect, render_template, request,
                    send_file, send_from_directory, url_for)
 
 from . import (auth, briefs as briefmod, customer, detected as det, engine, intake, lab,
-               staging_ui, store)
+               potential, staging_ui, store)
 from .domain import (assets as dassets, entitlements as dent, fits as dfits,
                      floorplan as dfloorplan, packs as dpacks, presets as dpresets,
                      properties as dproperties, visual as dvisual)
@@ -50,6 +50,9 @@ def create_app() -> Flask:
     app.register_blueprint(customer.bp)
     app.register_blueprint(staging_ui.bp)
     app.register_blueprint(lab.bp)
+    # E17.0 — superficie NUEVA y aislada. No reemplaza el LAB ni comparte su navegación: son dos
+    # productos sobre preguntas distintas y el encargo pide explícitamente no mezclarlos todavía.
+    app.register_blueprint(potential.bp)
     app.jinja_env.filters["from_json"] = lambda v: store.js(v, {}) or {}
     if os.environ.get("ESCALIMETRO_MIGRATE", "1") == "1":
         from . import migrate                                 # noqa: PLC0415

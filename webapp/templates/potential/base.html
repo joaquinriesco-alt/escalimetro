@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}Escalímetro{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head><body class="lab potential">
+<header class="top simple">
+  <a class="brand" href="{{ url_for('potential.home') }}">ESCALÍMETRO<span>potencial</span></a>
+</header>
+<main>
+{% if errores %}<div class="errores">{% for e in errores %}<p>{{ e }}</p>{% endfor %}</div>{% endif %}
+{% block body %}{% endblock %}
+</main>
+<footer>El puntaje mide qué tan bien la publicación muestra el potencial del inmueble.
+  No es una predicción de venta.</footer>
+</body></html>

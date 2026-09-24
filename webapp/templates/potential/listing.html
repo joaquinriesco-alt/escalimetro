@@ -1,0 +1,162 @@
+{% extends "potential/base.html" %}{% block title %}{{ l.title or 'Propiedad' }}{% endblock %}
+{% block body %}
+<p class="crumb"><a href="{{ url_for('potential.home') }}">Potencial</a> /
+  {{ l.title or 'Sin título' }}</p>
+
+{# ===================================================== EL INFORME #}
+<section id="informe">
+{% if report %}
+  <div class="scorecard">
+    <div class="score"><b>{{ report.score }}</b><span>/ {{ report.max_score }}</span></div>
+    <div>
+      <h1>{% if report.score < 60 %}Esta publicación está dejando potencial sin mostrar.
+          {% else %}Esta publicación muestra buena parte del potencial.{% endif %}</h1>
+      <p class="sub">El puntaje mide <b>qué tan bien la publicación muestra el potencial</b> del
+        inmueble. No es una probabilidad de venta.</p>
+    </div>
+  </div>
+
+  <table class="detect dims"><tbody>
+  {% for code, d in report.dimensions_obj.items() %}
+    <tr><td><b>{{ d.label }}</b></td>
+        <td class="bar"><i style="width:{{ (100 * d.score / d.max)|round(0, 'floor') }}%"></i></td>
+        <td class="mono">{{ d.score }} / {{ d.max }}</td></tr>
+  {% endfor %}
+  </tbody></table>
+
+  {% if report.top_findings %}
+  <h2>Principales oportunidades</h2>
+  {% for f in report.top_findings %}
+    <article class="finding {{ f.level|lower }}">
+      <h3>{{ f.headline }}</h3>
+      <p>{{ f.explanation }}</p>
+      <p class="sub">{{ f.dimension }} · recupera hasta <b>{{ f.score_delta }}</b> puntos
+        <span class="hint">(heurístico: es lo que le falta a este criterio, no una predicción)</span></p>
+      {% if f.intervention %}
+        <form method="post" action="{{ url_for('potential.demo', listing_id=l.listing_id) }}"
+              class="inline">
+          <input type="hidden" name="intervention" value="{{ f.intervention }}">
+          <button class="sec">{{ f.intervention_label }}</button>
+        </form>
+        <span class="sub">{{ catalog[f.intervention].what }}</span>
+      {% endif %}
+    </article>
+  {% endfor %}
+  {% else %}
+    <p class="sub">No encontramos oportunidades claras con el material cargado.</p>
+  {% endif %}
+
+  <details><summary>Ver de dónde sale cada punto</summary>
+    <p class="sub">Cada criterio con su medición, su peso y sus puntos. También en
+      <a href="{{ url_for('potential.report_json', listing_id=l.listing_id) }}">JSON</a>.</p>
+    {% for code, d in report.dimensions_obj.items() %}
+      <h4>{{ d.label }} — {{ d.score }} / {{ d.max }}</h4>
+      <table class="detect"><tbody>
+      {% for c in d.criteria %}
+        <tr><td class="sub">{{ c.label }}</td>
+            <td class="mono">{% if c.applies %}{{ c.points }} / {{ c.max_points }}
+                {% else %}no aplica{% endif %}</td>
+            <td class="sub mono">{{ c.measured }}</td>
+            <td class="sub">{{ c.why }}</td></tr>
+      {% endfor %}
+      </tbody></table>
+    {% endfor %}
+  </details>
+{% else %}
+  <p class="sub">Todavía no analizamos esta propiedad.</p>
+{% endif %}
+  <form method="post" action="{{ url_for('potential.reanalizar', listing_id=l.listing_id) }}"
+        class="inline"><button class="sec">Volver a analizar</button></form>
+</section>
+
+{# ===================================================== CAPACIDAD ESPACIAL #}
+{% if spatial.has_plan %}
+<section id="espacial" class="ambigua">
+  <h2>{{ spatial.headline }}</h2>
+  {% if plan.analyzed and plan.status == 'NOT_USABLE' %}
+    <p>El motor miró el plano y no pudo leerlo: {{ plan.note }}.</p>
+    <p class="hint">Con la unidad indicada sobre la lámina el motor sí puede leerla. Esa
+      herramienta existe y todavía no está conectada a esta pantalla.</p>
+  {% elif plan.analyzed %}
+    <p class="sub">{{ plan.label }}</p>
+    <table class="detect"><tbody>
+      <tr><td class="sub">Superficie leída del plano</td>
+          <td class="mono">{{ plan.area_m2|round(1) if plan.area_m2 else '—' }} m²</td></tr>
+      <tr><td class="sub">El motor la da por lista</td>
+          <td class="mono">{{ 'sí' if plan.ready else 'falta confirmar ' ~ (plan.pending|join(', ')) }}</td></tr>
+    </tbody></table>
+  {% else %}
+    <p class="sub">{{ plan.label }}{% if plan.note %} — {{ plan.note }}{% endif %}</p>
+    <form method="post" action="{{ url_for('potential.plano_analizar', listing_id=l.listing_id) }}"
+          class="inline"><button>Analizar el plano</button></form>
+    <p class="hint">Usa el motor de plantas que ya existe. Tarda unos segundos.</p>
+  {% endif %}
+</section>
+{% endif %}
+
+{# ===================================================== MATERIAL #}
+<section id="material">
+<h2>Material</h2>
+{% if photos %}
+<div class="fotos">
+{% for p in photos %}
+  <figure class="{{ 'portada' if l.cover_media_id == p.media_id }}">
+    <img src="{{ url_for('potential.media', listing_id=l.listing_id, media_id=p.media_id) }}" alt="">
+    <figcaption>
+      <form method="post" action="{{ url_for('potential.portada', listing_id=l.listing_id) }}"
+            class="inline">
+        <input type="hidden" name="media_id" value="{{ p.media_id }}">
+        <button class="chip {{ 'on' if l.cover_media_id == p.media_id }}">portada</button>
+      </form>
+      <span class="sub mono">{{ p.width_px }}×{{ p.height_px }}</span>
+    </figcaption>
+  </figure>
+{% endfor %}
+</div>
+{% endif %}
+<form method="post" action="{{ url_for('potential.material', listing_id=l.listing_id) }}"
+      enctype="multipart/form-data" class="upload">
+  <label>Fotos <input type="file" name="photos" accept=".png,.jpg,.jpeg" multiple></label>
+  <label>Plano (opcional) <input type="file" name="plan" accept=".png,.jpg,.jpeg,.pdf"></label>
+  <button type="submit">Agregar material</button>
+</form>
+</section>
+
+{# ===================================================== DATOS #}
+<section id="datos">
+<h2>Datos de la propiedad</h2>
+<form method="post" action="{{ url_for('potential.datos', listing_id=l.listing_id) }}" class="datos">
+  <label>Título <input name="title" value="{{ l.title or '' }}"></label>
+  <label>Tipo <select name="property_type">
+    {% for t in types %}<option value="{{ t }}" {{ 'selected' if l.property_type == t }}>
+      {{ type_label[t] }}</option>{% endfor %}</select></label>
+  <label>Ubicación <input name="location" value="{{ l.location or '' }}"></label>
+  <label>m² <input name="area_m2" value="{{ l.area_m2 or '' }}"></label>
+  <label>Precio <input name="price" value="{{ l.price or '' }}"></label>
+  <label>Dormitorios <input name="bedrooms" value="{{ l.bedrooms if l.bedrooms is not none else '' }}"></label>
+  <label>Baños <input name="bathrooms" value="{{ l.bathrooms if l.bathrooms is not none else '' }}"></label>
+  <label>Estacionamientos <input name="parking" value="{{ l.parking if l.parking is not none else '' }}"></label>
+  <label class="ancho">Descripción <textarea name="description" rows="4">{{ l.description or '' }}</textarea></label>
+  <button type="submit">Guardar y volver a analizar</button>
+</form>
+{% if l.source_url %}<p class="sub">Publicación: <a href="{{ l.source_url }}" rel="noopener"
+  target="_blank">{{ l.source_url[:80] }}</a></p>{% endif %}
+</section>
+
+{# ===================================================== DEMOS #}
+{% if demos_list %}
+<section id="demos">
+<h2>Demostraciones</h2>
+<table class="detect"><tbody>
+{% for d in demos_list %}
+  <tr><td><b>{{ d.intervention_label }}</b></td>
+      <td>{{ d.status_label }}</td>
+      <td class="sub">{% if d.status == 'NOT_AVAILABLE' %}{{ d.notes_obj.note }}{% endif %}</td>
+      <td class="sub">{% if d.visualization_class == 'CONCEPTUAL_VISUALIZATION' %}{{ disclosure }}{% endif %}</td></tr>
+{% endfor %}
+</tbody></table>
+<p class="hint">Toda visualización preserva el inmueble real: no se mueven ventanas, no se borran
+  pilares, no se agrandan espacios ni se inventan vistas.</p>
+</section>
+{% endif %}
+{% endblock %}
