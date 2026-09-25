@@ -533,3 +533,51 @@ def test_no_hay_navegador_headless_escondido(dom):
     assert dom["extract"].BROWSER_FALLBACK_AVAILABLE is False
     with pytest.raises(NotImplementedError):
         dom["extract"].browser_fetch("https://x.cl")
+
+
+# ===================================================================================================
+# E17.2 — NORMALIZACIÓN DE FORMATO (bug encontrado corriendo el gate con URLs reales)
+# ===================================================================================================
+def test_un_plano_en_webp_llega_al_motor(client, dom, monkeypatch, tmp_path):
+    """Los portales sirven WebP. El alta de casos del motor rechaza `.webp` y el lector de
+    dimensiones de `domain.assets` tampoco lo abre, así que un plano en WebP se detectaba bien y
+    después no podía analizarse: `IntakeError: Formato no aceptado: .webp`.
+
+    Se convierte en la FRONTERA DE ENTRADA y no ampliando el contrato del motor: lo que baja de
+    Internet se normaliza al entrar, y aguas adentro siguen siendo tres formatos y no cuatro."""
+    import cv2
+    with open(PLANO_403, "rb") as fh:
+        png = fh.read()
+    import numpy as np
+    img = cv2.imdecode(np.frombuffer(png, np.uint8), cv2.IMREAD_COLOR)
+    ok, buf = cv2.imencode(".webp", img)
+    assert ok, "hace falta soporte de webp en OpenCV para este test"
+    webp = buf.tobytes()
+
+    monkeypatch.setattr(dom["fetcher"], "fetch_page", lambda u, **k: {
+        "url": u, "final_url": u, "redirects": [], "ips": ["93.184.216.34"], "status": 200,
+        "content_type": "text/html", "html": HTML_AVISO, "size": 10})
+    monkeypatch.setattr(dom["fetcher"], "fetch_image", lambda u, **k: {
+        "url": u, "final_url": u, "redirects": [], "ips": ["93.184.216.34"], "status": 200,
+        "content_type": "image/webp", "bytes": webp, "size": len(webp)})
+
+    r = dom["urlingest"].ingest_url("https://portal.cl/webp")
+    m = dom["plans"].plan_media(r["listing_id"])
+    assert m is not None, "el plano en webp tiene que detectarse"
+    assert m["mime_type"] == "image/png", "y guardarse ya normalizado"
+    assert m["original_filename"].endswith(".png")
+    assert m["width_px"] and m["height_px"], "las dimensiones se leen recién como PNG"
+    # y ahora sí puede entrar al pipeline del motor, que es lo que el bug impedía
+    assert dom["plans"].ensure_case(r["listing_id"])
+
+
+def test_lo_que_no_es_webp_no_se_toca(dom):
+    """Reconvertir un JPG a PNG lo engordaría sin ganar nada. Sólo se normaliza lo que hace falta."""
+    datos, tipo = dom["urlingest"]._to_png_if_needed(b"\xff\xd8\xff-falso", "image/jpeg")
+    assert tipo == "image/jpeg" and datos == b"\xff\xd8\xff-falso"
+
+
+def test_un_webp_ilegible_no_rompe_la_galeria(dom):
+    """Un formato raro es peor como excepción que como imagen que después nadie clasifica."""
+    datos, tipo = dom["urlingest"]._to_png_if_needed(b"no soy una imagen", "image/webp")
+    assert datos == b"no soy una imagen" and tipo == "image/webp"

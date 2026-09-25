@@ -142,13 +142,18 @@ def _download_media(listing_id: str, urls: List[str], base: str) -> tuple:
             r = fetcher.fetch_image(u)
         except fetcher.FetchError:
             continue                                           # una imagen caída no frena la galería
-        ext = {"image/jpeg": ".jpg", "image/jpg": ".jpg", "image/png": ".png",
-               "image/webp": ".webp"}.get(r["content_type"], ".jpg")
+        # E17.2 — NORMALIZACIÓN A PNG. Los portales sirven WebP, que ni el pipeline de planos
+        # ni el lector de dimensiones de `domain.assets` aceptan: un plano en WebP se detectaba
+        # bien y después no podía llegar al motor. Se convierte acá, en la frontera de entrada,
+        # en vez de ampliar el contrato de formatos del motor: lo que baja de Internet se
+        # normaliza al entrar, y aguas adentro sigue habiendo tres formatos y no cuatro.
+        cuerpo, tipo = _to_png_if_needed(r["bytes"], r["content_type"])
+        ext = {"image/jpeg": ".jpg", "image/jpg": ".jpg", "image/png": ".png"}.get(tipo, ".jpg")
         tmp = os.path.join(store.listing_dir(listing_id), "tmp")
         os.makedirs(tmp, exist_ok=True)
         ruta = os.path.join(tmp, uuid.uuid4().hex + ext)
         with open(ruta, "wb") as fh:
-            fh.write(r["bytes"])
+            fh.write(cuerpo)
         try:
             cls = classify.classify(ruta, u)
             if cls["kind"] == classify.FLOORPLAN:
@@ -159,13 +164,15 @@ def _download_media(listing_id: str, urls: List[str], base: str) -> tuple:
                 os.remove(ruta)                                # logos y mapas no se guardan
                 continue
             import hashlib                                     # noqa: PLC0415
-            sha = hashlib.sha256(r["bytes"]).hexdigest()
+            sha = hashlib.sha256(cuerpo).hexdigest()
             if sha in ya:
                 os.remove(ruta)
                 continue
             ya.add(sha)
-            mid = listings.add_media_bytes(listing_id, kind, os.path.basename(u.split("?")[0]),
-                                           r["bytes"], r["content_type"])
+            nombre = os.path.basename(u.split("?")[0])
+            if not nombre.lower().endswith(ext):
+                nombre = os.path.splitext(nombre)[0] + ext
+            mid = listings.add_media_bytes(listing_id, kind, nombre, cuerpo, tipo)
             store.ex("UPDATE listing_media SET source_url=?, classification=?, "
                      "classification_why=? WHERE media_id=?",
                      (u, cls["kind"], cls["why"], mid))
@@ -176,6 +183,27 @@ def _download_media(listing_id: str, urls: List[str], base: str) -> tuple:
     if fotos and not (listings.get(listing_id) or {}).get("cover_media_id"):
         listings.set_cover(listing_id, fotos[0])               # la primera de la galería es la portada del aviso
     return fotos, planos
+
+
+def _to_png_if_needed(blob: bytes, content_type: str) -> tuple:
+    """WebP → PNG. El resto pasa sin tocar.
+
+    No es una preferencia estética: el alta de casos del motor rechaza `.webp` y el lector de
+    dimensiones de `domain.assets` tampoco lo abre, así que un plano en WebP quedaba detectado y
+    sin poder analizarse. Si la conversión falla se devuelve el original: un formato raro es peor
+    como excepción que como imagen que después nadie clasifica."""
+    if content_type not in ("image/webp",):
+        return blob, content_type
+    try:
+        import cv2                                             # noqa: PLC0415
+        import numpy as np                                     # noqa: PLC0415
+        img = cv2.imdecode(np.frombuffer(blob, np.uint8), cv2.IMREAD_COLOR)
+        if img is None:
+            return blob, content_type
+        ok, buf = cv2.imencode(".png", img)
+        return (buf.tobytes(), "image/png") if ok else (blob, content_type)
+    except Exception:                                          # noqa: BLE001
+        return blob, content_type
 
 
 def _snapshot(listing_id: str, url: str, page: Optional[Dict] = None,
