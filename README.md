@@ -1,5 +1,9 @@
 # Escalímetro — Laboratorio de Normalización (ETAPA 1)
 
+> **Estado actual del proyecto:** [`docs/ai-development/CURRENT_STATE.md`](docs/ai-development/CURRENT_STATE.md) · **Doctrina:** [`docs/ai-development/PRODUCT_DOCTRINE.md`](docs/ai-development/PRODUCT_DOCTRINE.md)
+>
+> Lo que sigue describe la ETAPA 1 del motor y se conserva como historia. El core vigente es CREAR PLANO + MEJORAR PLANO (D-001).
+
 JPG/PDF de una planta comercial → geometría estructurada (`Floorplate JSON`) → Planta Escalímetro (SVG).
 Nada se dibuja "a mano alzada" ni con generación de imágenes: toda salida proviene de la máscara
 segmentada sobre la imagen real, con `confidence` y `provenance` por elemento.

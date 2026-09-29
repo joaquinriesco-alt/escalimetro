@@ -1,5 +1,7 @@
 # ESCALÍMETRO V1 — ALCANCE DE PRODUCTO
 
+> **SUPERSEDED BY D-001** ([`docs/ai-development/DECISIONS.md`](ai-development/DECISIONS.md)). El core ya no es «alternativas de layout»: es CREAR PLANO + MEJORAR PLANO, y los layouts pasan a ser una aplicación. Se conserva como historia.
+
 > **La promesa:** *"Dame una planta libre y tu programa; te devuelvo alternativas de layout en segundos."*
 >
 > V1 **no** es "IA que entiende cualquier plano".

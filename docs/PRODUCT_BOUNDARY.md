@@ -1,5 +1,7 @@
 # Límite de producto — Escalímetro
 
+> **SUPERSEDED BY D-001** ([`docs/ai-development/DECISIONS.md`](ai-development/DECISIONS.md)). ESCALÍMETRO ya no se define como motor de pre-diseño / test-fit: el core es CREAR PLANO + MEJORAR PLANO. Se conserva como historia.
+
 Escalímetro es un motor de **pre-diseño / factibilidad / test-fit**.
 
 > Escalímetro termina donde empieza el proyecto de arquitectura.
