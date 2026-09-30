@@ -13,3 +13,11 @@ acortó la prosa de cada respuesta y se conservaron **todas** las calificaciones
 hallazgos, con su numeración. Son salida de un modelo: su valor es mostrar qué entiende alguien que
 no estuvo en la conversación, no que tenga razón en todo. Qué se corrigió a partir de cada una está en
 [`reports/M01_REPORT.md`](../../reports/M01_REPORT.md) §Evidencia.
+
+**Nota de M01.1:** las transcripciones repiten «`main` en E16.1, 107 commits atrás» porque eso decía
+`CURRENT_STATE.md` cuando se hicieron. Era falso —ver [`reports/M01.1_REPORT.md`](../../reports/M01.1_REPORT.md)—;
+se dejan como están porque registran lo que el agente leyó.
+
+La pasada 1, además, se contradice: su encabezado dice 7 / 4 / 1 y sus calificaciones por pregunta
+suman 8 / 3 / 1. La salida original no está en el repo y no se pudo recuperar; «se conservaron
+todas las calificaciones» no se puede sostener para esa pasada.

@@ -1,20 +1,32 @@
 # M01 REPORT
 
+> **Corregido en M01.1 (2026-09-30).** Este REPORT y `CURRENT_STATE.md` declararon `main` en E16.1
+> (`64fd9c5`, 2026-09-04), «107 commits atrás». Era falso: esa es la rama `main` **local**, trece
+> commits detrás de GitHub. En GitHub `main` está en E16.12 (`c6de3f9`, 2026-09-08) y
+> `m01_ai_handoff` va 95 commits delante y 0 detrás. Se corrigieron el Status, el criterio 2, la
+> limitación 2 y DR-1; la limitación 1 quedó superada por D-010. La auditoría de M01.1 encontró
+> además errores menores que también se corrigieron acá: la cuenta de decisiones, el precio de E17
+> en DR-2 —no estaba en ninguna rama: lo publicó este REPORT—, el alcance de la medición citada
+> en DR-3, dos filas de la tabla de la pasada 1, y el riesgo de Railway en DR-1. Causa y evidencia
+> en [`M01.1_REPORT.md`](M01.1_REPORT.md).
+
 ## Status
 
-**PASS** — con 7 decisiones pendientes para Joaquín (DR-1 a DR-7) más el público objetivo, que la
-doctrina no define. Ninguna bloquea el uso del sistema.
+**PARTIAL** — entregado como PASS, pero el criterio 2 no se cumplía: un hecho de
+`CURRENT_STATE.md`, el estado de `main`, era falso. M01.1 lo corrige. Quedan además 7 decisiones
+pendientes para Joaquín (DR-1 a DR-7) y el público objetivo, que la doctrina no define. Ninguna
+bloquea el uso del sistema.
 
 ## Qué cambió
 
 El repo pasa a ser el canal entre ChatGPT y Claude. Antes no existía **ningún** mecanismo: ni
 `CLAUDE.md`, ni `.github/`, ni issues, ni PRs, ni carpetas de tareas o reportes. Los reportes vivían
-sólo en el chat; los `docs/E*.md` guardaban el razonamiento de diseño de cada fase, pero no su
-estado, sus tests ni su resultado.
+sólo en el chat; los `docs/E*.md` guardaban el razonamiento de diseño de cada fase, y su estado,
+tests y resultado sólo a veces.
 
 - **`CLAUDE.md`** — Claude Code lo carga solo al abrir el repo. Es la única pieza que automatiza
-  transporte sin infraestructura: la doctrina y el protocolo llegan a cada sesión sin que nadie los
-  pegue.
+  transporte sin infraestructura: llega a cada sesión sin que nadie lo pegue, con un resumen del
+  core y los roles, y lleva a la doctrina y al protocolo, que el agente tiene que abrir.
 - **`docs/ai-development/`** — doctrina, estado, protocolo y decisiones.
 - **`tasks/` y `reports/`** — con M01 como primer ciclo real.
 - **`tests/test_ai_handoff.py`** — impide que el sistema se desincronice en silencio.
@@ -30,10 +42,11 @@ CLAUDE.md                                       nuevo
 docs/ai-development/PRODUCT_DOCTRINE.md         nuevo
 docs/ai-development/CURRENT_STATE.md            nuevo
 docs/ai-development/DEVELOPMENT_PROTOCOL.md     nuevo
-docs/ai-development/DECISIONS.md                nuevo · D-001 a D-008
+docs/ai-development/DECISIONS.md                nuevo · D-001 a D-009
 tasks/M01.md                                    nuevo
 reports/M01_REPORT.md                           nuevo
 tests/test_ai_handoff.py                        nuevo
+experiments/M01/                                nuevo · transcripciones de la reconstrucción
 README.md · docs/PRODUCT_V1_SCOPE.md · docs/PRODUCT_BOUNDARY.md   aviso de 1–2 líneas
 ```
 
@@ -51,7 +64,8 @@ Los 2 fallos son preexistentes desde E34 (listados en `CURRENT_STATE.md`).
 ## Acceptance criteria
 
 1. **PASS** — doctrina persistida con el core y los roles: `PRODUCT_DOCTRINE.md`, D-001, D-002.
-2. **PASS** — `CURRENT_STATE.md` verificado; cada hecho se chequeó contra el repo.
+2. **FAIL al entregar, corregido en M01.1** — `CURRENT_STATE.md` se verificó contra el repo local,
+   y las ramas no se verificaron contra GitHub: el estado de `main` era falso.
 3. **PASS** — formatos de TASK, REPORT y `DECISION_REQUIRED` en `DEVELOPMENT_PROTOCOL.md` §6–§8.
 4. **PASS** — `DECISIONS.md` con 9 decisiones, cada una con procedencia citable dentro del repo.
    La de D-001–D-004 y D-009 termina en `tasks/M01.md §Fuente`, un resumen redactado por Claude
@@ -72,7 +86,7 @@ y `tasks/M01.md`, y respondió las 12 preguntas de M01.
 
 | pasada | leyó | respondidas | parciales | sin respuesta |
 |---|---|---|---|---|
-| 1 | docs canónicos, antes de las correcciones | 7 | 4 | 1 |
+| 1 | docs canónicos, antes de las correcciones | 7 (8) | 4 (3) | 1 |
 | 2 | docs canónicos + este REPORT, después de corregir | 11 | 1 | 0 |
 
 La pasada 1 encontró defectos reales, y se corrigieron antes de entregar:
@@ -87,12 +101,17 @@ La pasada 1 encontró defectos reales, y se corrigieron antes de entregar:
 | faltaban decisiones: BFL, producción | agregadas a pendientes y bloqueos |
 | «1/10 planos» y «7 provisionales» no se distinguían | aclarado: 1 plano con 7 etiquetas |
 | términos sin definir | glosario en `CURRENT_STATE.md` |
-| `CURRENT_STATE` afirmaba el público objetivo | se quitó: la doctrina no lo define; es decisión de Joaquín |
+| `CURRENT_STATE` afirmaba el público objetivo | se quitó: la doctrina no lo define; es decisión de Joaquín. *Nota M01.1: este hallazgo no figura en la transcripción publicada de la pasada 1, que dice lo contrario —que ningún archivo nombra el público—.* |
 
 La pasada 2 dejó una pregunta parcial —faltaba la transcripción— y otras inconsistencias menores
 (si Joaquín pega o no la TASK, la BFL sin número, qué commit corre en producción). Se corrigieron
 también. Las dos transcripciones están en [`experiments/M01/`](../experiments/M01/), condensadas
 pero con todas sus calificaciones y hallazgos.
+
+*Nota M01.1:* la transcripción de la pasada 1 se contradice: su encabezado dice 7 / 4 / 1 y sus
+calificaciones por pregunta suman 8 / 3 / 1 (entre paréntesis en la tabla). La salida original del
+agente no está en el repo y no se pudo recuperar, así que no se sabe cuál de las dos se alteró al
+condensar.
 
 Es el ciclo que M01 pretende instalar —implementación, auditoría independiente, corrección— y
 corrió dos veces entero antes de llegar a ChatGPT.
@@ -108,11 +127,11 @@ así desde E32–E33; no es de M01 y no es una clave real.
 
 ## Limitaciones
 
-1. **Joaquín todavía pega una cosa: el texto de la TASK**, una vez, hacia Claude. ChatGPT no
-   escribe en el repo. En el sentido contrario —de Claude hacia ChatGPT— ya no se copia nada:
-   reporte, estado y decisiones se leen por URL.
-2. **ChatGPT tiene que leer la rama correcta.** Con `main` 107 commits atrás, si no se le indica la
-   rama ve código de E16.1 (DR-1).
+1. ~~**Joaquín todavía pega una cosa: el texto de la TASK**~~ — superada por D-010 (M01.1):
+   ChatGPT escribe la TASK en GitHub. En el sentido contrario —de Claude hacia ChatGPT— ya no se
+   copiaba nada: reporte, estado y decisiones se leen por URL.
+2. **ChatGPT tiene que leer la rama correcta.** Con `main` 95 commits atrás, si no se le indica la
+   rama ve código de E16.12 (DR-1).
 3. **El test valida forma, no verdad.** Comprueba que cada TASK tiene REPORT y que los enlaces
    resuelven; no puede comprobar que lo escrito en `CURRENT_STATE` sea cierto. Eso sigue
    dependiendo de la disciplina de verificar antes de escribir y de la auditoría de ChatGPT.
@@ -125,8 +144,9 @@ así desde E32–E33; no es de M01 y no es una clave real.
 
 ### DR-1 — Qué es `main`
 
-Contexto: `main` está en E16.1 (`64fd9c5`, 2026-09-04), 107 commits detrás del trabajo real. Todo
-lo posterior a E16.1 vive en una cadena lineal de ramas sin mergear. Producción tampoco corre desde
+Contexto: `main` está en E16.12 (`c6de3f9`, 2026-09-08), 95 commits detrás de `m01_ai_handoff`
+(verificado contra GitHub en M01.1). Todo lo posterior vive en una cadena lineal de ramas sin
+mergear. Producción tampoco corre desde
 `main`, y qué commit está desplegado no está registrado.
 Por qué no es técnico: decide qué ve por defecto cualquiera que abra el repo, incluido ChatGPT.
 - **A.** Mergear la cadena hasta `m01_ai_handoff` en `main` tras auditarla. `main` vuelve a ser la verdad.
@@ -134,15 +154,20 @@ Por qué no es técnico: decide qué ve por defecto cualquiera que abra el repo,
 - **C.** Seguir como hoy, indicando la rama en cada traspaso.
 
 Impacto: con C, cada auditoría depende de que alguien recuerde nombrar la rama.
-Recomendación técnica: **A**. La cadena es lineal, así que el merge es fast-forward y no tiene
-conflictos; D-004 y `DEPLOY_GATE` siguen protegiendo producción.
+Recomendación técnica: **A**. La cadena es lineal —GitHub da `behind_by: 0`—, así que el merge es
+fast-forward y no tiene conflictos; D-004 y `DEPLOY_GATE` siguen protegiendo el servicio `web`.
+*Corrección M01.1:* no protegen el servicio `backend` de Railway, que despliega `main` y corre un
+experimento pagado al arrancar. Antes de A hay que desconectarlo o confirmar que ya no despliega
+(`CURRENT_STATE.md` → Producción).
 NO IMPLEMENTADO AÚN.
 
 ### DR-2 — Visibilidad del repo
 
 Contexto: el repo es público. Este sistema lo aprovecha —ChatGPT lee por URL, sin conectores—, y a
 la vez hace pública la doctrina, las decisiones y el estado. Las ramas empujadas ya contienen
-pricing (E30: ~USD 100 por propiedad; E17: CLP 14.990).
+pricing (E30: ~USD 100 por propiedad). *Corrección M01.1:* acá decía que también el de E17; no
+estaba en ninguna rama, y la primera en publicarlo fue esta línea. Se quitó del archivo; sigue en el
+commit `2efd0c3`.
 - **A.** Mantenerlo público y no escribir en el repo nada comercialmente sensible.
 - **B.** Hacerlo privado y darle a ChatGPT acceso con el conector de GitHub.
 - **C.** Público para el código, y la estrategia en otro lugar privado.
@@ -160,8 +185,8 @@ D-001 lo declara aplicación. El ingest de URL que contiene sí es dependencia d
 - **B.** Conservar `/property` como está, como aplicación.
 - **C.** Retirar `/property` y extraer el ingest a un módulo compartido.
 
-Recomendación técnica: **A**. El ingest es lo reutilizable (18 campos y 29 fotos por URL,
-verificado); el scoring no sirve al core.
+Recomendación técnica: **A**. El ingest es lo reutilizable (18 campos y 29 fotos en un aviso real
+de Portal Inmobiliario, 17 y 14 en otro); el scoring no sirve al core.
 NO IMPLEMENTADO AÚN.
 
 ### DR-4 — La muestra de 20 avisos de E17

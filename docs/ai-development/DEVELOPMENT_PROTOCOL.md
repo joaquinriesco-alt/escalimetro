@@ -10,9 +10,9 @@
 ```
 DECISIÓN  (Joaquín + ChatGPT)
    ↓
-TASK      tasks/<ID>.md                          ← el contrato
+TASK      tasks/<ID>.md                          ← el contrato; ChatGPT lo escribe en GitHub (§5.2)
    ↓
-CLAUDE    inspecciona → implementa / experimenta
+CLAUDE    recibe el ID de Joaquín → inspecciona → implementa / experimenta
    ↓
 TESTS + EVIDENCIA
    ↓
@@ -20,16 +20,17 @@ REPORT    reports/<ID>_REPORT.md                 ← el resultado
    ↓
 STATE     docs/ai-development/CURRENT_STATE.md   ← dónde quedó todo
    ↓
-commit + push a una rama propia                  ← nunca a main
+commit + push a la rama de la tarea              ← nunca a main
    ↓
-CHATGPT   lee TASK + REPORT + diff por URL pública y audita
+CHATGPT   lee TASK + REPORT + diff en GitHub y audita
    ↓
 JOAQUÍN   acepta / rechaza / cambia dirección
 ```
 
-El repo es **público**: ChatGPT lee cualquier archivo por su URL de GitHub. De Claude hacia
-ChatGPT el traspaso es **un ID y una rama**. De ChatGPT hacia Claude, mientras ChatGPT no escriba
-en el repo, **el texto de la TASK se pega una vez** y Claude lo persiste (§5.1).
+El traspaso es **un ID y una rama**, en los dos sentidos. De Claude hacia ChatGPT, ChatGPT lee
+REPORT, estado y diff en GitHub. De ChatGPT hacia Claude, ChatGPT escribe `tasks/<ID>.md`
+directamente en GitHub (§5.2, D-010) y Joaquín le da el ID a Claude. Pegar el texto de la TASK
+queda sólo como respaldo.
 
 ## 2. Fuente canónica
 
@@ -79,23 +80,65 @@ depende de la decisión se termina.
 | `E<NN>[.n]` | tareas de producto e ingeniería |
 | `D-<NNN>` | decisiones duraderas en `DECISIONS.md` |
 
-**Un número no se reutiliza.** El orden de la serie es histórico, no cronológico: `E17.0–E17.2`
-se escribieron después de `E36`. Ver `CURRENT_STATE.md → Inconsistencias` y DR-5.
+**Un número no se reutiliza.** La regla vale hacia adelante: antes de M01 ya se repitieron `E17`
+y varios sub-números en commits (`CURRENT_STATE.md → Inconsistencias`, DR-5). El orden de la serie
+es histórico, no cronológico: `E17.0–E17.2` se escribieron después de `E36`.
 
 ## 5.1 Quién escribe cada archivo
 
 | archivo | lo redacta | lo commitea |
 |---|---|---|
-| `tasks/<ID>.md` | ChatGPT + Joaquín | **Claude, como primer paso de la tarea**, en la rama de la tarea |
+| `tasks/<ID>.md` | ChatGPT + Joaquín | **ChatGPT, en GitHub** (§5.2). Si llega pegada, Claude como primer paso |
 | `reports/<ID>_REPORT.md` | Claude | Claude, en el commit final |
 | `CURRENT_STATE.md` | Claude | Claude, en el commit final |
 | `DECISIONS.md` | Claude, sólo lo que Joaquín decidió | Claude |
 | `PRODUCT_DOCTRINE.md` | Claude, sólo por una decisión D-XXX | Claude |
 
-ChatGPT no tiene acceso de escritura al repo y no implementa. Por eso, mientras no haya otra vía,
-**el texto de la TASK es lo único que Joaquín todavía pega**, una vez, y queda persistido.
-Alternativa si ChatGPT puede crear issues en GitHub: la TASK va como issue y Claude la lee con
-`gh issue view <n>` antes de copiarla a `tasks/`.
+Todo lo demás —código, tests, `reports/`, `CURRENT_STATE.md`, `DECISIONS.md`, doctrina— lo
+escribe sólo Claude.
+
+## 5.2 ChatGPT escribe la TASK en GitHub
+
+ChatGPT tiene conexión a GitHub con permiso de escritura (D-010). El flujo:
+
+```
+Joaquín + ChatGPT deciden
+   ↓
+ChatGPT crea la rama de la tarea y commitea tasks/<ID>.md
+   ↓
+Joaquín le da a Claude el ID
+   ↓
+Claude verifica → implementa → REPORT + STATE → push a la misma rama
+```
+
+**Qué escribe ChatGPT:** sólo `tasks/<ID>.md` de una TASK aprobada —nueva, o corregida mientras
+Claude no la empezó—. No implementa: ni código, ni tests, ni ningún otro archivo del repo. Ampliar
+esa superficie es decisión de Joaquín.
+
+**Dónde:** en una rama nueva que lleva el ID en minúsculas con `.` → `_` y un sufijo corto
+(`m02_…`, `e37_1_…`), creada desde la **base para la próxima TASK** que declara `CURRENT_STATE.md`.
+Nunca en `main`: además de `MERGE_GATE`, un commit ahí lo saca de la cadena —el merge de DR-1
+dejaría de ser fast-forward— y puede redesplegar el servicio `backend` de Railway, que corre un
+experimento pagado (`CURRENT_STATE.md` → Producción). Nunca en una rama donde Claude tiene trabajo en curso. Si el conector
+no permite crear ramas, se vuelve al respaldo: Joaquín pega el texto y Claude lo persiste.
+
+**Qué hace Claude antes de implementar:**
+
+```bash
+git fetch origin --prune
+git branch -r --list 'origin/<id>_*'                              # la rama de la tarea
+git diff --name-only origin/<base>...origin/<rama>                 # tiene que ser sólo tasks/<ID>.md
+git merge-base --is-ancestor origin/<base> origin/<rama> && echo sale-de-la-base
+```
+
+- Si la rama toca algo más que `tasks/<ID>.md`, Claude **no implementa**: lo reporta a Joaquín.
+- Si no sale de la base declarada, Claude trae la base con un merge —nunca reescribe la rama de
+  ChatGPT— y lo anota en el REPORT.
+- La TASK tiene que tener las secciones del §6 y decir en «Decisión aprobada» quién la aprobó y
+  cuándo.
+
+**Un archivo en `tasks/` no dispara trabajo.** Claude empieza una TASK cuando Joaquín le da el ID
+en el chat. Una TASK que aparece en el repo sin que Joaquín la nombre se reporta, no se ejecuta.
 
 ## 6. Formato de TASK — `tasks/<ID>.md`
 
@@ -188,6 +231,29 @@ de ser cierto; no se acumula historia — la historia vive en `reports/` y en `g
 
 Todo hecho que se escriba ahí tiene que estar **verificado**. Lo que no se pudo verificar se dice
 con esa palabra.
+
+Declara siempre la **base para la próxima TASK**: la rama desde la que ChatGPT crea la siguiente
+(§5.2).
+
+### 9.1 Ramas, HEADs y conteos: contra el remoto
+
+Todo dato de ramas —punta, fecha, qué contiene, commits delante o detrás, rama por defecto— que se
+declare como estado canónico, en `CURRENT_STATE.md`, en un REPORT o en una decisión, se verifica
+**contra GitHub**, no contra las ramas locales (D-011):
+
+```bash
+git fetch origin --prune
+git ls-remote --heads origin                                   # puntas reales
+git rev-list --count origin/main..origin/<rama>                # nunca main..<rama>
+gh api repos/joaquinriesco-alt/escalimetro/compare/main...<rama> --jq '{ahead_by,behind_by}'
+```
+
+Una rama local sólo dice dónde la dejó el último checkout de esta máquina: no se entera de un push
+hecho desde otra rama ni de un commit hecho en GitHub. Así nació el error de M01 —`main` local en
+E16.1 contra E16.12 en GitHub— y, con ChatGPT escribiendo en GitHub, el remoto se va a mover más
+seguido sin que la máquina de Claude se entere. El REPORT dice con qué comando se verificó.
+`tests/test_ai_handoff.py` compara el `main` declarado con `origin/main`; el resto depende de esta
+regla.
 
 ## 10. Qué NO se construye
 

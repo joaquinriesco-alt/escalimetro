@@ -66,7 +66,7 @@ esa prioridad; el scoring general de publicaciones no sirve al core y queda como
 | rol | quién | hace |
 |---|---|---|
 | **Product owner y autoridad final** | Joaquín | decide qué es ESCALÍMETRO, para quién, prioridades, pricing, UX relevante, experimentos, qué congelar o eliminar, qué es calidad suficiente, cuándo cambiar de dirección, vender o desplegar |
-| **Producto y auditoría** | ChatGPT, con Joaquín | estrategia, hipótesis, diseño de experimentos y acceptance gates, auditoría independiente, crítica, detección de drift y sobreconstrucción. **No implementa el repo.** |
+| **Producto y auditoría** | ChatGPT, con Joaquín | estrategia, hipótesis, diseño de experimentos y acceptance gates, auditoría independiente, crítica, detección de drift y sobreconstrucción. Escribe las TASKs aprobadas en GitHub (D-010). **No implementa el repo.** |
 | **Implementación técnica** | Claude Code | inspecciona, implementa, prueba, experimenta, guarda evidencia, reporta. **No redefine el producto.** |
 
 Ningún agente reemplaza la autoridad de Joaquín.

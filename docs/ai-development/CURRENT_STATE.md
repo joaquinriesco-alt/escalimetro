@@ -1,8 +1,9 @@
 # ESCALÍMETRO — Estado actual
 
-> **Última actualización:** 2026-09-29 · al cerrar `M01` · rama `m01_ai_handoff`
-> Todo lo que está acá fue verificado al escribirlo: el código y las ramas contra el repo; las
-> cifras de los pilotos contra `.data-lab/` de la máquina de desarrollo, que **no** está en el repo.
+> **Última actualización:** 2026-09-30 · al cerrar `M01.1` · rama `m01_1_remote_truth`
+> Todo lo que está acá fue verificado al escribirlo: el código contra el repo; las ramas **contra
+> GitHub**, no contra las ramas locales ([protocolo §9.1](DEVELOPMENT_PROTOCOL.md)); las cifras de
+> los pilotos contra `.data-lab/` de la máquina de desarrollo, que **no** está en el repo.
 > Lo no verificado lo dice.
 > Se actualiza al cerrar cada TASK, en el mismo commit que su REPORT.
 
@@ -21,28 +22,52 @@ fotos, video o una URL.
 
 | rama | punta | qué es |
 |---|---|---|
-| `main` | `64fd9c5` · 2026-09-04 | **E16.1**. **107 commits** detrás de `e17_2_url_first_ingest`. Ver DR-1. |
+| `main` | `c6de3f9` · 2026-09-08 | **E16.12**. Rama por defecto en GitHub. Ver DR-1. |
 | `e36_real_property_pilot` | `ae64d35` · 2026-09-23 | **congelada para desarrollo**; su experimento sigue activo (ver abajo) |
 | `e17_property_potential` | `0819cb3` · 2026-09-24 | E17.0–E17.1 |
-| `e17_2_url_first_ingest` | `4c0934a` · 2026-09-25 | **punta del código de producto** |
-| `m01_ai_handoff` | esta entrega | lo anterior + este sistema de handoff, sin cambios de funcionalidad |
+| `e17_2_url_first_ingest` | `4c0934a` · 2026-09-25 | **punta del código de producto** · 94 commits delante de `main` |
+| `m01_ai_handoff` | `2efd0c3` · 2026-09-29 | lo anterior + el sistema de handoff · 95 delante de `main` |
+| `m01_1_remote_truth` | esta entrega | lo anterior + M01.1 · **base para la próxima TASK** |
 
-La cadena es lineal y nada está mergeado:
-`main ⊂ e30 ⊂ e31 ⊂ e32 ⊂ e32_2 ⊂ e33 ⊂ e34 ⊂ e35 ⊂ e36 ⊂ e17_property_potential ⊂ e17_2 ⊂ m01`.
-Las ramas `e30`–`e35` son eslabones intermedios, cada una contenida en la siguiente.
+La cadena es lineal, nada está mergeado y ninguna rama está detrás de `main`:
+`main` ⊂ `e30_product_direction` ⊂ `e31_staging_pilot` ⊂ `e32_internal_pilot_console` ⊂
+`e32_2_entitlement_semantics` ⊂ `e33_simple_product_lab` ⊂ `e34_zero_friction_ingest` ⊂
+`e35_robust_zero_friction_ingest` ⊂ `e36_real_property_pilot` ⊂ `e17_property_potential` ⊂
+`e17_2_url_first_ingest` ⊂ `m01_ai_handoff` ⊂ `m01_1_remote_truth`.
+Las ramas `e30`–`e35` son eslabones intermedios.
 
-**Producción:** último estado verificado `e27.3` sano, el 2026-09-21 (reporte E34). **No
-verificado desde entonces.** No está registrado en el repo ni qué commit está desplegado ni la URL
-(la que se usó responde 404). Producción **no** corre desde `main`, que está en E16.1.
+Verificado el 2026-09-30 contra GitHub: puntas con `git ls-remote --heads origin`; conteos con
+`gh api repos/joaquinriesco-alt/escalimetro/compare/main...<rama>` (`e17_2`: 94 / 0,
+`m01_ai_handoff`: 95 / 0) y con `git rev-list` sobre `origin/*` para los eslabones. Hasta M01.1
+este documento decía «`main` en E16.1, 107 commits atrás»: era la rama `main` **local**, trece
+commits detrás de GitHub ([`reports/M01.1_REPORT.md`](../../reports/M01.1_REPORT.md)).
+
+**Producción:** dos servicios de Railway ([`README.md`](../../README.md) §Railway). GitHub registra
+cada deploy (`gh api repos/joaquinriesco-alt/escalimetro/deployments`); el repo no.
+
+- **`web`** —la webapp— despliega `e27_internal_web_app`. Último deploy: `1ae6a0b` (E27.3),
+  `success` el 2026-09-21, el mismo día en que se verificó sano (reporte E34). **No verificado
+  desde entonces.** Su URL figura en ese deploy de GitHub, no en el repo; la que se usó antes
+  respondía 404.
+- **`backend`** —runtime del experimento E09— despliega **`main`**, y su arranque **ejecuta E09,
+  que llama a OpenAI y a Anthropic**: según el README, cada redeploy cuesta dinero. Cada push a
+  `main` de septiembre produjo un deploy segundos después; el último, `c6de3f9`, `success` el
+  2026-09-08, con reintentos fallidos el 2026-09-10. Si sigue conectado hoy **no está verificado** (es configuración de Railway). Mover
+  `main` —el merge de DR-1, o un push por error— puede redesplegarlo.
 
 ## Arquitectura
 
 ```
-src/escalimetro/        motor: plano (JPG/PNG/PDF) → floorplate.json → layouts CP-SAT
+src/escalimetro/        motor: imagen de plano → floorplate.json → layouts CP-SAT
                         CONGELADO desde E28 contra 6324b1f (D-008)
 webapp/                 Flask + SQLite + archivos en ESCALIMETRO_DATA_DIR
-  /case/*               herramienta técnica de medición (E27)
-  /lab/*                LAB interno: plano comercial + layout tipo + ambientación (E28–E36)
+                        recibe PDF, PNG o JPG; rasteriza el PDF antes de pasarlo al motor
+  /case/*, /run/*,      herramienta técnica: casos, corridas y revisión (hasta E27)
+  /review/*
+  /properties/*         superficie de la propiedad para el cliente (E28.5, E30)
+  /staging/*            revisión de ambientación (E31)
+  /lab/*                LAB interno: plano comercial + layout tipo + ambientación
+                        (E32–E36, sobre piezas de E28–E31)
   /property/*           ingest de URL + diagnóstico de publicación (E17.0–E17.2)
 ```
 
@@ -59,14 +84,16 @@ webapp/                 Flask + SQLite + archivos en ESCALIMETRO_DATA_DIR
 
 ## Tests
 
-`2036 passed · 2 failed · 8 skipped · 7 xfailed` @ `4c0934a` (antes de M01), 2026-09-29.
-Después de M01: ver [`reports/M01_REPORT.md`](../../reports/M01_REPORT.md).
-Los 2 fallos son **preexistentes desde E34** y no se tocan:
+`2061 passed · 2 failed · 8 skipped · 7 xfailed` sobre el árbol de `m01_1_remote_truth`, 2026-09-30.
+Detalle en [`reports/M01.1_REPORT.md`](../../reports/M01.1_REPORT.md).
+Los 2 fallos son **preexistentes** —desde E27 por lo menos; dependen de artefactos regenerables
+que `.gitignore` excluye— y no se tocan:
 `test_e12_hardening::test_el_html_muestra_la_etapa_que_fallo`,
 `test_e15_case_contract::test_las_rutas_de_artefactos_se_derivan_del_caso`.
 
 `tests/test_ai_handoff.py` verifica que este sistema no se desincronice: toda TASK con su REPORT,
-enlaces que resuelven, decisiones coherentes, nada que parezca un secreto.
+enlaces que resuelven, decisiones coherentes, nada que parezca un secreto, y que el `main` que
+declara la tabla de ramas sea el de `origin/main` y no el de la rama local.
 
 ## Experimentos
 
@@ -83,14 +110,16 @@ enlaces que resuelven, decisiones coherentes, nada que parezca un secreto.
 
 - **Ambientación:** faltan `OPENAI_API_KEY` y `GEMINI_API_KEY` (0/2); corpus 3/8 fotos reales de
   1/3 propiedades. BFL excluido hasta aprobar su licencia (D-006).
-- **Producción:** ni la URL ni el commit desplegado están registrados.
+- **Producción:** sin verificar desde el 2026-09-21. Y **antes de cualquier merge a `main`**, hay
+  que confirmar en Railway si el servicio `backend` sigue desplegando `main`: su arranque corre un
+  experimento pagado (ver Producción).
 
 ## Última tarea completada
 
-**M01** — sistema de handoff por el repo: doctrina, protocolo, decisiones, este estado,
-`CLAUDE.md`, `tasks/`, `reports/` y un test de consistencia. Sin cambios de funcionalidad.
-Status en [`reports/M01_REPORT.md`](../../reports/M01_REPORT.md).
-Antes: **E17.2** — ingest URL-first, cerrado con el fix de WebP en `4c0934a`.
+**M01.1** — el estado de `main` corregido contra GitHub, la regla de verificar ramas contra el
+remoto (D-011) y ChatGPT escribiendo las TASKs directamente en GitHub (D-010). Sin cambios de
+funcionalidad. Status en [`reports/M01.1_REPORT.md`](../../reports/M01.1_REPORT.md).
+Antes: **M01** — el sistema de handoff por el repo; y **E17.2** — ingest URL-first, `4c0934a`.
 
 ## Tarea actual
 
@@ -100,31 +129,37 @@ Ninguna. Esperando decisión de Joaquín.
 
 | id | decisión | gate |
 |---|---|---|
-| **DR-1** | Qué es `main`. Está 107 commits atrás y GitHub lo muestra por defecto: quien no indique la rama ve código de E16.1. | `MERGE_GATE` |
-| **DR-2** | El repo es **público**. Este sistema depende de eso (ChatGPT lee por URL); si se hace privado, ChatGPT necesita un conector de GitHub. Hoy ya es pública la estrategia empujada en ramas anteriores (pricing de E30 y E17). | `PRODUCT_GATE` |
+| **DR-1** | Qué es `main`. Está en E16.12, 95 commits detrás de la punta, y GitHub lo muestra por defecto: quien no indique la rama ve código de E16.12. Mergear puede redesplegar el servicio `backend` de Railway (ver Producción). | `MERGE_GATE` |
+| **DR-2** | El repo es **público**, y ya es pública la estrategia empujada en ramas anteriores (el pricing de E30). El precio de E17 no estaba en el repo: lo publicó `M01_REPORT.md`, y M01.1 lo quitó del archivo, pero sigue en el commit `2efd0c3`. Según Joaquín, ChatGPT ya tiene conexión a GitHub con escritura; si esa conexión lee repos privados —no verificado por Claude—, hacerlo privado ya no exige configurar nada nuevo. | `PRODUCT_GATE` |
 | **DR-3** | Qué hacer con `/property` y el scoring de E17 bajo D-001. | `PRODUCT_GATE` |
 | **DR-4** | La muestra de 20 avisos: correrla, reorientarla a insumos de CREAR PLANO, o cancelarla. | `EXPERIMENT_GATE` |
 | **DR-5** | Convención de IDs ante los dos `E17`. Baja prioridad. | `PRODUCT_GATE` |
 | **DR-6** | Si el congelamiento del motor (D-008) sigue en pie bajo D-001. CREAR PLANO probablemente lo necesite. | `PRODUCT_GATE` |
 | **DR-7** | Aprobar o no la licencia de BFL (D-006). | `PRODUCT_GATE` |
+| **DR-8** | Proteger `main` en GitHub. Hoy no tiene protección de rama (verificado): con ChatGPT escribiendo en GitHub, lo único que impide un push directo a `main` es el protocolo, y un push a `main` puede disparar el deploy pagado de `backend`. | `MERGE_GATE` |
 | — | **Para quién es ESCALÍMETRO.** La doctrina no lo define. Es estrategia pura: Claude no propone opciones. | `PRODUCT_GATE` |
 
-Opciones de DR-1 a DR-7 en [`reports/M01_REPORT.md`](../../reports/M01_REPORT.md).
+Opciones de DR-1 a DR-7 en [`reports/M01_REPORT.md`](../../reports/M01_REPORT.md); de DR-8, en
+[`reports/M01.1_REPORT.md`](../../reports/M01.1_REPORT.md).
 
 ## Inconsistencias conocidas
 
-1. **Dos `E17`:** `docs/E17_STRUCTURAL_WIDTH_REPRESENTATION.md` (serie del motor, anterior) y
-   `docs/E17_PROPERTY_POTENTIAL.md` + ramas `e17_*` (producto, septiembre).
+1. **IDs repetidos.** Dos `E17`: `docs/E17_STRUCTURAL_WIDTH_REPRESENTATION.md` (serie del motor,
+   anterior) y `docs/E17_PROPERTY_POTENTIAL.md` + ramas `e17_*` (producto, septiembre). Y en
+   commits, `E28.6`, `E32.2`, `E36.1` y `E36.2` nombran dos pasos distintos cada uno; por eso la
+   cita a `E36.1` de D-005 es ambigua.
 2. **`README.md`** describe «ETAPA 1». Tiene un aviso al inicio; el resto es historia.
 3. **`docs/PRODUCT_V1_SCOPE.md` y `docs/PRODUCT_BOUNDARY.md`** contradicen D-001. Tienen aviso de
    reemplazo; no se reescribieron.
-4. **`/property`** pone en el centro un scoring que D-001 declara aplicación.
+4. **`/property`** está construido sobre el diagnóstico de la publicación, que D-001 declara
+   aplicación. Desde E17.1 muestra primero las oportunidades y deja el puntaje como secundario.
 
 ## Siguiente acción aprobada
 
 **Ninguna técnica.** Hay una iniciativa aprobada sin TASK escrita: **Internal Reconstruction
 Lab** ([D-009](DECISIONS.md)), definida en [`tasks/M01.md`](../../tasks/M01.md) §Fuente. Siguiente paso: Joaquín + ChatGPT
-escriben su TASK con acceptance criteria. Choca con DR-6 si necesita tocar el motor.
+la deciden y ChatGPT escribe su TASK en GitHub, con acceptance criteria
+([protocolo §5.2](DEVELOPMENT_PROTOCOL.md)). Choca con DR-6 si necesita tocar el motor.
 
 ## Glosario
 
@@ -139,7 +174,7 @@ escriben su TASK con acceptance criteria. Choca con DR-6 si necesita tocar el mo
 | **cabida / test-fit / layout** | cuántos puestos o recintos caben y cómo se distribuyen |
 | **PRO** | producto recurrente para trabajar propiedades; aplicación, no core |
 | **ambientación** | staging virtual de fotos; aplicación, bloqueada |
-| **`THRESHOLD_UNCALIBRATED`** | umbral del motor que todavía no tiene muestra para validarse (D-005) |
+| **`THRESHOLD_UNCALIBRATED`** | estado con que el LAB marca sus umbrales de autoaceptación mientras no hay muestra para calibrarlos (`webapp/domain/ingest.py`, D-005). No es parte del motor |
 
 ## Qué NO decide Claude
 

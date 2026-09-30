@@ -8,23 +8,26 @@ contexto: **léelo, y después lee lo que enlaza antes de tocar nada.**
 1. [`docs/ai-development/CURRENT_STATE.md`](docs/ai-development/CURRENT_STATE.md) — dónde está el proyecto hoy.
 2. [`docs/ai-development/PRODUCT_DOCTRINE.md`](docs/ai-development/PRODUCT_DOCTRINE.md) — qué es ESCALÍMETRO. El core es **CREAR PLANO** y **MEJORAR PLANO**.
 3. [`docs/ai-development/DEVELOPMENT_PROTOCOL.md`](docs/ai-development/DEVELOPMENT_PROTOCOL.md) — el ciclo, los formatos y cuándo detenerte.
-4. La TASK: si te dan sólo un ID, está en `tasks/<ID>.md`. Si te pegan el texto, tu primer paso
-   es guardarlo como `tasks/<ID>.md` en la rama de la tarea.
+4. La TASK: si te dan sólo un ID, ChatGPT la escribió en GitHub, en `tasks/<ID>.md` de la rama
+   de la tarea. `git fetch origin` primero, y los chequeos del protocolo §5.2 antes de
+   implementar. Si te pegan el texto, tu primer paso es guardarlo como `tasks/<ID>.md` en la rama
+   de la tarea.
 
 ## Tu rol
 
-Joaquín decide. ChatGPT trabaja producto y audita. **Tú implementas.** Puedes decidir lo técnico
-local —estructura, nombres, tests, refactors necesarios, migraciones no destructivas—. **No**
-puedes cambiar el core, redefinir CREAR o MEJORAR PLANO, convertir una aplicación en producto,
-poner PRO / layouts / staging / video en el centro, abrir otra vertical, tocar pricing o UX
-estratégica, relajar criterios de fidelidad, inventar doctrina, ocultar fallos, empezar una fase
-grande nueva, hacer merge a `main` ni desplegar. Cuando aparezca algo así: `DECISION_REQUIRED` con el formato del
-protocolo, y detén **sólo** la parte afectada.
+Joaquín decide. ChatGPT trabaja producto y experimentos, escribe las TASKs y audita; no implementa
+(D-010). **Tú implementas.** Puedes decidir lo técnico local —estructura, nombres, tests, refactors
+necesarios, migraciones no destructivas—. **No** puedes cambiar el core, redefinir CREAR o MEJORAR
+PLANO, convertir una aplicación en producto, poner PRO / layouts / staging / video en el centro,
+abrir otra vertical, tocar pricing o UX estratégica, relajar criterios de fidelidad, inventar
+doctrina, ocultar fallos, empezar una fase grande nueva, hacer merge a `main` ni desplegar. Cuando
+aparezca algo así: `DECISION_REQUIRED` con el formato del protocolo, y detén **sólo** la parte
+afectada.
 
 ## Al terminar una tarea
 
-`reports/<ID>_REPORT.md` + actualizar `CURRENT_STATE.md` + commit y push **a una rama propia**,
-todo en el mismo commit final. Nunca a `main`.
+`reports/<ID>_REPORT.md` + actualizar `CURRENT_STATE.md` + commit y push **a la rama de la
+tarea**, todo en el mismo commit final. Nunca a `main`.
 
 ## Restricciones duras
 
@@ -34,12 +37,17 @@ todo en el mismo commit final. Nunca a `main`.
 - El repo es **público**. Nada de secretos, claves, datos de clientes ni rutas locales en commits.
   Los datos de trabajo viven en `.data-*/`, que está en `.gitignore`.
 - Las claves de proveedores sólo se consultan por **presencia**: nunca se imprimen ni se guardan.
-- Dos fallos de la suite son **preexistentes desde E34** y no son tuyos; están listados en
-  `CURRENT_STATE.md`. Cualquier otro fallo sí lo es.
+- **Ramas, contra el remoto.** Todo dato de ramas, HEADs o commits delante / detrás que declares
+  como estado se verifica con `git fetch` + `origin/*`, `git ls-remote` o `gh api …/compare`;
+  nunca con ramas locales (protocolo §9.1, D-011). M01 declaró mal `main` por leer la local.
+- Dos fallos de la suite son **preexistentes** —desde E27 por lo menos: dependen de artefactos
+  regenerables que `.gitignore` excluye— y no son tuyos; están listados en `CURRENT_STATE.md`.
+  Cualquier otro fallo sí lo es.
 
 ## Convenciones del código
 
-- Tests: `.venv/bin/python -m pytest tests/ -q` (≈6 min). Por tarea: `tests/test_<id>_*.py`.
+- Tests: `.venv/bin/python -m pytest tests/ -q` (≈8 min). Por tarea de producto: `tests/test_<id>_*.py`;
+  las de proceso (`M…`) van en `tests/test_ai_handoff.py`.
 - Todo en castellano: docstrings, comentarios, commits. Los comentarios explican **por qué**, no qué.
 - Al editar con reemplazos de texto, **verifica que el ancla exista** antes de escribir: un
   `str.replace` que no encuentra su ancla falla en silencio, y ya pasó más de una vez.

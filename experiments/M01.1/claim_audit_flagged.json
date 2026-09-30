@@ -1,0 +1,854 @@
+{
+ "que_es": "M01.1 — auditoría adversarial de las afirmaciones de los documentos de M01 tal como estaban en origin/m01_ai_handoff (2efd0c3). Sólo las marcadas FALSE o PARTIAL, más las del crítico de completitud. El precio de E17 se reemplazó por [precio E17 omitido]: ver DR-2.",
+ "total_afirmaciones": 373,
+ "veredictos": {
+  "FALSE": 27,
+  "TRUE": 263,
+  "UNVERIFIABLE": 36,
+  "PARTIAL": 47
+ },
+ "verificadores": "10/10 + 1 crítico",
+ "marcadas": [
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Ramas (table row main)",
+   "claim": "`main` tip is `64fd9c5` · 2026-09-04",
+   "category": "REMOTE_GIT",
+   "verdict": "FALSE",
+   "evidence": "git ls-remote origin -> c6de3f9646047eeba209c5d3d4ef5e6ccb85c26f refs/heads/main (also HEAD). gh api repos/joaquinriesco-alt/escalimetro/branches/main -> c6de3f9... 2026-09-08T02:07:45Z 'ESCALIMETRO E16.12 - record multi-component architecture blocker evidence'. git rev-parse main (LOCAL) -> 64fd9c5d12... (2026-09-04, E16.1). git rev-list --count 64fd9c5..origin/main -> 13 (E16.4..E16.12). The doc's value is the stale LOCAL main ref.",
+   "correct_value": "Remote main is at c6de3f9 · 2026-09-08 (E16.12). 64fd9c5 is only the local main ref, 13 commits behind origin/main.",
+   "lens": "remote"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Ramas (table row main)",
+   "claim": "main is **E16.1**",
+   "category": "REMOTE_GIT",
+   "verdict": "FALSE",
+   "evidence": "gh api .../branches/main --jq .commit.commit.message -> 'ESCALIMETRO E16.12 - record multi-component architecture blocker evidence'. git log --oneline 64fd9c5..origin/main lists 13 commits E16.4 through E16.12.",
+   "correct_value": "Remote main is at E16.12 (c6de3f9). E16.1 is only true of the local main ref.",
+   "lens": "remote"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Ramas (table row main)",
+   "claim": "main is **107 commits** behind `e17_2_url_first_ingest`",
+   "category": "REMOTE_GIT",
+   "verdict": "FALSE",
+   "evidence": "gh api repos/joaquinriesco-alt/escalimetro/compare/main...e17_2_url_first_ingest -> ahead_by 94, behind_by 0. git rev-list --count origin/main..origin/e17_2_url_first_ingest -> 94. git rev-list --count main..origin/e17_2_url_first_ingest (LOCAL main) -> 107.",
+   "correct_value": "Remote main is 94 commits behind e17_2_url_first_ingest (and 95 behind m01_ai_handoff). 107 is the count against the stale local main. DR-1 at line 103 repeats the same wrong 107.",
+   "lens": "remote"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Producción",
+   "claim": "Producción no corre desde `main`, que está en E16.1",
+   "category": "REMOTE_GIT",
+   "verdict": "PARTIAL",
+   "evidence": "git ls-tree origin/main webapp railway.json Dockerfile -> empty. Remote main top level: .env.example .gitignore README.md benchmarks cases docs fixtures program_templates pyproject.toml requirements.txt scripts src tests, with no webapp and no deploy files, so production (the webapp) cannot run from main. But gh api branches/main -> c6de3f9 'E16.12'.",
+   "correct_value": "Production indeed cannot run from main, but remote main is at E16.12 (c6de3f9), not E16.1.",
+   "lens": "remote"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Header",
+   "claim": "Todo lo que está acá fue verificado al escribirlo: el código y las ramas contra el repo",
+   "category": "REMOTE_GIT",
+   "verdict": "PARTIAL",
+   "evidence": "The main row (64fd9c5, 2026-09-04, E16.1, 107 commits) matches only the LOCAL main ref. origin/main is c6de3f9 (E16.12, 2026-09-08, 94 behind e17_2). The other branch rows match the remote.",
+   "correct_value": "The branch facts were checked against local refs; the main facts do not match the GitHub remote.",
+   "lens": "remote"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "header",
+   "claim": "Todo lo que está acá fue verificado al escribirlo: el código y las ramas contra el repo",
+   "category": "LOCAL_GIT",
+   "verdict": "FALSE",
+   "evidence": "The main-branch figures in the Ramas table (64fd9c5, 2026-09-04, E16.1, 107 behind) match only the stale LOCAL ref: git rev-parse --short main -> 64fd9c5; git rev-list --left-right --count origin/main...main -> '13 0' (local main is 13 commits behind origin/main). git reflog show origin/main -> 'c6de3f9 refs/remotes/origin/main@{2026-09-08 08:40:52 -0300}: update by push', so origin/main was already at c6de3f9 three weeks before the doc was written on 2026-09-29.",
+   "correct_value": "The branches were checked against a stale local `main`, not against GitHub. `origin/main` has been at c6de3f9 (E16.12) since 2026-09-08.",
+   "lens": "content"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Ramas",
+   "claim": "main punta `64fd9c5`",
+   "category": "REMOTE_GIT",
+   "verdict": "FALSE",
+   "evidence": "git fetch -q origin; git log -1 --format='%h' origin/main -> c6de3f9; git ls-remote origin main -> c6de3f9 refs/heads/main. 64fd9c5 is only the stale LOCAL main (git rev-parse --short main -> 64fd9c5; origin/main...main = 13/0).",
+   "correct_value": "origin/main is at c6de3f9 ('ESCALIMETRO E16.12 - record multi-component architecture blocker evidence')",
+   "lens": "content"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Ramas",
+   "claim": "main tip date 2026-09-04",
+   "category": "REMOTE_GIT",
+   "verdict": "FALSE",
+   "evidence": "git log -1 --date=iso --format='%ad' origin/main -> 2026-09-08 02:07:45 +0000 (64fd9c5, the local ref, is dated 2026-09-04 17:54:41 +0000)",
+   "correct_value": "2026-09-08",
+   "lens": "content"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Ramas",
+   "claim": "main is **E16.1**",
+   "category": "REMOTE_GIT",
+   "verdict": "FALSE",
+   "evidence": "git log --oneline 64fd9c5..origin/main -> 13 commits E16.4 through E16.12 (028b80c .. c6de3f9). git merge-base --is-ancestor 64fd9c5 origin/main -> yes",
+   "correct_value": "origin/main is at E16.12. E16.1 (64fd9c5) is 13 commits behind it.",
+   "lens": "content"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Ramas",
+   "claim": "main está 107 commits detrás de `e17_2_url_first_ingest` (also repeated in DR-1: '107 commits atrás')",
+   "category": "REMOTE_GIT",
+   "verdict": "FALSE",
+   "evidence": "git rev-list --left-right --count origin/main...origin/e17_2_url_first_ingest -> '0 94'. For comparison: 64fd9c5...origin/e17_2_url_first_ingest -> '0 107' (true only for the stale local main). origin/main...origin/m01_ai_handoff -> '0 95'",
+   "correct_value": "origin/main is 94 commits behind origin/e17_2_url_first_ingest (95 behind origin/m01_ai_handoff)",
+   "lens": "content"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Ramas",
+   "claim": "e36_real_property_pilot congelada para desarrollo (premise: no development after its tip); su experimento sigue activo",
+   "category": "REMOTE_GIT",
+   "verdict": "PARTIAL",
+   "evidence": "No commits after ae64d35 (2026-09-23) exist on origin/e36_real_property_pilot, and it is an ancestor of e17_property_potential (0/7). Whether the experiment is 'activo' depends on .data-lab/, which is outside the repo, so it cannot be verified.",
+   "correct_value": "The freeze premise holds. 'Experimento activo' cannot be verified from the repo.",
+   "lens": "content"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Producción",
+   "claim": "main, que está en E16.1",
+   "category": "REMOTE_GIT",
+   "verdict": "FALSE",
+   "evidence": "git log -1 origin/main -> 'c6de3f9 ESCALIMETRO E16.12 - record multi-component architecture blocker evidence'; ls-remote origin main -> c6de3f9",
+   "correct_value": "origin/main is at E16.12 (c6de3f9, 2026-09-08). Only the stale local main is at E16.1.",
+   "lens": "content"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Arquitectura",
+   "claim": "src/escalimetro/ is the motor: plano (JPG/PNG/PDF) -> floorplate.json -> layouts CP-SAT",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "Code inspection of the working tree (HEAD == origin/m01_ai_handoff == 2efd0c3). `grep -rn -i 'pdf' src/escalimetro --include='*.py'` found nothing. src/escalimetro/pipeline.py:74 run() does `img = cv2.imread(cfg.image_path)`, so it only reads raster images. pipeline.py:310 `fp.save(out(\"floorplate.json\"))`. layout/e05/cpsolver.py:24 `from ortools.sat.python import cp_model`. PDF handling is in the webapp: webapp/intake.py:109-116 rasterizes page 1 of a PDF with pymupdf into preview.png before the motor runs.",
+   "correct_value": "The floorplate.json -> CP-SAT layout path is correct. The motor itself does not accept PDF: it reads raster images with cv2.imread. The webapp intake takes PDF/PNG/JPG and rasterizes PDFs before handing them to the motor.",
+   "lens": "remote"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Arquitectura",
+   "claim": "/lab/* = LAB interno: plano comercial + layout tipo + ambientación (E28–E36)",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "webapp/lab.py:33 `Blueprint(\"lab\", ..., url_prefix=\"/lab\")`. `git log --diff-filter=A origin/m01_ai_handoff -- webapp/lab.py` -> 9ebc996 2026-09-21 'E32.4 - ESCALIMETRO LAB: una sola consola'. `git log -S'\"/lab' -- webapp` -> earliest is 9ebc996 (E32.4). The underlying pieces are older: floorplan adapter E28.3 (7b80044) and the /properties customer surface E28.5 (37ba16a).",
+   "correct_value": "The /lab/* surface was introduced in E32.4 (9ebc996, 2026-09-21), not E28. E28 built the capabilities behind it and exposed them at /properties/*.",
+   "lens": "remote"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Arquitectura",
+   "claim": "The architecture block lists webapp surfaces as /case/*, /lab/*, /property/* (implied completeness)",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "`grep -rn 'Blueprint(' webapp` -> customer.py:31 url_prefix='/properties' and staging_ui.py:24 url_prefix='/staging', in addition to /lab and /property. app.py also serves /review, /run/<run_id>, /upload and /settings.",
+   "correct_value": "webapp also serves /properties/* (customer surface, E28.5), /staging/* (E31) and /review, /run, /upload and /settings, none of which are in the block.",
+   "lens": "remote"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Ramas (outside assigned scope, incidental finding)",
+   "claim": "main = 64fd9c5 · 2026-09-04 · E16.1; 107 commits behind e17_2_url_first_ingest; production does not run from main, which is at E16.1",
+   "category": "REMOTE_GIT",
+   "verdict": "FALSE",
+   "evidence": "`git ls-remote origin` -> c6de3f9646047eeba209c5d3d4ef5e6ccb85c26f refs/heads/main (also HEAD). `gh api repos/joaquinriesco-alt/escalimetro/commits/main` -> c6de3f9 2026-09-08T02:07:45Z 'ESCALIMETRO E16.12 - record multi-component architecture blocker evidence'. `gh api .../compare/main...e17_2_url_first_ingest` -> ahead_by 94, behind_by 0. The local ref `main` is 64fd9c5 (2026-09-04, E16.1), which is where the doc's values come from.",
+   "correct_value": "Remote main is c6de3f9 (2026-09-08, E16.12) and is 94 commits behind e17_2_url_first_ingest, not 107. The doc describes the stale local main.",
+   "lens": "remote"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Arquitectura",
+   "claim": "/lab/* is the internal LAB: plano comercial + layout tipo + ambientación (E28–E36); the diagram lists /case, /lab and /property as the webapp surfaces",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "webapp/lab.py:33 Blueprint('lab', url_prefix='/lab'). Its docstring starts 'E32 — ESCALÍMETRO LAB'. git log --diff-filter=A -- webapp/lab.py → 9ebc996 2026-09-21 'E32.4 - ESCALIMETRO LAB: una sola consola'. webapp/app.py:50-55 also registers two more blueprints: customer.bp (url_prefix='/properties', E28.5, added in 37ba16a) and staging_ui.bp (url_prefix='/staging', E31.4, added in b148241). app.py also has /benchmark, /review and /run routes.",
+   "correct_value": "The /lab/* route and console were added in E32.4 (9ebc996), not E28. It reuses domain modules from E28–E31. The E28–E31 features also live in the /properties blueprint (customer surface, E28.5/E30) and the /staging blueprint (staging review, E31.4), and the diagram leaves both out.",
+   "lens": "content"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Tests",
+   "claim": "The 2 failures are preexisting since E34",
+   "category": "LOCAL_GIT",
+   "verdict": "PARTIAL",
+   "evidence": "They are preexisting, but they started before E34. git show -s d19a3cf (E27, 2026-09-10): '3 fallos preexistentes en esta maquina ... tesseract ausente (e16_5) y PNGs regenerables excluidos por .gitignore (e15_case_contract, e12)'. git show -s e3c40c8 (E27.3, 2026-09-21): 'quedan 2 fallos preexistentes de esta maquina (PNGs regenerables excluidos por .gitignore)'. 812af75 (E34.4) says E33 already reported '1832 passed / 2 failed'. Both failures come from files gitignored since E10/E12. The 'desde E34' wording appears only from E17.x commits onward (1f629fa, 0819cb3, 8c1a7ba, 2efd0c3).",
+   "correct_value": "The two failures predate E34. The same e12/e15 failures are recorded as preexisting since at least E27 (d19a3cf, 2026-09-10). They are caused by gitignored artifacts (run_manifest.json and cases/*/outputs/*.png).",
+   "lens": "content"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Decisiones pendientes / DR-1",
+   "claim": "main \"Está 107 commits atrás\" (L24 context: 107 commits behind e17_2_url_first_ingest)",
+   "category": "REMOTE_GIT",
+   "verdict": "FALSE",
+   "evidence": "git ls-remote origin -> c6de3f9646047eeba209c5d3d4ef5e6ccb85c26f refs/heads/main. gh api repos/joaquinriesco-alt/escalimetro/compare/main...e17_2_url_first_ingest -> {ahead_by:94, behind_by:0, status:ahead}; compare/main...m01_ai_handoff -> {ahead_by:95, behind_by:0}. The 107 figure only matches the stale LOCAL main: git rev-parse main -> 64fd9c5; git rev-list --count 64fd9c5..origin/e17_2_url_first_ingest -> 107; git rev-list --count 64fd9c5..origin/main -> 13 (local main is 13 commits behind remote main).",
+   "correct_value": "Remote main (c6de3f9) is 94 commits behind e17_2_url_first_ingest (95 behind m01_ai_handoff), behind_by 0 so no divergence. 107 is the count for the stale local main ref 64fd9c5.",
+   "lens": "remote"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Decisiones pendientes / DR-1",
+   "claim": "quien no indique la rama ve código de E16.1",
+   "category": "REMOTE_GIT",
+   "verdict": "FALSE",
+   "evidence": "gh api repos/joaquinriesco-alt/escalimetro/commits/c6de3f9646047eeba209c5d3d4ef5e6ccb85c26f -> message \"ESCALIMETRO E16.12 - record multi-component architecture blocker evidence\", date 2026-09-08T02:07:45Z. git log --oneline 64fd9c5..origin/main shows 13 commits (E16.4 through E16.12) on remote main after E16.1. E16.1 (64fd9c5, 2026-09-04) is only the LOCAL main ref.",
+   "correct_value": "By default GitHub shows remote main = c6de3f9, E16.12 (2026-09-08), not E16.1.",
+   "lens": "remote"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Decisiones pendientes / DR-2",
+   "claim": "Hoy ya es pública la estrategia empujada en ramas anteriores (pricing de E30 y E17)",
+   "category": "REMOTE_GIT",
+   "verdict": "PARTIAL",
+   "evidence": "E30: git grep on origin/e30_product_direction -> docs/E30_PRODUCT_DIRECTION.md:21 '| Precio hipótesis | ~USD 100 / propiedad | cuota mensual |' (also on e17_* and m01 remote branches). E17: M01_REPORT says E17 pricing is 'CLP [precio E17 omitido]'. Searched every remote branch tip: for r in refs/remotes/origin/*: git grep -lIE '[precio E17 omitido]' -> only origin/m01_ai_handoff:reports/M01_REPORT.md. History search: git log --remotes=origin -G'[precio E17 omitido]' -> only 2efd0c3 (M01 itself). No E17 pricing in E17_PROPERTY_POTENTIAL.md, webapp/domain/potential, templates, or E17 commit messages.",
+   "correct_value": "E30 pricing (~USD 100/propiedad) is public on the pushed remote branches. E17 pricing (CLP [precio E17 omitido] per M01_REPORT) does not appear in any pushed E17 branch or commit. Its only public appearance is M01's own reports/M01_REPORT.md.",
+   "lens": "remote"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Glosario",
+   "claim": "THRESHOLD_UNCALIBRATED = umbral del motor que todavía no tiene muestra para validarse (D-005)",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "git grep THRESHOLD_UNCALIBRATED origin/m01_ai_handoff -- src -> no hits. Defined at webapp/domain/ingest.py:107 THRESHOLD_UNCALIBRATED = 'THRESHOLD_UNCALIBRATED' as a calibration_status label for AUTO_CONFIRM_THRESHOLDS (ingest.py:68). Used in webapp/domain/calibration.py, where MIN_SAMPLE = 10 (l.84). D-005 (DECISIONS.md l.58-62) matches the meaning.",
+   "correct_value": "THRESHOLD_UNCALIBRATED is a status label in the webapp's LAB ingest layer (webapp/domain/ingest.py, calibration.py). It marks the auto-confirm geometry thresholds. It is not a threshold in the motor (src/escalimetro), which has no occurrence of it.",
+   "lens": "remote"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Decisiones pendientes (DR-1)",
+   "claim": "main is 107 commits behind",
+   "category": "REMOTE_GIT",
+   "verdict": "FALSE",
+   "evidence": "git rev-list --count origin/main..origin/e17_2_url_first_ingest = 94 and origin/main..origin/m01_ai_handoff = 95, with 0 commits the other way. GitHub API compare main...e17_2_url_first_ingest gives ahead_by=94 behind_by=0. The figure 107 is the count from 64fd9c5 (git rev-list --count 64fd9c5..origin/e17_2_url_first_ingest = 107), but origin/main is not 64fd9c5. It is c6de3f9 (git ls-remote: c6de3f96... refs/heads/main), pushed 2026-09-08 per the reflog. There is no local 'main' branch.",
+   "correct_value": "origin/main (c6de3f9) is 94 commits behind e17_2_url_first_ingest and 95 behind m01_ai_handoff",
+   "lens": "content"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Decisiones pendientes (DR-1)",
+   "claim": "Someone who does not specify a branch on GitHub sees E16.1 code",
+   "category": "REMOTE_GIT",
+   "verdict": "FALSE",
+   "evidence": "gh api repos/joaquinriesco-alt/escalimetro/branches/main returns c6de3f9646..., 2026-09-08T02:07:45Z, 'ESCALIMETRO E16.12 - record multi-component architecture blocker evidence'. git log 64fd9c5..origin/main shows 13 commits (E16.4 to E16.12) after E16.1 (64fd9c5).",
+   "correct_value": "The default branch main is at c6de3f9 (E16.12, 2026-09-08), so visitors see E16.12 code, not E16.1",
+   "lens": "content"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Decisiones pendientes (DR-2)",
+   "claim": "Strategy pushed in earlier branches is already public: pricing from E30 and E17",
+   "category": "REMOTE_GIT",
+   "verdict": "PARTIAL",
+   "evidence": "E30 pricing is public: origin/e30_product_direction:docs/E30_PRODUCT_DIRECTION.md:21 reads '| Precio hipótesis | ~USD 100 / propiedad | cuota mensual |' (also E28_NEXT_STEPS 'USD 99', E32_2 'Packs de ~USD 100'). No E17 pricing was found. The M01 report (line 145) gives it as 'E17: CLP [precio E17 omitido]', but git grep -E '[precio E17 omitido]' across all origin refs matches only reports/M01_REPORT.md, and git log origin/m01_ai_handoff -S'[precio E17 omitido]' returns only 2efd0c3 (M01 itself). git grep -I 'CLP|pricing' on origin/e17_2_url_first_ingest finds only unrelated AI-cost pricing. E17 docs mention 'precio' only as a listing field.",
+   "correct_value": "E30 pricing (~USD 100/property) is on public pushed branches. No E17 product pricing (the report's 'CLP [precio E17 omitido]') exists in any pushed branch or in history before M01.",
+   "lens": "content"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Inconsistencias conocidas (4)",
+   "claim": "/property puts at its center a scoring that D-001 declares an application",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "/property is built around the publication diagnosis (webapp/domain/potential/analyzer.py). However, commit 43e46af ('E17.1.2 - potencial, no puntaje: oportunidades primero') moved the numeric score out of the center. webapp/templates/potential/listing.html:63-65 leads with 'LAS OPORTUNIDADES PRIMERO'. The score sits at lines 110-114 inside a collapsed <details> labelled 'el diagnóstico completo, secundario' / 'Ver diagnóstico completo'.",
+   "correct_value": "/property is built on the publication-scoring analyzer, but the numeric score is deliberately secondary (collapsed 'Ver diagnóstico completo'). The page leads with opportunities derived from that diagnosis.",
+   "lens": "content"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Glosario",
+   "claim": "THRESHOLD_UNCALIBRATED is an engine threshold that does not yet have a sample to validate it (D-005)",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "git grep THRESHOLD_UNCALIBRATED origin/m01_ai_handoff -- src returns nothing. It is defined at webapp/domain/ingest.py:107 as a status flag ('mientras la muestra no alcance, los umbrales se declaran NO calibrados') and is used in webapp/domain/calibration.py. It is not a threshold itself, and it is not in the engine (src/escalimetro, frozen since E28). The link to D-005 is correct.",
+   "correct_value": "THRESHOLD_UNCALIBRATED is a status flag in webapp/domain/ingest.py (the webapp ingest/LAB layer, E35). It marks the auto-accept thresholds on engine confidences as uncalibrated. It is not a threshold, and it does not live in the engine (src/).",
+   "lens": "content"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "DR-1 — Qué es main (Contexto)",
+   "claim": "`main` está en E16.1 (`64fd9c5`, 2026-09-04)",
+   "category": "REMOTE_GIT",
+   "verdict": "FALSE",
+   "evidence": "git ls-remote origin -> c6de3f9646047eeba209c5d3d4ef5e6ccb85c26f refs/heads/main (also HEAD). gh api repos/joaquinriesco-alt/escalimetro/branches/main -> sha c6de3f96..., msg 'ESCALIMETRO E16.12 - record multi-component architecture blocker evidence', date 2026-09-08T02:07:45Z. gh api 'repos/.../activity?ref=refs/heads/main' -> push 64fd9c5->43031b7 at 2026-09-08T00:32:36Z ... last push b613790->c6de3f9 at 2026-09-08T11:40:52Z, i.e. origin/main left 64fd9c5 three weeks before the report (2026-09-29). git branch -vv shows LOCAL main 64fd9c5 '[origin/main: behind 13]' — the report read the stale local ref.",
+   "correct_value": "Remote main is at E16.12, c6de3f9 (authored 2026-09-08 02:07 UTC), and has been since the push at 2026-09-08T11:40:52Z. 64fd9c5 (E16.1) is only the stale local main, 13 commits behind origin/main.",
+   "lens": "remote"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "DR-1 — Qué es main (Contexto)",
+   "claim": "`main` ... 107 commits detrás del trabajo real",
+   "category": "REMOTE_GIT",
+   "verdict": "FALSE",
+   "evidence": "gh api repos/joaquinriesco-alt/escalimetro/compare/main...e17_2_url_first_ingest -> {ahead_by:94, behind_by:0, status:ahead}; compare/main...m01_ai_handoff -> {ahead_by:95, behind_by:0}; compare/main...e36_real_property_pilot -> {ahead_by:81}. git rev-list --count 64fd9c5..origin/e17_2_url_first_ingest -> 107 (so 107 is only true of the stale local main).",
+   "correct_value": "Remote main is 94 commits behind e17_2_url_first_ingest and 95 behind m01_ai_handoff (81 behind e36_real_property_pilot). 107 is the count from the stale local main (64fd9c5).",
+   "lens": "remote"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "DR-1 — Qué es main (Contexto)",
+   "claim": "Todo lo posterior a E16.1 vive en una cadena lineal de ramas sin mergear.",
+   "category": "REMOTE_GIT",
+   "verdict": "PARTIAL",
+   "evidence": "git log --oneline 64fd9c5..origin/main -> 13 commits: 028b80c E16.4, 8a40321 E16.5, d9464a7/4d2a2a8 E16.6, 949573e/c0a6046 E16.7, 3201cec/43031b7 E16.8, 49e4221/dcd02e2 E16.10, 6071153/b613790 E16.11, c6de3f9 E16.12 — all already on origin/main. Linearity: git rev-list --merges --count origin/main..origin/m01_ai_handoff -> 0; every origin/* branch except e16_13_invalid_backup is an ancestor of origin/m01_ai_handoff.",
+   "correct_value": "The chain is linear, but E16.4–E16.12 (13 commits after E16.1) are already merged into origin/main. Only what comes after E16.12 (c6de3f9) is unmerged.",
+   "lens": "remote"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "DR-1 — Qué es main (Contexto)",
+   "claim": "qué commit está desplegado no está registrado",
+   "category": "REMOTE_GIT",
+   "verdict": "PARTIAL",
+   "evidence": "No repo file records it. But gh api repos/joaquinriesco-alt/escalimetro/deployments shows 14 Railway production deployments. The last is 1ae6a0b18cd9540387b27b130155608a428d833d ('ESCALIMETRO E27.3 - un caso con geometria se muestra como analizado'), and gh api .../deployments/6572668035/statuses shows state 'success' at 2026-09-21T16:08:09Z.",
+   "correct_value": "No repo file records it, but the GitHub remote does. Its Deployments API records the last successful production deploy as 1ae6a0b (e27_internal_web_app tip, E27.3) on 2026-09-21T16:08:09Z, via railway-app[bot].",
+   "lens": "remote"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "Limitaciones 2",
+   "claim": "Con `main` 107 commits atrás, si no se le indica la rama ve código de E16.1 (DR-1).",
+   "category": "REMOTE_GIT",
+   "verdict": "FALSE",
+   "evidence": "gh api repos/joaquinriesco-alt/escalimetro --jq .default_branch -> main; gh api repos/.../commits/main -> 'c6de3f9 ESCALIMETRO E16.12 - record multi-component architecture blocker evidence'; compare main...m01_ai_handoff ahead_by 95, main...e17_2_url_first_ingest ahead_by 94.",
+   "correct_value": "The default branch origin/main is at E16.12 (c6de3f9), 95 commits behind m01_ai_handoff (94 behind e17_2_url_first_ingest). Without a branch name, ChatGPT sees E16.12 code, not E16.1.",
+   "lens": "remote"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "Acceptance criteria 2",
+   "claim": "PASS — `CURRENT_STATE.md` verificado; cada hecho se chequeó contra el repo.",
+   "category": "REMOTE_GIT",
+   "verdict": "FALSE",
+   "evidence": "git show origin/m01_ai_handoff:docs/ai-development/CURRENT_STATE.md branch table: '| `main` | `64fd9c5` · 2026-09-04 | **E16.1**. **107 commits** detrás de `e17_2_url_first_ingest`' and 'La cadena es lineal y nada está mergeado'. Contradicted by git ls-remote origin (main = c6de3f9 E16.12) and gh api compare main...e17_2_url_first_ingest (ahead_by 94). The facts were checked against the stale local main, not the remote.",
+   "correct_value": "CURRENT_STATE.md has remote-false facts: main is c6de3f9/E16.12, not 64fd9c5/E16.1; it is 94 commits behind e17_2, not 107; and E16.4–E16.12 are already merged into main.",
+   "lens": "remote"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "DR-2 — Visibilidad del repo",
+   "claim": "Las ramas empujadas ya contienen pricing (... E17: CLP [precio E17 omitido])",
+   "category": "REMOTE_GIT",
+   "verdict": "FALSE",
+   "evidence": "Looped over every refs/remotes/origin/* with git grep -l -I -E '[precio E17 omitido]|[precio E17 omitido]': the only hit is origin/m01_ai_handoff:reports/M01_REPORT.md (this report). git log --remotes=origin -S'[precio E17 omitido]' -> only 2efd0c3 (M01); -S'[precio E17 omitido]' -> none; git log --remotes=origin -E --grep='[precio E17 omitido]' -> none. Grep of 'CLP [0-9...]' over all remote *.md/*.py/*.html -> only 'CLP [precio E17 omitido]' once (the report). The E17 docs/code (docs/E17_PROPERTY_POTENTIAL.md, webapp/domain/potential) mention 'precio' only as a listing field.",
+   "correct_value": "No pushed E17 branch, and no pushed branch at all apart from this report, contains 'CLP [precio E17 omitido]' in any file or commit message. The E17 pricing premise is unsupported; only the E30 ~USD 100 figure is really published.",
+   "lens": "remote"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "Qué cambió",
+   "claim": "los docs/E*.md guardaban el razonamiento de diseño de cada fase, pero no su estado, sus tests ni su resultado",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "git grep at 4c0934a (local object; the tip equals remote e17_2_url_first_ingest): docs/E30_STAGING_PILOT.md:3 '## Estado: NO SE CORRIÓ'; docs/E31_PROVIDER_DECISION.md:26 '## Resultados'; docs/E31_STAGING_BENCHMARK.md:72 '## Resultado'; docs/E31_PROVIDER_DUE_DILIGENCE.md:131 '## Estado'; docs/E23_MVP_V1_REBASELINE.md contains an 'N passed' count; docs/E17_PROPERTY_POTENTIAL.md records dogfood results ('las cuatro salieron ALREADY_STRONG').",
+   "correct_value": "Several docs/E*.md do record phase status, results and, in at least one case (E23), test counts. The claim overgeneralizes.",
+   "lens": "remote"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "Archivos principales",
+   "claim": "docs/ai-development/DECISIONS.md nuevo · D-001 a D-008",
+   "category": "FILE_OR_CODE",
+   "verdict": "FALSE",
+   "evidence": "git show origin/m01_ai_handoff:docs/ai-development/DECISIONS.md -> headings D-001 ... D-008 and '### D-009 — Internal Reconstruction Lab: iniciativa aprobada'. The report's own criterion 4 says '9 decisiones' and cites D-009.",
+   "correct_value": "DECISIONS.md contains D-001 to D-009 (9 decisions).",
+   "lens": "remote"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "Evidencia",
+   "claim": "Un agente ... leyó únicamente CLAUDE.md, los cuatro documentos de docs/ai-development/ y tasks/M01.md",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "reconstruction_pass2.md: 'Leyó: lo mismo que la pasada 1 **más** reports/M01_REPORT.md'. The report's own table also says pass 2 read '+ este REPORT'.",
+   "correct_value": "True for pass 1 only. Pass 2 also read reports/M01_REPORT.md.",
+   "lens": "remote"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "Evidencia (tabla de hallazgos)",
+   "claim": "La pasada 1 encontró ... «CURRENT_STATE afirmaba el público objetivo» (se quitó)",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "reconstruction_pass1.md is said to keep 'todos los hallazgos'. Its 14 findings contain no such item. Its Q1 says the opposite: 'The files never say in plain words who the product is for or what market it serves.' The other 8 rows of the table do map to pass-1 findings (#1, #2, #14, #3, #11, #8/#10, #6, #13).",
+   "correct_value": "The pass-1 transcript does not record a finding that CURRENT_STATE asserted the target audience. It records that no file states it. This row is not supported by the published transcript.",
+   "lens": "remote"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "DR-3",
+   "claim": "E17.0–E17.2 construyeron /property ...; el ingest trae 18 campos y 29 fotos por URL, verificado",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "origin/m01_ai_handoff:webapp/potential.py:23 Blueprint(url_prefix='/property'); commit 998b6e3 'E17.0.2 - la ruta /property'. origin/e17_2_url_first_ingest:docs/E17_PROPERTY_POTENTIAL.md:162-163: 'Medido sobre una publicación real de Portal Inmobiliario: 18 campos y 29 fotos'. The 4c0934a message gives another real URL as '17 datos + 14 fotos + 1 plano'.",
+   "correct_value": "/property was built in E17.0–E17.2. But 18 fields and 29 photos was measured on ONE Portal Inmobiliario listing, not per URL in general; another verified URL gave 17 fields and 14 photos.",
+   "lens": "remote"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "Decisiones requeridas / DR-1 Contexto",
+   "claim": "`main` está en E16.1 (`64fd9c5`, 2026-09-04), 107 commits detrás del trabajo real",
+   "category": "REMOTE_GIT",
+   "verdict": "FALSE",
+   "evidence": "git rev-parse origin/main -> c6de3f9646047eeba209c5d3d4ef5e6ccb85c26f; git log -1 origin/main -> 'c6de3f9 2026-09-08 ESCALIMETRO E16.12 - record multi-component architecture blocker evidence'. git reflog origin/main shows it was pushed to c6de3f9 on 2026-09-08 08:40 -0300, three weeks before the M01 commit (2026-09-29). git rev-list --count origin/main..4c0934a -> 94; origin/main..origin/m01_ai_handoff -> 95. Only the stale LOCAL ref matches the claim: git rev-parse main -> 64fd9c5 (E16.1, 2026-09-04); rev-list 64fd9c5..4c0934a -> 107.",
+   "correct_value": "origin/main (GitHub's default branch) is at c6de3f9, E16.12, dated 2026-09-08. It is 94 commits behind 4c0934a (e17_2_url_first_ingest) and 95 behind origin/m01_ai_handoff. The 64fd9c5 / 107 figures only hold for the stale local `main` branch.",
+   "lens": "content"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "Limitaciones 2",
+   "claim": "Con `main` 107 commits atrás, si no se le indica la rama [ChatGPT] ve código de E16.1",
+   "category": "REMOTE_GIT",
+   "verdict": "FALSE",
+   "evidence": "gh repo view -> defaultBranchRef main, PUBLIC; origin/main = c6de3f9 'E16.12'; git rev-list --count origin/main..origin/m01_ai_handoff -> 95",
+   "correct_value": "Without a branch, a reader of GitHub sees origin/main at E16.12 (c6de3f9, 2026-09-08). That is 95 commits behind m01_ai_handoff (94 behind 4c0934a), not code from E16.1.",
+   "lens": "content"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "DR-1 Contexto",
+   "claim": "Todo lo posterior a E16.1 vive en una cadena lineal de ramas sin mergear",
+   "category": "REMOTE_GIT",
+   "verdict": "PARTIAL",
+   "evidence": "git log --oneline 64fd9c5..origin/main lists 13 commits (E16.4–E16.12, e.g. 028b80c..c6de3f9) that ARE on origin/main. git rev-list --merges --count origin/main..origin/m01_ai_handoff -> 0, and every origin/e* branch except e16_13_invalid_backup is an ancestor of origin/m01_ai_handoff (linear).",
+   "correct_value": "E16.2–E16.12 are already merged in origin/main. Only the work after E16.12 (from e16_13_1 on) sits in the unmerged linear chain. The chain itself is linear. e16_13_invalid_backup is 1 commit off the chain.",
+   "lens": "content"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "DR-2 Contexto",
+   "claim": "Las ramas empujadas ya contienen pricing (E30: ~USD 100 por propiedad; E17: CLP [precio E17 omitido])",
+   "category": "REMOTE_GIT",
+   "verdict": "PARTIAL",
+   "evidence": "git grep 'USD 100' origin/e30_product_direction -> docs/E30_PRODUCT_DIRECTION.md:21 '| Precio hipótesis | ~USD 100 / propiedad |' (TRUE). For CLP [precio E17 omitido]: git grep -E '[precio E17 omitido]|[precio E17 omitido]|[precio E17 omitido]' across every origin/* ref -> no hits outside M01_REPORT.md. git log --all -S'[precio E17 omitido]' -> only 2efd0c3 (the M01 commit itself). -S'[precio E17 omitido]' and -S'[precio E17 omitido]' -> nothing. git grep '\\bCLP\\b' origin/e17_2_url_first_ingest -> nothing.",
+   "correct_value": "The E30 ~USD 100/property pricing is in pushed branches (docs/E30_PRODUCT_DIRECTION.md:21). No E17 'CLP [precio E17 omitido]' price exists in any pushed branch or in the history. The only occurrence is this report.",
+   "lens": "content"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "Archivos principales",
+   "claim": "docs/ai-development/DECISIONS.md nuevo · D-001 a D-008",
+   "category": "FILE_OR_CODE",
+   "verdict": "FALSE",
+   "evidence": "git show origin/m01_ai_handoff:docs/ai-development/DECISIONS.md has headings D-001 through D-009 (line 98: '### D-009 — Internal Reconstruction Lab: iniciativa aprobada'). The report's own criterion 4 says '9 decisiones' and mentions D-009.",
+   "correct_value": "DECISIONS.md contains D-001 to D-009 (9 decisions).",
+   "lens": "content"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "Archivos principales",
+   "claim": "List of new/modified files: CLAUDE.md, 4 docs/ai-development docs, tasks/M01.md, reports/M01_REPORT.md, tests/test_ai_handoff.py new; README.md, PRODUCT_V1_SCOPE.md, PRODUCT_BOUNDARY.md with 1–2 line notice",
+   "category": "LOCAL_GIT",
+   "verdict": "PARTIAL",
+   "evidence": "git show --stat origin/m01_ai_handoff: 14 files, 1219 insertions(+), 0 deletions. All listed files match (README +4, PRODUCT_BOUNDARY +2, PRODUCT_V1_SCOPE +2). The commit also adds experiments/M01/README.md, reconstruction_pass1.md and reconstruction_pass2.md, which the list omits.",
+   "correct_value": "All listed files are correct. The commit also adds 3 files under experiments/M01/ that the 'principales' list does not include.",
+   "lens": "content"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "Qué cambió",
+   "claim": "los docs/E*.md guardaban el razonamiento de diseño de cada fase, pero no su estado, sus tests ni su resultado",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "At 4c0934a several E docs do record results and tests. docs/E23_MVP_V1_REBASELINE.md:232 has 'ENGINEERING HEALTH 1060 passed · 2 skipped · 7 xfailed'. docs/E17_PROPERTY_POTENTIAL.md:200-201 records the dogfood result (4 listings ALREADY_STRONG). docs/E34_ZERO_FRICTION_INGEST.md:37 has 'Medido sobre nuestras plantas reales'. docs/E36_REAL_PILOT.md mentions tests and THRESHOLD_UNCALIBRATED status.",
+   "correct_value": "Several docs/E*.md do record measured results and some test counts (e.g. E23, E17, E34, E36). The claim is an overgeneralization.",
+   "lens": "content"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "Qué cambió",
+   "claim": "CLAUDE.md — Claude Code lo carga solo al abrir el repo; la doctrina y el protocolo llegan a cada sesión sin que nadie los pegue",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "CLAUDE.md exists at the root (git ls-tree), and Claude Code auto-loads a root CLAUDE.md. But CLAUDE.md only links to PRODUCT_DOCTRINE.md and DEVELOPMENT_PROTOCOL.md with plain markdown links (lines 8-10), not @-imports. It says 'léelo, y después lee lo que enlaza'. It contains only a short summary of the core and roles.",
+   "correct_value": "CLAUDE.md is auto-loaded. The full doctrine and protocol documents are not: they are plain links that the agent must choose to read. Only CLAUDE.md's condensed summary arrives automatically.",
+   "lens": "content"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "Tests",
+   "claim": "post-change: 2056 passed ... (+20 = los tests nuevos de tests/test_ai_handoff.py)",
+   "category": "TEST_RESULT",
+   "verdict": "PARTIAL",
+   "evidence": "The count of 20 collected tests is verified statically. 11 plain test functions, plus parametrized: test_cada_task_tiene_las_secciones_del_formato over tasks/ (1: M01), test_cada_report_tiene_status_valido_y_sus_secciones over reports/ (1: M01), test_los_enlaces_relativos_resuelven over CLAUDE.md + 4 ai-development docs + tasks/M01.md + reports/M01_REPORT.md (7). 11+1+1+7=20. The 2056 total was not re-run.",
+   "correct_value": "The +20 new tests are verified. The 2056 total is not re-run, so it cannot be verified.",
+   "lens": "content"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "Tests",
+   "claim": "Los 2 fallos son preexistentes desde E34 (listados en CURRENT_STATE.md)",
+   "category": "TEST_RESULT",
+   "verdict": "PARTIAL",
+   "evidence": "CURRENT_STATE.md lines 64-66 list test_e12_hardening::test_el_html_muestra_la_etapa_que_fallo and test_e15_case_contract::test_las_rutas_de_artefactos_se_derivan_del_caso (listing TRUE). Commit messages 8c1a7ba and earlier E17 commits say 'los dos preexistentes desde E34'. However, the 812af75 (E34.4) message notes that E33 had also reported '1832 passed / 2 failed'. The suite was not run.",
+   "correct_value": "The failures are listed in CURRENT_STATE.md, but 'since E34' cannot be confirmed. E33 had also reported 2 failures, and the suite was not run.",
+   "lens": "content"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "Acceptance criteria 2",
+   "claim": "CURRENT_STATE.md verificado; cada hecho se chequeó contra el repo",
+   "category": "FILE_OR_CODE",
+   "verdict": "FALSE",
+   "evidence": "CURRENT_STATE.md line 24 says '`main` | `64fd9c5` · 2026-09-04 | E16.1. 107 commits detrás', but origin/main is c6de3f9 (E16.12, 2026-09-08), 94 behind 4c0934a. CURRENT_STATE line 31 says 'nada está mergeado', but E16.2–E16.12 are on origin/main. CURRENT_STATE line 4-5 itself admits pilot figures were checked against .data-lab/, which is not in the repo.",
+   "correct_value": "At least the main-branch facts in CURRENT_STATE.md are wrong against the remote (they match only a stale local ref). Some figures were checked against .data-lab/ outside the repo.",
+   "lens": "content"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "Acceptance criteria 4",
+   "claim": "DECISIONS.md con 9 decisiones, cada una con procedencia citable dentro del repo",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "9 decisions D-001..D-009: TRUE. Every cited file exists (link check all OK). But D-008 cites test `test_el_motor_no_se_toco` in tests/test_e28_property_pipeline.py, where the function is actually `test_el_motor_no_fue_tocado` (line 492); `test_el_motor_no_se_toco` exists only in e17/e17_2/e35/e36 test files. D-005 and D-004 also partly cite TASK prompts that are not in the repo.",
+   "correct_value": "There are 9 decisions. The D-008 citation names a test that does not exist under that name in test_e28_property_pipeline.py (it is test_el_motor_no_fue_tocado). Some provenance (E35/E36 prompts, TASKs since E30) is outside the repo, though each entry also cites an in-repo file.",
+   "lens": "content"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "Acceptance criteria 4",
+   "claim": "La [procedencia] de D-001–D-004 y D-009 termina en tasks/M01.md §Fuente, un resumen redactado por Claude del documento original de Joaquín; lo dice explícitamente",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "D-001, D-002, D-004 and D-009 'Origen' cite tasks/M01.md §Fuente. D-003's Origen is 'Joaquín + ChatGPT — tasks/M01.md' without §Fuente. tasks/M01.md line 72-75: 'Lo que las decisiones D-001 a D-004 y D-009 citan... **Resumen redactado por Claude**' (explicit: TRUE).",
+   "correct_value": "This is correct except that D-003 cites tasks/M01.md generally, not §Fuente.",
+   "lens": "content"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "Acceptance criteria 10 / Regresiones",
+   "claim": "sin regresiones; M01 sólo agrega documentación y un test",
+   "category": "LOCAL_GIT",
+   "verdict": "PARTIAL",
+   "evidence": "git show --stat 2efd0c3: 14 files, 1219 insertions, 0 deletions. Only .md files plus tests/test_ai_handoff.py. No webapp/src changes. The 'no regressions' test outcome was not re-run.",
+   "correct_value": "The additions-only part is true (docs, experiments transcripts, one test file). No regressions cannot be confirmed without running the suite.",
+   "lens": "content"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "Evidencia (tabla de hallazgos)",
+   "claim": "La pasada 1 encontró [los 9 hallazgos de la tabla], incluido '`CURRENT_STATE` afirmaba el público objetivo'",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "Pass-1 findings match 8 of the 9 rows: #1 ingest, #2 'M01 §N', #14 circular D-001, #3 freeze, #11 who commits TASKs, #8/#10 BFL/production, #6 1/10 vs 7, #13 terms. For target audience, pass-1 Q1 says the opposite: 'The files never say in plain words who the product is for'. Pass 1 has no finding that CURRENT_STATE asserted a target audience.",
+   "correct_value": "8 of the 9 rows correspond to pass-1 findings. The 'CURRENT_STATE afirmaba el público objetivo' row is not a pass-1 finding: pass 1 reported that the files do NOT state the target audience.",
+   "lens": "content"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "Evidencia",
+   "claim": "Las dos transcripciones están en experiments/M01/, condensadas pero con todas sus calificaciones y hallazgos",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "experiments/M01/reconstruction_pass1.md and reconstruction_pass2.md exist, and the ../experiments/M01/ link resolves. Both are marked condensed (experiments/M01/README.md). Completeness against the original agent output cannot be checked, because the originals are not in the repo.",
+   "correct_value": "The files exist and are condensed. Whether they contain all grades and findings cannot be verified.",
+   "lens": "content"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "DR-3 Recomendación",
+   "claim": "El ingest es lo reutilizable (18 campos y 29 fotos por URL, verificado)",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "docs/E17_PROPERTY_POTENTIAL.md:162-163 and the ba270bc message report 'Medido sobre una publicación real de Portal Inmobiliario: 18 campos y 29 fotos'. This is one listing. 4c0934a reports a different real listing yielding '17 datos + 14 fotos + 1 plano'.",
+   "correct_value": "18 fields and 29 photos was measured on one Portal Inmobiliario listing, not per URL in general. Another verified listing gave 17 fields and 14 photos.",
+   "lens": "content"
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "Commit / branch / PR",
+   "claim": "Sin PR, sin merge, sin deploy",
+   "category": "REMOTE_GIT",
+   "verdict": "PARTIAL",
+   "evidence": "gh pr list --state all -> empty. git merge-base --is-ancestor origin/m01_ai_handoff origin/main -> false (origin/main is c6de3f9, 95 behind). Deploy cannot be checked from here.",
+   "correct_value": "No PR and no merge are verified. Whether there was a deploy cannot be verified.",
+   "lens": "content"
+  },
+  {
+   "doc": "docs/ai-development/DECISIONS.md",
+   "section": "D-001 Consecuencia",
+   "claim": "El scoring general de publicaciones (E17.0–E17.2) queda como aplicación",
+   "category": "LOCAL_GIT",
+   "verdict": "PARTIAL",
+   "evidence": "git log origin/e36_real_property_pilot..origin/m01_ai_handoff: E17.0.x = listing model/route /property/report, E17.1.x = potential/20-listing review, E17.2.x = 'traer una URL...', 'del link al informe', WebP fix. E17.2 is mainly URL ingest, which the same doc and PRODUCT_DOCTRINE (line 58 'ingest de URL (E17.2)') classify as infrastructure, not scoring.",
+   "correct_value": "The listing scoring/potential work is E17.0–E17.1. E17.2 is mostly URL ingest (infrastructure), plus the link-to-report flow.",
+   "lens": "remote"
+  },
+  {
+   "doc": "docs/ai-development/DECISIONS.md",
+   "section": "D-002 Origen",
+   "claim": "D-002 (roles) is 'persistido en DEVELOPMENT_PROTOCOL.md'",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "grep 'product owner|autoridad|no implementa' -> the roles table ('Product owner y autoridad final', 'No implementa el repo', 'No redefine el producto') is only in PRODUCT_DOCTRINE.md:68-72. DEVELOPMENT_PROTOCOL has only gates (§4), DECISION_REQUIRED (§3/§8) and 'ChatGPT no tiene acceso de escritura al repo y no implementa' (§5.1).",
+   "correct_value": "The role definitions are persisted mainly in PRODUCT_DOCTRINE.md §Roles. DEVELOPMENT_PROTOCOL.md only covers them partly, through the gates and §5.1.",
+   "lens": "remote"
+  },
+  {
+   "doc": "docs/ai-development/DECISIONS.md",
+   "section": "D-005 Fecha",
+   "claim": "ampliada 2026-09-23 (E36, E36.1)",
+   "category": "REMOTE_GIT",
+   "verdict": "PARTIAL",
+   "evidence": "git log origin/e35_robust_zero_friction_ingest..origin/e36_real_property_pilot: 4bdbfcb E36.1, 9514caf E36.2, a8ed878 E36.3, 22b29f4 E36.4, cb6581a 'E36.1 - solo cuenta como verdad lo que miro una persona' are all dated 2026-09-22 (15:17–15:36 -0300). Only ae64d35 (E36.2 follow-up, remote branch head) is 2026-09-23 08:32 -0300.",
+   "correct_value": "E36 and the E36.1 HUMAN_VERIFIED change are dated 2026-09-22. Only the last follow-up commit, ae64d35, is 2026-09-23.",
+   "lens": "remote"
+  },
+  {
+   "doc": "docs/ai-development/DECISIONS.md",
+   "section": "D-008 Origen",
+   "claim": "test `test_el_motor_no_se_toco` in tests/test_e28_property_pipeline.py and following",
+   "category": "FILE_OR_CODE",
+   "verdict": "FALSE",
+   "evidence": "git show origin/m01_ai_handoff:tests/test_e28_property_pipeline.py -> the function at ~line 492 is 'def test_el_motor_no_fue_tocado():'. The same name is used in test_e30, e31, e32, e32_2, e33, e34. The name 'test_el_motor_no_se_toco' first appears in test_e35_robust_ingest.py:472, then in test_e36_real_pilot.py:539, test_e17_property_potential.py:470 and test_e17_2_url_ingest.py:512.",
+   "correct_value": "In tests/test_e28_property_pipeline.py (and E30–E34) the test is named `test_el_motor_no_fue_tocado`. `test_el_motor_no_se_toco` only exists from E35 on.",
+   "lens": "remote"
+  },
+  {
+   "doc": "CLAUDE.md",
+   "section": "Convenciones",
+   "claim": "Por tarea: tests/test_<id>_*.py",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "git ls-tree origin/m01_ai_handoff tests/ -> 50 tests/test_e*.py files follow the pattern. M01's own test is tests/test_ai_handoff.py, not tests/test_m01_*.py.",
+   "correct_value": "The convention holds for the E-series tasks. The only M-series task (M01) broke it with tests/test_ai_handoff.py.",
+   "lens": "remote"
+  },
+  {
+   "doc": "experiments/M01/README.md",
+   "section": "table",
+   "claim": "Pass 1 result: 7 respondidas · 4 parciales · 1 sin respuesta",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "reconstruction_pass1.md headline says 'Score: 7 ANSWERED, 4 PARTIAL, 1 NOT_ANSWERED'. Its itemized grades (grep '^N. **...? GRADE' | uniq -c) give 8 ANSWERED (Q2,3,4,5,6,10,11,12), 3 PARTIAL (Q1,7,8), 1 NOT_ANSWERED (Q9). The same 7/4/1 is repeated in M01_REPORT.md and the 2efd0c3 commit message.",
+   "correct_value": "The per-question grades in the pass-1 transcript add up to 8 answered, 3 partial, 1 unanswered. Only its headline says 7/4/1.",
+   "lens": "remote"
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md (context: outside assigned scope, referenced by DECISIONS D-004 and CLAUDE.md)",
+   "section": "Ramas / DR-1",
+   "claim": "main is at 64fd9c5 (E16.1, 2026-09-04), 107 commits behind (also in M01_REPORT DR-1 and the 2efd0c3 commit message)",
+   "category": "REMOTE_GIT",
+   "verdict": "FALSE",
+   "evidence": "git ls-remote origin -> refs/heads/main c6de3f9646047eeba209c5d3d4ef5e6ccb85c26f ('ESCALIMETRO E16.12 ...', 2026-09-08). Local main = 64fd9c5 (stale). git rev-list --count 64fd9c5..c6de3f9 -> 13. gh api compare/main...e17_2_url_first_ingest -> 94 ahead, 0 behind. compare/main...m01_ai_handoff -> 95 ahead, 0 behind. The 107 figure = rev-list 64fd9c5..origin/e17_2_url_first_ingest, measured from the stale local ref.",
+   "correct_value": "Remote main is c6de3f9 (E16.12, 2026-09-08). It is 94 commits behind e17_2_url_first_ingest and 95 behind m01_ai_handoff. Local main (64fd9c5, E16.1) is 13 commits behind origin/main.",
+   "lens": "remote"
+  },
+  {
+   "doc": "docs/ai-development/DECISIONS.md",
+   "section": "D-005",
+   "claim": "Fecha: 2026-09-21 (E35) · ampliada 2026-09-23 (E36, E36.1)",
+   "category": "REMOTE_GIT",
+   "verdict": "FALSE",
+   "evidence": "git show -s --format='%h %ad %s' --date=iso 4bdbfcb cb6581a ae64d35 22b29f4 -> 4bdbfcb 2026-09-22 15:17 'E36.1 - un instrumento...'; 22b29f4 2026-09-22 15:17 'E36.4 - tests de contrato...'; cb6581a 2026-09-22 15:36 'E36.1 - solo cuenta como verdad lo que miro una persona' (introduces HUMAN_VERIFIED: git log -S'HUMAN_VERIFIED' -- webapp/ -> 4bdbfcb, cb6581a, both 2026-09-22); ae64d35 2026-09-23 08:32 'E36.2 - el contador de procedencia lleva denominador'. E35 part: 909045e/feac30a 2026-09-21 (correct).",
+   "correct_value": "The E35 date (2026-09-21) is correct, but the E36 and E36.1 commits, including cb6581a which added HUMAN_VERIFIED, are all dated 2026-09-22. The only 2026-09-23 commit is ae64d35 (E36.2, the provenance counter).",
+   "lens": "content"
+  },
+  {
+   "doc": "docs/ai-development/DECISIONS.md",
+   "section": "D-008",
+   "claim": "Origen: ... test `test_el_motor_no_se_toco` en `tests/test_e28_property_pipeline.py` y siguientes.",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "git grep -n -B3 '\"6324b1f\", \"HEAD\"' origin/m01_ai_handoff -- tests/ | grep 'def ' -> test_e28_property_pipeline.py:492 def test_el_motor_no_fue_tocado(); same name in test_e30, e31, e32_2, e32_internal_console, e33, e34; test_el_motor_no_se_toco only in test_e35_robust_ingest.py:472, test_e36_real_pilot.py:539, test_e17_property_potential.py:470, test_e17_2_url_ingest.py:512.",
+   "correct_value": "In tests/test_e28_property_pipeline.py the test is named `test_el_motor_no_fue_tocado`. That name is also used for E30 through E34. `test_el_motor_no_se_toco` only exists from E35 on (E35, E36, E17, E17.2).",
+   "lens": "content"
+  },
+  {
+   "doc": "docs/ai-development/DECISIONS.md",
+   "section": "D-008",
+   "claim": "Referencia: el commit `6324b1f` («E26 — listo para la primera revisión arquitectónica humana»)",
+   "category": "REMOTE_GIT",
+   "verdict": "PARTIAL",
+   "evidence": "git show -s --format='%H %ad %s' --date=iso 6324b1f -> 6324b1f36e5134b461aabe240da9244d4fb84b11 2026-09-10 16:00:07 +0000 'ESCALIMETRO E26 - listo para la primera revision arquitectonica humana'",
+   "correct_value": "The commit exists and is E26, but the quoted subject is not verbatim. The actual subject is 'ESCALIMETRO E26 - listo para la primera revision arquitectonica humana', with an ESCALIMETRO prefix, a hyphen rather than an em dash, and no accents.",
+   "lens": "content"
+  },
+  {
+   "doc": "docs/ai-development/DECISIONS.md",
+   "section": "D-002",
+   "claim": "Roles decision 'persistido en DEVELOPMENT_PROTOCOL.md'",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "git grep -n -i 'product owner\\|autoridad' origin/m01_ai_handoff -- docs/ai-development/DEVELOPMENT_PROTOCOL.md -> no matches. The protocol only covers part of it: §3 DECISION_REQUIRED, §4 gates, and §5.1 'ChatGPT no tiene acceso de escritura al repo y no implementa'. The full roles table (Joaquín product owner/autoridad final, ChatGPT, Claude) is in PRODUCT_DOCTRINE.md §Roles.",
+   "correct_value": "The roles are fully written down in PRODUCT_DOCTRINE.md §Roles (and in CLAUDE.md). DEVELOPMENT_PROTOCOL.md only carries parts of them (gates, DECISION_REQUIRED, ChatGPT does not implement).",
+   "lens": "content"
+  },
+  {
+   "doc": "docs/ai-development/DECISIONS.md",
+   "section": "D-005",
+   "claim": "Origen: prompts E35 §13, E36 §11–§12, E36.1 · persistido en docs/E35_ROBUST_INGEST.md, docs/E36_REAL_PILOT.md",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "Both docs exist. E35_ROBUST_INGEST.md:108,114 covers 'verlo discriminar' and MIN_SAMPLE = 10; E36_REAL_PILOT.md:115-118 covers 'sample_count >= MIN_SAMPLE (10) AND threshold_exercised'. The prompts are not in the repo. Code comments cite 'E35 §13' for uncalibrated thresholds (ingest.py:105) but '§12' for MIN_SAMPLE (calibration.py:80).",
+   "correct_value": "The persisted docs are correct. The prompt section numbers cannot be verified, and the code attributes MIN_SAMPLE to §12, not §13.",
+   "lens": "content"
+  },
+  {
+   "doc": "docs/ai-development/DECISIONS.md",
+   "section": "D-006",
+   "claim": "Fecha 2026-09-21 (E31); BFL no recibe fotos de clientes sin aprobación de Joaquín; persistido en docs/E31_PROVIDER_DECISION.md",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "E31_PROVIDER_DECISION.md:41-44 records the BFL perpetual-licence objection and says 'para fotos de clientes reales lo decide Joaquín'. It was added in 29988ce (E31.6, 2026-09-21). The explicit exclusion is in webapp/domain/pilot.py:32-35 EXCLUDED = {\"bfl\": \"DESHABILITADO — requiere decisión de licencia...\"}, added in 4a62650 (E32.1, 2026-09-21). docs/E32_INTERNAL_PILOT_CONSOLE.md:99 says 'BFL excluido por licencia'.",
+   "correct_value": "The date and substance are correct. The E31 doc records the licence objection and that Joaquín decides, but the actual exclusion is persisted in webapp/domain/pilot.py (E32.1) and in docs/E32_INTERNAL_PILOT_CONSOLE.md, not in docs/E31_PROVIDER_DECISION.md.",
+   "lens": "content"
+  },
+  {
+   "doc": "CLAUDE.md",
+   "section": "Restricciones duras",
+   "claim": "Dos fallos de la suite son preexistentes desde E34 y están listados en CURRENT_STATE.md",
+   "category": "TEST_RESULT",
+   "verdict": "PARTIAL",
+   "evidence": "CURRENT_STATE.md lists test_e12_hardening::test_el_html_muestra_la_etapa_que_fallo and test_e15_case_contract::test_las_rutas_de_artefactos_se_derivan_del_caso, and both tests exist (tests/test_e12_hardening.py:287, tests/test_e15_case_contract.py:148). However, commit d19a3cf (E27, 2026-09-10) says: '3 fallos preexistentes en esta maquina ... PNGs regenerables excluidos por .gitignore (e15_case_contract, e12)'. 4c62577 (E27.2, 2026-09-11) repeats this. 812af75 (E34.4) says E33 already reported '1832 passed / 2 failed'. The suite was not re-run (about 6 minutes).",
+   "correct_value": "They are listed in CURRENT_STATE.md, but commit history shows failures in test_e12_hardening and test_e15_case_contract were already documented at E27 (2026-09-10) as machine-local, caused by gitignored PNGs. They predate E34. The exact current failures cannot be confirmed without running the suite.",
+   "lens": "content"
+  },
+  {
+   "doc": "CLAUDE.md",
+   "section": "Convenciones del código",
+   "claim": "Por tarea: tests/test_<id>_*.py",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "git ls-tree tests/: E-phase tests follow the pattern (test_e28_property_pipeline.py, test_e36_real_pilot.py, ...). M01's own test is tests/test_ai_handoff.py, not test_m01_*.py.",
+   "correct_value": "Most E-phase tests follow the convention, but M01, the task that introduced it, does not: its test is tests/test_ai_handoff.py.",
+   "lens": "content"
+  },
+  {
+   "doc": "experiments/M01/README.md",
+   "section": "Tabla",
+   "claim": "Pasada 1: 7 respondidas · 4 parciales · 1 sin respuesta",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "reconstruction_pass1.md header says 'Score: 7 ANSWERED, 4 PARTIAL, 1 NOT_ANSWERED.' Its per-question grades tally differently: git show ...reconstruction_pass1.md | grep -E '^[0-9]+\\. \\*\\*.*\\?' | grep -oE '(NOT_ANSWERED|PARTIAL|ANSWERED)' | sort | uniq -c -> 8 ANSWERED, 3 PARTIAL, 1 NOT_ANSWERED (Q1, Q7, Q8 PARTIAL; Q9 NOT_ANSWERED; Q2-6 and Q10-12 ANSWERED).",
+   "correct_value": "The README matches the transcript's header, but the 12 per-question grades in the committed transcript add up to 8 answered, 3 partial and 1 unanswered. The transcript contradicts itself.",
+   "lens": "content"
+  },
+  {
+   "doc": "experiments/M01/README.md",
+   "section": "Nota",
+   "claim": "Transcripciones condensadas en inglés; se conservaron todas las calificaciones y todos los hallazgos, con su numeración",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "The answers are in English, and findings are numbered 1-14 (pass 1) and 1-12 (pass 2). The raw agent output is not in the repo, so completeness cannot be checked. The pass-1 per-question grades (8/3/1) do not match its own header score (7/4/1), which suggests at least one grade was altered or lost when condensing.",
+   "correct_value": "The language and numbering claims are correct, but the claim that all grades were preserved is contradicted by the internal mismatch in reconstruction_pass1.md.",
+   "lens": "content"
+  }
+ ],
+ "critico": [
+  {
+   "doc": "docs/ai-development/DEVELOPMENT_PROTOCOL.md",
+   "section": "§5 Identificadores",
+   "claim": "Un número no se reutiliza. (The only acknowledged exception is the two E17 series, which CURRENT_STATE lists as its single ID inconsistency.)",
+   "category": "LOCAL_GIT",
+   "verdict": "PARTIAL",
+   "evidence": "`git log --format='%h %cs %s' origin/main..origin/m01_ai_handoff` shows several more reused numbers. E32.2: ef63c37 'E32.2 - avance y linea de tiempo DERIVADOS' (a step of E32) and the e32_2_entitlement_semantics task (65db238..b2074d2 'E32.2a'..'E32.2e'). E36.1: 4bdbfcb 'E36.1 - un instrumento para medir...' and cb6581a 'E36.1 - solo cuenta como verdad lo que miro una persona'. E36.2: 9514caf 'E36.2 - todo el QA ocurre dentro de la pagina' and ae64d35 'E36.2 - el contador de procedencia lleva denominador'. E28.6: 7047b8f and 637889d (637889d comes after E28.7). Engine E17 is ef6dc6a (2026-09-08); product E17.0 is 7572d06 (2026-09-24).",
+   "correct_value": "As a rule for new IDs it is fine. As a description of the repo, numbers were already reused beyond E17: E32.2, E36.1, E36.2 and E28.6. CURRENT_STATE 'Inconsistencias conocidas' lists only E17. D-005 cites 'E36.1', which is ambiguous because of this collision."
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "DR-1 Recomendación técnica (checkers marked it TRUE; new counter-evidence)",
+   "claim": "Mergear la cadena en main (opción A) es seguro: D-004 y DEPLOY_GATE siguen protegiendo producción",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "README.md on origin/m01_ai_handoff, lines 52-83, has the table 'Railway — dos servicios en el proyecto ESCALIMETRO'. Service `backend` (E09–E12) lists branch `main`. Its start command `PYTHONPATH=src python -m escalimetro.ai.railway_e09_runner` runs the E09 experiment on every start, which calls OpenAI and Anthropic. The README says 'cada redeploy costaría dinero'. Service `web` (E27) lists branch `e27_internal_web_app`. No handoff doc mentions this.",
+   "correct_value": "The repo records a Railway service (`backend`) that deploys from `main`. If Railway auto-deploys on push, fast-forwarding main (option A) would redeploy it and run a paid E09 experiment. D-004 and DEPLOY_GATE only cover the web product, not this side effect. The DR-1 context ('Producción tampoco corre desde main') leaves this service out."
+  },
+  {
+   "doc": "docs/ai-development/CURRENT_STATE.md",
+   "section": "Producción / Bloqueos (checkers split TRUE/PARTIAL; new evidence)",
+   "claim": "No está registrado en el repo ni qué commit está desplegado ni la URL",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "README.md (m01) table and DEPLOY.md step 3 ('En Settings → Source, elegir la rama e27_internal_web_app') record the deployed branch of the web service. `git ls-remote origin` gives refs/heads/e27_internal_web_app = 1ae6a0b, which is 'ESCALIMETRO E27.3 - un caso con geometria se muestra como analizado'. DEPLOY.md step 6 says the URL is a generated Railway domain, and no concrete URL is recorded.",
+   "correct_value": "The URL is not recorded. The deployed source branch is recorded (e27_internal_web_app, tip 1ae6a0b = E27.3), and it matches the 'e27.3' production state. Only the exact commit that is live is unconfirmed."
+  },
+  {
+   "doc": "CLAUDE.md",
+   "section": "Convenciones del código",
+   "claim": "Todo en castellano: docstrings, comentarios, commits",
+   "category": "LOCAL_GIT",
+   "verdict": "PARTIAL",
+   "evidence": "The 19 commits from E16.13.1 to E22 have English subjects in `git log origin/m01_ai_handoff`, e.g. 37558b8 'ESCALIMETRO E22 - evaluator sensitivity under frozen QA evidence', ef6dc6a 'ESCALIMETRO E17 - structural width representation spike', c6de3f9 (main tip) 'E16.12 - record multi-component architecture blocker evidence'. The src/escalimetro docstrings I sampled (ai/config.py, ai/costs.py, ai/e09.py) are Spanish. experiments/M01 transcripts are English, which experiments/M01/README.md acknowledges.",
+   "correct_value": "This holds as a rule going forward. Historically, commits E16.13.1–E22 (including main's tip) are in English."
+  },
+  {
+   "doc": "docs/ai-development/PRODUCT_DOCTRINE.md",
+   "section": "Principios / CORE 1 Entrada (provenance via D-001 → tasks/M01.md §Fuente)",
+   "claim": "The doctrine is the persisted form of the approved M01 source (D-001 Origen: tasks/M01.md §Fuente · persistido en PRODUCT_DOCTRINE.md)",
+   "category": "FILE_OR_CODE",
+   "verdict": "PARTIAL",
+   "evidence": "`git grep -n -iE 'remoto|antecedentes p[uú]blicos|visita f[ií]sica' origin/m01_ai_handoff -- '*.md'` returns only PRODUCT_DOCTRINE.md:49 ('Producto 100 % remoto'). tasks/M01.md §Fuente ('Doctrina.' paragraph) has the core, the 90/10 goal and the list of applications. It has neither principle 4 (100 % remoto, sin visita física) nor principle 5 (honestidad de la evidencia por encima de la métrica), nor the CREAR PLANO input list (dirección y contexto, antecedentes públicos verificables). The doctrine's Joaquín-authority row also drops two §Fuente items: 'el problema' and 'cuándo algo está listo'.",
+   "correct_value": "Parts of the doctrine (principles 4–5 and the detailed input lists) cannot be traced to anything in the repo. They may come from the original out-of-repo document, which cannot be checked. Every other element resolves to §Fuente."
+  },
+  {
+   "doc": "docs/ai-development/DEVELOPMENT_PROTOCOL.md",
+   "section": "§5.1 Quién escribe cada archivo (as applied to M01)",
+   "claim": "tasks/<ID>.md lo commitea Claude, como primer paso de la tarea, en la rama de la tarea",
+   "category": "LOCAL_GIT",
+   "verdict": "PARTIAL",
+   "evidence": "`git show --stat origin/m01_ai_handoff` shows one commit, 2efd0c3 (2026-09-29), that adds tasks/M01.md together with reports/M01_REPORT.md, CURRENT_STATE.md and the rest (14 files). `git rev-list --count origin/e17_2_url_first_ingest..origin/m01_ai_handoff` = 1.",
+   "correct_value": "M01 did not follow the rule: the TASK went into the same single final commit as the REPORT, not into a first commit. That may be acceptable because the protocol was written during M01, but no doc says so."
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "Acceptance criteria 1",
+   "claim": "doctrina persistida con el core y los roles: PRODUCT_DOCTRINE.md, D-001, D-002",
+   "category": "FILE_OR_CODE",
+   "verdict": "TRUE",
+   "evidence": "PRODUCT_DOCTRINE.md on origin/m01_ai_handoff has '## El core' (CREAR/MEJORAR PLANO) and '## Roles' (Joaquín, ChatGPT, Claude Code). DECISIONS.md has D-001 (core) and D-002 (roles).",
+   "correct_value": ""
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "Qué cambió",
+   "claim": "tasks/ y reports/ — con M01 como primer ciclo real",
+   "category": "LOCAL_GIT",
+   "verdict": "TRUE",
+   "evidence": "`git ls-tree -r --name-only origin/e17_2_url_first_ingest | grep -E '^tasks/|^reports/'` returns nothing, so neither directory existed before M01. In 2efd0c3 the only files are tasks/M01.md and reports/M01_REPORT.md.",
+   "correct_value": ""
+  },
+  {
+   "doc": "docs/ai-development/DECISIONS.md",
+   "section": "D-004 Fecha",
+   "claim": "vigente desde E30; formalizada 2026-09-29",
+   "category": "LOCAL_GIT",
+   "verdict": "TRUE",
+   "evidence": "DECISIONS.md is added in 2efd0c3, committed 2026-09-29 10:21:41 -0300 (`git log -1 --format='%ci' origin/m01_ai_handoff`). The 'vigente desde E30' part was already covered.",
+   "correct_value": ""
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "DR-4 Contexto",
+   "claim": "Lo que mide [la muestra de 20 avisos] —si el diagnóstico acierta y si vale la pena contactar— es sobre el scoring",
+   "category": "FILE_OR_CODE",
+   "verdict": "TRUE",
+   "evidence": "webapp/domain/potential/reviews.py (origin/m01_ai_handoff) lines 1-15: 'E17.1 §4/§5 — LA REVISIÓN HUMANA DEL DIAGNÓSTICO, y el tablero del dogfood de 20 avisos'. It records three judgments: DIAGNÓSTICO (ACERTADO/PARCIAL/EQUIVOCADO), OPORTUNIDAD (HAY_ALGO/NO_HAY) and CONTACTAR (SÍ/NO). webapp/store.py:591 and templates/potential/dogfood.html say the same.",
+   "correct_value": "Accurate. The sample also records a third judgment, OPORTUNIDAD, which the report does not mention."
+  },
+  {
+   "doc": "reports/M01_REPORT.md",
+   "section": "DR-7 Opción A premise",
+   "claim": "Aprobar la licencia y habilitar BFL en el bake-off (premise: BFL is currently disabled in the bake-off)",
+   "category": "FILE_OR_CODE",
+   "verdict": "TRUE",
+   "evidence": "webapp/domain/pilot.py:32-38 has `EXCLUDED = {\"bfl\": \"DESHABILITADO — requiere decisión de licencia ...\"}` and `PILOT_PROVIDERS = (\"openai\", \"gemini\")`, with the comment 'Los que participan del bake-off de E31.1'. webapp/lab.py:697 and webapp/benchmark.py:359 filter out excluded providers. The BFL adapter still exists in webapp/providers/bfl.py.",
+   "correct_value": "The premise holds. The exclusion comes from E31.1 §2 (the pilot.py comment), not E31: docs/E31_PROVIDER_DECISION.md §4 says BFL is 'aceptable' for the own-photo bake-off and leaves only client photos to Joaquín. So '(D-006, E31)' is attributed to the wrong phase."
+  }
+ ]
+}

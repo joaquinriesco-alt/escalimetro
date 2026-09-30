@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import os
 import re
+import subprocess
 import sys
 
 import pytest
@@ -186,7 +187,44 @@ def test_los_documentos_reemplazados_lo_dicen():
 
 
 # ===================================================================================================
-# 5 — el repo es público
+# 5 — el estado de las ramas se declara contra el remoto (M01.1)
+# ===================================================================================================
+def _git(*args: str) -> str:
+    return subprocess.run(["git", "-C", ROOT, *args], capture_output=True, text=True,
+                          check=True).stdout.strip()
+
+
+def test_el_main_declarado_es_el_de_origin_no_el_local():
+    """M01 declaró `main` en E16.1 y «107 commits atrás» leyendo la rama local `main`, que llevaba
+    trece commits de retraso porque `origin/main` se había movido con pushes desde otras ramas.
+    La ref remota ya tenía el valor correcto; nadie la miró. Este test compara contra
+    `refs/remotes/origin/main`, la vista más fresca del remoto sin salir a la red, y nunca contra
+    `refs/heads/main`. Si falla: `git fetch origin` y reverificar (protocolo §9.1).
+
+    Si el commit que escribió este estado ya está dentro de `origin/main`, `main` se movió por el
+    merge de este mismo trabajo y el estado quedó como historia: no es un error."""
+    t = _leer(os.path.join(AI, "CURRENT_STATE.md"))
+    m = re.search(r"^\|\s*`main`\s*\|\s*`([0-9a-f]{7,40})`", t, re.M)
+    assert m, "CURRENT_STATE no declara la punta de `main` en la tabla de ramas"
+    declarado = m.group(1)
+    try:
+        remoto = _git("rev-parse", "--verify", "-q", "refs/remotes/origin/main")
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        pytest.skip("sin refs/remotes/origin/main: este checkout no conoce el remoto")
+    if remoto.startswith(declarado):
+        return
+    try:
+        escrito_en = _git("log", "-1", "--format=%H", "--", "docs/ai-development/CURRENT_STATE.md")
+        ya_mergeado = subprocess.run(
+            ["git", "-C", ROOT, "merge-base", "--is-ancestor", escrito_en, remoto]).returncode == 0
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        ya_mergeado = False
+    assert ya_mergeado, (f"CURRENT_STATE declara main={declarado}, pero origin/main={remoto[:7]}. "
+                         "Verificar contra el remoto, no contra la rama local.")
+
+
+# ===================================================================================================
+# 6 — el repo es público
 # ===================================================================================================
 def test_el_handoff_no_filtra_secretos():
     """DR-2: el repo es público. Lo que se escribe acá lo puede leer cualquiera. Se reutilizan los
