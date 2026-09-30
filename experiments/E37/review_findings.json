@@ -1,0 +1,346 @@
+{
+ "que_es": "E37 — hallazgos de las dos rondas de revisión adversarial del Reconstruction Lab. Cada hallazgo se verificó con un agente que intentó refutarlo reproduciéndolo; todos los listados como corregidos tienen un test de regresión en tests/test_e37_reconstruction_lab.py (prefijos test_rev_ y test_r2_). Rutas locales reemplazadas por <scratch>/<local>.",
+ "ronda_1": {
+  "dimensiones": [
+   "gt-blindness",
+   "immutability-persistence",
+   "security-secrets",
+   "contamination-regressions (se colgó; repetida en la ronda 2)",
+   "acceptance-coverage",
+   "openai-adapter"
+  ],
+  "confirmados": [
+   {
+    "titulo": "Hidden GT reaches the engine (bytes, OpenAI HTTP body, run row) through a retired input that frozen or child runs still use; the run is still labelled blind",
+    "severidad": "HIGH",
+    "dimension": "gt-blindness",
+    "donde": "webapp/domain/reconstruction/groundtruth.py:76",
+    "escenario": "groundtruth.upload only refuses a GT whose sha256 equals a NON-retired input (`AND retired_at IS NULL`). Retiring does not delete the file (projects.retire_asset), and runs keep citing it. create_correction copies madre['inputs'] as-is (runs.py:200-201). A QUEUED run keeps its snapshot. build_request (runs.py:216-226) opens any cited asset, retired or not, and sends it. So once a photo is retired and the same file is uploaded as GT, every correction child of an older run, and any run still queued, sends the hidden GT to the adapter before REVEAL. The child is created with gt_state_at_creation=HIDDEN_FROM_ENGINE and is shown as 'generada a ciegas'. The compare page then says the 'a ciegas' runs were made without the GT. The GT sha256 is written into the child run row (inputs.photos[].sha256), and request_summary stores its dims and size. The /p/<pid>/asset/<retired_id> route also serves t",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "Pre-reveal runs created before the GT was uploaded are not marked as blind after reveal",
+    "severidad": "LOW",
+    "dimension": "gt-blindness",
+    "donde": "webapp/domain/reconstruction/runs.py:401",
+    "escenario": "card() sets blind only when gt_state_at_creation == 'HIDDEN_FROM_ENGINE'. Runs created before a GT was uploaded (gt_state NONE; AC4 allows uploading the GT when editing the project) are shown as 'sin plano real' on the project table, the run page and the compare page, even after the GT is uploaded and revealed. Compare then shows the revealed GT column next to runs labelled 'sin plano real', with the note 'Las corridas marcadas «a ciegas» se generaron sin él'. That suggests those runs were not generated blind, yet they were made before the reveal without the GT. AC13 (lines 190-192) requires that runs from before the reveal stay marked as generated in blind mode.",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "A trigger abort in the recon worker leaves its SQLite write transaction open and locks writes for the whole app until restart",
+    "severidad": "MEDIUM",
+    "dimension": "immutability-persistence",
+    "donde": "webapp/store.py:1004",
+    "escenario": "store.ex() runs conn.execute and then conn.commit, with no rollback on error. Python's sqlite3 opens an implicit BEGIN before the UPDATE. When recon_runs_terminadas_inmutables fires RAISE(ABORT), only the statement is undone: the transaction and its WAL write lock stay open on the connection. The recon worker (_loop, runs.py:339-341) swallows the IntegrityError and its thread-local connection lives forever, so every other write in the app waits the 30 s busy timeout and fails with 'database is locked'. That covers LAB, E36, E17 and recon. A new recon run can no longer be INSERTed, so the worker never commits: the app is write-dead until the process restarts. The trigger fires whenever the run was finished by someone else while in flight (e.g. reset_orphans from another process, see the next finding).",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "A paid call that fails after the provider responded (CONTRACT_INVALID / INCOMPLETE / NOT_JSON / REFUSAL) loses latency, token usage, prompt version, request summary and raw response",
+    "severidad": "HIGH",
+    "dimension": "immutability-persistence",
+    "donde": "webapp/domain/reconstruction/runs.py:287",
+    "escenario": "AC5 (tasks/E37.md:154-156) requires every execution to persist prompt/version, latency, cost if known and error if it fails. In runs.execute, the ContractError branch calls only _fail(msg), although `res` (usage, latency_ms, prompt_version, prompt_sha256, request_summary, raw) is in scope. In openai_direct.reconstruct (lines 229-235), latency and data['usage'] are computed before _output_text/json.loads raise EngineError, and they are discarded. Result: a billed call with, for example, 50k input + 9k output tokens (or a max_output_tokens INCOMPLETE, which is billed) leaves a FAILED row with prompt_version, prompt_sha256, request_summary, usage, latency_ms, cost_basis and artifacts all NULL, and no run dir. The report's required 'costo/latencia de cualquier llamada real' cannot be reconstructed.",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "An exception after the adapter returns escapes execute()'s try block and leaves the run RUNNING forever with no error",
+    "severidad": "MEDIUM",
+    "dimension": "immutability-persistence",
+    "donde": "webapp/domain/reconstruction/runs.py:293",
+    "escenario": "The try block (279-292) covers only build_request/reconstruct/validate. Everything after it is unguarded: json.dumps of the output, render.svg, writing the artifacts, and the final UPDATE. _loop then swallows the exception, so the run stays RUNNING with finished_at NULL and error NULL. The UI polls status.json forever showing 'Generando'. The run cannot be rated or corrected. On the next restart reset_orphans labels it '[reinicio] el servicio se reinició durante la corrida', a false cause, and the paid response is lost. This violates AC5 'error si falla' (tasks/E37.md:156). Concrete triggers: (a) an adapter returning numpy.float32 values, which jsonschema accepts as 'number' but json.dumps rejects; (b) provider text with a JSON Infinity (json.loads accepts it, validate() only checks footprint > 0) makes render.aspect return inf and int(inf) raise OverflowError; (c) OSError writing artifa",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "reset_orphans runs in any process that calls create_app and FAILs a live server's in-flight run; the finished paid result is then discarded while its artifacts land on disk",
+    "severidad": "MEDIUM",
+    "dimension": "immutability-persistence",
+    "donde": "webapp/store.py:988",
+    "escenario": "app.py:43-46 claims only the web server resets orphans. But wsgi.py calls create_app() at import, before binding the port, so starting a second server against the same ESCALIMETRO_DATA_DIR resets orphans even if it then dies with 'address in use'. This happens with a repeated `python wsgi.py`, a launch.json preview, or any script that imports wsgi or sets ESCALIMETRO_EAGER=1. That process marks the running server's in-flight recon run FAILED with '[reinicio] el servicio se reinició durante la corrida' and sets finished_at. The original worker then finishes the paid call and writes output.json, plan.svg, request.json and response.json into the run dir of an already finished run (execute writes files before the DB update, runs.py:293-305). Its final UPDATE is rejected by the immutability trigger and silently swallowed by _loop. Result: the paid output is discarded from the DB, the run show",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "Clicking a rating button (even the already-selected one) silently wipes the current rating's comment",
+    "severidad": "LOW",
+    "dimension": "immutability-persistence",
+    "donde": "webapp/templates/recon/run.html:70",
+    "escenario": "Each of the four rating forms sends a hidden comment=\"\", and runs.rate inserts a new current row with that empty comment. An operator who rated BUENO with the comment 'falta la terraza y el walk-in' later reopens the run and clicks BUENO (highlighted) or switches to MALO. The current evaluation now has an empty comment. The text survives only in the collapsed history, so the 'evaluación vigente + comentario' of AC9 (tasks/E37.md:175-177) changes silently.",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "Same-origin guard lets through POSTs with Origin 'null' (or no Origin) and no Referer, so a cross-site page can start a paid run or trigger a reveal",
+    "severidad": "MEDIUM",
+    "dimension": "security-secrets",
+    "donde": "webapp/reconstruction.py:51",
+    "escenario": "_guardas treats Origin 'null' as absent, then falls back to Referer. If Referer is also absent it runs no check at all. The same happens when both headers are missing, or when the Origin has an empty netloc such as 'file://'. A browser sends exactly Origin: null with no Referer from an opaque-origin document, for example a sandboxed iframe or a popup it opens, submitting a form with rel=noreferrer or meta referrer=no-referrer. That is a top-level navigation, so the browser attaches cached HTTP Basic credentials. The docstring's stated protection ('un formulario en otro sitio podría lanzar una corrida paga o un reveal') is therefore bypassed. The attacker also sends confirm_paid=1 or confirm=1, because those are just form fields. This breaks E37.md:113-114 ('Una llamada real sólo ocurre por acción explícita del operador en la UI'). Precondition: for generate, corregir, revelar and retirar",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "An error after the provider call leaves the run RUNNING forever and throws away the paid response",
+    "severidad": "LOW",
+    "dimension": "security-secrets",
+    "donde": "webapp/domain/reconstruction/runs.py:293",
+    "escenario": "Everything after contract.validate in execute() runs outside any try: runs_dir/makedirs, json.dumps, render.svg, the four _write calls and the final UPDATE. If that section raises, _fail is never called and _loop swallows the exception silently. The run stays RUNNING with finished_at NULL, so status.json returns finished:false and run.html polls indefinitely. The paid provider output, usage and latency are never persisted, which breaks E37.md:154-156 ('error si falla'). Concrete triggers: an OSError while writing artifacts (a full or read-only /data volume), or a contract-valid output with a non-finite number. contract.validate accepts footprint depth_m = 1e999, which json.loads reads as inf, and render.svg then raises OverflowError at int(alto).",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "Credential sanitization gaps: truncation happens before masking, and the provider-reported model and output are stored unmasked",
+    "severidad": "LOW",
+    "dimension": "security-secrets",
+    "donde": "webapp/domain/reconstruction/runs.py:307",
+    "escenario": "(a) When the provider returns a non-dict error, providers/base._error_text cuts it to 500 characters before ProviderError calls sanitize() (base.py:98 and :38). The same applies to a non-JSON body, via request_json's raw[:500] at base.py:88. If an echoed key crosses the cut, its prefix survives. E37 stores that prefix in recon_runs.error and shows it on the run page. (b) execute() sets resumen['model_reported'] = res.model after sanitizing the summary. Neither res.model, which also goes into the SVG caption, nor res.output is ever sanitized. A provider echo in those fields therefore reaches recon_runs.request_summary, output.json, plan.svg and run.html in full. The root of (a) is shared E31 code. Real OpenAI errors mask keys, so this is low likelihood, but the brief's rule that the key 'can never appear' is not enforced by these paths.",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "GT bytes reach the engine before reveal through a retired input, and the run is still labelled 'generada a ciegas'",
+    "severidad": "HIGH",
+    "dimension": "acceptance-coverage",
+    "donde": "webapp/domain/reconstruction/runs.py:200",
+    "escenario": "Violates AC4 (tasks/E37.md:150-152) and 'No hacer' line 130. The operator uploads the listing's floor plan as a photo and generates R1. add_asset's warning (projects.py:294-295) then says to retire the photo and upload it as ground truth. groundtruth.upload (groundtruth.py:76-81) only checks for a clash with active inputs (`retired_at IS NULL`), so the same file is accepted as GT and the project becomes HIDDEN_FROM_ENGINE. The operator then corrects R1. create_correction copies madre['inputs'] (runs.py:200-202), which still lists the retired asset, and build_request (runs.py:216-226) reads its bytes from disk. The engine gets the GT bytes, yet the child run is stored with gt_state_at_creation=HIDDEN_FROM_ENGINE and shown as 'generada a ciegas'. A run already QUEUED when this happens leaks the same way.",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "Failed runs keep no prompt version, latency, token usage, request summary or raw output, even after a paid provider call",
+    "severidad": "HIGH",
+    "dimension": "acceptance-coverage",
+    "donde": "webapp/domain/reconstruction/runs.py:284",
+    "escenario": "Violates AC5 (tasks/E37.md:154-156): every execution must persist prompt/version, latency, cost if known, and the error if it fails. execute() only calls _fail(run_id, msg) on EngineError or ContractError (runs.py:284-292). prompt_version, prompt_sha256, request_summary, usage, latency_ms, artifacts and the raw response are written only on DONE (runs.py:293-317). On a billed INCOMPLETE response (max_output_tokens) or on a full response that fails contract.validate (CONTRACT_INVALID), the token usage is in the response but is discarded, and the model's JSON is lost. This also makes the required evidence 'costo/latencia de cualquier llamada real' and 'output crudo relevante' (lines 238, 244-245) impossible for a real call that fails. With 34 high-detail photos and a 16000-token cap, that failure is plausible.",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "An initial CLARIFICATION_REQUIRED cannot be answered, and INSUFFICIENT_EVIDENCE runs cannot be corrected",
+    "severidad": "MEDIUM",
+    "dimension": "acceptance-coverage",
+    "donde": "webapp/domain/reconstruction/runs.py:89",
+    "escenario": "Partially violates AC11 (tasks/E37.md:184-185) and AC10 (179-182). The contract accepts CLARIFICATION_REQUIRED from any run (contract.py:190-191). A correction, however, needs _plan_ancestor(), which requires a DONE RECONSTRUCTED run in the lineage (runs.py:89-94, 195-196; reconstruction.py:318). If the first generation asks a question, run.html:35 says 'Responde con una nueva corrección más abajo', but the form is replaced by 'Esta corrida no tiene un plano que corregir' (run.html:96), and POST /corregir returns 400. The operator cannot answer the engine; regenerating repeats the same question with no human input. The same block applies to an initial INSUFFICIENT_EVIDENCE run that lists rooms without polygons, which is exactly what the contract pushes an honest engine to return. The human-by-prompt loop the 90/10 metric measures is closed for these runs.",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "Video inputs are recorded as sent to video-capable engines, but EngineRequest has no way to carry them",
+    "severidad": "LOW",
+    "dimension": "acceptance-coverage",
+    "donde": "webapp/domain/reconstruction/runs.py:120",
+    "escenario": "The registry must let COLMAP, depth or video pipelines be added 'sin reescribir la UI ni el modelo de datos' (tasks/E37.md:102-105, 116-117). AC5 requires the 'inputs permitidos' to be persisted (line 155). For an adapter declaring capability 'video', _inputs_snapshot stores videos with \"sent\": True and leaves them out of `ignored` (runs.py:109-110, 120-121). build_request (runs.py:242-246) never loads videos, and EngineRequest (engines/base.py:39-48) has no video field. The engine receives zero video while the run's frozen provenance says it was sent. Adding the video engine the docs describe (docs/E37_RECONSTRUCTION_LAB.md:79-85) therefore needs changes to the engine input model.",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "Runs generated before the GT was uploaded are shown as 'sin plano real' after reveal, not as blind",
+    "severidad": "LOW",
+    "dimension": "acceptance-coverage",
+    "donde": "webapp/domain/reconstruction/runs.py:401",
+    "escenario": "AC13 (tasks/E37.md:190-192) says that after reveal the earlier runs must stay marked as generated in blind mode. AC4 (line 150) allows the GT to be loaded when editing the project. card() sets blind only when gt_state_at_creation == 'HIDDEN_FROM_ENGINE' (runs.py:401-402). A run created while gt_state was NONE therefore shows 'Plano real: sin plano real' on the compare page, right next to the revealed GT column. That page also says 'Las corridas marcadas «a ciegas» se generaron sin él', which implies the unmarked runs were generated with it.",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "Expected rooms cannot be labelled for a project that has no GT file ('o etiquetado' branch of AC14)",
+    "severidad": "LOW",
+    "dimension": "acceptance-coverage",
+    "donde": "webapp/domain/reconstruction/projects.py:376",
+    "escenario": "AC14 (tasks/E37.md:199) asks for detected/expected rooms 'cuando GT fue revelado o etiquetado'. save_judgment rejects expected_rooms unless gt_state == 'REVEALED' (projects.py:373-377). The template disables the field (project.html:153), and reveal refuses a project without a GT file. A project whose ground truth is only known as a label (e.g. 9 rooms, 2D/2B from the listing) can never record expected rooms, so the detected/expected metric cannot exist for it.",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "Result section lists connections, relations and uncertainties by raw room ids and English enum codes",
+    "severidad": "LOW",
+    "dimension": "acceptance-coverage",
+    "donde": "webapp/templates/recon/run.html:53",
+    "escenario": "AC18 (tasks/E37.md:217) forbids unnecessary technical jargon on the main path, and AC8 (line 169) asks for readable connections/adjacencies. run.html:53, 55 and 59 print c.from_room/c.to_room/c.kind, x.room/x.relation/x.other_room and u.impact/u.subject directly. The operator has to match 'r4 ↔ r6' against the room table ids to know which rooms are meant.",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "Relative-position inferences (relations) carry no evidence in contract v1",
+    "severidad": "LOW",
+    "dimension": "acceptance-coverage",
+    "donde": "webapp/domain/reconstruction/contract.py:93",
+    "escenario": "The minimum contract (tasks/E37.md:88-92) lists relative position as a required element and requires 'qué evidencia sustenta cada inferencia relevante'. Rooms and connections have an `evidence` array; relations[] have only room, relation, other_room and confidence (contract.py:93-98). Relative position is the historical weak point (lines 40-44, ~60-65%), and for unplaced rooms relations are the only positional claim, yet no engine can say which photo supports them.",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "A paid call that ends FAILED throws away the provider's token usage, latency, prompt version, request summary and raw model output",
+    "severidad": "MEDIUM",
+    "dimension": "openai-adapter",
+    "donde": "webapp/domain/reconstruction/runs.py:284",
+    "escenario": "In runs.execute (lines 279-292), adapter.reconstruct() and contract.validate() share one try block. On EngineError or ContractError the only write is _fail(run_id, msg). The EngineResult the adapter already returned (usage, latency_ms, prompt_version, prompt_sha256, request_summary, raw output) is dropped. In the adapter, INCOMPLETE, REFUSAL, NOT_JSON and EMPTY are raised (openai_direct.py:230-235) before `uso`/`latencia` go into any result, so they never leave the function. The call has been billed, but the run row keeps prompt_version=None, latency_ms=None, usage=None, request_summary=None and output=None, and no runs/<id>/ directory is created (no request.json or response.json). This breaks tasks/E37.md:154-156 (AC5: every execution stores prompt/version, latency, cost if known and error if it fails) and E37.md:244-245 (record the exact model, prompt version, latency, cost and raw out",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "After a second clarification in a row, the correction prompt no longer contains the operator's original instruction",
+    "severidad": "MEDIUM",
+    "dimension": "openai-adapter",
+    "donde": "webapp/domain/reconstruction/runs.py:239",
+    "escenario": "When the parent run is CLARIFICATION_REQUIRED, build_request sets instruction = f\"{madre['correction_text']} — aclaración del operador: {run['correction_text']}\". madre.correction_text is the raw text the operator typed for the parent, not the combined instruction the parent was actually given, so the merge only goes back one level. Chain: R0 (plan) → C1 'make the main bedroom bigger' → model asks Q1 → C2 'the one on the left' → model asks Q2 → C3 'by 20 percent'. C3's request says only 'Antes preguntaste: Q2' and 'Instrucción: «the one on the left — aclaración del operador: by 20 percent»'. The original instruction and Q1 are gone, so the model gets a fragment it can't act on and may guess or ask again, which is another paid call. The clarification options shown to the operator (out.clarification.options, rendered in run.html) are never sent back either, so an answer like 'la segunda op",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "An initial run can end CLARIFICATION_REQUIRED, and then the page asks for an answer the system won't accept",
+    "severidad": "LOW",
+    "dimension": "openai-adapter",
+    "donde": "webapp/domain/reconstruction/contract.py:190",
+    "escenario": "The schema and validate() accept outcome=CLARIFICATION_REQUIRED on any run, including an INITIAL one (the only check is that clarification is non-null). The model can reasonably ask something like 'are photos 1-3 from the same unit?' on the first pass. The run is stored DONE/CLARIFICATION_REQUIRED, and run.html shows 'El motor pregunta ... Responde con una nueva corrección más abajo'. But corregible=False because _plan_ancestor finds no RECONSTRUCTED ancestor, so no form is rendered, and a direct POST /corregir returns 400 'Esta corrida no tiene un plano que corregir'. The operator paid for a question they have no way to answer. The contract allows a state the flow can't continue from (E37.md:184-185).",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "A provider failure returned with HTTP 200 (status 'failed' with an error object, or a non-JSON body) is recorded as 'EMPTY: la respuesta no trae texto', and the real error is lost",
+    "severidad": "LOW",
+    "dimension": "openai-adapter",
+    "donde": "webapp/domain/reconstruction/engines/openai_direct.py:116",
+    "escenario": "_output_text handles status 'incomplete' but not 'failed', 'cancelled', 'queued' or 'in_progress', and it never reads data['error'] (the SDK's Response.error: ResponseError). request_json turns a non-JSON 200 body into {'_raw': ...}. In both cases the run ends FAILED with the generic 'EMPTY: la respuesta no trae texto': the provider's error code and message (or the proxy's HTML) are dropped, and nothing about the response is persisted (see the HIGH finding). The operator can't tell a model failure from a gateway problem. A top-level JSON array, or a null entry in output[], yields 'AttributeError: ...' instead of a typed EngineError.",
+    "estado": "corregido"
+   }
+  ],
+  "refutados": [
+   {
+    "titulo": "INSERT OR REPLACE bypasses every immutability trigger: a finished run and its rating history can be silently replaced",
+    "por_que": "The SQLite behaviour is real, but nothing in the app can trigger it, so it is not a defect in E37.\n\nMechanism reproduced (<scratch>, run on a scratch DB built by store.init()):\n- On a DONE run, `UPDATE recon_runs SET outcome='X'` is aborted by the trigger (\"una corrida terminada es inmutable\"). DELETE is aborted too.\n- Raw `INSERT OR REPLACE INTO recon_runs(... 'r1' ...)` succeeds. The run comes back as engine 'otro', status QUEUED, output None, finished_at None.\n- `INSERT OR REPLACE INTO recon_"
+   },
+   {
+    "titulo": "In the documented DEV-mode LAB, any host on the LAN can trigger paid OpenAI runs and reveal the ground truth without credentials",
+    "por_que": "The behaviour reproduces, but it is not an E37 defect.\n\nWhat I ran: an in-process Flask client (scripts in <scratch> and t2.py), with ESCALIMETRO_DEV=1, an empty ESCALIMETRO_PASSWORD, the fixture engine and REMOTE_ADDR=192.168.1.77. POST /nuevo with one photo returned 302. POST /p/<pid>/generar with engine_id=fixture_replay and no Origin header returned 302 and created run rcr_…. So an unauthenticated non-browser client can reach the handler in DEV no-password mode.\n\nWhy this is not a defect E37"
+   },
+   {
+    "titulo": "A project with one run cannot show that run's plan next to the revealed GT",
+    "por_que": "The behaviour is as described, but it does not violate the contract. I ran <scratch> with the fixture engine, a temporary data dir and no provider key. For a project with a GT, one DONE run and a reveal: GET /comparar?r=<run> returns 400, the run page has no /plano-real, and the project page shows the GT img but no /plano.svg.\n\nWhy this is not a contract violation:\n(1) AC13 (tasks/E37.md:190-192) only asks that after the reveal the GT is shown \"junto a las runs\" (next to the runs) and that earli"
+   },
+   {
+    "titulo": "The adapter joins every assistant message's text, so a commentary-phase message ahead of the final answer makes a valid response fail as NOT_JSON",
+    "por_que": "I could only trigger this with a response shape I made up myself, so I am treating it as not a real defect.\n\n1. What does reproduce, on synthetic input only: `_output_text` (webapp/domain/reconstruction/engines/openai_direct.py:113-130) joins the output_text of every message item. If I build a response with a `phase='commentary'` message ahead of a `phase='final_answer'` message, the joined text is `'Voy a analizar.{\"a\":1}'` and `json.loads` fails. That part matches the finding.\n\n2. The trigger "
+   }
+  ]
+ },
+ "ronda_2": {
+  "dimensiones": [
+   "fix-verification",
+   "contamination-regressions (0 hallazgos)",
+   "fresh-adversarial"
+  ],
+  "hallazgos": [
+   {
+    "titulo": "Fix (4) incomplete: an exception after the adapter returns, or inside _fail, still leaves the run RUNNING forever",
+    "severidad_hallada": "MEDIUM",
+    "verificacion": "confirmado, LOW",
+    "donde": "webapp/domain/reconstruction/runs.py:404",
+    "escenario": "Three places in runs.execute are still unprotected. (a) Lines 404-406 run outside any try: res.output = http.sanitize(res.output), res.model and _partial_of(res). (b) Line 420, _still_mine(), also runs outside any try. (c) _fail() is not exception-safe: it calls json.dumps on usage and request_summary (lines 356-366) and _partial_artifacts only catches OSError. So a registered adapter (the registry is built for new engines, E37.md 99-117) that returns None, returns raw that is not a dict, or puts a value json.dumps cannot serialize in usage or request_summary makes execute() raise after _claim. In the background worker _loop swallows the exception, and the row stays status=RUNNING with finished_at=NULL until the next restart. status.json keeps saying finished=false, and the run page polls 'Generando…' forever. This breaks E37.md 154-157: the run never records its state or error.",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "Fix (6)/(3) incomplete: a late FAILING result writes files into a run another process closed, and the paid usage is recorded nowhere",
+    "severidad_hallada": "MEDIUM",
+    "verificacion": "confirmado, LOW",
+    "donde": "webapp/domain/reconstruction/runs.py:351",
+    "escenario": "The _still_mine / LATE_RESULT_DISCARDED guard covers only the success path. Suppose reset_orphans in another process closes the run while the provider is working, and the provider then answers with a failure: contract invalid, status incomplete, or HTTP error. _fail() calls _partial_artifacts with no ownership check, so request.json and response.json are written into the closed run's directory. The UPDATE ... WHERE finished_at IS NULL then matches 0 rows, and no LATE_RESULT_DISCARDED event is logged. The 59,000 tokens of the paid call appear neither on the run nor in the log. The fix's own stated intent is 'no se escriben artefactos en una corrida ajena … se deja constancia … con lo que costó'. E37.md 154-157 and 238 require recording latency and cost of real calls. Separately, on the success path there is a window between _still_mine (line 420) and the conditional UPDATE (line 442): out",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "Fix (9) incomplete: the provider's usage object is persisted and rendered without masking",
+    "severidad_hallada": "MEDIUM",
+    "verificacion": "confirmado, LOW",
+    "donde": "webapp/domain/reconstruction/runs.py:451",
+    "escenario": "execute() masks res.output and res.model, and artifacts go through http.sanitize. res.usage does not. It is stored raw in recon_runs.usage by json.dumps(res.usage or {}) on the success path (line 451) and in _fail (line 364), logged raw in the LATE_RESULT_DISCARDED detail (lines 421-423), and printed on the run page via r.usage|tojson. openai_direct copies usage values verbatim from the response (openai_direct.py 250-252). A provider or proxy that echoes the credential in any usage field therefore puts the key in the database and in the HTML. The repo is public, and CLAUDE.md says keys are never printed or stored. This breaks the fix's stated rule: 'lo que viene del proveedor se enmascara antes de guardarlo o dibujarlo, sea cual sea el motor'.",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "Fix (17)/(3) incomplete: some malformed HTTP-200 bodies crash with raw TypeError/AttributeError and lose all partial data of the paid call",
+    "severidad_hallada": "LOW",
+    "verificacion": "confirmado, LOW",
+    "donde": "webapp/domain/reconstruction/engines/openai_direct.py:127",
+    "escenario": "_output_text assumes certain field types. It calls .get() on incomplete_details (line 127), iterates output and content (lines 134-137), and joins text values assuming they are strings (line 147). reconstruct() only catches EngineError and ValueError around it (lines 258-267). A TypeError or AttributeError there escapes as a generic exception. runs.execute then calls _fail(msg) with no partial, so the paid call keeps no latency, usage, prompt_version, request_summary, raw or artifacts. The error reads like a Python traceback (e.g. \"AttributeError: 'str' object has no attribute 'get'\"). Separately, a 200 body with an error object and no status is still labelled 'EMPTY: la respuesta no trae texto', and the provider's message is dropped from the error. That is the same misclassification fix (17) targeted.",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "Fix (5) incomplete: huge JSON integers and extreme finite footprints pass the contract, then crash the renderer",
+    "severidad_hallada": "LOW",
+    "verificacion": "confirmado, LOW",
+    "donde": "webapp/domain/reconstruction/contract.py:137",
+    "escenario": "finitos() rejects only non-finite Python floats. A JSON integer such as 1 followed by 400 zeros is a finite Python int and passes both jsonschema 'number' and the '<= 0' checks for footprint.width_m, depth_m and rooms[].area_m2. So does a finite pair like width_m=1e-300, depth_m=1e300. render.svg then raises OverflowError: float(int) is too large, or int(inf) height after the aspect division. With the fix for (4) the run ends FAILED 'POSTPROCESO OverflowError…' instead of CONTRACT_INVALID. The fix's own comment says 'Se corta acá, como contrato inválido, y no más adelante'. Separately, a finite but extreme ratio such as width 0.001 and depth 1000 renders an SVG about 920 million px tall.",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "Fix (14) variant: an expected-rooms label saved without a GT is silently dropped when the judgment is re-saved while a GT is hidden",
+    "severidad_hallada": "LOW",
+    "verificacion": "confirmado, LOW",
+    "donde": "webapp/templates/recon/project.html:153",
+    "escenario": "While gt_state is HIDDEN_FROM_ENGINE, the expected_rooms input is rendered prefilled with the current value but with the disabled attribute. Browsers do not submit disabled fields. Suppose the operator labelled expected rooms while there was no GT (allowed by fix 14), later uploads the GT, and then saves the judgment, for example to update human minutes. A new judgment row is inserted with expected_rooms NULL. After reveal, metrics() shows no expected rooms and no source. The history still has the value, but the current §14 metric 'rooms detectados/esperados cuando GT fue revelado o etiquetado' (E37.md 194-201) loses the human label without warning.",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "Fix (12) variant: answering a correction that returned INSUFFICIENT_EVIDENCE drops the earlier instruction",
+    "severidad_hallada": "LOW",
+    "verificacion": "sin verificador (límite de uso): evaluado a mano contra el código, real",
+    "donde": "webapp/domain/reconstruction/runs.py:255",
+    "escenario": "_dialogue walks back only through consecutive CLARIFICATION_REQUIRED ancestors. Fix (11) made INSUFFICIENT_EVIDENCE runs answerable ('es justo el momento en que la persona tiene algo que decir'). Take R0 RECONSTRUCTED, then C1 'el dormitorio principal era más grande' returning INSUFFICIENT_EVIDENCE, then C2 'está junto al living'. The engine receives R0's plan plus only 'está junto al living', with no clarification_context. C1's request is silently lost, although the lineage UI shows C2 as its child. The same happens further down a chain: after a clarification, an INSUFFICIENT reply cuts the history. This goes against E37.md 179-185 (a correction builds on the previous one, and ambiguity is resolved rather than guessed).",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "Fix (8) variant: the origin guard compares only netloc, so a different scheme on the same host is accepted",
+    "severidad_hallada": "LOW",
+    "verificacion": "sin verificador (límite de uso): evaluado a mano contra el código, real",
+    "donde": "webapp/reconstruction.py:56",
+    "escenario": "_guardas compares urlparse(v).netloc with request.host and never looks at the scheme. For an app served at http://localhost, which is implicitly port 80, a POST with 'Origin: https://localhost' (implicitly port 443, a different origin) is accepted. So are 'ftp://localhost' and 'chrome-extension://localhost'. By contrast, an explicit different port (localhost:9999 against localhost:8030) is correctly refused. So a page served over the other scheme on the same host could trigger a paid run or a reveal. The browser still attaches the cached Basic credentials of the http origin to a cross-origin form POST. Practical impact is small: the attacker must control the other-scheme service on the same hostname.",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "_dialogue only follows CLARIFICATION_REQUIRED: answering a correction that ended INSUFFICIENT_EVIDENCE drops the earlier instruction and that run's output",
+    "severidad_hallada": "MEDIUM",
+    "verificacion": "sin verificador (límite de uso): evaluado a mano contra el código, real",
+    "donde": "webapp/domain/reconstruction/runs.py:255",
+    "escenario": "R0 RECONSTRUCTED -> C1 correction 'el bano esta al fondo' -> engine answers INSUFFICIENT_EVIDENCE (missing_evidence explains why). The UI offers 'Crear corrida hija' on C1 (correctable() is true). The operator replies 'detras de la cocina' -> C2. build_request sends previous=R0.output (nearest RECONSTRUCTED via _plan_ancestor) and instruction='detras de la cocina' only, with clarification_context=None. C1's instruction and C1's output (what the engine said was missing) never reach the engine. So the reply has no subject, which is the same failure the previous round fixed for clarification chains ('«la de la izquierda» no significaría nada'). The result is an extra paid call and an extra human prompt counted in the 90/10 metrics. AC10 expects the adapter to receive the previous representation plus the instruction.",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "Answering an INITIAL run's clarification returns clarification_context=None even though a question was asked",
+    "severidad_hallada": "LOW",
+    "verificacion": "sin verificador (límite de uso): evaluado a mano contra el código, real",
+    "donde": "webapp/domain/reconstruction/runs.py:266",
+    "escenario": "INITIAL run R0 returns CLARIFICATION_REQUIRED ('¿son del mismo depto?'). The operator answers 'si' -> C1. _dialogue collects the question into `preguntas`, but R0 has no correction_text, so `turnos` has length 1. The early return at line 266 then discards `preguntas` and yields clarification_context=None. For openai_direct the question still travels inside the `previous` JSON (verified), so the effect is softened there. Any adapter that relies on the documented EngineRequest.clarification_context ('la pregunta que el motor hizo antes, si la hubo') gets a bare 'si'.",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "used_by_a_run matches never-sent documents, so a retired PDF document is wrongly refused as ground truth with a false 'ya lo recibió un motor'",
+    "severidad_hallada": "LOW",
+    "verificacion": "sin verificador (límite de uso): evaluado a mano contra el código, real",
+    "donde": "webapp/domain/reconstruction/projects.py:353",
+    "escenario": "The LIKE '%\"<asset_id>\"%' over recon_runs.inputs matches any mention of the asset. Documents (and videos for non-video engines) are always listed in the snapshot with sent:false and are never read by build_request. Realistic flow: the operator puts the broker's plan PDF under 'Documentos', generates a run, notices the mistake, retires the document and uploads the same PDF as plano real. groundtruth.upload refuses with 'Ese archivo ya lo recibió un motor en una corrida de este proyecto ... Crea un proyecto nuevo sin esa foto'. The engine never received it (the run's inputs show sent:false and ignored=['1 documento(s)']). This fails closed, so it is safe, but the message is false and the only remedy offered is recreating the whole project with all photos.",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "Late failure after another process closed the run: _fail writes artifacts into the closed run's folder and drops the paid call's usage/latency without LATE_RESULT_DISCARDED",
+    "severidad_hallada": "LOW",
+    "verificacion": "sin verificador (límite de uso): evaluado a mano contra el código, real",
+    "donde": "webapp/domain/reconstruction/runs.py:351",
+    "escenario": "The fix round handled the success path (phase 3 checks _still_mine and logs LATE_RESULT_DISCARDED with usage). The failure paths did not get the same treatment: phase 1 EngineError with partial (PROVIDER HTTP 500, INCOMPLETE, NOT_JSON) and phase 2 CONTRACT_INVALID. If another process's reset_orphans closed the run while the provider was working, _fail still calls _partial_artifacts (writing request.json/response.json into runs/<run_id>/). Its UPDATE then matches 0 rows (finished_at IS NOT NULL), and nothing is logged. The run keeps only '[reinicio] ...' with usage/latency NULL and artifacts NULL, the files on disk are orphaned, and the tokens of a paid call are recorded nowhere in the DB. This contradicts the execute() comment 'no se escriben artefactos en una corrida ajena: se deja constancia del resultado tardío en la bitácora, con lo que costó' and AC5 ('costo si se conoce').",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "Creating a project with the same file as a photo and as plano real keeps the plan as an engine input and rejects the ground truth (fails open)",
+    "severidad_hallada": "LOW",
+    "verificacion": "sin verificador (límite de uso): evaluado a mano contra el código, real",
+    "donde": "webapp/reconstruction.py:147",
+    "escenario": "_recibir processes photos/videos/documents first and the ground_truth field last. If the operator's 34-photo batch includes the portal gallery's plan image and the same file is chosen as plano real (docs step 3: 'el plano del aviso'), the photo is accepted and the GT is rejected with 'retira ese input primero'. The project ends with gt_state NONE and the real plan as a normal input, not flagged in the test case. Generating then sends the plan to the engine, and the run is labelled 'sin plano real'. The operator's explicit intent (this file is the hidden GT) loses to the accidental one, and blindness depends on the operator reading the note.",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "An adapter that returns anything other than an EngineResult leaves the run RUNNING forever",
+    "severidad_hallada": "LOW",
+    "verificacion": "sin verificador (límite de uso): evaluado a mano contra el código, real",
+    "donde": "webapp/domain/reconstruction/runs.py:404",
+    "escenario": "Lines 404-406 (res.output = sanitize(res.output), res.model = ..., _partial_of(res)) sit outside any try. If a registered adapter returns None, or an EngineResult whose raw is not a mapping, an AttributeError/TypeError escapes execute(). _loop swallows it, the run stays RUNNING with finished_at NULL until the next restart, and run.html polls status.json forever. AC6 invites adding adapters, and the module's rule is that every failure closes the run as FAILED.",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "Declared data: 'inf'/'1e400' in integer fields gives HTTP 500; inf/NaN accepted in float fields, stored as non-standard JSON and sent to the engine",
+    "severidad_hallada": "LOW",
+    "verificacion": "sin verificador (límite de uso): evaluado a mano contra el código, real",
+    "donde": "webapp/domain/reconstruction/projects.py:114",
+    "escenario": "parse_declared does int(float(raw)) and catches only ValueError. int(float('inf')) raises OverflowError, so POST /nuevo or /p/<id>/datos with bedrooms='inf' (or '1e400') returns 500. For float fields, 'inf' and 'nan' pass (inf <= 0 and nan <= 0 are both False). They are persisted as Infinity/NaN, which Python's json writes but which are not valid JSON. They are frozen into run inputs and interpolated into the OpenAI prompt as 'Infinity'. The same unchecked float() applies to human_minutes in save_judgment.",
+    "estado": "corregido"
+   },
+   {
+    "titulo": "Origin-guard docstring points scripts to docs/E37_RECONSTRUCTION_LAB.md, which says nothing about the Origin header",
+    "severidad_hallada": "LOW",
+    "verificacion": "sin verificador (límite de uso): evaluado a mano contra el código, real",
+    "donde": "webapp/reconstruction.py:51",
+    "escenario": "The fail-closed guard 403s any POST without a matching Origin/Referer. The docstring says 'un script propio lo agrega (ver docs/E37_RECONSTRUCTION_LAB.md)'. The doc has no mention of Origin, Referer, cabecera, header or 403, including in 'Cómo cargar Piso Ricardo Lyon I'. Anyone scripting the 34-photo load (curl/requests) gets unexplained 403s.",
+    "estado": "corregido"
+   }
+  ]
+ }
+}

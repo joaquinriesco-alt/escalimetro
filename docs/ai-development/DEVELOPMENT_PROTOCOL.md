@@ -140,6 +140,11 @@ git merge-base --is-ancestor origin/<base> origin/<rama> && echo sale-de-la-base
 **Un archivo en `tasks/` no dispara trabajo.** Claude empieza una TASK cuando Joaquín le da el ID
 en el chat. Una TASK que aparece en el repo sin que Joaquín la nombre se reporta, no se ejecuta.
 
+**Una TASK recién escrita no rompe la suite.** ChatGPT no toca `CURRENT_STATE.md`, así que la TASK
+no figura como «en curso»; `tests/test_ai_handoff.py` la cuenta como pendiente mientras se haya
+agregado después del último cambio del estado. La primera TASK escrita así, E37, destapó que sin
+esta regla la rama nacía con un test en rojo.
+
 ## 6. Formato de TASK — `tasks/<ID>.md`
 
 ```markdown

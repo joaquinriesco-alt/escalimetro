@@ -105,8 +105,10 @@
 - **Decisión:** construir un laboratorio interno que compare motores de reconstrucción de planos:
   proyecto → inputs → Motor A / B / C → corrida inmutable → corrección por prompt → corrida hija →
   calificación → reveal del ground truth → comparación.
-- **Consecuencia:** es la próxima iniciativa de producto. Todavía **no tiene TASK**; la escriben
-  Joaquín + ChatGPT. Depende de DR-6 si algún motor necesita tocar `src/`.
+- **Consecuencia:** es la próxima iniciativa de producto. Su TASK es
+  [`tasks/E37.md`](../../tasks/E37.md) (2026-09-30), la primera escrita por ChatGPT en GitHub
+  (D-010); E37 construyó el laboratorio sin tocar `src/`, así que DR-6 sigue abierta pero no
+  lo bloqueó.
 - **Origen:** Joaquín + ChatGPT — [`tasks/M01.md`](../../tasks/M01.md) §Fuente.
 
 ### D-010 — ChatGPT escribe las TASKs directamente en GitHub, y nada más

@@ -605,6 +605,171 @@ CREATE INDEX IF NOT EXISTS ix_media_listing ON listing_media(listing_id, kind, s
 CREATE INDEX IF NOT EXISTS ix_reports_listing ON potential_reports(listing_id, created_at);
 CREATE INDEX IF NOT EXISTS ix_findings_report ON potential_findings(report_id, rank);
 CREATE INDEX IF NOT EXISTS ix_demos_listing ON intervention_demos(listing_id, created_at);
+
+-- =================================================================================================
+-- E37 — INTERNAL RECONSTRUCTION LAB: el instrumento para aprender CREAR PLANO.
+-- Tablas propias y sin FK a `properties`, por la misma razón que E17: un proyecto de reconstrucción
+-- no es una propiedad del piloto, y meterlo ahí lo haría aparecer en la portada del LAB, en los
+-- conteos de E36 y en las concesiones de pack que `init()` le crea a toda propiedad.
+-- El ground truth vive en OTRA tabla y en OTRA raíz de disco (`reconstruction_gt/`): lo que arma
+-- la entrada de un motor no tiene cómo llegar a él, ni por consulta ni por listar un directorio.
+-- =================================================================================================
+CREATE TABLE IF NOT EXISTS recon_projects (
+  project_id   TEXT PRIMARY KEY,
+  name         TEXT NOT NULL,
+  declared     TEXT,                       -- JSON: lo que el operador declara (superficie, dormitorios…)
+  gt_state     TEXT NOT NULL DEFAULT 'NONE',  -- NONE | HIDDEN_FROM_ENGINE | REVEALED
+  revealed_at  TEXT,
+  revealed_by  TEXT,
+  author       TEXT,
+  created_at   TEXT NOT NULL,
+  updated_at   TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS recon_assets (
+  asset_id          TEXT PRIMARY KEY,
+  project_id        TEXT NOT NULL REFERENCES recon_projects(project_id),
+  kind              TEXT NOT NULL,         -- PHOTO | VIDEO | DOCUMENT
+  original_filename TEXT,
+  stored_name       TEXT NOT NULL,
+  mime_type         TEXT NOT NULL,
+  size_bytes        INTEGER NOT NULL,
+  sha256            TEXT NOT NULL,
+  width_px          INTEGER,
+  height_px         INTEGER,
+  sort_order        INTEGER NOT NULL DEFAULT 0,
+  looks_like_plan   INTEGER NOT NULL DEFAULT 0,  -- una "foto" que parece plano: aviso, no filtro
+  looks_like_plan_why TEXT,
+  retired_at        TEXT,                  -- se retira, no se borra: una corrida vieja lo cita
+  created_at        TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS recon_ground_truth (
+  project_id        TEXT PRIMARY KEY REFERENCES recon_projects(project_id),
+  original_filename TEXT,
+  stored_name       TEXT NOT NULL,
+  mime_type         TEXT NOT NULL,
+  size_bytes        INTEGER NOT NULL,
+  sha256            TEXT NOT NULL,
+  preview_name      TEXT,                  -- PNG derivado de un PDF, generado al revelar
+  uploaded_by       TEXT,
+  uploaded_at       TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS recon_runs (
+  run_id               TEXT PRIMARY KEY,
+  project_id           TEXT NOT NULL REFERENCES recon_projects(project_id),
+  seq                  INTEGER NOT NULL,   -- número de corrida dentro del proyecto, para humanos
+  parent_run_id        TEXT REFERENCES recon_runs(run_id),
+  origin               TEXT NOT NULL,      -- INITIAL | CORRECTION
+  correction_text      TEXT,
+  engine_id            TEXT NOT NULL,
+  engine_version       TEXT NOT NULL,
+  engine_meta          TEXT NOT NULL,      -- JSON: nombre, proveedor, modelo, pipeline, capacidades
+  inputs               TEXT NOT NULL,      -- JSON: SÓLO lo permitido al motor (ids + sha + datos)
+  params               TEXT NOT NULL,      -- JSON, con el modelo congelado al crear la corrida
+  code_commit          TEXT,
+  gt_state_at_creation TEXT NOT NULL,      -- NONE | HIDDEN_FROM_ENGINE | REVEALED
+  status               TEXT NOT NULL,      -- QUEUED | RUNNING | DONE | FAILED
+  outcome              TEXT,               -- RECONSTRUCTED | INSUFFICIENT_EVIDENCE | CLARIFICATION_REQUIRED
+  output               TEXT,               -- JSON: la representación estructurada, contrato v1
+  output_sha256        TEXT,
+  warnings             TEXT,               -- JSON: lo que el contrato admite pero conviene mirar
+  prompt_version       TEXT,
+  prompt_sha256        TEXT,
+  request_summary      TEXT,               -- JSON saneado: qué se mandó, sin las imágenes
+  artifacts            TEXT,               -- JSON: archivos de la corrida → sha256
+  usage                TEXT,               -- JSON: tokens u otra medida que el proveedor reporte
+  latency_ms           INTEGER,
+  cost_usd             REAL,
+  cost_basis           TEXT,               -- measured | list_price | unknown
+  error                TEXT,
+  author               TEXT,
+  created_at           TEXT NOT NULL,
+  started_at           TEXT,
+  finished_at          TEXT
+);
+-- Calificaciones, juicios de cierre y eventos son SÓLO de inserción: la vigente es la de mayor id.
+-- `id` autoincremental y no `created_at`, que tiene resolución de un segundo y empata.
+CREATE TABLE IF NOT EXISTS recon_ratings (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  run_id        TEXT NOT NULL REFERENCES recon_runs(run_id),
+  rating        TEXT NOT NULL,             -- EXCELENTE | BUENO | MALO | PESIMO
+  comment       TEXT DEFAULT '',
+  output_sha256 TEXT,                      -- sobre QUÉ salida se emitió el juicio
+  author        TEXT,
+  created_at    TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS recon_judgments (
+  id                   INTEGER PRIMARY KEY AUTOINCREMENT,
+  project_id           TEXT NOT NULL REFERENCES recon_projects(project_id),
+  final_run_id         TEXT REFERENCES recon_runs(run_id),
+  human_minutes        REAL,
+  needed_manual_cad    TEXT,               -- SI | NO | NULL (sin responder)
+  expected_rooms       INTEGER,            -- sólo con el ground truth revelado
+  adjacency            TEXT,               -- BIEN | PARCIAL | MAL
+  relative_position    TEXT,
+  geometry             TEXT,
+  comment              TEXT DEFAULT '',
+  gt_state_at_creation TEXT NOT NULL,
+  author               TEXT,
+  created_at           TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS recon_events (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  project_id  TEXT NOT NULL REFERENCES recon_projects(project_id),
+  kind        TEXT NOT NULL,
+  run_id      TEXT,
+  detail      TEXT,
+  author      TEXT,
+  created_at  TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_recon_assets_project ON recon_assets(project_id, kind, sort_order);
+CREATE INDEX IF NOT EXISTS ix_recon_runs_project ON recon_runs(project_id, seq);
+CREATE INDEX IF NOT EXISTS ix_recon_runs_parent ON recon_runs(parent_run_id);
+CREATE INDEX IF NOT EXISTS ix_recon_ratings_run ON recon_ratings(run_id, id);
+CREATE INDEX IF NOT EXISTS ix_recon_judgments_project ON recon_judgments(project_id, id);
+CREATE INDEX IF NOT EXISTS ix_recon_events_project ON recon_events(project_id, id);
+-- La inmutabilidad la hace cumplir la base, no la disciplina del código: es el primer trigger del
+-- repo, y existe porque «una corrida nunca cambia en silencio» es un criterio de E37, no un deseo.
+-- Una corrida terminada no se toca; su identidad (motor, inputs, padre, parámetros) no cambia ni
+-- mientras corre; y ninguna se borra.
+CREATE TRIGGER IF NOT EXISTS recon_runs_terminadas_inmutables BEFORE UPDATE ON recon_runs
+WHEN OLD.finished_at IS NOT NULL
+BEGIN SELECT RAISE(ABORT, 'recon_runs: una corrida terminada es inmutable'); END;
+CREATE TRIGGER IF NOT EXISTS recon_runs_identidad_fija BEFORE UPDATE ON recon_runs
+WHEN NEW.project_id IS NOT OLD.project_id OR NEW.seq IS NOT OLD.seq
+  OR NEW.parent_run_id IS NOT OLD.parent_run_id OR NEW.origin IS NOT OLD.origin
+  OR NEW.correction_text IS NOT OLD.correction_text OR NEW.engine_id IS NOT OLD.engine_id
+  OR NEW.engine_version IS NOT OLD.engine_version OR NEW.engine_meta IS NOT OLD.engine_meta
+  OR NEW.inputs IS NOT OLD.inputs OR NEW.params IS NOT OLD.params
+  OR NEW.code_commit IS NOT OLD.code_commit
+  OR NEW.gt_state_at_creation IS NOT OLD.gt_state_at_creation
+  OR NEW.created_at IS NOT OLD.created_at OR NEW.author IS NOT OLD.author
+BEGIN SELECT RAISE(ABORT, 'recon_runs: la identidad de una corrida no cambia'); END;
+CREATE TRIGGER IF NOT EXISTS recon_runs_no_se_borran BEFORE DELETE ON recon_runs
+BEGIN SELECT RAISE(ABORT, 'recon_runs: las corridas no se borran'); END;
+CREATE TRIGGER IF NOT EXISTS recon_ratings_solo_insercion BEFORE UPDATE ON recon_ratings
+BEGIN SELECT RAISE(ABORT, 'recon_ratings: el historial no se reescribe'); END;
+CREATE TRIGGER IF NOT EXISTS recon_ratings_no_se_borran BEFORE DELETE ON recon_ratings
+BEGIN SELECT RAISE(ABORT, 'recon_ratings: el historial no se borra'); END;
+CREATE TRIGGER IF NOT EXISTS recon_judgments_solo_insercion BEFORE UPDATE ON recon_judgments
+BEGIN SELECT RAISE(ABORT, 'recon_judgments: el historial no se reescribe'); END;
+CREATE TRIGGER IF NOT EXISTS recon_judgments_no_se_borran BEFORE DELETE ON recon_judgments
+BEGIN SELECT RAISE(ABORT, 'recon_judgments: el historial no se borra'); END;
+CREATE TRIGGER IF NOT EXISTS recon_events_solo_insercion BEFORE UPDATE ON recon_events
+BEGIN SELECT RAISE(ABORT, 'recon_events: la bitácora no se reescribe'); END;
+CREATE TRIGGER IF NOT EXISTS recon_events_no_se_borran BEFORE DELETE ON recon_events
+BEGIN SELECT RAISE(ABORT, 'recon_events: la bitácora no se borra'); END;
+-- Revelar es irreversible: después, ni el estado del proyecto ni el ground truth cambian.
+CREATE TRIGGER IF NOT EXISTS recon_reveal_irreversible BEFORE UPDATE ON recon_projects
+WHEN OLD.gt_state = 'REVEALED'
+  AND (NEW.gt_state IS NOT 'REVEALED' OR NEW.revealed_at IS NOT OLD.revealed_at)
+BEGIN SELECT RAISE(ABORT, 'recon_projects: revelar el ground truth no se deshace'); END;
+CREATE TRIGGER IF NOT EXISTS recon_gt_fijo_tras_revelar BEFORE UPDATE ON recon_ground_truth
+WHEN (SELECT gt_state FROM recon_projects WHERE project_id = OLD.project_id) = 'REVEALED'
+  AND (NEW.stored_name IS NOT OLD.stored_name OR NEW.sha256 IS NOT OLD.sha256)
+BEGIN SELECT RAISE(ABORT, 'recon_ground_truth: el ground truth revelado no se reemplaza'); END;
+CREATE TRIGGER IF NOT EXISTS recon_gt_no_se_borra_tras_revelar BEFORE DELETE ON recon_ground_truth
+WHEN (SELECT gt_state FROM recon_projects WHERE project_id = OLD.project_id) = 'REVEALED'
+BEGIN SELECT RAISE(ABORT, 'recon_ground_truth: el ground truth revelado no se borra'); END;
 """
 
 
@@ -646,6 +811,18 @@ def brand_dir() -> str:
     return os.path.join(DATA_DIR, "brand")
 
 
+def recon_dir(project_id: str) -> str:
+    """E37 — inputs y corridas de un proyecto de reconstrucción. Aparte de `properties/` y de
+    `listings/` por la misma razón que esos dos entre sí. El id lo generamos nosotros."""
+    return os.path.join(DATA_DIR, "reconstruction", project_id)
+
+
+def recon_gt_dir(project_id: str) -> str:
+    """E37 — el ground truth, en OTRA raíz. No es un subdirectorio del proyecto a propósito: nada que
+    recorra la carpeta de un proyecto para armar la entrada de un motor puede tropezar con él."""
+    return os.path.join(DATA_DIR, "reconstruction_gt", project_id)
+
+
 def case_dir(case_id: str) -> str:
     """Carpeta del caso DENTRO del volumen persistente. Es también el `case_dir` que consume el
     motor existente: mismo contrato (`case.json` + `outputs/floorplate.json`), otra raíz."""
@@ -670,6 +847,8 @@ def init() -> None:
     os.makedirs(os.path.join(DATA_DIR, "properties"), exist_ok=True)
     os.makedirs(os.path.join(DATA_DIR, "listings"), exist_ok=True)
     os.makedirs(os.path.join(DATA_DIR, "brand"), exist_ok=True)
+    os.makedirs(os.path.join(DATA_DIR, "reconstruction"), exist_ok=True)
+    os.makedirs(os.path.join(DATA_DIR, "reconstruction_gt"), exist_ok=True)
     conn = connect()
     conn.executescript(SCHEMA)
     # Migración en sitio para bases creadas antes de E27.3: SQLite no tiene ADD COLUMN IF NOT
@@ -804,6 +983,11 @@ def reset_orphans() -> None:
     conn.execute("UPDATE runs SET status='FAILED', finished_at=?, "
                  "log=COALESCE(log,'') || '\n[reinicio] el servicio se reinició durante la corrida' "
                  "WHERE status IN ('RUNNING','QUEUED')", (now(),))
+    # E37 — una reconstrucción en vuelo murió con el proceso. Se cierra como FAILED y queda así: no
+    # se reanuda, porque reanudar es volver a llamar a un proveedor pago sin que nadie lo pidiera.
+    conn.execute("UPDATE recon_runs SET status='FAILED', finished_at=?, "
+                 "error=COALESCE(error,'') || '[reinicio] el servicio se reinició durante la corrida' "
+                 "WHERE status IN ('RUNNING','QUEUED')", (now(),))
     conn.execute("UPDATE alternatives SET status='FAILED' WHERE status='GENERATING'")
     conn.execute("UPDATE cases SET status='READY' WHERE status='GENERATING'")
     conn.commit()
@@ -819,8 +1003,15 @@ def q1(sql: str, args: tuple = ()) -> Optional[sqlite3.Row]:
 
 def ex(sql: str, args: tuple = ()) -> None:
     conn = connect()
-    conn.execute(sql, args)
-    conn.commit()
+    try:
+        conn.execute(sql, args)
+        conn.commit()
+    except Exception:
+        # E37 — sin esto, una sentencia que falla (un trigger que aborta, una restricción) deja
+        # abierta la transacción implícita de sqlite3 en la conexión del hilo, y con ella el
+        # candado de escritura de toda la app hasta reiniciar.
+        conn.rollback()
+        raise
 
 
 def js(v: Any, default=None):

@@ -1,0 +1,29 @@
+{% extends "lab/base.html" %}{% block title %}Laboratorio de reconstrucción{% endblock %}
+{% block body %}
+<div class="recon">
+<p class="crumb"><a href="{{ url_for('lab.config') }}">Ajustes</a> / <a href="{{ url_for('lab.debug') }}">Herramientas técnicas</a> / Reconstrucción</p>
+<div class="prop-head"><h1>Laboratorio de reconstrucción</h1>
+  <a class="btn" href="{{ url_for('reconstruction.new') }}">+ Nuevo proyecto</a></div>
+<p class="sub">CREAR PLANO: comparar motores que infieren un plano esquemático desde fotos, sin mirar el
+  plano real hasta el final. Herramienta interna de aprendizaje, no producto.</p>
+{% include "recon/_flow.html" %}
+
+<h2>Proyectos</h2>
+{% if not proyectos %}
+<p class="empty">Todavía no hay proyectos. Un proyecto junta las fotos de una propiedad y, si existe, su plano real oculto.</p>
+{% else %}
+<table class="detect recon-tabla"><thead><tr><th>Proyecto</th><th>Fotos</th><th>Videos</th><th>Documentos</th><th>Corridas</th><th>Plano real</th><th>Creado</th></tr></thead><tbody>
+{% for p in proyectos %}
+<tr><td><a href="{{ url_for('reconstruction.project', project_id=p.project_id) }}">{{ p.name }}</a></td>
+  <td>{{ p.assets.PHOTO }}</td><td>{{ p.assets.VIDEO }}</td><td>{{ p.assets.DOCUMENT }}</td><td>{{ p.runs }}</td>
+  <td>{% if p.gt_state == 'REVEALED' %}revelado{% elif p.gt_state == 'HIDDEN_FROM_ENGINE' %}<span class="recon-oculto">oculto</span>{% else %}<span class="sub">sin plano real</span>{% endif %}</td>
+  <td class="sub">{{ p.created_at[:10] }}</td></tr>
+{% endfor %}
+</tbody></table>
+{% endif %}
+
+<h2>Motores registrados</h2>
+<p class="sub">La lista sale del registro de motores: agregar uno no cambia esta pantalla.</p>
+{% include "recon/_engines.html" %}
+</div>
+{% endblock %}

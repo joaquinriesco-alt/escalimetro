@@ -14,5 +14,6 @@ openai>=1.30
 anthropic>=0.30
 
 # --- E27: servicio web interno ---------------------------------------------------------------
-flask>=3.0
+# 3.1: E37 sube el tope de un envío sólo en /lab/reconstruction (request.max_content_length)
+flask>=3.1
 gunicorn>=21.2

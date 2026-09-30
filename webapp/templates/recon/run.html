@@ -1,0 +1,127 @@
+{% extends "lab/base.html" %}{% block title %}Corrida #{{ r.seq }} · {{ p.name }}{% endblock %}
+{% block body %}
+{% set out = r.output or {} %}
+{% set nombre = {} %}{% for x in out.rooms or [] %}{% set _ = nombre.update({x.id: x.label}) %}{% endfor %}
+{% set foto_n = {} %}{% for f in (r.inputs.photos if r.inputs else []) %}{% set _ = foto_n.update({f.asset_id: loop.index}) %}{% endfor %}
+{% macro evidencia(ev) %}{% set ns = namespace(ids=[]) %}{% for e in ev %}{% for a in e.asset_ids %}{% if a not in ns.ids %}{% set ns.ids = ns.ids + [a] %}{% endif %}{% endfor %}{% endfor %}
+{% if ns.ids %}<span class="sub" title="{% for e in ev %}{{ e.observation }} {% endfor %}">evidencia: {% for a in ns.ids %}{{ ('foto ' ~ foto_n[a]) if a in foto_n else (a ~ ' (no recibida)') }}{{ ', ' if not loop.last }}{% endfor %}</span>{% else %}<span class="sub">sin evidencia citada</span>{% endif %}{% endmacro %}
+<div class="recon">
+<p class="crumb"><a href="{{ url_for('reconstruction.index') }}">Laboratorio de reconstrucción</a> /
+  <a href="{{ url_for('reconstruction.project', project_id=p.project_id) }}">{{ p.name }}</a> / Corrida #{{ r.seq }}</p>
+<div class="prop-head"><h1>Corrida #{{ r.seq }}{% if r.origin == 'CORRECTION' %} <span class="sub">· corrección</span>{% endif %}</h1>
+  <span>{% if t.blind %}<span class="recon-ciega">generada a ciegas{{ ' (antes de cargar el plano real)' if t.blind_before_gt }}</span>{% elif t.after_reveal %}<span class="recon-aviso">creada después de revelar el plano real</span>{% endif %}</span></div>
+{% include "recon/_flow.html" %}
+{% if errores %}<div class="panel-bad"><ul>{% for e in errores %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+{% if r.engine_meta.notice %}<div class="recon-aviso recon-banda">{{ r.engine_meta.name }}: {{ r.engine_meta.notice }}</div>{% endif %}
+{% if r.origin == 'CORRECTION' %}
+<p class="recon-instruccion">Corrección pedida sobre la <a href="{{ url_for('reconstruction.run_view', project_id=p.project_id, run_id=r.parent_run_id) }}">corrida anterior</a>: «{{ r.correction_text }}»</p>
+{% endif %}
+
+{% if r.status in ('QUEUED', 'RUNNING') %}
+<div class="nota" id="estado">{{ 'En cola' if r.status == 'QUEUED' else 'Generando' }} con {{ r.engine_meta.name }}. La página se actualiza sola.</div>
+<script>
+(function tick(){fetch("{{ url_for('reconstruction.run_status', project_id=p.project_id, run_id=r.run_id) }}")
+ .then(function(x){return x.json()}).then(function(d){ if(d.finished){location.reload()} else {setTimeout(tick, 3000)} })
+ .catch(function(){setTimeout(tick, 5000)});})();
+</script>
+{% elif r.status == 'FAILED' %}
+<div class="panel-bad"><p><b>La corrida falló.</b> No hay resultado que mostrar, y no se inventa uno.</p><p class="mono">{{ r.error }}</p></div>
+{% else %}
+<section id="resultado">
+<h2>Resultado · {{ t.outcome_label }}</h2>
+<p>{{ out.summary }}</p>
+{% if r.outcome == 'CLARIFICATION_REQUIRED' and out.clarification %}
+<div class="recon-pregunta"><b>El motor pregunta:</b> {{ out.clarification.question }}
+  {% if out.clarification.options %}<ul>{% for o in out.clarification.options %}<li>{{ o }}</li>{% endfor %}</ul>{% endif %}
+  {% if corregible %}<p class="sub">Responde con una nueva corrección más abajo: crea otra corrida hija.</p>{% endif %}</div>
+{% endif %}
+{% if out.correction %}
+<div class="nota"><b>Entendió:</b> {{ out.correction.understood_as }}
+  {% if out.correction.changes %}<ul>{% for c in out.correction.changes %}<li>{{ c }}</li>{% endfor %}</ul>{% endif %}</div>
+{% endif %}
+<div class="recon-resultado">
+  <div class="recon-plano">{% if t.has_svg %}<img src="{{ url_for('reconstruction.run_svg', project_id=p.project_id, run_id=r.run_id) }}" alt="Plano esquemático de la corrida #{{ r.seq }}">{% endif %}</div>
+  <div class="recon-lado">
+    <h3>Recintos ({{ out.rooms|length if out.rooms else 0 }} · {{ placed|length }} ubicados)</h3>
+    <table class="detect recon-tabla"><tbody>
+    {% for x in out.rooms or [] %}
+      <tr class="{{ 'baja' if x.confidence < low }}"><td><span title="{{ x.id }}">{{ x.label }}</span><div class="sub">{{ type_label.get(x.room_type, x.room_type) }}</div><div>{{ evidencia(x.evidence) }}</div></td>
+        <td class="recon-num"><span class="sub">conf.</span> {{ '%.2f'|format(x.confidence) }}{% if x.area_m2 %}<div class="sub">≈ {{ '%.0f'|format(x.area_m2) }} m²</div>{% endif %}{% if not x.polygon %}<div class="recon-no">sin ubicar</div>{% endif %}</td></tr>
+      {% if x.uncertainty %}<tr class="sub"><td colspan="2">↳ {{ x.uncertainty }}</td></tr>{% endif %}
+    {% endfor %}
+    </tbody></table>
+    <h3>Conexiones</h3>
+    {% if out.connections %}<ul class="recon-lista">{% for c in out.connections %}<li>{{ nombre.get(c.from_room, c.from_room) }} ↔ {{ nombre.get(c.to_room, c.to_room) }} · {{ kind_label.get(c.kind, c.kind) }} <span class="sub mono">{{ '%.2f'|format(c.confidence) }}</span> {{ evidencia(c.evidence) }}</li>{% endfor %}</ul>
+    {% else %}<p class="sub">Ninguna.</p>{% endif %}
+    {% if out.relations %}<h3>Posición relativa</h3><ul class="recon-lista">{% for x in out.relations %}<li>{{ nombre.get(x.room, x.room) }} {{ rel_label.get(x.relation, x.relation) }} {{ nombre.get(x.other_room, x.other_room) }} <span class="sub mono">{{ '%.2f'|format(x.confidence) }}</span> {{ evidencia(x.evidence or []) }}</li>{% endfor %}</ul>{% endif %}
+  </div>
+</div>
+<h3>Incertidumbres</h3>
+{% if out.uncertainties %}<ul class="recon-lista">{% for u in out.uncertainties %}<li>Impacto <b>{{ impact_label.get(u.impact, u.impact) }}</b> · {{ nombre.get(u.subject, u.subject) }}: {{ u.issue }}</li>{% endfor %}</ul>{% else %}<p class="sub">El motor no declaró ninguna.</p>{% endif %}
+{% if out.missing_evidence %}<h3>Evidencia que falta</h3><ul class="recon-lista">{% for m in out.missing_evidence %}<li>{{ m }}</li>{% endfor %}</ul>{% endif %}
+{% if r.warnings %}<div class="recon-aviso recon-banda"><b>Advertencias del contrato:</b><ul>{% for w in r.warnings %}<li>{{ w }}</li>{% endfor %}</ul></div>{% endif %}
+</section>
+
+<section id="calificar">
+<h2>Calificar</h2>
+<div class="evaluar">
+  <span class="q">¿Cómo quedó?</span>
+  {% for k in ratings %}
+  <form method="post" action="{{ url_for('reconstruction.rate', project_id=p.project_id, run_id=r.run_id) }}" class="inline">
+    {# el comentario vigente viaja con el botón: cambiar la nota no borra lo que ya se escribió #}
+    <input type="hidden" name="comment" value="{{ (t.rating.comment or '') if t.rating else '' }}">
+    <button name="rating" value="{{ k }}" class="rate r-{{ k|lower }} {{ 'on' if t.rating and t.rating.rating == k }}">{{ rating_label[k] }}</button>
+  </form>
+  {% endfor %}
+</div>
+{% if t.rating %}
+<form method="post" action="{{ url_for('reconstruction.rate', project_id=p.project_id, run_id=r.run_id) }}" class="upload recon-comentario">
+  <input type="hidden" name="rating" value="{{ t.rating.rating }}">
+  <input name="comment" value="{{ t.rating.comment or '' }}" placeholder="Comentario (opcional)"><button class="sec">Guardar comentario</button>
+</form>
+{% endif %}
+{% if historial|length > 1 %}
+<details class="recon-mas"><summary>Historial de calificaciones ({{ historial|length }})</summary>
+<ul class="recon-lista">{% for h in historial %}<li>{{ rating_label[h.rating] }}{% if h.comment %} — {{ h.comment }}{% endif %} <span class="sub">{{ h.created_at[:16].replace('T', ' ') }} · {{ h.author }}</span></li>{% endfor %}</ul>
+</details>{% endif %}
+</section>
+
+<section id="corregir">
+<h2>Corregir</h2>
+{% if corregible %}
+<form method="post" action="{{ url_for('reconstruction.correct', project_id=p.project_id, run_id=r.run_id) }}" class="upload recon-correccion">
+  <textarea name="instruction" rows="3" maxlength="2000" required placeholder="p. ej. el dormitorio principal era más grande"></textarea>
+  {% if r.engine_meta.paid %}<label class="op"><input type="checkbox" name="confirm_paid" value="1" required> Confirmo el gasto: la corrección vuelve a llamar a {{ r.engine_meta.name }}.</label>{% endif %}
+  <button>Crear corrida hija</button>
+  <p class="hint">La corrección no edita esta corrida ni su imagen: el motor recibe este plano y la instrucción, y produce una corrida nueva.</p>
+</form>
+{% else %}<p class="sub">Esta corrida no tiene una salida que corregir.</p>{% endif %}
+</section>
+{% endif %}
+
+<section id="linaje">
+<h2>Linaje</h2>
+<ol class="recon-lista">{% for x in linaje %}<li>{% if x.run_id == r.run_id %}<b>#{{ x.seq }}</b>{% else %}<a href="{{ url_for('reconstruction.run_view', project_id=p.project_id, run_id=x.run_id) }}">#{{ x.seq }}</a>{% endif %}
+  {% if x.correction_text %}— «{{ x.correction_text }}»{% else %}— generación inicial{% endif %}</li>{% endfor %}</ol>
+{% if hijos %}<p class="sub">Corridas hijas: {% for h in hijos %}<a href="{{ url_for('reconstruction.run_view', project_id=p.project_id, run_id=h.run_id) }}">#{{ h.seq }}</a>{{ ', ' if not loop.last }}{% endfor %}</p>{% endif %}
+</section>
+
+<details class="recon-mas" id="procedencia"><summary>Procedencia técnica</summary>
+<table class="detect recon-tabla"><tbody>
+  <tr><td>Motor</td><td>{{ r.engine_meta.name }} <span class="mono">{{ r.engine_id }} v{{ r.engine_version }}</span></td></tr>
+  <tr><td>Proveedor / modelo</td><td class="mono">{{ r.engine_meta.provider }} · {{ r.engine_meta.model }}{% if r.request_summary and r.request_summary.model_reported and r.request_summary.model_reported != r.engine_meta.model %} (reportado: {{ r.request_summary.model_reported }}){% endif %}</td></tr>
+  <tr><td>Pipeline</td><td>{{ r.engine_meta.pipeline }}</td></tr>
+  <tr><td>Prompt</td><td class="mono">{{ r.prompt_version or '—' }} · {{ (r.prompt_sha256 or '')[:16] }}</td></tr>
+  <tr><td>Parámetros</td><td class="mono">{{ r.params|tojson }}</td></tr>
+  <tr><td>Código</td><td class="mono">{{ r.code_commit }}</td></tr>
+  <tr><td>Inputs enviados</td><td>{{ r.inputs.photos|length }} foto(s){% if r.inputs.ignored %} · no enviados: {{ r.inputs.ignored|join(', ') }}{% endif %}
+      <div class="sub mono">{{ r.inputs.photos|map(attribute='asset_id')|join(' ') }}</div></td></tr>
+  <tr><td>Plano real al crear</td><td class="mono">{{ r.gt_state_at_creation }}</td></tr>
+  <tr><td>Creada / inicio / fin</td><td class="mono">{{ r.created_at }} · {{ r.started_at or '—' }} · {{ r.finished_at or '—' }}</td></tr>
+  <tr><td>Latencia</td><td>{{ ('%d ms'|format(r.latency_ms)) if r.latency_ms is not none else '—' }}</td></tr>
+  <tr><td>Costo</td><td>{% if r.cost_usd is not none %}USD {{ '%.4f'|format(r.cost_usd) }} ({{ r.cost_basis }}){% else %}no reportado ({{ r.cost_basis or '—' }}){% endif %}{% if r.usage %} · <span class="mono">{{ r.usage|tojson }}</span>{% endif %}</td></tr>
+  <tr><td>Salida</td><td class="mono">{{ (r.output_sha256 or '—')[:16] }}{% if r.artifacts %} · {{ r.artifacts.renderer }}{% endif %}</td></tr>
+</tbody></table>
+</details>
+</div>
+{% endblock %}

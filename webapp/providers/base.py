@@ -85,7 +85,8 @@ def request_json(provider: str, method: str, url: str, headers: Dict[str, str],
     try:
         data = json.loads(raw.decode("utf-8")) if raw else {}
     except ValueError:
-        data = {"_raw": raw[:500].decode("utf-8", "replace")}
+        # se enmascara ANTES de cortar: cortado primero, un prefijo de la clave ya no coincide
+        data = {"_raw": sanitize(raw.decode("utf-8", "replace"))[:500]}
     if status >= 400:
         raise ProviderError(provider, _error_text(data), status)
     return data
@@ -94,8 +95,8 @@ def request_json(provider: str, method: str, url: str, headers: Dict[str, str],
 def _error_text(data: Dict) -> str:
     err = data.get("error") if isinstance(data, dict) else None
     if isinstance(err, dict):
-        return str(err.get("message") or err)
-    return str(err or data)[:500]
+        return sanitize(str(err.get("message") or err))
+    return sanitize(str(err or data))[:500]
 
 
 def multipart(fields: Dict[str, str], files: Sequence[Tuple[str, str, bytes, str]]

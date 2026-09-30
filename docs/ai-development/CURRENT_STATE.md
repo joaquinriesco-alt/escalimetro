@@ -1,6 +1,6 @@
 # ESCALÍMETRO — Estado actual
 
-> **Última actualización:** 2026-09-30 · al cerrar `M01.1` · rama `m01_1_remote_truth`
+> **Última actualización:** 2026-09-30 · al cerrar `E37` · rama `e37_reconstruction_lab`
 > Todo lo que está acá fue verificado al escribirlo: el código contra el repo; las ramas **contra
 > GitHub**, no contra las ramas locales ([protocolo §9.1](DEVELOPMENT_PROTOCOL.md)); las cifras de
 > los pilotos contra `.data-lab/` de la máquina de desarrollo, que **no** está en el repo.
@@ -16,7 +16,8 @@ comerciales**. El core declarado es **CREAR PLANO + MEJORAR PLANO** ([D-001](DEC
 Para quién es **no está definido en la doctrina** —es decisión de Joaquín—; hasta hoy el trabajo
 se hizo sobre oficinas de corredoras (LAB) y avisos de portales chilenos (E17). Hoy **MEJORAR PLANO existe en parte**
 (dentro del LAB) y **CREAR PLANO no existe**: ninguna línea del repo infiere un plano a partir de
-fotos, video o una URL.
+fotos, video o una URL. Desde E37 existe el **instrumento** para aprenderlo: un laboratorio que
+compara motores de reconstrucción con el plano real oculto hasta el final.
 
 ## Ramas
 
@@ -27,13 +28,14 @@ fotos, video o una URL.
 | `e17_property_potential` | `0819cb3` · 2026-09-24 | E17.0–E17.1 |
 | `e17_2_url_first_ingest` | `4c0934a` · 2026-09-25 | **punta del código de producto** · 94 commits delante de `main` |
 | `m01_ai_handoff` | `2efd0c3` · 2026-09-29 | lo anterior + el sistema de handoff · 95 delante de `main` |
-| `m01_1_remote_truth` | esta entrega | lo anterior + M01.1 · **base para la próxima TASK** |
+| `m01_1_remote_truth` | `958e39c` · 2026-09-30 | lo anterior + M01.1 · 97 delante de `main` |
+| `e37_reconstruction_lab` | esta entrega | lo anterior + E37 · 99 delante de `main` · **base para la próxima TASK** |
 
 La cadena es lineal, nada está mergeado y ninguna rama está detrás de `main`:
 `main` ⊂ `e30_product_direction` ⊂ `e31_staging_pilot` ⊂ `e32_internal_pilot_console` ⊂
 `e32_2_entitlement_semantics` ⊂ `e33_simple_product_lab` ⊂ `e34_zero_friction_ingest` ⊂
 `e35_robust_zero_friction_ingest` ⊂ `e36_real_property_pilot` ⊂ `e17_property_potential` ⊂
-`e17_2_url_first_ingest` ⊂ `m01_ai_handoff` ⊂ `m01_1_remote_truth`.
+`e17_2_url_first_ingest` ⊂ `m01_ai_handoff` ⊂ `m01_1_remote_truth` ⊂ `e37_reconstruction_lab`.
 Las ramas `e30`–`e35` son eslabones intermedios.
 
 Verificado el 2026-09-30 contra GitHub: puntas con `git ls-remote --heads origin`; conteos con
@@ -69,13 +71,15 @@ webapp/                 Flask + SQLite + archivos en ESCALIMETRO_DATA_DIR
   /lab/*                LAB interno: plano comercial + layout tipo + ambientación
                         (E32–E36, sobre piezas de E28–E31)
   /property/*           ingest de URL + diagnóstico de publicación (E17.0–E17.2)
+  /lab/reconstruction/* laboratorio de CREAR PLANO: motores, corridas inmutables, plano real
+                        oculto (E37). Tablas recon_*; plano real en DATA_DIR/reconstruction_gt/
 ```
 
 ## Capacidades reales, contra la doctrina
 
 | doctrina | estado | detalle |
 |---|---|---|
-| **CREAR PLANO** | **no existe** | 0 líneas. El ingest trae fotos y datos; nada los convierte en plano. |
+| **CREAR PLANO** | **instrumento listo, motor sin medir** | E37: laboratorio `/lab/reconstruction/` con registro de motores. Motor real: `openai_direct` (VLM directo, `gpt-5.6-sol`), **nunca corrido**: falta `OPENAI_API_KEY`. Ninguna reconstrucción real todavía. |
 | **MEJORAR PLANO** | **parcial** | El LAB produce *plano comercial* desde un plano subido, vía el motor. Lee láminas con unidades demarcadas por color o sembradas; las multiunidad piden un clic (E35). **Calidad sin medir** sobre muestra real: eso es E36. |
 | infraestructura: ingest de URL | funciona | 2026-09-25: Portal Inmobiliario + MercadoLibre **4/4 SUCCESS**, sin carga manual; detecta planos en la galería. Zillow bloquea. |
 | aplicación: layouts | funciona | CP-SAT, 3 alternativas. |
@@ -84,7 +88,7 @@ webapp/                 Flask + SQLite + archivos en ESCALIMETRO_DATA_DIR
 
 ## Tests
 
-`2061 passed · 2 failed · 8 skipped · 7 xfailed` sobre el árbol de `m01_1_remote_truth`, 2026-09-30.
+`2167 passed · 2 failed · 8 skipped · 7 xfailed` sobre el árbol de `e37_reconstruction_lab`, 2026-09-30.
 Detalle en [`reports/M01.1_REPORT.md`](../../reports/M01.1_REPORT.md).
 Los 2 fallos son **preexistentes** —desde E27 por lo menos; dependen de artefactos regenerables
 que `.gitignore` excluye— y no se tocan:
@@ -101,6 +105,7 @@ declara la tabla de ramas sea el de `origin/main` y no el de la rama local.
 |---|---|---|
 | **E36 — piloto de geometría real** (mide MEJORAR PLANO) | activo | a Joaquín: cargar planos reales en `/lab` y juzgar cada componente en «Revisión del plano». Meta: 10 planos **únicos**. Hoy: **1/10**; ese plano tiene 7 etiquetas, **las 7 provisionales**, 0 humanas. Se corre con el LAB de `e36_real_property_pilot` o de cualquier rama posterior; la rama está congelada sólo para desarrollo. |
 | **E17 — muestra de 20 avisos** | en pausa | a DR-4. El scoring que mide no es core. |
+| **E37 — Reconstruction Lab: Piso Ricardo Lyon I** (mide CREAR PLANO) | listo para correr | a Joaquín: `OPENAI_API_KEY` en el servidor (con `ESCALIMETRO_PASSWORD`), las 34 fotos y el plano real. Pasos en [`docs/E37_RECONSTRUCTION_LAB.md`](../E37_RECONSTRUCTION_LAB.md). La línea base de 2026-08-16 es referencia, no verdad actual. |
 
 `MIN_SAMPLE = 10` de D-005 es **por componente** (etiquetas humanas); la meta de E36 es 10
 **planos**. Coinciden en número, no en unidad. Los datos del piloto viven en `.data-lab/` y
@@ -110,16 +115,19 @@ declara la tabla de ramas sea el de `origin/main` y no el de la rama local.
 
 - **Ambientación:** faltan `OPENAI_API_KEY` y `GEMINI_API_KEY` (0/2); corpus 3/8 fotos reales de
   1/3 propiedades. BFL excluido hasta aprobar su licencia (D-006).
+- **Reconstrucción (E37):** la misma `OPENAI_API_KEY` falta para el primer motor real. Sin ella el
+  laboratorio sólo corre el FIXTURE. Cada corrida real cuesta dinero y pide confirmación; su precio
+  por token no está registrado en el repo.
 - **Producción:** sin verificar desde el 2026-09-21. Y **antes de cualquier merge a `main`**, hay
   que confirmar en Railway si el servicio `backend` sigue desplegando `main`: su arranque corre un
   experimento pagado (ver Producción).
 
 ## Última tarea completada
 
-**M01.1** — el estado de `main` corregido contra GitHub, la regla de verificar ramas contra el
-remoto (D-011) y ChatGPT escribiendo las TASKs directamente en GitHub (D-010). Sin cambios de
-funcionalidad. Status en [`reports/M01.1_REPORT.md`](../../reports/M01.1_REPORT.md).
-Antes: **M01** — el sistema de handoff por el repo; y **E17.2** — ingest URL-first, `4c0934a`.
+**E37** — Internal Reconstruction Lab: el instrumento para aprender CREAR PLANO, en
+`/lab/reconstruction/`. Primera TASK escrita por ChatGPT directamente en GitHub (D-010). Sin tocar
+`src/`, sin llamadas pagas. Status en [`reports/E37_REPORT.md`](../../reports/E37_REPORT.md).
+Antes: **M01.1** — verdad remota y TASKs de ChatGPT en GitHub; **M01** — el sistema de handoff.
 
 ## Tarea actual
 
@@ -156,10 +164,10 @@ Opciones de DR-1 a DR-7 en [`reports/M01_REPORT.md`](../../reports/M01_REPORT.md
 
 ## Siguiente acción aprobada
 
-**Ninguna técnica.** Hay una iniciativa aprobada sin TASK escrita: **Internal Reconstruction
-Lab** ([D-009](DECISIONS.md)), definida en [`tasks/M01.md`](../../tasks/M01.md) §Fuente. Siguiente paso: Joaquín + ChatGPT
-la deciden y ChatGPT escribe su TASK en GitHub, con acceptance criteria
-([protocolo §5.2](DEVELOPMENT_PROTOCOL.md)). Choca con DR-6 si necesita tocar el motor.
+**Ninguna técnica.** El Internal Reconstruction Lab ([D-009](DECISIONS.md)) quedó construido en
+E37. Lo siguiente es correr su primer experimento real —Piso Ricardo Lyon I con `openai_direct`—, que
+necesita la clave y el material de Joaquín. Una TASK nueva la escribe ChatGPT en GitHub desde la
+base `e37_reconstruction_lab` ([protocolo §5.2](DEVELOPMENT_PROTOCOL.md)).
 
 ## Glosario
 

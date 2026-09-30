@@ -90,12 +90,34 @@ def _tarea_actual() -> str:
     return ids[0] if ids else ""
 
 
+def _pendientes() -> set:
+    """TASKs que nadie tomó todavía: se agregaron DESPUÉS del último cambio de CURRENT_STATE.
+
+    Desde D-010, ChatGPT escribe la TASK en GitHub y no toca CURRENT_STATE —no le corresponde—.
+    Sin esta excepción, la primera TASK escrita así (E37) dejó la suite en rojo en su propia rama
+    antes de que nadie empezara a trabajar. Una TASK olvidada, en cambio, es anterior a algún cierre
+    posterior del estado, y sigue fallando. Sin git no hay forma de saberlo: se exige lo estricto."""
+    def _ts(*args) -> int:
+        out = subprocess.run(["git", "-C", ROOT, "log", "--format=%ct", *args],
+                             capture_output=True, text=True, check=True).stdout.split()
+        return int(out[-1]) if out else 0
+    try:
+        estado = _ts("-1", "--", "docs/ai-development/CURRENT_STATE.md")
+        if not estado:
+            return set()
+        return {tid for tid in _ids(TASKS, ".md")
+                if _ts("--diff-filter=A", "--", f"tasks/{tid}.md") > estado}
+    except (subprocess.CalledProcessError, FileNotFoundError, ValueError):
+        return set()
+
+
 def test_toda_task_tiene_su_report_salvo_la_que_esta_en_curso():
     """La forma más común de que este sistema se pudra: una tarea que se hizo y nunca se reportó.
-    La única excepción legítima es la que está en curso, y tiene que estar nombrada como tal."""
+    Las excepciones legítimas son la que está en curso, nombrada como tal, y las que ChatGPT
+    escribió y todavía nadie tomó (`_pendientes`)."""
     tareas, reportes = _ids(TASKS, ".md"), _ids(REPORTS, "_REPORT.md")
     en_curso = _tarea_actual()
-    sin_reporte = sorted(tareas - reportes - {en_curso})
+    sin_reporte = sorted(tareas - reportes - {en_curso} - _pendientes())
     assert not sin_reporte, f"TASKs sin REPORT: {sin_reporte}"
 
 

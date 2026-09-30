@@ -326,3 +326,57 @@ p.resumen{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
 p.resumen span{border:1px solid var(--line);border-radius:999px;padding:3px 11px;font-size:13px;
   background:#fff}
 p.fuerte{font-size:16px;font-weight:600;color:var(--ok);margin:4px 0 10px}
+/* ---- E37 · Laboratorio de reconstrucción. Todo bajo .recon: no toca otras pantallas del LAB. */
+.recon .recon-flow{list-style:none;display:flex;flex-wrap:wrap;gap:6px;padding:0;margin:8px 0 18px}
+.recon .recon-flow li{font-size:11px;letter-spacing:.04em;border:1px solid var(--line);border-radius:999px;
+  padding:3px 9px;color:var(--mut);background:#fff}
+.recon .recon-flow li.hecho{border-color:var(--ok);color:var(--ok);background:color-mix(in srgb, var(--ok) 6%, #fff)}
+.recon section{margin:26px 0}
+.recon .recon-tabla td{vertical-align:top}
+.recon .recon-tabla tr.baja td:first-child{opacity:.7}
+.recon .recon-num{white-space:nowrap;text-align:right}
+.recon .recon-oculto{display:inline-block;background:var(--ink);color:#fff;font-size:11px;letter-spacing:.06em;
+  border-radius:4px;padding:2px 7px;margin-right:6px}
+.recon .recon-ciega{display:inline-block;border:1px solid var(--ok);color:var(--ok);font-size:12px;border-radius:999px;padding:1px 8px}
+.recon .recon-ok{color:var(--ok);font-weight:600}
+.recon .recon-no{color:var(--acc);font-weight:600}
+.recon .recon-aviso{color:var(--work);font-size:12px;margin-top:3px}
+.recon .recon-banda{border:1px solid color-mix(in srgb, var(--work) 40%, transparent);border-radius:8px;padding:8px 12px;
+  background:color-mix(in srgb, var(--work) 6%, #fff);font-size:13px;margin:10px 0}
+.recon .recon-fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin:10px 0}
+.recon .recon-fotos figure{margin:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
+.recon .recon-fotos figure.plano-sospechoso{border-color:var(--work)}
+.recon .recon-fotos img{width:100%;height:90px;object-fit:cover;display:block}
+.recon .recon-fotos figcaption{padding:4px 6px;font-size:10px}
+.recon button.mini{padding:2px 8px;font-size:11px;margin-top:3px}
+.recon .recon-datos{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;align-items:end}
+.recon .recon-datos label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mut)}
+.recon .recon-datos label.ancho{grid-column:1/-1}
+.recon .recon-datos button{justify-self:start}
+.recon .recon-opcion{display:block;border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:6px 0;background:#fff}
+.recon .recon-opcion.off{opacity:.65}
+.recon .recon-resultado{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:18px;align-items:start}
+.recon .recon-plano img{width:100%;border:1px solid var(--line);border-radius:8px;background:#fff}
+.recon .recon-lado h3{margin:6px 0}
+.recon .recon-lista{margin:6px 0 12px;padding-left:18px;font-size:13px}
+.recon .recon-pregunta{border-left:4px solid var(--acc);padding:8px 12px;margin:10px 0;background:#fff}
+.recon .recon-instruccion{font-size:15px;margin:6px 0 12px}
+.recon .recon-correccion textarea{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;font:inherit}
+.recon .recon-comentario{display:flex;gap:8px;margin-top:8px}
+.recon .recon-comentario input{flex:1}
+.recon .recon-gt-img{max-width:100%;border:1px solid var(--line);border-radius:8px}
+.recon details.recon-mas{margin:12px 0}
+.recon details.recon-mas summary{cursor:pointer;color:var(--mut);font-size:13px}
+.recon .recon-comparar{display:grid;gap:14px;align-items:start}
+/* la comparación necesita más ancho que el resto del LAB: sólo esa página lo pide */
+body.lab main:has(.recon-ancho){max-width:1440px}
+.recon .recon-comparar.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.recon .recon-comparar.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.recon .recon-comparar.cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.recon .recon-col img{width:100%;border:1px solid var(--line);border-radius:8px;background:#fff}
+.recon .recon-col h2{font-size:15px;margin:0 0 6px}
+.recon .recon-col .recon-tabla{font-size:12px}
+.recon .recon-col-gt{border-left:3px solid var(--ok);padding-left:10px}
+@media (max-width:760px){.recon .recon-resultado,.recon .recon-comparar.cols-2,.recon .recon-comparar.cols-3,
+  .recon .recon-comparar.cols-4{grid-template-columns:1fr}}
+

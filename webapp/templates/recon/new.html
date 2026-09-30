@@ -1,0 +1,33 @@
+{% extends "lab/base.html" %}{% block title %}Nuevo proyecto · reconstrucción{% endblock %}
+{% block body %}
+<div class="recon">
+<p class="crumb"><a href="{{ url_for('reconstruction.index') }}">Laboratorio de reconstrucción</a> / Nuevo proyecto</p>
+<h1>Nuevo proyecto</h1>
+{% include "recon/_flow.html" %}
+{% if errores %}<div class="panel-bad"><ul>{% for e in errores %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+<form method="post" enctype="multipart/form-data" class="upload recon-form">
+  <label>Nombre del proyecto<input name="name" value="{{ form.get('name', '') }}" maxlength="120" required
+         placeholder="p. ej. Piso Ricardo Lyon I, Providencia"></label>
+  <fieldset><legend>Fotos</legend>
+    <input type="file" name="photos" accept=".jpg,.jpeg,.png,.webp" multiple>
+    <p class="hint">El input principal. Se pueden elegir todas juntas (34 o más); también se agregan después.</p></fieldset>
+  <fieldset><legend>Video y documentos <span class="opt">(opcional)</span></legend>
+    <div class="row"><label>Videos<input type="file" name="videos" accept=".mp4,.mov,.m4v,.webm" multiple></label>
+      <label>Documentos<input type="file" name="documents" accept=".pdf,.txt,.md,.json" multiple></label></div>
+    <p class="hint">Se guardan aunque el motor todavía no los use; cada corrida dice qué no le mandó.</p></fieldset>
+  <fieldset><legend>Datos declarados <span class="opt">(opcional)</span></legend>
+    <div class="recon-datos">
+    {% for key, label, tipo in campos %}
+      <label class="{{ 'ancho' if tipo.__name__ == 'str' }}">{{ label }}
+        {% if key == 'description' %}<textarea name="{{ key }}" rows="3">{{ form.get(key, '') }}</textarea>
+        {% else %}<input name="{{ key }}" value="{{ form.get(key, '') }}">{% endif %}</label>
+    {% endfor %}
+    </div></fieldset>
+  <fieldset class="recon-gt"><legend>Plano real <span class="opt">(opcional)</span></legend>
+    <input type="file" name="ground_truth" accept=".pdf,.png,.jpg,.jpeg,.webp">
+    <p class="hint"><b>Queda oculto</b>: ningún motor lo recibe y esta aplicación no lo muestra hasta que
+      lo reveles al final. Sirve para comparar sin haberlo mirado antes.</p></fieldset>
+  <button>Crear proyecto</button>
+</form>
+</div>
+{% endblock %}

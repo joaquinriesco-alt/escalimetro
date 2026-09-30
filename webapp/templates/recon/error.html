@@ -1,0 +1,8 @@
+{% extends "lab/base.html" %}{% block title %}Reconstrucción · error{% endblock %}
+{% block body %}
+<div class="recon">
+<p class="crumb"><a href="{{ url_for('reconstruction.index') }}">Laboratorio de reconstrucción</a></p>
+<div class="panel-bad"><p>{{ msg }}</p></div>
+<p><a class="btn sec" href="{{ back }}">Volver</a></p>
+</div>
+{% endblock %}

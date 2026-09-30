@@ -1,0 +1,38 @@
+{% extends "lab/base.html" %}{% block title %}Comparar · {{ p.name }}{% endblock %}
+{% block body %}
+<div class="recon recon-ancho">
+<p class="crumb"><a href="{{ url_for('reconstruction.index') }}">Laboratorio de reconstrucción</a> /
+  <a href="{{ url_for('reconstruction.project', project_id=p.project_id) }}">{{ p.name }}</a> / Comparar</p>
+<h1>Comparar {{ columnas|length }} corridas</h1>
+{% include "recon/_flow.html" %}
+<div class="recon-comparar cols-{{ columnas|length + (1 if gt else 0) }}">
+{% for c in columnas %}{% set r = c.run %}
+  <div class="recon-col">
+    <h2><a href="{{ url_for('reconstruction.run_view', project_id=p.project_id, run_id=r.run_id) }}">Corrida #{{ r.seq }}</a></h2>
+    {% if c.has_svg %}<img src="{{ url_for('reconstruction.run_svg', project_id=p.project_id, run_id=r.run_id) }}" alt="Plano de la corrida #{{ r.seq }}">
+    {% else %}<p class="empty">{{ 'falló' if r.status == 'FAILED' else 'sin plano' }}</p>{% endif %}
+    <table class="detect recon-tabla"><tbody>
+      <tr><td>Motor</td><td>{{ r.engine_meta.name }}<div class="sub mono">v{{ r.engine_version }} · {{ r.engine_meta.model }}</div></td></tr>
+      <tr><td>Resultado</td><td>{{ c.outcome_label or r.status }}</td></tr>
+      <tr><td>Calificación</td><td>{{ rating_label[c.rating.rating] if c.rating else 'sin calificar' }}</td></tr>
+      <tr><td>Recintos</td><td>{{ c.rooms|length }} ({{ c.rooms_placed }} ubicados)<div class="sub">{{ c.rooms|map(attribute='label')|join(', ') }}</div></td></tr>
+      <tr><td>Prompts humanos</td><td>{{ c.prompts }}</td></tr>
+      <tr><td>Latencia</td><td>{{ ('%d ms'|format(r.latency_ms)) if r.latency_ms is not none else '—' }}</td></tr>
+      <tr><td>Costo</td><td>{{ ('USD %.4f'|format(r.cost_usd)) if r.cost_usd is not none else 'no reportado' }}</td></tr>
+      <tr><td>Plano real</td><td>{{ ('a ciegas' ~ (' (antes de cargarlo)' if c.blind_before_gt else '')) if c.blind else ('tras revelar' if c.after_reveal else 'sin plano real') }}</td></tr>
+    </tbody></table>
+    {% if r.engine_meta.notice %}<div class="recon-aviso">{{ r.engine_meta.notice }}</div>{% endif %}
+  </div>
+{% endfor %}
+{% if gt %}
+  <div class="recon-col recon-col-gt">
+    <h2>Plano real</h2>
+    {% if gt.mime_type == 'application/pdf' and not gt.preview_name %}
+      <p><a class="btn sec" href="{{ url_for('reconstruction.serve_gt', project_id=p.project_id) }}">Abrir (PDF)</a></p>
+    {% else %}<img src="{{ url_for('reconstruction.serve_gt', project_id=p.project_id) }}" alt="Plano real">{% endif %}
+    <p class="sub">Revelado el {{ p.revealed_at[:10] }}. Las corridas marcadas «a ciegas» se generaron sin él.</p>
+  </div>
+{% endif %}
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,13 @@
+{# Catálogo de motores. Sólo presencia de credenciales, nunca un valor. #}
+<table class="detect recon-tabla"><thead><tr><th>Motor</th><th>Modelo / pipeline</th><th>Estado</th><th>Costo</th></tr></thead><tbody>
+{% for m in motores %}
+<tr><td><b>{{ m.name }}</b><span class="sub mono"> {{ m.engine_id }} · v{{ m.version }}</span>
+    {% if m.notice %}<div class="recon-aviso">{{ m.notice }}</div>{% endif %}</td>
+  <td><span class="mono">{{ m.model }}</span><div class="sub">{{ m.pipeline }}</div></td>
+  <td>{% if m.status == 'AVAILABLE' %}<span class="recon-ok">disponible</span>
+      {% else %}<span class="recon-no">no disponible</span><div class="sub mono">{{ m.reason }}</div><div class="sub">{{ m.detail }}</div>{% endif %}</td>
+  <td>{{ 'paga por corrida' if m.paid else 'sin costo' }}</td></tr>
+{% else %}
+<tr><td colspan="4" class="sub">No hay motores registrados.</td></tr>
+{% endfor %}
+</tbody></table>

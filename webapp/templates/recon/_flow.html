@@ -1,0 +1,4 @@
+{# El flujo que pide E37 §18. Lo hecho se deriva de lo guardado; no es un asistente de pasos. #}
+<ol class="recon-flow">
+{% for s in flow.steps %}<li class="{{ 'hecho' if s in flow.done }}">{{ s }}</li>{% endfor %}
+</ol>

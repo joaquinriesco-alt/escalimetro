@@ -1,0 +1,172 @@
+{% extends "lab/base.html" %}{% block title %}{{ p.name }} · reconstrucción{% endblock %}
+{% macro fila(rid, nivel) %}{% set t = por_id[rid] %}{% set r = t.run %}
+<tr>
+  <td><input type="checkbox" name="r" value="{{ r.run_id }}" form="comparar" {{ 'disabled' if r.status != 'DONE' }}></td>
+  <td style="padding-left:{{ 8 + nivel * 20 }}px"><a href="{{ url_for('reconstruction.run_view', project_id=p.project_id, run_id=r.run_id) }}">Corrida #{{ r.seq }}</a>
+    {% if r.origin == 'CORRECTION' %}<span class="sub"> ↳ corrección</span>{% endif %}</td>
+  <td>{{ r.engine_meta.name }}<div class="sub mono">{{ r.engine_meta.model }}</div></td>
+  <td>{% if r.status == 'DONE' %}{{ t.outcome_label }}{% elif r.status == 'FAILED' %}<span class="recon-no">falló</span>{% else %}<span class="chip work">{{ 'en cola' if r.status == 'QUEUED' else 'generando…' }}</span>{% endif %}</td>
+  <td>{% if t.rating %}<span class="rate r-{{ t.rating.rating|lower }} on">{{ rating_label[t.rating.rating] }}</span>{% else %}<span class="sub">—</span>{% endif %}</td>
+  <td>{{ t.prompts }}</td>
+  <td>{% if t.blind %}<span class="recon-ciega">a ciegas</span>{% if t.blind_before_gt %}<div class="sub">antes del plano real</div>{% endif %}{% elif t.after_reveal %}<span class="sub">tras revelar</span>{% else %}<span class="sub">sin plano real</span>{% endif %}</td>
+</tr>
+{% for h in hijos.get(rid, []) %}{{ fila(h, nivel + 1) }}{% endfor %}
+{% endmacro %}
+{% block body %}
+<div class="recon">
+<p class="crumb"><a href="{{ url_for('reconstruction.index') }}">Laboratorio de reconstrucción</a> / {{ p.name }}</p>
+<h1>{{ p.name }}</h1>
+{% include "recon/_flow.html" %}
+{% if errores %}<div class="panel-bad"><ul>{% for e in errores %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+{% if avisos %}<div class="nota"><ul>{% for e in avisos %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+
+<section id="inputs">
+<h2>Inputs</h2>
+<p class="sub">{{ fotos|length }} foto(s) · {{ videos|length }} video(s) · {{ documentos|length }} documento(s){% if retirados %} · {{ retirados|length }} retirado(s){% endif %}</p>
+{% if fotos %}
+<div class="recon-fotos">
+{% for a in fotos %}
+  <figure class="{{ 'plano-sospechoso' if a.looks_like_plan }}">
+    <img loading="lazy" src="{{ url_for('reconstruction.asset', project_id=p.project_id, asset_id=a.asset_id) }}" alt="">
+    <figcaption><span title="{{ a.asset_id }}">Foto {{ loop.index }}</span>
+      {% if a.looks_like_plan %}<div class="recon-aviso">parece un plano</div>{% endif %}
+      <form method="post" action="{{ url_for('reconstruction.retire', project_id=p.project_id, asset_id=a.asset_id) }}" class="inline"><button class="sec mini">retirar</button></form>
+    </figcaption>
+  </figure>
+{% endfor %}
+</div>
+{% else %}<p class="empty">Sin fotos todavía. Son el input principal.</p>{% endif %}
+{% if videos or documentos %}
+<table class="detect recon-tabla"><tbody>
+{% for a in videos + documentos %}
+<tr><td>{{ 'Video' if a.kind == 'VIDEO' else 'Documento' }}</td><td><a href="{{ url_for('reconstruction.asset', project_id=p.project_id, asset_id=a.asset_id) }}">{{ a.original_filename }}</a></td>
+  <td class="sub">{{ '%.1f'|format(a.size_bytes / 1e6) }} MB</td>
+  <td><form method="post" action="{{ url_for('reconstruction.retire', project_id=p.project_id, asset_id=a.asset_id) }}" class="inline"><button class="sec mini">retirar</button></form></td></tr>
+{% endfor %}
+</tbody></table>
+{% endif %}
+<details class="recon-mas"><summary>Agregar fotos, videos o documentos</summary>
+<form method="post" enctype="multipart/form-data" action="{{ url_for('reconstruction.add_inputs', project_id=p.project_id) }}" class="upload">
+  <div class="row"><label>Fotos<input type="file" name="photos" accept=".jpg,.jpeg,.png,.webp" multiple></label>
+    <label>Videos<input type="file" name="videos" accept=".mp4,.mov,.m4v,.webm" multiple></label>
+    <label>Documentos<input type="file" name="documents" accept=".pdf,.txt,.md,.json" multiple></label></div>
+  <button class="sec">Agregar</button>
+</form>
+</details>
+</section>
+
+<section id="datos">
+<h2>Datos declarados</h2>
+<form method="post" action="{{ url_for('reconstruction.update_declared', project_id=p.project_id) }}" class="recon-datos">
+{% for key, label, tipo in campos %}
+  <label class="{{ 'ancho' if tipo.__name__ == 'str' }}">{{ label }}
+    {% if key == 'description' %}<textarea name="{{ key }}" rows="2">{{ p.declared.get(key, '') }}</textarea>
+    {% else %}<input name="{{ key }}" value="{{ p.declared.get(key, '') }}">{% endif %}</label>
+{% endfor %}
+  <button class="sec">Guardar datos</button>
+</form>
+<p class="hint">Cada corrida congela los datos que había al crearse. Cambiarlos acá no altera corridas anteriores.</p>
+</section>
+
+<section id="plano-real">
+<h2>Plano real</h2>
+{% if p.gt_state == 'REVEALED' %}
+  <p class="sub">Revelado el {{ p.revealed_at[:16].replace('T', ' ') }} UTC por {{ p.revealed_by }}. Las corridas anteriores quedan marcadas como generadas a ciegas.</p>
+  {% if gt and gt.mime_type == 'application/pdf' and not gt.preview_name %}
+    <p><a class="btn sec" href="{{ url_for('reconstruction.serve_gt', project_id=p.project_id) }}">Abrir el plano real (PDF)</a></p>
+  {% else %}
+    <img class="recon-gt-img" src="{{ url_for('reconstruction.serve_gt', project_id=p.project_id) }}" alt="Plano real">
+  {% endif %}
+{% elif gt_existe %}
+  <p><span class="recon-oculto">OCULTO PARA LOS MOTORES</span> Hay un plano real cargado. Ningún motor lo recibe y esta pantalla no lo muestra hasta que lo reveles.</p>
+  <form method="post" action="{{ url_for('reconstruction.reveal', project_id=p.project_id) }}" class="upload recon-revelar">
+    <label class="op"><input type="checkbox" name="confirm" value="1" required> Entiendo que después de revelar, las corridas nuevas ya no son a ciegas, y que revelar no se deshace.</label>
+    <button>Revelar el plano real</button>
+  </form>
+  <details class="recon-mas"><summary>Reemplazar el plano real</summary>
+  <form method="post" enctype="multipart/form-data" action="{{ url_for('reconstruction.upload_gt', project_id=p.project_id) }}" class="upload">
+    <input type="file" name="ground_truth" accept=".pdf,.png,.jpg,.jpeg,.webp" required><button class="sec">Reemplazar</button></form>
+  </details>
+{% else %}
+  <p class="sub">Sin plano real. Es opcional: sin él se puede generar y calificar, pero no comparar contra la verdad.</p>
+  <form method="post" enctype="multipart/form-data" action="{{ url_for('reconstruction.upload_gt', project_id=p.project_id) }}" class="upload">
+    <input type="file" name="ground_truth" accept=".pdf,.png,.jpg,.jpeg,.webp" required>
+    <button class="sec">Cargar plano real (queda oculto)</button></form>
+{% endif %}
+</section>
+
+<section id="motor">
+<h2>Motor</h2>
+{% set disponibles = motores|selectattr('status', 'equalto', 'AVAILABLE')|list %}
+<form method="post" action="{{ url_for('reconstruction.generate', project_id=p.project_id) }}" class="upload recon-motor">
+{% for m in motores %}
+  <label class="recon-opcion {{ 'off' if m.status != 'AVAILABLE' }}">
+    <input type="radio" name="engine_id" value="{{ m.engine_id }}" {{ 'disabled' if m.status != 'AVAILABLE' }} {{ 'checked' if disponibles and m.engine_id == disponibles[0].engine_id }} required>
+    <b>{{ m.name }}</b> <span class="mono sub">{{ m.model }}</span>
+    {% if m.status != 'AVAILABLE' %}<span class="recon-no">no disponible · {{ m.reason }}</span>{% endif %}
+    {% if m.paid %}<span class="sub">· paga por corrida</span>{% endif %}
+    {% if m.notice %}<div class="recon-aviso">{{ m.notice }}</div>{% endif %}
+  </label>
+{% else %}
+  <p class="empty">No hay motores registrados.</p>
+{% endfor %}
+{% if motores|selectattr('paid')|selectattr('status', 'equalto', 'AVAILABLE')|list %}
+  <label class="op"><input type="checkbox" name="confirm_paid" value="1"> Confirmo el gasto: si elijo un motor pago, esta corrida llama al proveedor y cuesta dinero.</label>
+{% endif %}
+  <button {{ 'disabled' if not disponibles or not fotos }}>Generar</button>
+  {% if not fotos %}<span class="sub">Carga fotos primero.</span>{% elif not disponibles %}<span class="sub">Ningún motor está disponible.</span>{% endif %}
+</form>
+</section>
+
+<section id="corridas">
+<h2>Corridas</h2>
+{% if not tarjetas %}<p class="empty">Todavía no hay corridas.</p>{% else %}
+<form id="comparar" method="get" action="{{ url_for('reconstruction.compare', project_id=p.project_id) }}"></form>
+<table class="detect recon-tabla"><thead><tr><th></th><th>Corrida</th><th>Motor</th><th>Resultado</th><th>Calificación</th><th>Prompts humanos</th><th>Plano real</th></tr></thead><tbody>
+{% for rid in hijos.get(None, []) %}{{ fila(rid, 0) }}{% endfor %}
+</tbody></table>
+<p><button class="sec" form="comparar">Comparar las marcadas (2 o 3)</button></p>
+{% endif %}
+</section>
+
+<section id="metricas">
+<h2>Métricas 90/10</h2>
+<p class="sub">Cada dato por separado. No hay un puntaje compuesto: lo que falta dice que falta.</p>
+<table class="detect recon-tabla"><tbody>
+  <tr><td>Prompts humanos</td><td><b>{{ metricas.human_prompts }}</b> en el proyecto{% if metricas.final %} · {{ metricas.final.prompts_in_lineage }} en la línea de la corrida final{% endif %}</td></tr>
+  <tr><td>Tiempo humano</td><td>{% if metricas.human_minutes is not none %}<b>{{ metricas.human_minutes|round(1) }} min</b> (registrado){% else %}<span class="sub">no registrado</span>{% endif %}</td></tr>
+  <tr><td>Corrida final</td><td>{% if metricas.final %}<a href="{{ url_for('reconstruction.run_view', project_id=p.project_id, run_id=metricas.final.run_id) }}">#{{ metricas.final.seq }}</a> · calificación: <b>{{ rating_label[metricas.final.rating] if metricas.final.rating else 'sin calificar' }}</b>{% else %}<span class="sub">sin elegir</span>{% endif %}</td></tr>
+  <tr><td>¿Hizo falta CAD manual?</td><td>{{ {'SI': 'Sí', 'NO': 'No'}.get(metricas.needed_manual_cad, '') or '—' }}</td></tr>
+  <tr><td>Recintos</td><td>{% if metricas.final %}<b>{{ metricas.final.rooms_detected }}</b> detectados ({{ metricas.final.rooms_placed }} ubicados){% else %}<span class="sub">—</span>{% endif %}
+      {% if metricas.expected_rooms %} / <b>{{ metricas.expected_rooms }}</b> esperados <span class="sub">({{ metricas.expected_rooms_source }})</span>{% elif p.gt_state == 'HIDDEN_FROM_ENGINE' %} <span class="sub">· los esperados se anotan al revelar</span>{% endif %}</td></tr>
+  <tr><td>Adyacencias</td><td>{{ escala_label.get(metricas.adjacency, '—') }}</td></tr>
+  <tr><td>Posición relativa</td><td>{{ escala_label.get(metricas.relative_position, '—') }}</td></tr>
+  <tr><td>Utilidad de la geometría</td><td>{{ escala_label.get(metricas.geometry, '—') }}</td></tr>
+</tbody></table>
+<details class="recon-mas" {{ 'open' if tarjetas and not juicio }}><summary>Cierre del proyecto (juicio humano)</summary>
+<form method="post" action="{{ url_for('reconstruction.judgment', project_id=p.project_id) }}" class="recon-datos">
+  <label>Corrida final<select name="final_run_id"><option value="">—</option>
+    {% for t in tarjetas if t.run.status == 'DONE' %}<option value="{{ t.run.run_id }}" {{ 'selected' if juicio and juicio.final_run_id == t.run.run_id }}>#{{ t.run.seq }} · {{ t.outcome_label }}</option>{% endfor %}</select></label>
+  <label>Minutos humanos<input name="human_minutes" value="{{ juicio.human_minutes if juicio and juicio.human_minutes is not none else '' }}"></label>
+  <label>¿Hizo falta CAD manual?<select name="needed_manual_cad"><option value="">sin responder</option>
+    {% for k, v in (('SI', 'Sí'), ('NO', 'No')) %}<option value="{{ k }}" {{ 'selected' if juicio and juicio.needed_manual_cad == k }}>{{ v }}</option>{% endfor %}</select></label>
+  <label>Recintos esperados<input name="expected_rooms" value="{{ juicio.expected_rooms if juicio and juicio.expected_rooms else '' }}" {{ 'disabled' if p.gt_state == 'HIDDEN_FROM_ENGINE' }}
+     placeholder="{{ 'después de revelar' if p.gt_state == 'HIDDEN_FROM_ENGINE' else ('según el plano real' if p.gt_state == 'REVEALED' else 'etiqueta: sin plano real') }}"></label>
+  {% for k, label in (('adjacency', 'Adyacencias'), ('relative_position', 'Posición relativa'), ('geometry', 'Utilidad de la geometría')) %}
+  <label>{{ label }}<select name="{{ k }}"><option value="">—</option>
+    {% for v in escala %}<option value="{{ v }}" {{ 'selected' if juicio and juicio[k] == v }}>{{ escala_label[v] }}</option>{% endfor %}</select></label>
+  {% endfor %}
+  <label class="ancho">Comentario<textarea name="comment" rows="2">{{ juicio.comment if juicio else '' }}</textarea></label>
+  <button class="sec">Guardar juicio</button>
+</form>
+<p class="hint">Cada guardado queda en el historial; manda el último.</p>
+</details>
+</section>
+
+<details class="recon-mas" id="bitacora"><summary>Bitácora</summary>
+<table class="detect recon-tabla"><tbody>
+{% for e in bitacora %}<tr><td class="sub mono">{{ e.created_at[:19].replace('T', ' ') }}</td><td>{{ e.kind }}</td><td class="sub">{{ e.run_id or '' }}</td><td class="sub">{{ e.author or '' }}</td></tr>{% endfor %}
+</tbody></table>
+</details>
+</div>
+{% endblock %}
