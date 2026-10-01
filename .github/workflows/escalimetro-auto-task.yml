@@ -4,13 +4,16 @@
 # No decide nada: transporta un ID verificado hasta Claude y publica lo que Claude hizo, después
 # de revisarlo. Guía completa: docs/ai-development/AUTO_TASK_EXECUTOR.md
 #
-# ESTADO: construido, NO activado. GitHub sólo dispara `issues` desde la rama por defecto (`main`),
-# y este archivo no está en `main`. Activarlo es una decisión de Joaquín (DR-9).
+# ESTADO: GitHub sólo dispara `issues` con la copia de la rama por defecto (`main`). Quedó activo
+# el 2026-10-01, cuando `main` avanzó a M02 con la autorización de Joaquín. La primera corrida
+# real (M03) murió al instalar Claude Code por falta de bubblewrap. M02.1 lo repara y rige recién
+# cuando llegue a `main`.
 #
 # Cuatro jobs, cada uno con lo mínimo:
 #   gate     sin secretos. Actor, contrato, repo e issues duplicados, por scripts/auto_task.py.
 #   claude   Claude trabaja en una rama hija de la TASK. Token de GitHub de SÓLO LECTURA: aunque
-#            lea el token, no puede empujar nada. Sus commits salen como un git bundle.
+#            lea el token, no puede empujar nada. Sus commits salen como un git bundle. Antes de
+#            la credencial, bubblewrap instalado y probado; si el sandbox no opera, no hay Claude.
 #   publish  sin credenciales de Anthropic. Verifica el bundle (nada en .github/, src/, tasks/,
 #            .claude/ ni el ejecutor; sin secretos; desciende de la TASK) y recién entonces crea
 #            la rama. Nunca fuerza, nunca mergea. Si la corrida se cancela, no publica.
@@ -22,7 +25,8 @@
 #   actions/upload-artifact   v7.0.1    043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
 #   actions/download-artifact v8.0.1    3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
 #   anthropics/claude-code-action v1.0.238 12dd8d74c712f5f3669365b2369b558c495b1104
-# Ojo: el SHA fija la action, no el CLI de Claude Code que ella descarga al correr.
+# Ojo: el SHA fija la action y la versión del CLI que pide (2.1.286), no el instalador, que se
+# baja de claude.ai al correr y sin hash.
 
 name: escalimetro-auto-task
 
@@ -89,17 +93,87 @@ jobs:
       needs.gate.outputs.ok == 'true' &&
       github.actor == 'joaquinriesco-alt' &&
       github.event.issue.user.login == 'joaquinriesco-alt'
-    runs-on: ubuntu-latest
+    # Fijo, no ubuntu-latest: desde el 2026-10-19 esa etiqueta pasa a 26.04, que carga un perfil de
+    # AppArmor que deja sin capacidades a los hijos de bwrap. El método de los pasos de aislamiento
+    # es el que upstream usa en 24.04; estos pasos todavía no corrieron en un runner.
+    runs-on: ubuntu-24.04
     timeout-minutes: 240
     permissions:
       contents: read
     env:
-      # Los procesos que Claude lance no HEREDAN la credencial de Anthropic. Es parcial: sin
-      # aislamiento de procesos, código del mismo usuario puede leerla de /proc. Ver la guía §8.
+      # Los procesos que Claude lance no HEREDAN la credencial de Anthropic y, con bubblewrap
+      # (los dos primeros pasos), corren en su propio PID namespace: no ven el /proc del runner.
+      # Lo que corre fuera del sandbox sigue pudiendo leerla. Ver la guía §8.
       CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: "1"
       TASK_COMMIT: ${{ needs.gate.outputs.task_commit }}
       IMPL_BRANCH: ${{ needs.gate.outputs.impl_branch }}
     steps:
+      # M02.1. Con el scrub activo, Claude Code exige bubblewrap: sin él, su instalador aborta
+      # (run 36864248192). La action fijada sólo lo prepara cuando hay allowed_non_write_users,
+      # que acá no se usa; por eso se prepara a mano, con su mismo método. Va primero: antes de
+      # cualquier código del repo, y sudo sólo en este paso.
+      - name: Aislamiento de subprocesos (bubblewrap)
+        shell: bash
+        timeout-minutes: 15
+        run: |
+          # Cada intento con su tope: un apt colgado no puede comerse los reintentos. Decide la
+          # instalación, no el update: un repositorio de terceros caído no impide bajar bubblewrap.
+          for intento in 1 2 3; do
+            sudo timeout 180 apt-get update -qq || echo "::warning::apt-get update terminó con errores"
+            if sudo timeout 180 apt-get install -y --no-install-recommends bubblewrap socat; then
+              break
+            fi
+            if [ "$intento" = 3 ]; then
+              echo "::error::no se pudo instalar bubblewrap"
+              exit 1
+            fi
+            sleep 5
+          done
+          # docker equivale a root —el usuario runner está en su grupo— y bubblewrap no bloquea sus
+          # sockets: encendido, un comando del sandbox podría pedirle un contenedor que lea la
+          # credencial. Apagado. Si no se pudiera, la prueba del paso siguiente lo detecta.
+          sudo systemctl stop docker.socket docker.service || echo "::warning::docker no se detuvo"
+          # Ubuntu 24.04 deja crear user namespaces sin privilegios pero, por AppArmor, sin
+          # capacidades, y bwrap las necesita. La action y sandbox-runtime lo liberan igual.
+          if [ -e /proc/sys/kernel/apparmor_restrict_unprivileged_userns ]; then
+            sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+            if [ "$(sysctl -n kernel.apparmor_restrict_unprivileged_userns)" != 0 ]; then
+              echo "::error::AppArmor sigue restringiendo los user namespaces"
+              exit 1
+            fi
+          fi
+      # Que el binario exista no basta: el sandbox tiene que poder operar, sin sudo, como lo usará
+      # Claude. Si no, el job termina acá, antes de que la credencial llegue a ningún proceso.
+      - name: Aislamiento verificado (antes de la credencial)
+        shell: bash
+        timeout-minutes: 2
+        run: |
+          fallar() { echo "::error::aislamiento no disponible: $1"; exit 1; }
+          command -v bwrap >/dev/null || fallar "falta bwrap"
+          command -v socat >/dev/null || fallar "falta socat"
+          bwrap --version || fallar "bwrap no arranca"
+          afuera=$(readlink /proc/self/ns/pid) || fallar "no se pudo leer el PID namespace del runner"
+          # Como el sandbox de Claude Code en modo seguro (sandbox-runtime): user, PID y red propios,
+          # sin capacidades y con /proc nuevo. Adentro se informa lo que se ve —cada falla tiene su
+          # mensaje—: no_new_privs (sudo no escala desde el sandbox) y si docker todavía responde.
+          adentro=$(bwrap --new-session --die-with-parent --unshare-user --unshare-pid --unshare-net \
+              --cap-drop ALL --ro-bind / / --dev /dev --proc /proc \
+              /bin/sh -c 'readlink /proc/self/ns/pid
+                if [ -e "/proc/$1" ]; then echo VISIBLE; else echo AISLADO; fi
+                if grep -q "^NoNewPrivs:[[:space:]]*1$" /proc/self/status; then echo SIN_PRIVILEGIOS
+                else echo CON_PRIVILEGIOS; fi
+                if socat -u OPEN:/dev/null UNIX-CONNECT:/run/docker.sock 2>/dev/null; then echo DOCKER
+                else echo SIN_DOCKER; fi' \
+              sh "$$") || fallar "bwrap no pudo crear el sandbox (user namespaces restringidos?)"
+          linea() { printf '%s\n' "$adentro" | sed -n "$1p"; }
+          [ "$(printf '%s\n' "$adentro" | wc -l)" -eq 4 ] || fallar "salida inesperada del sandbox"
+          ns=$(linea 1)
+          case "$ns" in pid:\[*\]) ;; *) fallar "el sandbox no informó su PID namespace" ;; esac
+          [ "$(linea 2)" = AISLADO ] || fallar "el runner es visible desde el sandbox"
+          [ "$ns" != "$afuera" ] || fallar "el sandbox comparte el PID namespace del runner"
+          [ "$(linea 3)" = SIN_PRIVILEGIOS ] || fallar "el sandbox puede ganar privilegios (sin no_new_privs)"
+          [ "$(linea 4)" = SIN_DOCKER ] || fallar "el sandbox llega al socket de docker"
+          echo "AISLAMIENTO: OK · PID namespace propio $ns, distinto del runner $afuera"
       - name: Checkout del commit exacto de la TASK
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

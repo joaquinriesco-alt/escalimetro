@@ -148,4 +148,8 @@
   `src/` ni `tasks/`. Lo prueban `tests/test_m02_auto_task.py` y una simulación sin gasto.
 - **Consecuencia:** el ejecutor está construido y **no activado**: activarlo exige que el workflow
   esté en la rama por defecto (DR-9). Guía: [`AUTO_TASK_EXECUTOR.md`](AUTO_TASK_EXECUTOR.md).
+- **Desde el 2026-10-01:** activo. Con la autorización de Joaquín, ChatGPT avanzó `main` hasta M02
+  (`tasks/M03.md`). Los issues que abre ChatGPT
+  figuran como `joaquinriesco-alt` (`User`, `OWNER`), vía la app `chatgpt-codex-connector`, y
+  pasan la compuerta. La primera ejecución real murió por infraestructura; la repara M02.1.
 - **Origen:** Joaquín + ChatGPT — [`tasks/M02.md`](../../tasks/M02.md).

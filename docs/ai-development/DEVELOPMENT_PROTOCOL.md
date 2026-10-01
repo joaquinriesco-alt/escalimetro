@@ -117,7 +117,7 @@ esa superficie es decisión de Joaquín.
 
 **Dónde:** en una rama nueva que lleva el ID en minúsculas con `.` → `_` y un sufijo corto
 (`m02_…`, `e37_1_…`), creada desde la **base para la próxima TASK** que declara `CURRENT_STATE.md`.
-Nunca en `main`: además de `MERGE_GATE`, un commit ahí lo saca de la cadena —el merge de DR-1
+Nunca en `main`: además de `MERGE_GATE`, un commit ahí lo saca de la cadena —avanzar `main`
 dejaría de ser fast-forward— y puede redesplegar el servicio `backend` de Railway, que corre un
 experimento pagado (`CURRENT_STATE.md` → Producción). Nunca en una rama donde Claude tiene trabajo en curso. Si el conector
 no permite crear ramas, se vuelve al respaldo: Joaquín pega el texto y Claude lo persiste.
@@ -140,19 +140,37 @@ git merge-base --is-ancestor origin/<base> origin/<rama> && echo sale-de-la-base
 **Un archivo en `tasks/` no dispara trabajo.** Claude empieza una TASK cuando Joaquín le da el ID
 en el chat. Una TASK que aparece en el repo sin que Joaquín la nombre se reporta, no se ejecuta.
 
-### 5.3 El ejecutor GitHub-native (M02): construido, no activado
+### 5.3 El ejecutor GitHub-native (M02): activo en `main`, sin ejecución real exitosa
 
-Cuando se active (DR-9), el último transporte manual —Joaquín escribiendo «Ejecuta» y el ID— lo hace
-GitHub: ChatGPT abre un issue `[ESCALIMETRO_AUTO_TASK] <ID>` con el contrato
-`ESCALIMETRO_AUTO_TASK_V1` (D-012), un workflow verifica actor, contrato y repo antes de que exista
-ninguna credencial, Claude ejecuta la TASK en `auto/<id>-issue-<n>` sin poder empujar, y un último
-paso verifica lo hecho y crea la rama. Todo el detalle, las compuertas y lo que falta para activarlo:
-[`AUTO_TASK_EXECUTOR.md`](AUTO_TASK_EXECUTOR.md). Mientras no esté activado, vale §5.2 tal cual.
+El ejecutor reemplaza el último transporte manual, el de Joaquín escribiendo «Ejecuta» y el ID:
+1. ChatGPT abre un issue `[ESCALIMETRO_AUTO_TASK] <ID>` con el contrato `ESCALIMETRO_AUTO_TASK_V1`
+   (D-012).
+2. Un workflow verifica actor, contrato y repo antes de que exista ninguna credencial.
+3. Claude ejecuta la TASK en `auto/<id>-issue-<n>`, sin poder empujar.
+4. Un último paso verifica lo hecho y crea la rama.
+
+**Estado.** Quedó activo el 2026-10-01, cuando ChatGPT avanzó `main` hasta M02 con la autorización
+de Joaquín. La primera ejecución real,
+M03, murió al instalar Claude Code por falta de bubblewrap. M02.1 lo repara, pero sólo rige cuando
+llega a `main`, porque GitHub corre la copia del workflow que está ahí. Hasta que una ejecución real
+termine bien, vale §5.2 tal cual.
+
+**El preflight rechaza un segundo issue para el mismo ID** (`DUPLICATE_ISSUE`), aunque la ejecución
+anterior haya muerto por infraestructura. Reintentar con el mismo ID exigiría cambiar el issue
+anterior y la rama de la TASK, y eso lo deciden Joaquín y ChatGPT. Lo directo es una TASK nueva.
+
+Todo el detalle está en [`AUTO_TASK_EXECUTOR.md`](AUTO_TASK_EXECUTOR.md): las compuertas, el
+aislamiento y la prueba real.
 
 **Una TASK recién escrita no rompe la suite.** ChatGPT no toca `CURRENT_STATE.md`, así que la TASK
 no figura como «en curso»; `tests/test_ai_handoff.py` la cuenta como pendiente mientras se haya
 agregado después del último cambio del estado. La primera TASK escrita así, E37, destapó que sin
 esta regla la rama nacía con un test en rojo.
+
+**Una TASK puede citar a otra que vive en su propia rama.** M02.1 enlaza a `tasks/M03.md`, que está
+en `m03_executor_smoke` y no en la rama de M02.1. Un enlace de una TASK a otra resuelve si ese
+archivo existe en una rama remota de esa TASK, con el nombre que da la misma regla del ejecutor.
+Para cualquier otro enlace roto el test sigue fallando.
 
 ## 6. Formato de TASK — `tasks/<ID>.md`
 

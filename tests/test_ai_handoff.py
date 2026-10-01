@@ -167,9 +167,47 @@ def test_los_enlaces_relativos_resuelven(ruta):
         if destino.startswith(("http://", "https://", "#", "mailto:")):
             continue
         archivo = destino.split("#")[0]
-        if archivo and not os.path.exists(os.path.normpath(os.path.join(base, archivo))):
-            rotos.append(destino)
+        if not archivo:
+            continue
+        objetivo = os.path.normpath(os.path.join(base, archivo))
+        if os.path.exists(objetivo):
+            continue
+        if os.path.dirname(ruta) == TASKS and _task_en_su_rama(objetivo):
+            continue
+        rotos.append(destino)
     assert not rotos, f"enlaces rotos: {rotos}"
+
+
+def _task_en_su_rama(objetivo: str) -> bool:
+    """Una TASK vive en su propia rama hasta que se ejecuta (D-010, protocolo §5.2): M02.1 cita a
+    M03, que está en `m03_executor_smoke` y no en la rama de M02.1. Sólo para enlaces de una TASK a
+    otra: resuelve si el archivo existe en una rama remota de esa TASK —nombre por la misma regla
+    que usa el ejecutor—. No basta con que la rama exista."""
+    rel = os.path.relpath(objetivo, ROOT).replace(os.sep, "/")
+    m = re.fullmatch(r"tasks/([^/]+)\.md", rel)
+    ej = _ejecutor()
+    if not m or not ej.ID_RE.match(m.group(1)):
+        return False
+    try:
+        refs = _git("for-each-ref", "--format=%(refname)",
+                    f"refs/remotes/origin/{ej.branch_stem(m.group(1))}_*").split()
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return False
+    return any(subprocess.run(["git", "-C", ROOT, "cat-file", "-e", f"{r}:{rel}"],
+                              capture_output=True).returncode == 0 for r in refs)
+
+
+def test_un_enlace_a_otra_task_resuelve_solo_si_existe_en_su_rama():
+    assert not _task_en_su_rama(os.path.join(TASKS, "M999.md"))          # ninguna rama la tiene
+    assert not _task_en_su_rama(os.path.join(AI, "NO_EXISTE.md"))        # no es una TASK
+    assert not _task_en_su_rama(os.path.join(TASKS, "..", "CLAUDE.md"))  # tampoco por ruta relativa
+    for rama, tarea, existe in (("e30_product_direction", "E30.md", False),   # rama sí, archivo no
+                                ("m03_executor_smoke", "M03.md", True)):
+        try:
+            _git("rev-parse", "--verify", "-q", f"refs/remotes/origin/{rama}")
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            pytest.skip(f"este checkout no conoce origin/{rama}")
+        assert _task_en_su_rama(os.path.join(TASKS, tarea)) is existe, tarea
 
 
 # ===================================================================================================
