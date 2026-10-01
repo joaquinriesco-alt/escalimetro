@@ -1,6 +1,6 @@
 # ESCALÍMETRO — Estado actual
 
-> **Última actualización:** 2026-10-01 · al cerrar `E39` · rama `auto/e39-issue-5`
+> **Última actualización:** 2026-10-01 · al cerrar `E40` · rama `auto/e40-issue-6`
 > Todo lo que está acá fue verificado al escribirlo: el código contra el repo; las ramas **contra
 > GitHub**, no contra las ramas locales ([protocolo §9.1](DEVELOPMENT_PROTOCOL.md)); las cifras de
 > los pilotos contra `.data-lab/` de la máquina de desarrollo, que **no** está en el repo.
@@ -33,7 +33,9 @@ compara motores de reconstrucción con el plano real oculto hasta el final.
 | `m03_1_executor_smoke` | `8fed69e` | la TASK M03.1 de ChatGPT (sólo `tasks/M03.1.md`), hija de `m02_1_bubblewrap_bootstrap` |
 | `auto/m03_1-issue-3` | `9a4e83a` | rama automática de M03.1, hija de `m03_1_executor_smoke` |
 | `e39_vivan_los_planos_audit` | `3afdcc7` | la TASK E39 de ChatGPT (sólo `tasks/E39.md`), hija de `auto/m03_1-issue-3` según el preflight |
-| `auto/e39-issue-5` | esta entrega | rama automática de E39, hija de `e39_vivan_los_planos_audit` · **base para la próxima TASK**. La publica el workflow. Punta y conteos **no verificados contra GitHub** en E39 (el sandbox no permitió `git fetch` / `ls-remote`) |
+| `auto/e39-issue-5` | `d37887f` (no verificado contra GitHub) | rama automática de E39, hija de `e39_vivan_los_planos_audit` |
+| `e40_public_landing` | `69570e4` | la TASK E40 de ChatGPT (sólo `tasks/E40.md`), hija de `auto/e39-issue-5` según el preflight |
+| `auto/e40-issue-6` | esta entrega | rama automática de E40, hija de `e40_public_landing` · **base para la próxima TASK**. La publica el workflow. Punta y conteos **no verificados contra GitHub** en E40 (no se corrió `git fetch` / `ls-remote`) |
 
 Las filas de `main`, `m03_executor_smoke` y `m02_github_executor` de arriba son de antes de M03.1;
 la afirmación sobre `main` de esta fila, y los conteos, **no están reverificados** (ver §9.1 del protocolo).
@@ -152,7 +154,15 @@ declara la tabla de ramas sea el de `origin/main` y no el de la rama local.
 
 ## Última tarea completada
 
-**E39** — VIVAN LOS PLANOS: auditoría y plan (issue #5). Sólo documentación, sin cambios de producto.
+**E40** — landing pública mínima (issue #6). Status **PARTIAL**: implementada y con tests, **sin
+capturas desktop/mobile** (el sandbox no permitió generarlas). Existe la primera superficie pública:
+`/planos/` (hero PLANOS QUE AYUDAN A VENDER, CTA SUBIR PROPIEDAD, Plano Corporativo → Crear Plano →
+PRO Layouts) y `/planos/solicitar` («próximamente», no crea pedidos). Fuera de Basic Auth, aislada
+(`webapp/public.py`, sin base ni motor); el resto de las rutas y `/healthz` quedan como antes. Sin
+precios. 21 tests nuevos en verde (`tests/test_e40_public_landing.py`); suite completa **no corrida**.
+Detalle en [`reports/E40_REPORT.md`](../../reports/E40_REPORT.md).
+
+Antes, **E39** — VIVAN LOS PLANOS: auditoría y plan (issue #5). Sólo documentación, sin cambios de producto.
 North Star aprobado por Joaquín (2026-10-01): *planos que ayudan a vender*; secuencia
 **Plano Corporativo → Crear Plano → PRO Layouts**. Entrega
 [`docs/E39_VIVAN_LOS_PLANOS_AUDIT.md`](../E39_VIVAN_LOS_PLANOS_AUDIT.md): inventario clasificado,
@@ -247,11 +257,11 @@ ejecutor, y ChatGPT ejecutó el fast-forward. Es la opción A de
 Independiente: **correr el primer experimento real de E37**, Piso Ricardo Lyon I con
 `openai_direct`, que necesita `OPENAI_API_KEY` y el material.
 
-**Producto (E39):** sin esperar las decisiones P-1…P-4, el plan propone empezar por la landing pública
-mínima y el pedido de Plano Corporativo (pasos 1–3 de la auditoría). Se escribe como TASK nueva, no se
-ejecuta desde acá.
+**Producto (E39):** el paso 1 (landing pública) está hecho en E40, salvo las capturas. Siguen los
+pasos 2–3 de la auditoría: pedido de Plano Corporativo. Se escribe como TASK nueva, no se ejecuta
+desde acá.
 
-Una TASK nueva la escribe ChatGPT en GitHub desde la base `auto/e39-issue-5`
+Una TASK nueva la escribe ChatGPT en GitHub desde la base `auto/e40-issue-6`
 ([protocolo §5.2](DEVELOPMENT_PROTOCOL.md)).
 
 ## Glosario

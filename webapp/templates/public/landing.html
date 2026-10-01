@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ESCALÍMETRO — Planos que ayudan a vender</title>
+<meta name="description" content="Convierte tu plano en una herramienta de venta.">
+<link rel="stylesheet" href="{{ url_for('static', filename='public.css') }}">
+</head><body>
+<div class="bar"><div class="wrap"><a class="brand" href="{{ url_for('public.landing') }}">ESCALÍMETRO</a></div></div>
+<main>
+<section class="wrap hero">
+  <div>
+    <h1>PLANOS QUE AYUDAN A VENDER</h1>
+    <p>Convierte tu plano en una herramienta de venta. Muestra el espacio con claridad y demuestra su potencial para distintos clientes.</p>
+    <a class="btn" href="{{ url_for('public.solicitar') }}">SUBIR PROPIEDAD</a>
+  </div>
+  <figure class="art" style="margin:0">
+    {# Ilustración propia, estática y genérica: no es el plano de ninguna propiedad real. #}
+    <svg viewBox="0 0 400 270" role="img" aria-label="Ilustración esquemática de una planta de oficina">
+      <rect x="10" y="10" width="380" height="250" fill="#fff" stroke="#1d2430" stroke-width="5"/>
+      <path d="M150 10V150M10 150H260M260 150V260M260 90H390" fill="none" stroke="#1d2430" stroke-width="3"/>
+      <rect x="22" y="22" width="116" height="116" fill="#f3e3de"/>
+      <rect x="162" y="22" width="216" height="56" fill="#e8edf2"/>
+      <rect x="272" y="102" width="106" height="146" fill="#e8f0ea"/>
+      <rect x="22" y="162" width="226" height="86" fill="#f4f1e6"/>
+      <g fill="#1d2430" font-family="system-ui,sans-serif" font-size="12" text-anchor="middle">
+        <text x="80" y="84">Sala</text><text x="270" y="54">Puestos</text>
+        <text x="325" y="180">Reunión</text><text x="135" y="210">Open space</text>
+      </g>
+    </svg>
+    <figcaption>Ilustración esquemática.</figcaption>
+  </figure>
+</section>
+
+<section class="wrap" id="productos">
+  <p class="lead">Tres formas de empezar</p>
+  <div class="prods">
+    <article class="prod entry">
+      <span class="tag">PRODUCTO DE ENTRADA</span>
+      <div class="n">1 · Ya tienes un plano</div>
+      <h3>Plano Corporativo</h3>
+      <p class="for">Ya tienes un plano.</p>
+      <p>ESCALÍMETRO lo convierte en un plano limpio, atractivo, corporativo y listo para publicar.</p>
+    </article>
+    <article class="prod">
+      <div class="n">2 · No tienes un plano útil</div>
+      <h3>Crear Plano</h3>
+      <p class="for">No tienes un plano útil.</p>
+      <p>Entregas la información disponible de la propiedad. ESCALÍMETRO prepara un plano comercial esquemático y referencial.</p>
+      <p class="quote">Es una representación para comunicar el espacio, no un levantamiento de medidas exactas.</p>
+    </article>
+    <article class="prod">
+      <div class="n">3 · Para cada prospecto</div>
+      <h3>PRO Layouts</h3>
+      <p class="for">Ya tienes una planta.</p>
+      <p class="eq">PLANTA + PROGRAMA → alternativas de layout y cabida</p>
+      <p class="quote">“Así podría funcionar tu empresa en esta oficina.”</p>
+    </article>
+  </div>
+</section>
+
+<section class="wrap note">
+  <a class="btn" href="{{ url_for('public.solicitar') }}">SUBIR PROPIEDAD</a>
+</section>
+</main>
+<footer><div class="wrap">ESCALÍMETRO · planos esquemáticos de referencia; no constituyen proyecto de arquitectura.</div></footer>
+</body></html>
