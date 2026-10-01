@@ -1,6 +1,6 @@
 # ESCALÍMETRO — Estado actual
 
-> **Última actualización:** 2026-10-01 · al cerrar `M02.1` · rama `m02_1_bubblewrap_bootstrap`
+> **Última actualización:** 2026-10-01 · al cerrar `M03.1` · rama `auto/m03_1-issue-3`
 > Todo lo que está acá fue verificado al escribirlo: el código contra el repo; las ramas **contra
 > GitHub**, no contra las ramas locales ([protocolo §9.1](DEVELOPMENT_PROTOCOL.md)); las cifras de
 > los pilotos contra `.data-lab/` de la máquina de desarrollo, que **no** está en el repo.
@@ -29,7 +29,12 @@ compara motores de reconstrucción con el plano real oculto hasta el final.
 | `e37_reconstruction_lab` | `01940c6` · 2026-09-30 | E37 |
 | `m02_github_executor` | `edd50e0` · 2026-09-30 | M02; idéntica a `main` |
 | `m03_executor_smoke` | `2e14080` · 2026-10-01 | la TASK M03 de ChatGPT (sólo `tasks/M03.md`) · 1 delante de `main`. Su ejecución falló (issue #2) y, tal como está, no pasa el preflight otra vez (ver Bloqueos) |
-| `m02_1_bubblewrap_bootstrap` | esta entrega | `main` + la TASK M02.1 + M02.1 · 2 delante de `main` · **base para la próxima TASK** |
+| `m02_1_bubblewrap_bootstrap` | `d097069` | `main` + la TASK M02.1 + M02.1. Según `tasks/M03.1.md`, `main` avanzó a este commit por fast-forward (ChatGPT, sin force); **Claude no pudo verificarlo contra GitHub** en M03.1 (el sandbox no permitió `git fetch` / `ls-remote`) |
+| `m03_1_executor_smoke` | `8fed69e` | la TASK M03.1 de ChatGPT (sólo `tasks/M03.1.md`), hija de `m02_1_bubblewrap_bootstrap` |
+| `auto/m03_1-issue-3` | esta entrega | rama automática de M03.1, hija de `m03_1_executor_smoke` · **base para la próxima TASK**. La publica el workflow |
+
+Las filas de `main`, `m03_executor_smoke` y `m02_github_executor` de arriba son de antes de M03.1;
+la afirmación sobre `main` de esta fila, y los conteos, **no están reverificados** (ver §9.1 del protocolo).
 
 `main` contiene la cadena entera hasta M02. Delante de él hay tres ramas:
 - las dos que salen de su punta, `m03_executor_smoke` y `m02_1_bubblewrap_bootstrap`;
@@ -145,7 +150,13 @@ declara la tabla de ramas sea el de `origin/main` y no el de la rama local.
 
 ## Última tarea completada
 
-**M02.1** — reparación del aislamiento del ejecutor. Antes de la credencial, el job `claude` ahora:
+**M03.1** — segunda prueba real del ejecutor (issue #3). Claude **llegó a ejecutar** la TASK y produjo
+`experiments/M03.1/executor_smoke.md`, el REPORT y este estado; `tests/test_ai_handoff.py` 45 passed.
+Eso es todo lo que Claude observa. **El ejecutor NO queda E2E probado** hasta que ChatGPT verifique
+externamente el run, los cuatro jobs, `AISLAMIENTO: OK`, el comentario del issue y la rama publicada
+con su contenido. Status PARTIAL en [`reports/M03.1_REPORT.md`](../../reports/M03.1_REPORT.md).
+
+Antes: **M02.1** — reparación del aislamiento del ejecutor. Antes de la credencial, el job `claude` ahora:
 - instala bubblewrap;
 - apaga docker, que equivale a root;
 - libera AppArmor;
@@ -215,7 +226,7 @@ ejecutor, y ChatGPT ejecutó el fast-forward. Es la opción A de
 Independiente: **correr el primer experimento real de E37**, Piso Ricardo Lyon I con
 `openai_direct`, que necesita `OPENAI_API_KEY` y el material.
 
-Una TASK nueva la escribe ChatGPT en GitHub desde la base `m02_1_bubblewrap_bootstrap`
+Una TASK nueva la escribe ChatGPT en GitHub desde la base `auto/m03_1-issue-3`
 ([protocolo §5.2](DEVELOPMENT_PROTOCOL.md)).
 
 ## Glosario
