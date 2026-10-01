@@ -1,6 +1,6 @@
 # ESCALÍMETRO — Estado actual
 
-> **Última actualización:** 2026-10-01 · al cerrar `M03.1` · rama `auto/m03_1-issue-3`
+> **Última actualización:** 2026-10-01 · al cerrar `E39` · rama `auto/e39-issue-5`
 > Todo lo que está acá fue verificado al escribirlo: el código contra el repo; las ramas **contra
 > GitHub**, no contra las ramas locales ([protocolo §9.1](DEVELOPMENT_PROTOCOL.md)); las cifras de
 > los pilotos contra `.data-lab/` de la máquina de desarrollo, que **no** está en el repo.
@@ -23,7 +23,7 @@ compara motores de reconstrucción con el plano real oculto hasta el final.
 
 | rama | punta | qué es |
 |---|---|---|
-| `main` | `edd50e0` · 2026-10-01 | **M02**. Rama por defecto en GitHub. Avanzó por fast-forward desde `c6de3f9` (E16.12) el 2026-10-01, 12:39 UTC, para activar el ejecutor: lo autorizó Joaquín y lo ejecutó ChatGPT (`tasks/M03.md`, en la rama `m03_executor_smoke`); GitHub registra el push como `joaquinriesco-alt`. Contiene toda la cadena hasta M02. |
+| `main` | `d097069` · 2026-10-01 | **M02.1** (antes `edd50e0`, M02). Es lo que ve `refs/remotes/origin/main` en el checkout de E39 y coincide con lo que dice `tasks/M03.1.md`; no se reverificó con `git ls-remote` (sin red en el sandbox). Rama por defecto en GitHub. Entre `c6de3f9` y `edd50e0` avanzó por fast-forward desde `c6de3f9` (E16.12) el 2026-10-01, 12:39 UTC, para activar el ejecutor: lo autorizó Joaquín y lo ejecutó ChatGPT (`tasks/M03.md`, en la rama `m03_executor_smoke`); GitHub registra el push como `joaquinriesco-alt`. Contiene toda la cadena hasta M02. |
 | `e36_real_property_pilot` | `ae64d35` · 2026-09-23 | **congelada para desarrollo**; su experimento sigue activo (ver abajo) |
 | `e17_2_url_first_ingest` | `4c0934a` · 2026-09-25 | E17.0–E17.2, la punta del código de producto |
 | `e37_reconstruction_lab` | `01940c6` · 2026-09-30 | E37 |
@@ -31,7 +31,9 @@ compara motores de reconstrucción con el plano real oculto hasta el final.
 | `m03_executor_smoke` | `2e14080` · 2026-10-01 | la TASK M03 de ChatGPT (sólo `tasks/M03.md`) · 1 delante de `main`. Su ejecución falló (issue #2) y, tal como está, no pasa el preflight otra vez (ver Bloqueos) |
 | `m02_1_bubblewrap_bootstrap` | `d097069` | `main` + la TASK M02.1 + M02.1. Según `tasks/M03.1.md`, `main` avanzó a este commit por fast-forward (ChatGPT, sin force); **Claude no pudo verificarlo contra GitHub** en M03.1 (el sandbox no permitió `git fetch` / `ls-remote`) |
 | `m03_1_executor_smoke` | `8fed69e` | la TASK M03.1 de ChatGPT (sólo `tasks/M03.1.md`), hija de `m02_1_bubblewrap_bootstrap` |
-| `auto/m03_1-issue-3` | esta entrega | rama automática de M03.1, hija de `m03_1_executor_smoke` · **base para la próxima TASK**. La publica el workflow |
+| `auto/m03_1-issue-3` | `9a4e83a` | rama automática de M03.1, hija de `m03_1_executor_smoke` |
+| `e39_vivan_los_planos_audit` | `3afdcc7` | la TASK E39 de ChatGPT (sólo `tasks/E39.md`), hija de `auto/m03_1-issue-3` según el preflight |
+| `auto/e39-issue-5` | esta entrega | rama automática de E39, hija de `e39_vivan_los_planos_audit` · **base para la próxima TASK**. La publica el workflow. Punta y conteos **no verificados contra GitHub** en E39 (el sandbox no permitió `git fetch` / `ls-remote`) |
 
 Las filas de `main`, `m03_executor_smoke` y `m02_github_executor` de arriba son de antes de M03.1;
 la afirmación sobre `main` de esta fila, y los conteos, **no están reverificados** (ver §9.1 del protocolo).
@@ -150,11 +152,24 @@ declara la tabla de ramas sea el de `origin/main` y no el de la rama local.
 
 ## Última tarea completada
 
-**M03.1** — segunda prueba real del ejecutor (issue #3). Claude **llegó a ejecutar** la TASK y produjo
-`experiments/M03.1/executor_smoke.md`, el REPORT y este estado; `tests/test_ai_handoff.py` 45 passed.
-Eso es todo lo que Claude observa. **El ejecutor NO queda E2E probado** hasta que ChatGPT verifique
-externamente el run, los cuatro jobs, `AISLAMIENTO: OK`, el comentario del issue y la rama publicada
-con su contenido. Status PARTIAL en [`reports/M03.1_REPORT.md`](../../reports/M03.1_REPORT.md).
+**E39** — VIVAN LOS PLANOS: auditoría y plan (issue #5). Sólo documentación, sin cambios de producto.
+North Star aprobado por Joaquín (2026-10-01): *planos que ayudan a vender*; secuencia
+**Plano Corporativo → Crear Plano → PRO Layouts**. Entrega
+[`docs/E39_VIVAN_LOS_PLANOS_AUDIT.md`](../E39_VIVAN_LOS_PLANOS_AUDIT.md): inventario clasificado,
+producto mínimo, reutilización y plan de 9 pasos pequeños. Hallazgo central: **no existe ninguna
+superficie pública** (todo está tras HTTP Basic de cuenta única); lo vendible más cerca es el plano
+comercial de `commercial.py`. Status DECISION_REQUIRED en [`reports/E39_REPORT.md`](../../reports/E39_REPORT.md).
+`PRODUCT_DOCTRINE.md` **no se cambió**: sigue diciendo core = CREAR + MEJORAR y layouts/PRO como no-core
+(ver P-4 abajo).
+
+Antes, **E38** — **no implementó nada**: su run `36927264632` terminó verde pero Claude dejó 0 commits
+y 0 archivos (`VERIFY NOTHING`); no es avance de producto. El ejecutor trata mal ese caso (workflow
+verde sin commits); **registrado, no reparado**. `tasks/E38.md` existe en su rama (según la TASK).
+
+Antes, **M03.1** — segunda prueba real del ejecutor (issue #3): **PASS global, verificado externamente por
+ChatGPT** (dato de la TASK E39; Claude no lo reverificó). El circuito TASK → Actions → Claude →
+verificación → publicación quedó probado. Detalle en [`reports/M03.1_REPORT.md`](../../reports/M03.1_REPORT.md),
+cuyo status PARTIAL era el de la ejecución antes de esa auditoría.
 
 Antes: **M02.1** — reparación del aislamiento del ejecutor. Antes de la credencial, el job `claude` ahora:
 - instala bubblewrap;
@@ -183,8 +198,14 @@ Ninguna. Esperando decisión de Joaquín.
 | **DR-6** | Si el congelamiento del motor (D-008) sigue en pie bajo D-001. CREAR PLANO probablemente lo necesite. | `PRODUCT_GATE` |
 | **DR-7** | Aprobar o no la licencia de BFL (D-006). | `PRODUCT_GATE` |
 | **DR-8** | Proteger `main` en GitHub. Hoy no tiene protección de rama (verificado): con ChatGPT escribiendo en GitHub, lo único que impide un push directo a `main` es el protocolo, y un push a `main` puede disparar el deploy pagado de `backend`. | `MERGE_GATE` |
-| **DR-10** | Llevar M02.1 a `main`: fast-forward de `edd50e0` a la punta de `m02_1_bubblewrap_bootstrap` (2 commits: la TASK y M02.1). Sin eso, el ejecutor sigue muriendo al instalar Claude Code. Antes, la auditoría de ChatGPT. | `MERGE_GATE` |
+| **DR-10** | Llevar M02.1 a `main`: fast-forward de `edd50e0` a la punta de `m02_1_bubblewrap_bootstrap` (2 commits: la TASK y M02.1). Sin eso, el ejecutor sigue muriendo al instalar Claude Code. Antes, la auditoría de ChatGPT. **Posiblemente ya ejecutada:** `origin/main` apunta a `d097069` (M02.1) en el checkout de E39; no verificado contra GitHub. | `MERGE_GATE` |
+| **P-1** (E39) | **Pricing: CLP vs UF.** North Star pegado: Plano Corporativo $10.000 CLP, Crear Plano ≈$50.000 CLP, PRO ≈$150.000 CLP/mes; decisión posterior del mismo día: 0,25 UF mejorar y 1 UF crear. No hay decisión de cuál reemplaza a cuál. No publicar precios antes. | `PRODUCT_GATE` |
+| **P-2** (E39) | Cuáles son los 2–3 estilos (hoy hay 5 en `presets.py`, sólo de ambientación). Bloquea sólo la variante de presentación del plano. | `PRODUCT_GATE` |
+| **P-3** (E39) | Alcance de PRO que el North Star no resuelve (alternativas por prospecto, ambientación incluida, modalidad). | `PRODUCT_GATE` |
+| **P-4** (E39) | Reconciliar D-001 (layouts/PRO = no core) con el North Star (PRO Layouts como tercer escalón). Cambiar la doctrina es de Joaquín. | `PRODUCT_GATE` |
 | — | **Para quién es ESCALÍMETRO.** La doctrina no lo define. Es estrategia pura: Claude no propone opciones. | `PRODUCT_GATE` |
+
+Detalle de P-1 a P-4 en [`docs/E39_VIVAN_LOS_PLANOS_AUDIT.md`](../E39_VIVAN_LOS_PLANOS_AUDIT.md) §5.
 
 Opciones de DR-2 a DR-7 en [`reports/M01_REPORT.md`](../../reports/M01_REPORT.md); de DR-8, en
 [`reports/M01.1_REPORT.md`](../../reports/M01.1_REPORT.md); de DR-10, en
@@ -226,7 +247,11 @@ ejecutor, y ChatGPT ejecutó el fast-forward. Es la opción A de
 Independiente: **correr el primer experimento real de E37**, Piso Ricardo Lyon I con
 `openai_direct`, que necesita `OPENAI_API_KEY` y el material.
 
-Una TASK nueva la escribe ChatGPT en GitHub desde la base `auto/m03_1-issue-3`
+**Producto (E39):** sin esperar las decisiones P-1…P-4, el plan propone empezar por la landing pública
+mínima y el pedido de Plano Corporativo (pasos 1–3 de la auditoría). Se escribe como TASK nueva, no se
+ejecuta desde acá.
+
+Una TASK nueva la escribe ChatGPT en GitHub desde la base `auto/e39-issue-5`
 ([protocolo §5.2](DEVELOPMENT_PROTOCOL.md)).
 
 ## Glosario
