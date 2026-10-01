@@ -1,0 +1,898 @@
+{
+ "que_es": "M02 — investigación de fuentes oficiales (repositorio anthropics/claude-code-action en v1.0.238, docs.github.com, code.claude.com y support.claude.com), consultadas el 2026-09-30, con su verificación cruzada. Cada hecho trae la cita y la fuente.",
+ "temas": [
+  {
+   "tema": "anthropics/claude-code-action v1 line (release v1.0.238): tag and SHA, inputs, mode and branch behaviour on issues:opened with a prompt, security checks, workflow-file permissions, job permissions, show_full_output, and public-repo and prompt-injection guidance. All sources accessed 2026-09-30. Code is read at ref 12dd8d74c712f5f3669365b2369b558c495b1104. Web access (WebFetch) worked. docs.claude.",
+   "hechos": [
+    {
+     "claim": "The latest v1.x release is v1.0.238, published 2026-09-30T19:17:33Z.",
+     "evidence": "gh api repos/anthropics/claude-code-action/releases listed first: 'v1.0.238\t2026-09-30T19:17:33Z\tfalse\tfalse\tmain'. Sorting all tags by version gives 'v1.0.238' as the last one.",
+     "source": "GitHub API: repos/anthropics/claude-code-action/releases and /tags (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "v1.0.238 is an annotated tag. Tag object b1c7b2a01afa562c414479470ef8d0e060f584a2 points to commit 12dd8d74c712f5f3669365b2369b558c495b1104. That commit is also the current HEAD of main.",
+     "evidence": "git/ref/tags/v1.0.238 -> 'tag b1c7b2a0...'. git/tags/b1c7b2a0... -> 'v1.0.238 commit 12dd8d74c712f5f3669365b2369b558c495b1104 ... Release v1.0.238'. Commit message: 'chore: bump Claude Code to 2.1.286 and Agent SDK to 0.3.286'. commits/main returns the same SHA.",
+     "source": "GitHub API git/ref/tags/v1.0.238, git/tags/<sha>, commits/main (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "A floating 'v1' tag exists. It is an annotated tag that is moved on every release and currently points to the same commit as v1.0.238. Tags 'v0' and 'beta' also exist. The releases/latest endpoint returns the old release named 'v1' (2025-08-26), not v1.0.238.",
+     "evidence": "git/ref/tags/v1 -> tag object 94d38019b210569e124cac72434b60cae5d76ed3 -> 'v1 commit 12dd8d74c712f5f3669365b2369b558c495b1104 2026-09-30T19:17:44Z Update v1 tag to v1.0.238'. releases/latest -> 'v1\t2025-08-26T17:01:10Z\tClaude Code GitHub Action v1.0'.",
+     "source": "GitHub API git/ref/tags/v1, git/tags/94d38019..., releases/latest (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "v1.0.237 points to commit fd1c128679612beff4ca259c78021c506e8aa7a7. The v1.0.237...v1.0.238 diff changes the upstream repo's own CI workflows, its CLAUDE.md and dependency versions, plus the Claude Code version constant in src/entrypoints/run.ts. No action.yml input changed.",
+     "evidence": "compare/v1.0.237...v1.0.238 files: '.github/workflows/claude.yml ... CLAUDE.md, base-action/action.yml, bun.lock, package.json, src/entrypoints/run.ts'. run.ts: 'const claudeCodeVersion = \"2.1.286\";'",
+     "source": "GitHub API compare/v1.0.237...v1.0.238; src/entrypoints/run.ts@12dd8d74 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "action.yml inputs and defaults at v1.0.238: trigger_phrase='@claude'; assignee_trigger (no default); label_trigger='claude'; base_branch (no default, falls back to the repo default branch); branch_prefix='claude/'; branch_name_template='' (effective default '{{prefix}}{{entityType}}-{{entityNumber}}-{{timestamp}}'); allowed_bots=''; allowed_non_write_users=''; include_comments_by_actor=''; exclude_comments_by_actor=''; prompt=''; settings=''; anthropic_api_key, claude_code_oauth_token and github_token (no default); anthropic_federation_rule_id / anthropic_organization_id / anthropic_service_account_id / anthropic_workspace_id / anthropic_oidc_audience (no default); use_bedrock / use_vertex / use_foundry='false'; claude_args=''; additional_permissions=''; use_sticky_comment='false'; classify_inline_comments='true'; use_commit_signing='false'; ssh_signing_key=''; bot_id='41898282'; bot_name='claude[bot]'; track_progress='false'; include_fix_links='true'; path_to_claude_code_executable=''; path_to_bun_executable=''; display_report='false'; show_full_output='false'; plugins=''; plugin_marketplaces=''. There is no 'mode' input.",
+     "evidence": "action.yml lines 7-167, e.g. 'branch_prefix: ... default: \"claude/\"', 'label_trigger: ... default: \"claude\"', 'show_full_output: ... default: \"false\"', 'track_progress: ... default: \"false\"'. usage.md lists 'mode' as '**DEPRECATED**: Mode is now automatically detected'.",
+     "source": "action.yml@12dd8d74 (v1.0.238); docs/usage.md@12dd8d74 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "The action's outputs are conclusion, execution_file, branch_name, github_token (the Claude App token when one is used), structured_output and session_id.",
+     "evidence": "action.yml outputs: 'github_token: description: \"The GitHub token used by the action (Claude App token if available)\"'",
+     "source": "action.yml@12dd8d74 lines 169-187",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Mode selection: on an 'issues' event with a non-empty prompt, the action runs in agent (automation) mode. The exception is track_progress: true, which forces tag mode for issues, PR, comment and review events.",
+     "evidence": "detector.ts: 'if (context.inputs.trackProgress && isEntityContext(context)) { ... isIssuesEvent(context) ... return \"tag\"' and '// Issue events ... if (context.inputs.prompt) { return \"agent\"; }'",
+     "source": "src/modes/detector.ts@12dd8d74 lines 20-61",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "In agent mode, the action itself creates no branch and no tracking comment. It writes the prompt verbatim, adds no --permission-mode or --allowedTools of its own (only your claude_args), and takes claudeBranch only from the CLAUDE_BRANCH environment variable.",
+     "evidence": "agent/index.ts: 'const promptContent = context.inputs.prompt || ...'; 'const claudeBranch = process.env.CLAUDE_BRANCH || undefined;'; 'claudeCommentId: undefined, // No tracking comment in agent mode'; returns 'commentId: undefined'. Only 'claudeArgs = `${claudeArgs} ${userClaudeArgs}`' is added.",
+     "source": "src/modes/agent/index.ts@12dd8d74 lines 78-143",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "In agent mode, base_branch is not checked out and does not create a branch. It only sets branchInfo.baseBranch and the BASE_BRANCH passed to the MCP servers. The working branch is taken as CLAUDE_BRANCH, then GITHUB_HEAD_REF, then GITHUB_REF_NAME, then the default branch.",
+     "evidence": "agent/index.ts: 'const baseBranch = context.inputs.baseBranch || defaultBranch;' and 'const currentBranch = claudeBranch || process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF_NAME || defaultBranch;'",
+     "source": "src/modes/agent/index.ts@12dd8d74 lines 97-119",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "For 'issues' events, GITHUB_REF is the default branch, and the workflow only triggers if the workflow file is on the default branch. So in agent mode on issues:opened, Claude works in a checkout of the default branch. Git auth is configured with the action's token, so a push Claude is allowed to make can target any branch it names, and with use_commit_signing the file-ops server would commit to the default branch (BRANCH_NAME = GITHUB_REF_NAME).",
+     "evidence": "docs.github.com: 'GITHUB_REF: \"Default branch\"' and 'This event will only trigger a workflow run if the workflow file exists on the default branch.' Code: agent mode calls configureGitAuth(githubToken, ...). install-mcp-server.ts passes 'BRANCH_NAME: branch' = currentBranch.",
+     "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows (accessed 2026-09-30); src/modes/agent/index.ts, src/mcp/install-mcp-server.ts@12dd8d74",
+     "confidence": "LIKELY"
+    },
+    {
+     "claim": "In tag mode (for example issues:opened with track_progress: true), the action posts a tracking comment and creates a local branch from base_branch (or the repo default). The default branch name is '<branch_prefix><issue|pr>-<N>-<YYYYMMDD-HHMM>', lowercased and cut to 50 characters. branch_name_template overrides it, and the action falls back to the default format if that branch already exists on the remote. With use_commit_signing, branch creation is deferred to the file-ops server on the first commit.",
+     "evidence": "branch.ts: 'sourceBranch = baseBranch' else 'repoResponse.data.default_branch'; 'execGit([\"checkout\", \"-b\", newBranch])'; 'Branch ... already exists, falling back to default format'. branch-template.ts: 'const branchName = `${branchPrefix}${entityType}-${entityNumber}-${variables.timestamp}`; return branchName.toLowerCase().substring(0, 50);'. tag/index.ts: 'const commentData = await createInitialComment(octokit.rest, context);'",
+     "source": "src/github/operations/branch.ts, src/utils/branch-template.ts, src/modes/tag/index.ts@12dd8d74",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "In tag mode, a provided prompt is appended to the default tag prompt inside <custom_instructions>. The action grants Glob, Grep, LS, Read, the comment-update and CI tools, and Bash for git add/commit/rm plus a git-push.sh wrapper, and sets --permission-mode acceptEdits. It logs the whole final prompt.",
+     "evidence": "create-prompt/index.ts: '<custom_instructions>\\n${context.githubContext.inputs.prompt}\\n</custom_instructions>' and 'console.log(\"===== FINAL PROMPT =====\")'. tag/index.ts: 'claudeArgs += ` --permission-mode acceptEdits --allowedTools ...`'",
+     "source": "src/create-prompt/index.ts lines 470-490 and 965-968; src/modes/tag/index.ts lines 134-186 @12dd8d74",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "The action does not create pull requests automatically. In tag mode it adds a 'Create PR' compare link (quick_pull=1). On cleanup it auto-commits and pushes uncommitted changes to the Claude branch, or deletes the branch if nothing was changed.",
+     "evidence": "security.md: 'In its default configuration, **Claude does not create pull requests automatically**'. update-comment-link.ts: '/compare/...?quick_pull=1'. branch-cleanup.ts: 'await $`git push origin ${claudeBranch}`' and 'await octokit.rest.git.deleteRef'",
+     "source": "docs/security.md, src/entrypoints/update-comment-link.ts, src/github/operations/branch-cleanup.ts@12dd8d74",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "The git-push.sh wrapper only enforces the form 'origin <ref>' with no flags. It does not limit which branch can be pushed. Staying on its own branch is enforced only by the system prompt.",
+     "evidence": "scripts/git-push.sh: 'Wrapper around `git push` that only allows `origin <ref>` with no flags' ... 'exec git push origin \"$REF\"'. faq.md: 'This restriction is enforced in Claude's system prompt'",
+     "source": "scripts/git-push.sh, docs/faq.md@12dd8d74",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Order of security checks (all before Claude Code is installed or run): detectMode, then setupGitHubToken (OIDC exchange or the provided token), then checkWritePermissions (issue/PR/comment/review events and workflow_run), then the trigger check, then prepare, whose first step in both modes is checkHumanActor (in tag mode this runs before the tracking comment is created), then Claude Code install and run. A failed check throws, and the job fails with setFailed.",
+     "evidence": "run.ts: 'githubToken = await setupGitHubToken();' ... 'if (isEntityContext(context) || isWorkflowRunEvent(context)) { const hasWritePermissions = await checkWritePermissions(' ... 'throw new Error(\"Actor does not have write permissions to the repository\")' ... 'prepareAgentMode' / 'prepareTagMode' ... 'const claudeExecutable = await installClaudeCode();'. agent/index.ts: 'await checkHumanActor(octokit.rest, context);' (first statement)",
+     "source": "src/entrypoints/run.ts lines 169-240; src/modes/agent/index.ts line 30; src/modes/tag/index.ts line 43 @12dd8d74",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Write-permission check: the collaborator permission must be 'admin' or 'write'. An actor ending in '[bot]' passes this step, and bots are filtered later by checkHumanActor. allowed_non_write_users bypasses the check only when github_token is provided.",
+     "evidence": "permissions.ts: 'if (allowedNonWriteUsers && githubTokenProvided)'; 'if (actor.endsWith(\"[bot]\")) { ... return true; }'; 'if (permissionLevel === \"admin\" || permissionLevel === \"write\")'",
+     "source": "src/github/validation/permissions.ts@12dd8d74 lines 90-139",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Human-actor check: the actor's account type must be 'User' unless the actor is listed in allowed_bots. Actors that cannot be resolved (404) are rejected unless allowed. The Claude docs say this check applies on every event, including scheduled runs.",
+     "evidence": "actor.ts: 'if (actorType !== \"User\") { ... throw new Error(`Workflow initiated by non-human actor: ...`'. code.claude.com: 'Human actor: on every event, the Claude Code GitHub Action rejects a bot actor unless you list it in allowed_bots'",
+     "source": "src/github/validation/actor.ts@12dd8d74; https://code.claude.com/docs/en/github-actions (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "schedule, workflow_dispatch and repository_dispatch events do not get the write-access check.",
+     "evidence": "security.md: '`workflow_dispatch`, `repository_dispatch`, and `schedule` events are not checked separately — GitHub itself requires write access to dispatch a workflow'",
+     "source": "docs/security.md@12dd8d74 line 5",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "The GitHub App token is minted before the permission check, so a rejected actor still causes a token exchange. A post step revokes the app token when github_token was not provided.",
+     "evidence": "run.ts calls setupGitHubToken() before checkWritePermissions. action.yml: 'name: Revoke app token  if: always() && inputs.github_token == '' ...  -X DELETE ... /installation/token'",
+     "source": "src/entrypoints/run.ts; action.yml lines 448-459 @12dd8d74",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "The official Claude GitHub App is granted Workflows: Read and write, along with Actions R/W, Checks R/W, Contents R/W, Discussions R/W, Issues R/W, Members R, Metadata R, Pull requests R/W, Repository hooks R/W and Statuses R.",
+     "evidence": "code.claude.com table: '| Workflows | Read and write |'. Also: 'When you install the app, you accept its full permission set. GitHub doesn't let you accept a subset.'",
+     "source": "https://code.claude.com/docs/en/github-actions (redirected from docs.claude.com; accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "The repo's own docs contradict each other on workflow-file access. faq.md says the app has no workflow write access. security.md lists Workflows R&W as requested for future features. configuration.md says 'workflows: write' can be requested through additional_permissions. The tag-mode system prompt tells Claude it cannot modify .github/workflows, which is a prompt instruction, not enforcement.",
+     "evidence": "faq.md: 'The GitHub App for Claude doesn't have workflow write access for security reasons.' security.md: '**Workflows** (Read & Write): For triggering and managing GitHub Actions workflows' (under 'Permissions for Future Features'). configuration.md: '`workflows: read` or `workflows: write`'. create-prompt/index.ts: '- Modify files in the .github/workflows directory (GitHub App permissions do not allow workflow modifications)'",
+     "source": "docs/faq.md, docs/security.md, docs/configuration.md, src/create-prompt/index.ts line 861 @12dd8d74",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Without additional_permissions, the token exchange sends no permissions body, so the Anthropic server decides the app token's scope (including whether it carries workflows: write). With additional_permissions, the action requests contents/pull_requests/issues: write plus the extra entries.",
+     "evidence": "token.ts: 'const DEFAULT_PERMISSIONS ... contents: \"write\", pull_requests: \"write\", issues: \"write\"'; 'if (!raw || !raw.trim()) { return undefined; }'; 'if (permissions) { ... fetchOptions.body = JSON.stringify({ permissions }); }' to 'https://api.anthropic.com/api/github/github-app-token-exchange'",
+     "source": "src/github/token.ts@12dd8d74 lines 69-123",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "What the default token-exchange scope actually contains (whether it includes 'workflows') is not public and could not be checked.",
+     "evidence": "This is decided server-side at api.anthropic.com. No official document states the default scope.",
+     "source": "src/github/token.ts@12dd8d74 (absence of client-side restriction)",
+     "confidence": "UNVERIFIED"
+    },
+    {
+     "claim": "GitHub requires the workflow scope or the Workflows permission to change files under .github/workflows. The workflow 'permissions:' keys do not include 'workflows', so GITHUB_TOKEN cannot be given that permission. The repo's custom-app manifest also does not request it.",
+     "evidence": "docs.github.com REST contents: 'The workflow scope is also required in order to modify files in the .github/workflows directory.' Choosing permissions: 'If your app specifically needs to access or edit Actions files in the `.github/workflows` directory, request the \"Workflows\" repository permission.' The workflow-syntax permissions list (actions, ..., contents, ..., id-token, issues, ..., pull-requests, ...) has no 'workflows' key. github-app-manifest.json default_permissions: contents/issues/pull_requests write, actions/metadata read.",
+     "source": "https://docs.github.com/en/rest/repos/contents ; https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/choosing-permissions-for-a-github-app ; https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax (all accessed 2026-09-30); github-app-manifest.json@12dd8d74",
+     "confidence": "LIKELY"
+    },
+    {
+     "claim": "With the official GitHub App (no github_token), the job needs 'id-token: write' so the action can fetch the OIDC token. With github_token set, setupGitHubToken returns immediately and no OIDC is needed for GitHub auth. id-token: write is still needed for workload identity federation, even with your own github_token.",
+     "evidence": "token.ts: 'if (providedToken) { ... return providedToken; }' and 'Did you remember to add `id-token: write` to your workflow permissions?'. faq.md: 'If you're using the default GitHub App authentication, you must add the `id-token: write` permission'. code.claude.com: '`id-token: write` permission, which the Claude Code GitHub Action needs for the federation exchange even when you pass your own `github_token`'",
+     "source": "src/github/token.ts@12dd8d74; docs/faq.md@12dd8d74; https://code.claude.com/docs/en/github-actions (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Recommended job permissions in the official examples: interactive examples/claude.yml uses contents: write, pull-requests: write, issues: write, id-token: write, actions: read. The solutions issue-triage example uses only issues: write and id-token: write. The Claude docs code-review example uses read-only contents/pull-requests/issues plus id-token: write and still posts comments. That suggests the App token's scope does not depend on the job's permissions block, which only scopes GITHUB_TOKEN.",
+     "evidence": "examples/claude.yml: 'contents: write / pull-requests: write / issues: write / id-token: write / actions: read # Required for Claude to read CI results on PRs'. Claude docs code-review job: 'contents: read, pull-requests: read, issues: read, id-token: write'",
+     "source": "examples/claude.yml@12dd8d74; docs/solutions.md@12dd8d74 lines 397-399; https://code.claude.com/docs/en/github-actions (accessed 2026-09-30)",
+     "confidence": "LIKELY"
+    },
+    {
+     "claim": "When github_token is GITHUB_TOKEN, pushes and events it creates do not start new workflow runs, except workflow_dispatch and repository_dispatch. The token expires when the job finishes.",
+     "evidence": "docs.github.com: 'events triggered by the `GITHUB_TOKEN` will not create a new workflow run, with the following exceptions: `workflow_dispatch` and `repository_dispatch`' and 'The `GITHUB_TOKEN` expires when the job finishes'. code.claude.com: 'GitHub doesn't trigger workflows on commits made with the default `GITHUB_TOKEN`'",
+     "source": "https://docs.github.com/en/actions/concepts/security/github_token ; https://code.claude.com/docs/en/github-actions (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "show_full_output defaults to 'false'. When it is 'true', or when process.env.ACTIONS_STEP_DEBUG === 'true', every SDK message is logged as full JSON, including tool results. Otherwise the log is sanitized. The separate display_report input (default 'false') controls the Step Summary report.",
+     "evidence": "parse-sdk-options.ts: 'const showFullOutput = options.showFullOutput === \"true\" || isDebugMode;'. run-claude-sdk.ts: 'if (showFullOutput) { return JSON.stringify(message, null, 2); }'. security.md: 'The `show_full_output` option is **disabled by default** ... **These logs are publicly visible in GitHub Actions for public repositories!**'",
+     "source": "base-action/src/parse-sdk-options.ts, base-action/src/run-claude-sdk.ts, docs/security.md, action.yml@12dd8d74",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Whether the runner exposes ACTIONS_STEP_DEBUG to the action process as an environment variable (which the code requires for debug mode to force full output) is not documented.",
+     "evidence": "The GitHub debug-logging page only says to set 'ACTIONS_STEP_DEBUG to true' as a secret or variable. It says nothing about exposing it as an env var. action.yml does not map it into the step env.",
+     "source": "https://docs.github.com/en/actions/how-tos/monitor-workflows/enable-debug-logging (accessed 2026-09-30); action.yml@12dd8d74",
+     "confidence": "UNVERIFIED"
+    },
+    {
+     "claim": "Whatever show_full_output is set to, run.ts prints the prompt input to the log, and tag mode prints the full generated prompt. On a public repo, the task text is therefore publicly visible in the Actions log.",
+     "evidence": "run.ts: 'console.log(`Context prompt: ${context.inputs?.prompt || \"NO PROMPT\"}`);'. create-prompt/index.ts: 'console.log(\"===== FINAL PROMPT =====\"); console.log(promptContent);'",
+     "source": "src/entrypoints/run.ts line 216; src/create-prompt/index.ts lines 965-967 @12dd8d74",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Claude's subprocess environment is a copy of process.env with only the OIDC request variables and ALL_INPUTS removed. GITHUB_TOKEN and GH_TOKEN are set to the action's token, and git auth puts the token in the origin remote URL. So Bash tools Claude is allowed to run can read the GitHub token and the Anthropic credentials. Scrubbing applies only when allowed_non_write_users is set, or when CLAUDE_CODE_SUBPROCESS_ENV_SCRUB is set.",
+     "evidence": "run.ts: 'process.env.GITHUB_TOKEN = githubToken; process.env.GH_TOKEN = githubToken;'. parse-sdk-options.ts: 'const env ... = { ...process.env }; ... delete env.ACTIONS_ID_TOKEN_REQUEST_URL; delete env.ACTIONS_ID_TOKEN_REQUEST_TOKEN; ... delete env.ALL_INPUTS;'. git-config.ts: 'https://x-access-token:${githubToken}@...'. action.yml: 'CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: ${{ env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB || (inputs.allowed_non_write_users != '' && '1') || '' }}'",
+     "source": "src/entrypoints/run.ts, base-action/src/parse-sdk-options.ts, src/github/operations/git-config.ts, action.yml@12dd8d74",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "The agent-mode prompt is passed to Claude without sanitization. Tag mode runs sanitizeContent on the triggering comment body (stripping HTML comments, invisible characters, hidden attributes and so on).",
+     "evidence": "agent/index.ts writes 'context.inputs.prompt' directly (no sanitizer import). create-prompt/index.ts: '${sanitizeContent(eventData.commentBody)}'",
+     "source": "src/modes/agent/index.ts; src/create-prompt/index.ts lines 577, 710 @12dd8d74",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "By default Claude loads user, project and local settings, so the checked-out .claude/ settings and CLAUDE.md are used. They are restored from the base branch only for PR contexts. On issues events the checkout is used as-is.",
+     "evidence": "parse-sdk-options.ts: 'settingSources: ... : [\"user\", \"project\", \"local\"]'. run.ts: 'if (isEntityContext(context) && context.isPR) { ... restoreConfigFromBase(restoreBase)'",
+     "source": "base-action/src/parse-sdk-options.ts; src/entrypoints/run.ts lines 263-276 @12dd8d74",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "In agent mode with a plain-text prompt, Claude has no shell or GitHub API tools unless claude_args or settings grant them. The action sets no permission mode in agent mode, and headless calls that need an 'ask' are denied, so file edits are also likely denied unless allowed.",
+     "evidence": "code.claude.com: 'For a plain-text prompt, Claude has no shell or GitHub API access until you grant the tools the prompt needs, with `--allowedTools`...'. tag/index.ts comment: 'Headless SDK has no prompt handler, so anything that falls through to \"ask\" is denied.'",
+     "source": "https://code.claude.com/docs/en/github-actions (accessed 2026-09-30); src/modes/tag/index.ts@12dd8d74 lines 183-186",
+     "confidence": "LIKELY"
+    },
+    {
+     "claim": "Official guidance on public repos and prompt injection: allowed_bots '*' lets external Apps invoke the action with prompts they control; hidden markdown in untrusted content is a risk and sanitization is best-effort; include_comments_by_actor can allowlist whose comments reach Claude; do not check out untrusted PR refs at the workspace root with pull_request_target or workflow_run; allowed_non_write_users is 'a significant security risk'.",
+     "evidence": "security.md: 'On a **public repository**, external parties — including GitHub Apps created by anyone — may be able to trigger workflow events'; '**Beware of potential hidden markdown when tagging Claude on untrusted content.**'; 'On public repos, you can also use `include_comments_by_actor`'; '**Do not check out an untrusted ref into the workspace root before this action.**'",
+     "source": "docs/security.md@12dd8d74",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "GitHub hardening guidance: pin actions to a full-length commit SHA, avoid pull_request_target unless it is needed, and do not use self-hosted runners for public repos.",
+     "evidence": "'Pinning an action to a full-length commit SHA is currently the only way to use an action as an immutable release.'; 'Self-hosted runners should almost never be used for public repositories on GitHub'",
+     "source": "https://docs.github.com/en/actions/reference/security/secure-use (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Published advisory GHSA-8q5r-mmjf-575q (medium): a malicious MCP server configuration in PRs enabled RCE and secret exfiltration. It affects versions < 1.0.74 and is patched in 1.0.74.",
+     "evidence": "'Malicious MCP Server Configuration in PRs Enables Remote Code Execution and Secret Exfiltration' ... 'patched_versions\":\"1.0.74\",\"vulnerable_version_range\":\"< 1.0.74\"'",
+     "source": "GitHub API repos/anthropics/claude-code-action/security-advisories (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "The upstream repo's own workflows at v1.0.238 run Claude on 'ubuntu-24.04-firewall' with an egress allow-list, use '--permission-mode auto', authenticate with workload identity federation (not a static key), and reference the action as '@main' rather than a SHA.",
+     "evidence": ".github/workflows/issue-triage.yml: 'runs-on: ubuntu-24.04-firewall', 'claude_args: ... --permission-mode auto --disallowedTools \"WebFetch,WebSearch,Write,Edit,MultiEdit,NotebookEdit\"', 'uses: anthropics/claude-code-action@main'. The upstream CLAUDE.md section 'Security hardening for GitHub Actions' lists these three protections.",
+     "source": ".github/workflows/claude.yml, .github/workflows/issue-triage.yml, CLAUDE.md@12dd8d74 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Whether the 'ubuntu-24.04-firewall' runner label is generally available to other repositories was not checked on docs.github.com.",
+     "evidence": "It appears only in the upstream repo's workflows and CLAUDE.md. No docs.github.com page was read about it.",
+     "source": ".github/workflows/*.yml@12dd8d74",
+     "confidence": "UNVERIFIED"
+    },
+    {
+     "claim": "Minor doc/code mismatches: usage.md shows label_trigger's default as '-' while action.yml defaults it to 'claude'. track_progress validation in code checks PR actions only, not issue actions.",
+     "evidence": "usage.md: '| `label_trigger` ... | No | - |'. action.yml: 'label_trigger: ... default: \"claude\"'. detector.ts validates only 'context.eventName === \"pull_request\"' actions.",
+     "source": "docs/usage.md, action.yml, src/modes/detector.ts@12dd8d74",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Whether a CLAUDE_BRANCH variable set in the workflow or job env reaches the action's process (and so the agent-mode claudeBranch and branch_name output) is unclear. action.yml does not map it, and its own comment says the step's env block shadows job-level env.",
+     "evidence": "action.yml comment: 'this step's env: block shadows the calling workflow's job-level env vars (GitHub Actions composite action behavior)'. agent/index.ts reads 'process.env.CLAUDE_BRANCH'.",
+     "source": "action.yml lines 374-378; src/modes/agent/index.ts line 97 @12dd8d74",
+     "confidence": "UNVERIFIED"
+    }
+   ],
+   "recomendaciones": [
+    "Pin the action to the full SHA with a comment: 'uses: anthropics/claude-code-action@12dd8d74c712f5f3669365b2369b558c495b1104 # v1.0.238'. Do not use '@v1': it is a floating annotated tag that was moved to a new commit today (2026-09-30).",
+    "Choose the mode on purpose for issues:opened. With only 'prompt', the action runs in agent mode: it creates no branch and no comment, and Claude works on a checkout of the default branch, so the executor prompt and --allowedTools must create and push a task branch (and open the PR if wanted). Adding 'track_progress: true' switches to tag mode: the action creates 'claude/issue-<N>-<YYYYMMDD-HHMM>' (branch_prefix / branch_name_template / base_branch apply), posts a tracking comment, appends your prompt as <custom_instructions>, and only posts a 'Create PR' link.",
+    "Gate the job with an 'if:' on the issue author (for example github.event.issue.user.login == '<owner>'). In a public repo, anyone's issue would otherwise start a run that mints an app token and then fails the write-permission check. The action's own check stays the real enforcement.",
+    "Protect the default branch and .github/workflows with rulesets or branch protection plus CODEOWNERS. The git-push wrapper does not restrict target branches, and in agent mode git auth is configured on a default-branch checkout. Add a post-step that fails the job if the pushed diff touches .github/workflows/ or src/ (the ESCALÍMETRO freeze).",
+    "To make workflow-file edits impossible regardless of the unknown default scope of the official App token, pass github_token from GITHUB_TOKEN (no 'workflows' key exists in job permissions) or from a custom App without Workflows permission. Never put 'workflows: write' in additional_permissions. Note that with GITHUB_TOKEN, Claude's pushes and PRs will not trigger CI.",
+    "Keep the permissions block minimal: id-token: write only if using the official App or WIF; contents: write, issues: write and pull-requests: write only as needed. Set explicit --allowedTools (for example specific git and gh commands, no generic Bash), an explicit --permission-mode, --max-turns and a job timeout-minutes, and never allow 'gh pr merge'.",
+    "Keep show_full_output: false and display_report: false, and never put secrets in 'prompt'. The prompt is always printed to the public Actions log ('Context prompt: ...'). Remember that Claude's Bash tools can read GITHUB_TOKEN and GH_TOKEN and the Anthropic credential from env; set CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: 1 if scrubbing is wanted without allowed_non_write_users (needs a test to confirm).",
+    "Do not set allowed_bots '*' or allowed_non_write_users on this public repo. Treat issue title and body (if interpolated into 'prompt') as untrusted text, since agent mode does not sanitize it."
+   ],
+   "preguntas_abiertas": [
+    "What GitHub permissions does the Anthropic token exchange (api.anthropic.com/api/github/github-app-token-exchange) grant by default when additional_permissions is empty? In particular, does it include 'workflows: write', given that the official App has Workflows R/W while the repo FAQ says it has no workflow write access?",
+    "Does a CLAUDE_BRANCH set at workflow or job level reach the action process? action.yml's comment says composite step env shadows job env, but CLAUDE_BRANCH is not in that env block. This would let agent mode report branch_name.",
+    "Does GitHub expose ACTIONS_STEP_DEBUG to action processes as an env var, so that debug mode really forces show_full_output as security.md claims?",
+    "Is the 'ubuntu-24.04-firewall' egress-firewall runner (used by upstream) available to this repository or account?",
+    "Is '--permission-mode auto' (used by upstream) available for the model or plan ESCALÍMETRO would use? The upstream checker says it needs claude-opus-4-6 or newer.",
+    "For M02: should branch naming and PR creation be done by the executor prompt in agent mode, or by the action in tag mode via track_progress: true? Tag mode also posts a tracking comment and auto-commits leftover changes on cleanup."
+   ]
+  },
+  {
+   "tema": "GitHub Actions semantics for an 'issues: [opened]' Claude executor workflow in the PUBLIC repo joaquinriesco-alt/escalimetro (M02). Covers default-branch triggering, actor identity (user vs app), secret exposure, job gating/needs/outputs/permissions, script injection, the workflows permission, concurrency, SHA pinning, and live read-only repo state. All sources accessed 2026-09-30. docs.github.com",
+   "hechos": [
+    {
+     "claim": "(1) An 'issues' event only triggers a workflow if the workflow file exists on the default branch. For this event GITHUB_SHA is the last commit on the default branch and GITHUB_REF is the default branch, so the executor YAML that runs is always the copy on main.",
+     "evidence": "Issues note: \"This event will only trigger a workflow run if the workflow file exists on the default branch.\" Table row for issues: GITHUB_SHA = \"Last commit on default branch\", GITHUB_REF = \"Default branch\".",
+     "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#issues (WebFetch 2026-09-30); github/docs@10844e1 content/actions/reference/workflows-and-actions/events-that-trigger-workflows.md L320-330 + data/reusables/actions/branch-requirement.md",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "(1) 'workflow_dispatch' and 'repository_dispatch' carry the same default-branch requirement. One nuance: once a workflow has run at least once, workflow_dispatch can be dispatched against any branch or tag via the API or CLI.",
+     "evidence": "Both sections include the branch-requirement note (\"...only trigger a workflow run if the workflow file exists on the default branch\"). workflow_dispatch also says: \"Once a workflow has run at least once, you can dispatch it against any branch or tag via the GitHub API or GitHub CLI.\"",
+     "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch and #repository_dispatch (accessed 2026-09-30); github/docs@10844e1 same file L902-910, L1070-1079",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "(2) github.actor is the user who triggered the initial run. Re-runs keep github.actor's privileges, while github.triggering_actor is whoever started the re-run. github.actor_id may belong to a person or an app.",
+     "evidence": "github.actor: \"The username of the user that triggered the initial workflow run... Any workflow re-runs will use the privileges of github.actor\". github.actor_id: \"The account ID of the person or app that triggered the initial workflow run.\"",
+     "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#github-context (WebFetch 2026-09-30); github/docs@10844e1 contexts.md L181-182 + data/reusables/actions/actor_id-description.md",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "(2) Observed on GitHub: when a regular user with no repo association opens an issue, github.actor, triggering_actor and issue.user.login are all that user. The run's head_branch is main.",
+     "evidence": "anthropics/claude-code-action run 36743150204 (event=issues, path .github/workflows/claude.yml, head_branch main): actor=anonybluec (User), triggering_actor=anonybluec. Issue #1874: user=anonybluec, author_association=NONE, performed_via_github_app=null.",
+     "source": "gh api repos/anthropics/claude-code-action/actions/runs?event=issues ; gh api search/issues?q=repo:anthropics/claude-code-action+\"gha poc triage\" (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "(2) Webhook payload schema: sender is a 'simple-user'. issue.user.type can be Bot, User or Organization. issue.author_association is one of COLLABORATOR, CONTRIBUTOR, FIRST_TIMER, FIRST_TIME_CONTRIBUTOR, MANNEQUIN, MEMBER, NONE or OWNER. issue.performed_via_github_app is a nullable App object.",
+     "evidence": "webhook-issues-opened: sender $ref simple-user (description \"A GitHub user.\"). author_association: \"How the author is associated with the repository.\" with the 8 values listed. performed_via_github_app: title App, nullable true. user.type enum [Bot, User, Organization].",
+     "source": "github/rest-api-description@2b78fb0 descriptions/api.github.com/api.github.com.json components.schemas.webhook-issues-opened (accessed 2026-09-30); docs page https://docs.github.com/en/webhooks/webhook-events-and-payloads#issues renders these from that schema",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "(2) When an app creates an issue with an installation token, the activity is attributed to the app's bot account (<slug>[bot], type Bot), not to a person. In that case github.actor is expected to be '<slug>[bot]', so an actor gate set to joaquinriesco-alt would reject it.",
+     "evidence": "Docs: \"API requests made by an app installation are attributed to the app.\" GitHub docs use the pattern `github.actor == 'dependabot[bot]'` for app-initiated runs. Observed: search author:app/github-actions returns issues with user.login=github-actions[bot], user.type=Bot.",
+     "source": "https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/authenticating-as-a-github-app-installation (github/docs@10844e1 L15); https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-on-actions (L18); gh api search/issues?q=is:issue+author:app/github-actions (2026-09-30)",
+     "confidence": "LIKELY"
+    },
+    {
+     "claim": "(2) When an app acts on behalf of a user (user access token, e.g. a connector the user authorized), the activity is attributed to the user, shown with the app's badge. So github.actor, sender and issue.user are expected to be the human (joaquinriesco-alt), with issue.performed_via_github_app set to the app. An actor==joaquinriesco-alt gate would therefore NOT tell apart Joaquín typing, the ChatGPT connector, or any other app Joaquín has authorized.",
+     "evidence": "\"API requests made by an app on behalf of a user will be attributed to that user.\" and \"the logs will list the user as the actor\". That the Actions github.actor equals the user in this case is not stated explicitly in the docs.",
+     "source": "https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/authenticating-with-a-github-app-on-behalf-of-a-user (github/docs@10844e1 L20-24, accessed 2026-09-30)",
+     "confidence": "LIKELY"
+    },
+    {
+     "claim": "(2) How ChatGPT's GitHub connector is attributed in this repo cannot be verified yet (NO_VERIFICABLE). The repo has no issues. The TASK commits (24eff44 tasks/M02.md, 609cd2a tasks/E37.md) show author/committer joaquinriesco-alt (User) and are unsigned. That does not prove which token or app produced them.",
+     "evidence": "gh api repos/joaquinriesco-alt/escalimetro/issues?state=all returned an empty list. Commits 24eff44 and 609cd2a: author_login=joaquinriesco-alt, type User, verification.reason=unsigned.",
+     "source": "gh api repos/joaquinriesco-alt/escalimetro/issues ; gh api repos/joaquinriesco-alt/escalimetro/commits/{sha} (accessed 2026-09-30)",
+     "confidence": "UNVERIFIED"
+    },
+    {
+     "claim": "(3) In a repo with issues enabled, anyone with read access can open an issue. For a public repo that means any GitHub user, and the repo is public with issues enabled.",
+     "evidence": "\"People with read access can create an issue in a repository where issues are enabled.\" Repo API: visibility=public, has_issues=true.",
+     "source": "https://docs.github.com/en/issues/tracking-your-work-with-issues/using-issues/creating-an-issue (github/docs@10844e1 L4); gh api repos/joaquinriesco-alt/escalimetro (2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "(3) GitHub documents only three secret restrictions: runs triggered from a fork, reusable workflows (secrets not passed automatically), and Dependabot-triggered runs. Nothing restricts issues-triggered runs, so repository secrets are available to a run started by ANY user's issue. Repo and org secrets are read when the run is queued.",
+     "evidence": "\"With the exception of GITHUB_TOKEN, secrets are not passed to the runner when a workflow is triggered from a forked repository.\" \"Secrets are not available to workflows triggered by Dependabot events.\" \"Organization and repository secrets are read when a workflow run is queued\".",
+     "source": "https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets#using-secrets-in-a-workflow (github/docs@10844e1 L169-173, data/reusables/actions/forked-secrets.md); https://docs.github.com/en/actions/reference/security/secrets#when-github-actions-reads-secrets (accessed 2026-09-30)",
+     "confidence": "LIKELY"
+    },
+    {
+     "claim": "(3) Observed on GitHub: in a public repo, an issue from a user with author_association NONE got a runner, and the job reached the credential-bearing 'Run Claude Code' step (which failed). That upstream workflow gates its job only on '@claude' appearing in the content, not on the actor, and authenticates with WIF through vars rather than a static secret. The failure cause was not checked because the logs were not read.",
+     "evidence": "Run 36743150204 steps: 'Set up job' success, 'Checkout repository' success, 'Run Claude Code' failure. Upstream claude.yml job if: `(github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || ...))`.",
+     "source": "gh api repos/anthropics/claude-code-action/actions/runs/36743150204/jobs ; anthropics/claude-code-action@a8cb0db4 .github/workflows/claude.yml (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "(3) GitHub evaluates a job-level `if` before it routes the job to a runner. The `secrets` context is not available in jobs.<job_id>.if (only github, needs, vars and inputs are). A workflow reads a secret only if it references it explicitly. So a false job-level `if` means no runner, no checkout and no secret-bearing step.",
+     "evidence": "\"you can use contexts with expressions to perform initial processing before the job is routed to a runner for execution\". Availability table: `jobs.<job_id>.if` | `github, needs, vars, inputs`. \"GitHub Actions can only read a secret if you explicitly include the secret in a workflow.\"",
+     "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#context-availability (WebFetch confirmed row, 2026-09-30; github/docs@10844e1 contexts.md L56, L100); https://docs.github.com/en/actions/concepts/security/secrets",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "(3) The claude-code-action checks the actor's write access itself, but inside the action's step. By then the job is already on a runner and the step has its inputs, credentials included. Bots cannot trigger it by default, and its docs warn that on public repos any GitHub App can open issues.",
+     "evidence": "security.md: \"The action can only be triggered by users with write access to the repository. This is checked for issue, pull request, comment, and review events\". Also: \"On a public repository, external parties — including GitHub Apps created by anyone — may be able to trigger workflow events such as opening issues\".",
+     "source": "anthropics/claude-code-action@12dd8d74c712f5f3669365b2369b558c495b1104 docs/security.md L5-7 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "(4) needs and outputs: if a needed job fails or is skipped, every job that needs it is skipped too, unless the dependent job uses a condition such as always(). Job outputs reach downstream jobs through the needs context. The limits are 1 MB per job and 50 MB per run, and outputs that may contain secrets are redacted or skipped.",
+     "evidence": "\"If a job fails or is skipped, all jobs that need it are skipped unless the jobs use a conditional expression that causes the job to continue.\" \"Job outputs are available to all downstream jobs that depend on this job.\" \"Outputs containing secrets are redacted on the runner and not sent to GitHub Actions.\"",
+     "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idneeds and #jobsjob_idoutputs (github/docs@10844e1 workflow-syntax.md L473-543 expanded reusables, accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "(4) Job-level `if` syntax: `${{ }}` is optional except when the expression starts with `!`. The condition is evaluated before any matrix is applied. A job whose condition is false is marked skipped.",
+     "evidence": "\"You must always use the ${{ }} expression syntax or escape with '', \"\", or () when the expression starts with !\". Example text: \"Otherwise, the job will be marked as _skipped_.\"",
+     "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idif (github/docs@10844e1, accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "(4) `permissions` can be set for the whole workflow or per job. Once any scope is specified, every unspecified scope becomes `none`, and `permissions: {}` disables them all. New personal-account repos default to read access for contents and packages only. This repo's live setting is default_workflow_permissions=read with can_approve_pull_request_reviews=false.",
+     "evidence": "\"If you specify the access for any of these permissions, all of those that are not specified are set to none.\" \"permissions: {}\" disables all. \"By default, when you create a new repository in your personal account, GITHUB_TOKEN only has read access for the contents and packages scopes.\" API response: {\"default_workflow_permissions\":\"read\",\"can_approve_pull_request_reviews\":false}",
+     "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#permissions ; https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository#configuring-the-default-github_token-permissions (github/docs@10844e1 L100); gh api repos/joaquinriesco-alt/escalimetro/actions/permissions/workflow (2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "(4) Environment secrets are only available to jobs that reference the environment, and those jobs cannot read them until a required reviewer approves. On the Free plan, required reviewers work only in public repos, which covers this repo. There is an optional 'prevent self-review' setting.",
+     "evidence": "\"Secrets stored in an environment are only available to workflow jobs that reference the environment. If the environment requires approval, a job cannot access environment secrets until one of the required reviewers approves it.\"",
+     "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments (github/docs@10844e1 L24-35, L103, accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "(5) Script injection: fields such as github.event.issue.title and .body are untrusted. `${{ }}` expressions are substituted into the run script before the shell executes it. GitHub recommends passing values through an intermediate env variable, or through an action argument. The full payload is also on the runner at github.event_path ($GITHUB_EVENT_PATH).",
+     "evidence": "\"These contexts typically end with body, default_branch, email, head_ref, label, message, name, page_name, ref, and title.\" \"Before the shell script is run, the expressions inside ${{ }} are evaluated and then substituted\". \"the preferred approach to handling untrusted input is to set the value of the expression to an intermediate environment variable\". github.event_path: \"The path to the file on the runner that contains the full event webhook payload.\"",
+     "source": "https://docs.github.com/en/actions/concepts/security/script-injections (WebFetch 2026-09-30); https://docs.github.com/en/actions/reference/security/secure-use#use-an-intermediate-environment-variable (github/docs@10844e1 L67-69); contexts.md L192",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "(6) GITHUB_TOKEN has no `workflows` permission scope. The allowed scopes are actions, artifact-metadata, attestations, checks, code-quality, contents, deployments, discussions, id-token, issues, packages, pages, pull-requests, security-events, statuses and vulnerability-alerts. Editing .github/workflows requires the GitHub App 'Workflows' permission (write), or the `workflow` scope on a classic PAT or OAuth token. The conclusion that GITHUB_TOKEN cannot push workflow changes is inferred; I found no single sentence in the docs that states it.",
+     "evidence": "The workflow-syntax permissions table has no `workflows` key. App docs: \"If your app specifically needs to access or edit Actions files in the .github/workflows directory, request the \\\"Workflows\\\" repository permission.\" PUT contents: \"The workflow scope is also required in order to modify files in the .github/workflows directory.\" app-permissions.workflows: \"...update GitHub Actions workflow files\", enum [write].",
+     "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#permissions ; https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/choosing-permissions-for-a-github-app (WebFetch 2026-09-30); https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps#repository-permissions-for-workflows ; github/rest-api-description@2b78fb0 PUT /repos/{owner}/{repo}/contents/{path}",
+     "confidence": "LIKELY"
+    },
+    {
+     "claim": "(6) The Claude GitHub App has no workflow write access, according to the vendor FAQ.",
+     "evidence": "\"The GitHub App for Claude doesn't have workflow write access for security reasons.\"",
+     "source": "anthropics/claude-code-action@12dd8d74 docs/faq.md L60-62 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Loop prevention: events caused by GITHUB_TOKEN do not start new workflow runs, except workflow_dispatch and repository_dispatch (and pull_request opened/synchronize/reopened, which start in an approval-required state). Events caused by a GitHub App installation token or a PAT DO start runs, so issues opened by some app will trigger an issues workflow.",
+     "evidence": "\"events triggered by the GITHUB_TOKEN will not create a new workflow run, with the following exceptions: workflow_dispatch and repository_dispatch events always create workflow runs.\" \"you can use a GitHub App installation access token or a personal access token instead of GITHUB_TOKEN to trigger events\".",
+     "source": "https://docs.github.com/en/actions/concepts/security/github_token#when-github_token-triggers-workflow-runs ; https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow (github/docs@10844e1, accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "(7) Concurrency on github.com (actions-nga feature, enabled for fpt): at most one job or run is running per group. By default a new queued run cancels any existing pending one. `queue: max` allows up to 100 pending runs but cannot be combined with cancel-in-progress: true. Group names are case-insensitive and should be unique across workflows. A workflow-level group can use only the github, inputs and vars contexts.",
+     "evidence": "\"By default, any existing pending job or workflow in the same concurrency group will be canceled and the new queued job or workflow will take its place.\" \"max: Up to 100 jobs or workflow runs can be pending\". \"The concurrency group name is case insensitive.\" Availability row: `concurrency` | `github, inputs, vars`. data/features/actions-nga.yml versions: fpt '*'.",
+     "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#concurrency (github/docs@10844e1 workflow-syntax.md L399 + reusables, contexts.md L89, data/features/actions-nga.yml; accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "(8) Pinning to a full-length commit SHA is the only way to use an action as an immutable release. The SHA must be the full value, not an abbreviation, and must come from the action's own repo rather than a fork. The repo setting 'Require actions to be pinned to a full-length commit SHA' (API field sha_pinning_required) also covers GitHub-authored actions. Reusable workflows can still be referenced by tag.",
+     "evidence": "\"Pinning an action to a full-length commit SHA is currently the only way to use an action as an immutable release.\" \"You must use a commit's full SHA value, and not an abbreviated value.\" \"When selecting a SHA, you should verify it is from the action's repository and not a repository fork.\" \"all actions must be pinned to a full-length commit SHA to be used. This includes ... actions authored by GitHub.\" sha-pinning-required: \"Whether actions must be pinned to a full-length commit SHA.\"",
+     "source": "https://docs.github.com/en/actions/reference/security/secure-use#using-third-party-actions (github/docs@10844e1 L135-137); https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/find-and-customize-actions#using-shas ; managing-github-actions-settings-for-a-repository.md (actions-blocklist-sha-pinning, fpt '*'); github/rest-api-description@2b78fb0 schema sha-pinning-required",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "(8) claude-code-action: the tag v1 moves. Right now v1 and v1.0.238 (published 2026-09-30T19:17:33Z) both resolve to commit 12dd8d74c712f5f3669365b2369b558c495b1104. Its composite action.yml pulls in one nested action, oven-sh/setup-bun, which is itself pinned by SHA.",
+     "evidence": "releases: v1.0.238 published_at 2026-09-30T19:17:33Z. tags: v1.0.238 -> 12dd8d74c712f5f3669365b2369b558c495b1104, and commits/v1 -> 12dd8d74... action.yml L195: `uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # ... v2.2.0`.",
+     "source": "gh api repos/anthropics/claude-code-action/releases, /tags, /commits/v1, /contents/action.yml?ref=12dd8d74 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Live repo state for joaquinriesco-alt/escalimetro, all read-only: default_branch=main; visibility public; has_issues=true; Actions enabled with allowed_actions=all and sha_pinning_required=false; fork PR approval set to first_time_contributors; 0 workflows, 0 runs, 0 Actions secrets, 0 variables, 0 Actions policies, 0 rulesets. main is unprotected and its head is c6de3f9 (2026-09-08), far behind m02_github_executor 24eff44. There is no .github/ directory on main or on m02_github_executor. The only collaborator is joaquinriesco-alt (admin, user id 238602327). Commits by obradigitalcl exist, but obradigitalcl is not a collaborator. One environment, 'ESCALIMETRO / production', exists with no protection rules.",
+     "evidence": "actions/permissions: {\"enabled\":true,\"allowed_actions\":\"all\",\"sha_pinning_required\":false}; workflows total_count 0; runs 0; secrets total_count 0; rulesets []; actions/policies total_count 0; branches/main protected=false sha c6de3f9; collaborators: joaquinriesco-alt admin; environments: [\"ESCALIMETRO / production\"], protection_rules [].",
+     "source": "gh api repos/joaquinriesco-alt/escalimetro{,/actions/permissions,/actions/permissions/workflow,/actions/permissions/fork-pr-contributor-approval,/actions/workflows,/actions/runs,/actions/secrets,/actions/variables,/actions/policies,/rulesets,/branches,/collaborators,/environments} ; users/joaquinriesco-alt (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Whether the Claude GitHub App is installed on the repo cannot be observed with the current gh credentials (NO_VERIFICABLE). /repos/{o}/{r}/installation needs an app JWT, and /user/installations needs a GitHub App user token.",
+     "evidence": "GET repos/joaquinriesco-alt/escalimetro/installation returned 401 \"A JSON web token could not be decoded\". GET user/installations returned 403 \"You must authenticate with an access token authorized to a GitHub App\". gh token scopes: gist, read:org, repo, workflow.",
+     "source": "gh api (accessed 2026-09-30)",
+     "confidence": "UNVERIFIED"
+    },
+    {
+     "claim": "GitHub now offers 'workflow execution protections': Actions policies that restrict which actors and events can run chosen workflows. The docs say the feature applies to all public repositories, and there is a repo-level REST endpoint. Whether it works for this personal-account repo is inferred from the endpoint returning an empty list rather than an error.",
+     "evidence": "\"Actor rules let you separate who contributes code from who runs your CI\". Page product line: \"All public repositories, and private repositories on GitHub Team or GitHub Enterprise.\" GET repos/.../actions/policies returned {\"total_count\":0,\"policies\":[]}.",
+     "source": "https://docs.github.com/en/actions/how-tos/administer/control-workflow-execution (github/docs@10844e1 L1-75, data/features/workflow-execution-protections.yml fpt '*'); github/rest-api-description@2b78fb0 /repos/{owner}/{repo}/actions/policies (accessed 2026-09-30)",
+     "confidence": "LIKELY"
+    },
+    {
+     "claim": "WebFetch of docs.github.com worked in this session. I compared its rendered output with the github/docs sources for the events, contexts and script-injection pages, and the quotes matched.",
+     "evidence": "WebFetch results quoted the same sentences found in github/docs@10844e1 (branch-requirement note, github.actor row, jobs.<job_id>.if availability row, script-injection paragraphs).",
+     "source": "WebFetch https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows, .../contexts, .../concepts/security/script-injections (2026-09-30)",
+     "confidence": "VERIFIED"
+    }
+   ],
+   "recomendaciones": [
+    "Use a two-job layout. Job 1 is `gate`: `permissions: {}`, no secrets, no checkout of task code. It parses only $GITHUB_EVENT_PATH with a small Python parser that has unit tests, and emits outputs such as ok, task_id, task_branch and task_commit. Job 2 is `execute`: `needs: gate`, plus a job-level if that REPEATS the actor checks AND requires `needs.gate.outputs.ok == 'true'`. Never put always(), !cancelled() or failure() on the execute job, because a skipped or failed gate must propagate as a skip.",
+    "Make the job-level actor gate check several fields, not only the username. Suggested: github.event_name == 'issues' && github.event.action == 'opened' && github.repository == 'joaquinriesco-alt/escalimetro' && github.actor == 'joaquinriesco-alt' && github.actor_id == '238602327' && github.event.sender.login == 'joaquinriesco-alt' && github.event.issue.user.login == 'joaquinriesco-alt' && github.event.issue.user.type == 'User' && github.event.issue.author_association == 'OWNER' && startsWith(github.event.issue.title, '<fixed marker>'). startsWith on the title is a plain string compare in the expression engine, so it is safe; never interpolate the title into run:.",
+    "Before relying on the gate, have ChatGPT create ONE test issue now. No workflow is needed for this. Then run `gh api repos/joaquinriesco-alt/escalimetro/issues/<n> --jq '{u:.user.login,t:.user.type,app:.performed_via_github_app.slug,a:.author_association}'` and record the results. If the issue shows user=joaquinriesco-alt with app=<connector slug>, decide whether the gate should also require performed_via_github_app.slug == '<that slug>' so that only the connector path runs. If it shows a [bot] user, the actor==joaquinriesco-alt gate would block ChatGPT entirely, and M02 needs a DECISION_REQUIRED on which bot identity to trust.",
+    "Subscribe only to `issues: types: [opened]`. Do not add edited, issue_comment, workflow_dispatch or pull_request_target. Adding workflow_dispatch later would let anyone with write access dispatch the workflow against any branch after its first run. The preflight should read the immutable event-payload snapshot, then re-resolve TASK_BRANCH and TASK_COMMIT through git or the API and fail closed if either changed.",
+    "Set top-level `permissions: {}` and grant per job only what is needed. The execute job needs contents: write and issues: write, plus id-token: write only if WIF is chosen; add pull-requests: write only if needed. Never pass a PAT. GITHUB_TOKEN has no `workflows` scope and the Claude App lacks workflow write, so .github/workflows is protected at the credential level. Still, add a static test that fails if the workflow references any PAT secret, and a post-run check that Claude's branch diff does not touch .github/workflows/**.",
+    "Reference the Anthropic credential ONLY in the `with:` of the claude-code-action step in the execute job, never at workflow-level or job-level env. As an optional extra layer, store it as an ENVIRONMENT secret on a new dedicated environment whose deployment-branch policy allows only main. For issues events GITHUB_REF is the default branch, so that policy fits. Required reviewers would add a manual click, which works against M02's goal, so present it to Joaquín as a choice rather than a default.",
+    "Concurrency: use a key that does not come from the issue body. Example: `group: escalimetro-executor` with `queue: max` so executions run one at a time in order, or `${{ github.workflow }}-${{ github.event.issue.number }}`. Keep cancel-in-progress false. Without `queue: max`, the default cancels any older pending run in the group.",
+    "Pin every action by full 40-character SHA with a version comment. As of 2026-09-30, anthropics/claude-code-action v1.0.238 = 12dd8d74c712f5f3669365b2369b558c495b1104; re-check at implementation time with `gh api repos/anthropics/claude-code-action/git/ref/tags/<tag>` against the upstream repo, not a fork. Also pin actions/checkout by SHA. Add a static test that every `uses:` line matches @[0-9a-f]{40}.",
+    "List as OPERATOR_ACTION_REQUIRED, settings changes that only Joaquín should make: (a) sha_pinning_required=true; (b) allowed_actions=selected, limited to actions/checkout, anthropics/claude-code-action and oven-sh/setup-bun (the nested action), after confirming nested composite actions are evaluated; (c) optionally a repository Actions policy restricting actors for the executor workflow path to joaquinriesco-alt; (d) optionally a ruleset or branch protection on main, because main's copy of the workflow is the code that runs.",
+    "Activation is a separate decision. The workflow only fires once it exists on main, and main is unprotected and far behind (c6de3f9, 2026-09-08). M02 must not merge to main or change the default branch. Record this as DECISION_REQUIRED or OPERATOR_ACTION_REQUIRED with the exact file(s) that would need to land on main.",
+    "Do not copy upstream's own claude.yml pattern, which gates only on '@claude' appearing in the content and relies on the action's in-step write-access check. Upstream uses WIF with no static secret. With a static API key or OAuth token, the job-level actor gate is mandatory, because non-collaborators' issues demonstrably reach the credential step."
+   ],
+   "preguntas_abiertas": [
+    "Which token does ChatGPT's GitHub connector use to create issues: a user-to-server token, which should give actor = joaquinriesco-alt with performed_via_github_app set, or an installation token, which would give actor = <slug>[bot]? No issue exists yet, so this is NO_VERIFICABLE until one test issue is created.",
+    "Is the Claude GitHub App installed on joaquinriesco-alt/escalimetro? It cannot be observed without an app JWT or app user token. Joaquín can check under Settings > Integrations > GitHub Apps.",
+    "Do sha_pinning_required and the allowed-actions allowlist also apply to actions nested inside composite actions (claude-code-action -> oven-sh/setup-bun)? This is unverified in the docs; the nested ref is SHA-pinned upstream, so pinning itself should not break.",
+    "The docs do not state that github.actor equals the user for an issue created by an app acting on the user's behalf. This is inferred from the app-attribution docs and should be confirmed empirically after activation, by comparing the run's actor with issue.user and performed_via_github_app.",
+    "How should the executor workflow file get onto main (a cherry-pick of only .github/workflows/... versus a full fast-forward) without moving main's Railway deploy history? That is Joaquín's decision.",
+    "What is the 'ESCALIMETRO / production' environment (no protection rules) used for, for example Railway deployments? Should the executor avoid it entirely? Unknown from the API.",
+    "Are workflow execution protections (actor or event rules via repository Actions policies) fully usable on a personal-account public repo? The endpoint returned an empty list, but creating a policy was not tested because it is a settings change."
+   ]
+  },
+  {
+   "tema": "Authentication for Claude Code in GitHub Actions (claude-code-action v1), and the recommended route for M02 (solo operator on a Claude subscription, public repo joaquinriesco-alt/escalimetro). All sources accessed 2026-09-30. Web access worked: I used WebFetch plus curl on the raw .md pages of code.claude.com and platform.claude.com, the docs.github.com article-body API, and help-center HTML reduc",
+   "hechos": [
+    {
+     "claim": "The docs.anthropic.com URL for the GitHub Actions docs now permanently redirects to code.claude.com, so the canonical page is code.claude.com/docs/en/github-actions.",
+     "evidence": "HTTP 301 Moved Permanently, Location: https://code.claude.com/docs/en/github-actions",
+     "source": "https://docs.anthropic.com/en/docs/claude-code/github-actions (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "The action pinned for this research is v1.0.238, commit 12dd8d74c712f5f3669365b2369b558c495b1104, published 2026-09-30T19:17:33Z. On that date the moving tag v1 resolved to the same commit.",
+     "evidence": "gh api repos/anthropics/claude-code-action/commits/v1.0.238 -> 12dd8d74c712...; commits/v1 -> 12dd8d74c712...; release published_at 2026-09-30T19:17:33Z",
+     "source": "gh api repos/anthropics/claude-code-action/releases, /commits/v1.0.238, /commits/v1 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "For the direct Anthropic API, the action accepts three auth routes: API key, Claude Code OAuth token, or Workload Identity Federation. The action fails validation if none of them is present. Bedrock, Vertex and Foundry are separate providers that can only be used one at a time.",
+     "evidence": "\"Either ANTHROPIC_API_KEY, CLAUDE_CODE_OAUTH_TOKEN, or workload identity federation (ANTHROPIC_FEDERATION_RULE_ID and ANTHROPIC_ORGANIZATION_ID) is required when using direct Anthropic API.\"",
+     "source": "anthropics/claude-code-action base-action/src/validate-env.ts @ v1.0.238",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "How ANTHROPIC_API_KEY is configured: create a repository secret named ANTHROPIC_API_KEY holding a Console key and pass it to the input anthropic_api_key.",
+     "evidence": "\"API Key: Name: `ANTHROPIC_API_KEY`, Value: Your Anthropic API key (starting with `sk-ant-`)\" and \"anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}\"",
+     "source": "anthropics/claude-code-action docs/setup.md @ v1.0.238 (lines 196, 222)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "How CLAUDE_CODE_OAUTH_TOKEN is configured: create a repository secret named CLAUDE_CODE_OAUTH_TOKEN, generate its value locally with `claude setup-token`, and pass it to the input claude_code_oauth_token.",
+     "evidence": "\"`CLAUDE_CODE_OAUTH_TOKEN`: an OAuth token that authenticates with your Claude subscription, available on Pro, Max, Team, and Enterprise plans. Generate one by running `claude setup-token` locally.\" / \"change the workflow's `anthropic_api_key` line to `claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}`\"",
+     "source": "https://code.claude.com/docs/en/github-actions (Manual setup) (accessed 2026-09-30); also claude-code-action docs/setup.md @ v1.0.238 line 10",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "The official Claude Code docs present the subscription OAuth token as a supported, first-class way to run the GitHub Action. /install-github-app itself offers to create it.",
+     "evidence": "\"Otherwise, choose between creating a long-lived token with your Claude subscription and pasting in an API key\" ... \"`CLAUDE_CODE_OAUTH_TOKEN` for a subscription token.\"",
+     "source": "https://code.claude.com/docs/en/github-actions (Quick setup) (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "The setup-token token lasts one year and is never saved by the CLI. It can only make model requests.",
+     "evidence": "\"generate a one-year OAuth token with `claude setup-token`\" ... \"It does not save the token anywhere\" ... \"It can only make model requests\"",
+     "source": "https://code.claude.com/docs/en/authentication (Generate a long-lived token) (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Rotation works by generating a new token. When the token expires or is revoked, runs fail with 'OAuth token revoked' or 'OAuth token has expired'. I found no official, documented way to revoke a single setup-token without other side effects.",
+     "evidence": "\"If you authenticate with a long-lived token in `CLAUDE_CODE_OAUTH_TOKEN`, you see the same messages when that token expires or is revoked.\" / \"Generate a fresh token with `claude setup-token`\"",
+     "source": "https://code.claude.com/docs/en/errors (OAuth token revoked or expired) (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "The OAuth token is tied to the personal subscription of whoever generated it. Anthropic recommends a Console API key when one secret is shared across repositories.",
+     "evidence": "\"authenticate with an API key from the Claude Console rather than an OAuth token, since an OAuth token is tied to the subscription of the person who ran `claude setup-token`.\"",
+     "source": "https://code.claude.com/docs/en/github-actions (Set up for an organization) (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Cost with an OAuth token: runs use the Claude subscription, not API billing. GitHub Actions minutes are a separate cost.",
+     "evidence": "\"If you authenticate with an OAuth token, runs use your Claude subscription instead of API billing.\"",
+     "source": "https://code.claude.com/docs/en/github-actions (Manage costs) (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Pro/Max usage limits are shared across Claude and Claude Code.",
+     "evidence": "\"Both Pro and Max plans offer usage limits that are shared across Claude and Claude Code, meaning all activity in both tools counts against the same usage limits.\"",
+     "source": "https://support.claude.com/en/articles/11145838-use-claude-code-with-your-pro-or-max-plan (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "A separate monthly 'Agent SDK credit' was announced to cover the GitHub Actions integration. It was paused on June 15, so today Agent SDK, `claude -p` and third-party usage still count against subscription limits. The docs say the Action is built on the SDK, so Action runs with an OAuth token most likely draw from the same limits as interactive use.",
+     "evidence": "\"Update June 15: We're pausing the changes... Claude Agent SDK, claude -p, and third-party app usage still draw from your subscription's usage limits.\" The paused text listed \"The Claude Code GitHub Actions integration\". The GitHub Actions page says: \"The Claude Code GitHub Action is built on the SDK\"",
+     "source": "https://support.claude.com/en/articles/15036540-use-the-claude-agent-sdk-with-your-claude-plan and https://code.claude.com/docs/en/github-actions (accessed 2026-09-30)",
+     "confidence": "LIKELY"
+    },
+    {
+     "claim": "Official statement that a web/app subscription is not API credit.",
+     "evidence": "\"A paid Claude subscription enhances your chat experience but doesn't include access to the Claude API or Console.\"",
+     "source": "https://support.claude.com/en/articles/9876003-i-have-a-paid-claude-subscription-pro-max-team-or-enterprise-plans-why-do-i-have-to-pay-separately-to-use-the-claude-api-and-console (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "If ANTHROPIC_API_KEY is present, it overrides the subscription and triggers API charges. The Claude Code auth order puts ANTHROPIC_API_KEY (position 3) ahead of CLAUDE_CODE_OAUTH_TOKEN (position 5). The action also picks up ANTHROPIC_API_KEY from the workflow env even when the input is empty.",
+     "evidence": "\"Claude Code will use this API key ... instead of your Claude subscription ... resulting in API usage charges\"; action.yml: \"ANTHROPIC_API_KEY: ${{ inputs.anthropic_api_key || env.ANTHROPIC_API_KEY }}\"",
+     "source": "support.claude.com article 11145838; https://code.claude.com/docs/en/authentication (Authentication precedence); anthropics/claude-code-action action.yml @ v1.0.238 line 335 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Usage credits (extra usage) are an opt-in add-on. If they are enabled, usage beyond plan limits is billed separately at API rates. The docs name Claude Code terminal usage; they do not say whether GitHub Action runs are covered.",
+     "evidence": "\"Usage credits are charged separately from your paid Claude subscription\" / \"Usage credits apply to both Claude conversations and Claude Code terminal usage.\"",
+     "source": "https://support.claude.com/en/articles/12429409-manage-usage-credits-for-paid-claude-plans (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Terms: Pro/Max limits assume ordinary individual use, and OAuth is meant for subscription purchasers doing ordinary use of Claude Code and native Anthropic apps. The Consumer Terms (effective Oct 8, 2025) ban automated access except via an API key or 'where we otherwise explicitly permit it'. The official docs for the action explicitly document the OAuth route, which suggests a solo owner using it on their own repo is permitted.",
+     "evidence": "\"Advertised usage limits for Pro and Max plans assume ordinary, individual usage of Claude Code and the Agent SDK.\" / \"Except when you are accessing our Services via an Anthropic API Key or where we otherwise explicitly permit it, to access the Services through automated or non-human means\"",
+     "source": "https://code.claude.com/docs/en/legal-and-compliance; https://www.anthropic.com/legal/consumer-terms (accessed 2026-09-30). This is my reading of the terms, not legal advice.",
+     "confidence": "LIKELY"
+    },
+    {
+     "claim": "Workload Identity Federation needs no static secret. The workflow inputs are identifiers, not credentials. It requires `id-token: write` and admin access to an Anthropic Console organization. It is billed like an API key, not through the subscription. A static key or OAuth token, if also set, takes precedence over federation.",
+     "evidence": "\"These values are identifiers, not credentials\"; \"a static credential takes precedence and federation will not be used\"; platform docs: \"the minted token then follows that workspace's rate limits and usage attribution, the same as an API key\"; \"You need the admin, owner, or primary owner role in your Anthropic organization\"",
+     "source": "claude-code-action docs/setup.md @ v1.0.238 lines 50-56; https://platform.claude.com/docs/en/manage-claude/workload-identity-federation (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Bedrock, Vertex and Foundry use OIDC only and are billed per token to the cloud account. The documented secrets are AWS_ROLE_TO_ASSUME; GCP_WORKLOAD_IDENTITY_PROVIDER and GCP_SERVICE_ACCOUNT; AZURE_CLIENT_ID, AZURE_TENANT_ID and AZURE_SUBSCRIPTION_ID. A custom GitHub App additionally needs APP_ID and APP_PRIVATE_KEY.",
+     "evidence": "\"Bedrock, Vertex, and Microsoft Foundry use OIDC authentication exclusively\"; the secrets table lists AWS_ROLE_TO_ASSUME, GCP_*, AZURE_*, APP_ID, APP_PRIVATE_KEY; costs doc: \"billed per token to your cloud account\"",
+     "source": "claude-code-action docs/cloud-providers.md @ v1.0.238; https://code.claude.com/docs/en/github-actions-cloud-providers; https://code.claude.com/docs/en/costs (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "The official Claude GitHub App is not required. When the `github_token` input is provided, the action skips the OIDC-to-Anthropic exchange entirely. Without it, the action requests a GitHub OIDC token (audience 'claude-code-github-action') and sends it to api.anthropic.com to obtain a Claude App installation token. That default path requires `id-token: write` and the installed app.",
+     "evidence": "token.ts: \"if (providedToken) { console.log(\\\"Using provided GITHUB_TOKEN for authentication\\\"); return providedToken; }\" and later: fetch(\"https://api.anthropic.com/api/github/github-app-token-exchange\"). Docs: \"`github_token` | Token for GitHub operations. When omitted, the Claude Code GitHub Action authenticates as the Claude GitHub App\"",
+     "source": "anthropics/claude-code-action src/github/token.ts @ v1.0.238 lines 56-184; https://code.claude.com/docs/en/github-actions (Action parameters) (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Anthropic's server-side token exchange for the official app can reject a run with error code 'workflow_not_found_on_default_branch', and the action then skips. So the app path adds a server-side check of the workflow against the default branch. I could not read the exact server-side rules.",
+     "evidence": "WORKFLOW_VALIDATION_ERROR_CODES = new Set([\"workflow_not_found_on_default_branch\"]) ... \"This is expected when adding Claude Code workflows to new repositories or on PRs with workflow changes.\"",
+     "source": "anthropics/claude-code-action src/github/token.ts @ v1.0.238 lines 24-26, 132-134",
+     "confidence": "LIKELY"
+    },
+    {
+     "claim": "Installing the official app grants its full, broad permission set, and GitHub does not allow accepting only part of it. The set includes Actions R/W, Workflows R/W and Repository hooks R/W. The official docs contradict each other on workflow write access.",
+     "evidence": "code.claude.com table lists \"Workflows | Read and write\", \"Repository hooks | Read and write\", \"Actions | Read and write\", and says \"GitHub doesn't let you accept a subset\". claude-code-action docs/faq.md says \"The GitHub App for Claude doesn't have workflow write access\"",
+     "source": "https://code.claude.com/docs/en/github-actions (GitHub App permissions) (accessed 2026-09-30); claude-code-action docs/faq.md @ v1.0.238 line 62",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Tradeoffs of using GITHUB_TOKEN instead of an app: nothing to install and the token expires when the job ends, but Claude's pushes do not trigger other workflows. Comments are not posted as claude[bot], and use_sticky_comment does not work.",
+     "evidence": "\"GitHub's automatic `GITHUB_TOKEN`: no app to create or install, but GitHub doesn't trigger your CI workflows on commits made with it\"; faq.md: \"The `use_sticky_comment` feature only works with claude[bot] authentication\"; GitHub: \"The `GITHUB_TOKEN` expires when the job finishes\"",
+     "source": "https://code.claude.com/docs/en/github-actions-cloud-providers; claude-code-action docs/faq.md @ v1.0.238 lines 186-190; https://docs.github.com/en/actions/concepts/security/github_token (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Official warning for public repos: steps that fetch credentials run before the action checks the commenter's write access. Anthropic recommends putting an access-check step before any credential step. This matches M02's workflow-level gate requirement.",
+     "evidence": "\"The credential steps run before the Claude Code GitHub Action checks the commenter's write access ... add a step that verifies the commenter's write access before the credential steps.\"",
+     "source": "https://code.claude.com/docs/en/github-actions-cloud-providers (Create the workflow file, Warning) (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Secret presence can be checked without exposing the value. `gh secret list` and the REST API return names only. In a workflow, secrets cannot be used in `if:`. An unset secret evaluates to an empty string. The secrets context is allowed in steps.env but not in jobs.<id>.if or steps.if.",
+     "evidence": "REST: \"Lists all secrets available in a repository without revealing their encrypted values.\"; \"Secrets cannot be directly referenced in `if:` conditionals.\"; \"If a secret has not been set, the return value ... will be an empty string.\"; contexts table: jobs.<job_id>.steps.env includes `secrets`, jobs.<job_id>.if does not",
+     "source": "https://docs.github.com/en/rest/actions/secrets; https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets; https://docs.github.com/en/actions/reference/workflows-and-actions/contexts (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Current state of joaquinriesco-alt/escalimetro, checked by name only. The repo is public, owned by a user account, with default branch main. The repository secret list is empty. The environment 'ESCALIMETRO / production' has 0 secrets. So CLAUDE_CODE_OAUTH_TOKEN and ANTHROPIC_API_KEY are ABSENT in GitHub. Default workflow permissions are read. Whether the Claude GitHub App is installed is NO_VERIFICABLE: the gh token gets a 403 on /user/installations.",
+     "evidence": "gh secret list --json name,updatedAt -> []; environments/ESCALIMETRO%20%2F%20production/secrets -> total_count 0; repos/... -> visibility public, default_branch main; actions/permissions/workflow -> default_workflow_permissions read; user/installations -> HTTP 403",
+     "source": "gh api / gh secret list against joaquinriesco-alt/escalimetro, authenticated as joaquinriesco-alt (run 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "In this agent's local shell, ANTHROPIC_API_KEY, CLAUDE_CODE_OAUTH_TOKEN and ANTHROPIC_AUTH_TOKEN are all ABSENT (checked by presence only), and the installed CLI is Claude Code 2.1.270. This fits a subscription /login setup, but the user's interactive shell and /status were not inspected.",
+     "evidence": "printenv presence test -> ABSENT x3; `claude --version` -> 2.1.270",
+     "source": "local shell check (run 2026-09-30)",
+     "confidence": "LIKELY"
+    },
+    {
+     "claim": "Setting CLAUDE_CODE_SUBPROCESS_ENV_SCRUB=1 strips Anthropic credentials from the environments of Bash, hooks and MCP subprocesses. The action only enables this automatically when allowed_non_write_users is set. You can enable it through the workflow env.",
+     "evidence": "env-vars: \"Set to `1` to strip credentials from subprocess environments (Bash tool, hooks, MCP stdio servers)\"; action.yml: \"CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: ${{ env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB || (inputs.allowed_non_write_users != '' && '1') || '' }}\"",
+     "source": "https://code.claude.com/docs/en/env-vars (accessed 2026-09-30); anthropics/claude-code-action action.yml @ v1.0.238 line 301",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Bare mode ignores CLAUDE_CODE_OAUTH_TOKEN, so claude_args must not include --bare when using the subscription token.",
+     "evidence": "\"Bare mode does not read `CLAUDE_CODE_OAUTH_TOKEN`. If your script passes `--bare`, authenticate with `ANTHROPIC_API_KEY` or an `apiKeyHelper` instead.\"",
+     "source": "https://code.claude.com/docs/en/authentication (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Logs of public repos are public, and show_full_output (also turned on automatically by ACTIONS_STEP_DEBUG) can expose secrets.",
+     "evidence": "\"These logs are publicly visible in GitHub Actions for public repositories!\"; \"Full output is automatically enabled when GitHub Actions debug mode is active\"",
+     "source": "anthropics/claude-code-action docs/security.md @ v1.0.238 lines 179-192",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "GitHub Actions minutes are free for public repositories on standard GitHub-hosted runners.",
+     "evidence": "\"GitHub Actions usage is free for self-hosted runners and for public repositories that use standard GitHub-hosted runners.\"",
+     "source": "https://docs.github.com/en/billing/concepts/product-billing/github-actions (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "The `issues` event only triggers a workflow that exists on the default branch.",
+     "evidence": "\"This event will only trigger a workflow run if the workflow file exists on the default branch.\"",
+     "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows (issues) (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    }
+   ],
+   "recomendaciones": [
+    "Recommended route: a CLAUDE_CODE_OAUTH_TOKEN repository secret (from `claude setup-token`), with the GitHub identity provided by `github_token: ${{ secrets.GITHUB_TOKEN }}` instead of the official Claude GitHub App. Why: (1) the official docs document this token for GitHub Actions on Pro/Max; (2) runs use the subscription, not API billing, and minutes are free on this public repo, so there is no new paid account; (3) GITHUB_TOKEN is limited by the job's `permissions:` and expires with the job; (4) no third-party app with Workflows/Actions/Hooks write access gets installed; (5) the OIDC-to-Anthropic token exchange and its server-side default-branch check drop out, so `id-token: write` is not needed; (6) M02 forbids installing apps on Joaquín's behalf, and this route needs no app install at all.",
+    "OPERATOR_ACTION_REQUIRED (Joaquín, once, only after M02 passes audit): run `claude setup-token` locally and approve in the browser. Then run `gh secret set CLAUDE_CODE_OAUTH_TOKEN -R joaquinriesco-alt/escalimetro` and paste the token at the prompt. Do not use --body, so the token stays out of shell history. Verify with `gh secret list -R joaquinriesco-alt/escalimetro --json name,updatedAt`, which shows the name only. Add a calendar reminder about 11 months out, because the token lasts one year. The value must never go into chat, the REPORT or the repo.",
+    "Hardening for the executor workflow: pin `anthropics/claude-code-action@12dd8d74c712f5f3669365b2369b558c495b1104` (v1.0.238) by full SHA, not @v1. v1.0.238 shipped the same day, so review its diff or consider pinning v1.0.237. Put the actor gate (`github.actor == 'joaquinriesco-alt'`) and the deterministic preflight in an earlier job (or earlier steps) that never references `secrets.*`. Reference the secret only in the Claude step. Pass only `claude_code_oauth_token`, and never set anthropic_api_key or an ANTHROPIC_API_KEY env, since it would take precedence and bill the API. Add these to the job: `env: CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: \"1\"`, `timeout-minutes`, a `concurrency` group, and `--max-turns` in claude_args. Keep minimal permissions (contents: write, issues: write, pull-requests only if needed). No `--bare`, no show_full_output, no ACTIONS_STEP_DEBUG.",
+    "Presence checks, in two tiers. Operator side: `gh secret list --json name,updatedAt`, which shows names only. Inside the workflow, after the actor gate, use a step with `env: HAS_OAUTH: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN != '' }}` that prints only PRESENT or ABSENT and fails closed on ABSENT. That step then only ever sees a boolean. Report the credential state only as PRESENT/ABSENT/NO_VERIFICABLE. As of 2026-09-30 it is ABSENT.",
+    "Cost control: to guarantee no charges beyond the flat subscription, keep usage credits off on claude.ai, or set a low monthly spend limit. Keep in mind that executor runs likely draw from the same Pro/Max limits as Joaquín's interactive Claude Code. Run one TASK at a time to stay within 'ordinary, individual usage'.",
+    "Accept the known GITHUB_TOKEN tradeoff explicitly in the REPORT: Claude's pushes will not trigger other workflows. For M02 that is desirable, since it prevents chained runs; tests run inside the Claude job and ChatGPT audits from GitHub. Also, comments appear as github-actions[bot] rather than claude[bot], and use_sticky_comment is unavailable.",
+    "Keep one fallback documented but do not implement it now. If Anthropic changes the subscription-for-automation policy (the paused Agent SDK credit shows this area is in flux), or usage limits become a bottleneck, move to WIF (no static secret, needs Console org admin, API billing) or ANTHROPIC_API_KEY (Console, separate prepaid billing). Either one is a DECISION_REQUIRED for Joaquín because it adds new spend.",
+    "Optional defense in depth: store the token as an environment secret in a dedicated environment restricted to the default branch, rather than as a repository secret. Environment secrets are only read when a job referencing that environment starts. I did not verify here whether environment protection rules are available on this plan."
+   ],
+   "preguntas_abiertas": [
+    "I found no official way to revoke one specific `claude setup-token` token without signing out everywhere. If the token leaks, an attacker could consume Joaquín's subscription for up to a year. UNVERIFIED.",
+    "Do usage credits (extra usage) apply to GitHub Action runs authenticated with CLAUDE_CODE_OAUTH_TOKEN, or only to interactive Claude Code? The help center names only 'Claude Code terminal usage'. UNVERIFIED.",
+    "Is the Claude GitHub App already installed on the joaquinriesco-alt account? It could not be checked with the gh CLI token (HTTP 403). The operator can check at github.com/settings/installations. It is irrelevant if the GITHUB_TOKEN route is chosen.",
+    "Which plan does Joaquín have (Pro, Max 5x or Max 20x), and are usage credits enabled? This determines headroom and whether any variable charge is possible. Unknown.",
+    "Will Anthropic resume the paused Agent SDK change? It would move GitHub Actions usage from plan limits to a separate monthly credit, with overflow billed at API rates. No date has been announced ('we'll share it before anything takes effect').",
+    "The official docs disagree on whether the Claude GitHub App has workflow write access (docs/faq.md says no; the code.claude.com permission table says Workflows: Read and write). This matters only if the official app is chosen.",
+    "With OAuth auth, the 'Post buffered inline comments' / classify_inline_comments step only has an API key path. setup.md says classification is skipped under WIF; the OAuth behavior is UNVERIFIED. The executor can set classify_inline_comments: false, since the issues flow does not need it."
+   ]
+  },
+  {
+   "tema": "Cross-check of three research reports on anthropics/claude-code-action v1.0.238, GitHub Actions semantics and authentication for the M02 issues:opened executor (public repo joaquinriesco-alt/escalimetro). I re-read the source at the release commit 12dd8d74c712f5f3669365b2369b558c495b1104 using gh api (code copies in <scratch>). I also read docs.github.com and code.claude.com through WebFetch (web ",
+   "hechos": [
+    {
+     "claim": "RELEASE SHA (confirmed). v1.0.238 is an annotated tag (tag object b1c7b2a01afa562c414479470ef8d0e060f584a2, tagger date 2026-09-30T19:17:28Z) that points to commit 12dd8d74c712f5f3669365b2369b558c495b1104. The floating tag v1 (tag object 94d38019b210569e124cac72434b60cae5d76ed3) was moved to the same commit at 19:17:44Z. main HEAD is the same commit. releases/latest still returns the old release named 'v1' from 2025-08-26. v1.0.237 is commit fd1c128679612beff4ca259c78021c506e8aa7a7 (tag object fccf022fdf80a6c41253d57e99293f208e484626).",
+     "evidence": "git/tags/b1c7b2a0... -> 'v1.0.238  12dd8d74c712f5f3669365b2369b558c495b1104  commit  2026-09-30T19:17:28Z  Release v1.0.238'; git/tags/94d38019... -> 'v1 12dd8d74... Update v1 tag to v1.0.238'; commits/v1.0.237 -> fd1c1286...",
+     "source": "gh api repos/anthropics/claude-code-action/git/ref/tags/{v1.0.238,v1,v1.0.237}, git/tags/<sha>, commits/main, releases/latest (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "The only runtime change in v1.0.238 over v1.0.237 is a version bump: Claude Code CLI 2.1.285 to 2.1.286 (in run.ts and base-action/action.yml) and @anthropic-ai/claude-agent-sdk ^0.3.285 to ^0.3.286. The other changed files are upstream's own CI workflows, an egress-firewall config, a hardening-check script and CLAUDE.md.",
+     "evidence": "compare/v1.0.237...v1.0.238 run.ts patch: '-  const claudeCodeVersion = \"2.1.285\";' / '+  const claudeCodeVersion = \"2.1.286\";'. package.json: '\"@anthropic-ai/claude-agent-sdk\": \"^0.3.286\"'",
+     "source": "gh api repos/anthropics/claude-code-action/compare/v1.0.237...v1.0.238 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "MISSING FACT: pinning the action SHA does not pin everything it runs. At runtime the action downloads the Claude Code CLI with curl from claude.ai (the version string is pinned but the download has no hash check). It also runs 'bun install --production' without --frozen-lockfile, against caret ranges in package.json. The only nested action, oven-sh/setup-bun, is SHA-pinned.",
+     "evidence": "run.ts: 'return `set -o pipefail; curl -fsSL https://claude.ai/install.sh | bash -s -- ${version}`;' and 'const claudeCodeVersion = \"2.1.286\";'. action.yml step 'Install Dependencies': 'bun install --production'. action.yml: 'uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6'",
+     "source": "src/entrypoints/run.ts lines 52-54, 80; action.yml lines 192-223 @12dd8d74 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "MODE on issues:opened. With a non-empty 'prompt' and track_progress false (the default), the action runs in agent (automation) mode. With track_progress: 'true' it runs in tag mode. When a prompt is present, checkContainsTrigger returns true unconditionally, so '@claude' is not needed in the issue in either mode.",
+     "evidence": "detector.ts: '// Issue events ... if (context.inputs.prompt) { return \"agent\"; }' and 'if (context.inputs.trackProgress && isEntityContext(context)) { ... isIssuesEvent(context) ... return \"tag\";'. trigger.ts: '// If prompt is provided, always trigger / if (prompt) { ... return true; }'",
+     "source": "src/modes/detector.ts lines 20-61; src/github/validation/trigger.ts lines 19-23 @12dd8d74 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "BRANCH IN AGENT MODE (confirms Researcher 1). Agent mode creates no branch and runs no git checkout or fetch at all. base_branch is not used to create or check out anything; it is only passed as BASE_BRANCH to MCP servers and returned in branchInfo. The branch_name output equals process.env.CLAUDE_BRANCH, which is undefined unless something sets it. Claude works on whatever ref the workflow's own checkout left in $GITHUB_WORKSPACE. For issues events that is the default branch, since GITHUB_REF is the default branch.",
+     "evidence": "agent/index.ts: 'const claudeBranch = process.env.CLAUDE_BRANCH || undefined;' ... 'const baseBranch = context.inputs.baseBranch || defaultBranch;' ... returns 'currentBranch: baseBranch, // Use base branch as current when creating new branch' and 'claudeBranch: claudeBranch'. run.ts: 'core.setOutput(\"branch_name\", claudeBranch);'. docs.github.com issues row: GITHUB_REF = 'Default branch'.",
+     "source": "src/modes/agent/index.ts lines 96-143; src/entrypoints/run.ts lines 235, 371 @12dd8d74; https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "DOC/CODE CONTRADICTION that none of the researchers raised: upstream faq.md says issues 'Always' get a new timestamped branch. That is true only in tag mode. In agent mode (issues:opened plus prompt), the code creates no branch.",
+     "evidence": "faq.md: '- **Issues**: Always creates a new branch with a timestamp'. agent/index.ts has no setupBranch or git checkout call. setupBranch is imported only by modes/tag/index.ts.",
+     "source": "docs/faq.md line 115; src/modes/agent/index.ts; src/modes/tag/index.ts line 3 @12dd8d74 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "BRANCH IN TAG MODE (for example track_progress: true). The source is base_branch if set, otherwise the repo default_branch from the API. The action runs 'git fetch origin <source> --depth 1', checks it out, then runs 'git checkout -b <new>' (local only). The default name is `${branch_prefix}${entityType}-${N}-${YYYYMMDD-HHMM}`, lowercased and cut to 50 characters. A branch_name_template result is NOT lowercased or truncated; only empty path segments are collapsed. If the generated name already exists on origin, the action falls back to the default format. With use_commit_signing, the branch is created later by the file-ops server.",
+     "evidence": "branch.ts: 'if (baseBranch) { sourceBranch = baseBranch; } else { ... sourceBranch = repoResponse.data.default_branch; }' ... 'execGit([\"fetch\", \"origin\", sourceBranch, ...fetchDepthArgs(1)]); execGit([\"checkout\", sourceBranch, \"--\"]);' ... 'execGit([\"checkout\", \"-b\", newBranch]);'. branch-template.ts: 'return branchName.toLowerCase().substring(0, 50);' (default path only).",
+     "source": "src/github/operations/branch.ts lines 231-347; src/utils/branch-template.ts lines 93-130 @12dd8d74 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "The timestamp in tag-mode branch names comes from the runner's local clock (new Date() with getHours and similar). Whether GitHub-hosted runners use the UTC timezone was not checked.",
+     "evidence": "branch-template.ts: 'timestamp: `${now.getFullYear()}...${String(now.getHours()).padStart(2, \"0\")}${String(now.getMinutes()).padStart(2, \"0\")}`'",
+     "source": "src/utils/branch-template.ts line 108 @12dd8d74 (accessed 2026-09-30)",
+     "confidence": "UNVERIFIED"
+    },
+    {
+     "claim": "CHECK ORDER (confirmed, with a nuance). Inside the 'Run Claude Code Action' step the order is: detectMode, then setupGitHubToken, then checkWritePermissions (issues is an entity event), then the trigger check (always true when a prompt is set), then prepare. Prepare starts with checkHumanActor in both modes; in tag mode this comes before the tracking comment. Then Claude Code is installed and run. All of this happens before Claude executes. BUT it all happens inside the action step. That step's env already holds CLAUDE_CODE_OAUTH_TOKEN, ANTHROPIC_API_KEY, OVERRIDE_GITHUB_TOKEN and DEFAULT_WORKFLOW_TOKEN. The earlier composite steps (setup-bun, 'bun install') and any earlier workflow steps (checkout) have already run. A rejected actor has therefore already received a runner with the secrets loaded. Only a job-level 'if' prevents that.",
+     "evidence": "run.ts: 'githubToken = await setupGitHubToken();' ... 'if (isEntityContext(context) || isWorkflowRunEvent(context)) { const hasWritePermissions = await checkWritePermissions(' ... 'prepareAgentMode' ... 'const claudeExecutable = await installClaudeCode();'. code.claude.com warning: 'The credential steps run before the Claude Code GitHub Action checks the commenter's write access ... add a step that verifies the commenter's write access before the credential steps.'",
+     "source": "src/entrypoints/run.ts lines 167-240; action.yml lines 276-336 @12dd8d74; https://code.claude.com/docs/en/github-actions-cloud-providers (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "The write-access check looks at GITHUB_ACTOR (context.actor), not at issue.user. Any actor whose name ends in '[bot]' passes this step without an API call and is filtered later by checkHumanActor. Other actors are checked with GET /repos/{o}/{r}/collaborators/{u}/permission and must return admin or write. Any unexpected error throws, so the check fails closed.",
+     "evidence": "permissions.ts: 'const actors = [context.actor];', 'if (actor.endsWith(\"[bot]\")) { ... return true; }', 'if (permissionLevel === \"admin\" || permissionLevel === \"write\")', 'throw new Error(`Failed to check permissions for ${actor}: ${error}`);'. context.ts: 'actor: context.actor,'",
+     "source": "src/github/validation/permissions.ts lines 33-162; src/github/context.ts line 146 @12dd8d74 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "The collaborator-permission endpoint needs the 'Metadata' repository permission (read) and accepts installation tokens. Whether a GITHUB_TOKEN restricted by a minimal 'permissions:' block still carries metadata read is not stated in the docs pages I read. If it does not, the action fails closed.",
+     "evidence": "permissions-required-for-github-apps, section 'Repository permissions for \"Metadata\"': 'GET /repos/{owner}/{repo}/collaborators/{username}/permission | read | UAT, IAT'. The workflow-syntax permission keys list has no 'metadata' key.",
+     "source": "https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps ; https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax (accessed 2026-09-30)",
+     "confidence": "LIKELY"
+    },
+    {
+     "claim": "Human-actor check: users.getByUsername(actor).type must equal 'User' unless the actor is in allowed_bots. If the ChatGPT connector opens issues as a '<slug>[bot]' account, it passes the write check automatically and then fails this check unless allowed_bots lists it. Upstream warns that allowed bots are not checked for repository permissions.",
+     "evidence": "actor.ts: 'if (actorType !== \"User\") { ... throw new Error(`Workflow initiated by non-human actor: ...'. security.md: '**⚠️ Allowed bots are not checked for repository permissions.**'",
+     "source": "src/github/validation/actor.ts lines 30-88; docs/security.md line 7 @12dd8d74 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "ISSUE BODY, AGENT MODE (prompt set, no track_progress). The action does NOT inject the issue title, body or comments. The prompt file is the 'prompt' input verbatim. There is no fetchGitHubData call and no sanitizer. By default no GitHub MCP servers are added: the comment server only if --allowedTools names mcp__github_comment*, the CI and inline servers only for PRs, the docker github server only if mcp__github__* is named, and file_ops only with use_commit_signing.",
+     "evidence": "agent/index.ts: 'const promptContent = context.inputs.prompt || `Repository: ...`; await writeFile(`${promptDir}/claude-prompt.txt`, promptContent);'. create-prompt: 'if (modeName === \"agent\") { return context.prompt || ... }'. install-mcp-server.ts: 'const shouldIncludeCommentServer = !isAgentMode || hasGitHubCommentTools;'",
+     "source": "src/modes/agent/index.ts lines 85-90; src/create-prompt/index.ts lines 461-469; src/mcp/install-mcp-server.ts lines 111-231 @12dd8d74 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "In agent mode the issue body still reaches Claude, unsanitized, if the workflow interpolates it into 'prompt'. The upstream solutions.md issue-triage example does exactly that. It is not shell injection, because the prompt goes through the step env as PROMPT, but it is a direct prompt-injection path. run.ts also prints the whole prompt input to the (public) log. The official examples/issue-triage.yml passes only the issue number instead.",
+     "evidence": "solutions.md: 'TITLE: ${{ github.event.issue.title }}' / 'BODY: ${{ github.event.issue.body }}'. action.yml: 'PROMPT: ${{ inputs.prompt }}'. run.ts: 'console.log(`Context prompt: ${context.inputs?.prompt || \"NO PROMPT\"}`);'. examples/issue-triage.yml: 'prompt: \"/label-issue REPO: ${{ github.repository }} ISSUE_NUMBER: ${{ github.event.issue.number }}\"'",
+     "source": "docs/solutions.md lines 404-410; action.yml line 291; src/entrypoints/run.ts line 216; examples/issue-triage.yml @12dd8d74 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "ISSUE BODY, TAG MODE (track_progress: true, or no prompt with '@claude'). The action DOES inject the issue title and body. It takes them from the webhook payload (TOCTOU protection) and runs them through sanitizeContent. Comments are filtered to the trigger time and images in the body are downloaded. The default prompt makes the body the instruction source ('For ISSUE_CREATED: Read the issue body to find the request after the trigger phrase'). The workflow 'prompt' is only appended as <custom_instructions>. So adding track_progress to an issues:opened workflow turns attacker-controllable issue text into instructions.",
+     "evidence": "create-prompt: '<pr_or_issue_body>\\n${formattedBody}\\n</pr_or_issue_body>' and '- For ISSUE_CREATED: Read the issue body to find the request after the trigger phrase.' and '<custom_instructions>\\n${context.githubContext.inputs.prompt}\\n</custom_instructions>'. fetcher.ts: 'if (originalBody !== undefined) { contextData.body = originalBody ?? \"\"; }'",
+     "source": "src/create-prompt/index.ts lines 470-490, 660-672, 732; src/github/data/fetcher.ts lines 218-235, 569-573 @12dd8d74 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "MISSING FACT: tag mode also sends an UNSANITIZED 'user request' block. If the issue body contains the trigger phrase, the raw text after it is taken from the raw payload body (not the sanitized one), written to claude-user-request.txt, sent to Claude as a separate content block, and printed to the log.",
+     "evidence": "create-prompt: 'if (githubData.contextData?.body) { const request = extractUserRequest(githubData.contextData.body, triggerPhrase);' and 'console.log(\"===== USER REQUEST =====\"); console.log(userRequest);'. extract-user-request.ts: 'return afterTrigger || null;' with no sanitizer. run-claude-sdk.ts: '{ type: \"text\", text: userRequest }'",
+     "source": "src/create-prompt/index.ts lines 913-921, 972-981; src/utils/extract-user-request.ts; base-action/src/run-claude-sdk.ts lines 56-78 @12dd8d74 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "sanitizeContent is best-effort. It strips HTML comments, invisible characters, markdown image alt text, link titles and hidden attributes, normalizes HTML entities, and redacts GitHub tokens. It does not neutralize plain-text instructions.",
+     "evidence": "sanitizer.ts: 'content = stripHtmlComments(content); content = stripInvisibleCharacters(content); ... content = normalizeHtmlEntities(content); content = redactGitHubTokens(content);'",
+     "source": "src/github/utils/sanitizer.ts lines 68-86 @12dd8d74 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "CORRECTION/ADDITION to the env findings. Claude's process env is a full copy of process.env with only ACTIONS_ID_TOKEN_REQUEST_URL, ACTIONS_ID_TOKEN_REQUEST_TOKEN and ALL_INPUTS removed. Besides GITHUB_TOKEN/GH_TOKEN (the action's token) and the Anthropic credential, it also contains DEFAULT_WORKFLOW_TOKEN (always the job's github.token, even when the Claude App is used) and OVERRIDE_GITHUB_TOKEN (the github_token input).",
+     "evidence": "action.yml: 'OVERRIDE_GITHUB_TOKEN: ${{ inputs.github_token }}', 'DEFAULT_WORKFLOW_TOKEN: ${{ github.token }}', 'CLAUDE_CODE_OAUTH_TOKEN: ${{ inputs.claude_code_oauth_token || env.CLAUDE_CODE_OAUTH_TOKEN }}'. parse-sdk-options.ts: 'const env ... = { ...process.env };' then only 'delete env.ACTIONS_ID_TOKEN_REQUEST_URL; delete env.ACTIONS_ID_TOKEN_REQUEST_TOKEN; ... delete env.ALL_INPUTS;'",
+     "source": "action.yml lines 298, 308, 336; base-action/src/parse-sdk-options.ts lines 278-294 @12dd8d74 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "MISSING FACT: in both modes (unless allowed_non_write_users is set), the action writes the GitHub token into .git/config as the origin URL. That file is inside the working directory, and the permissions doc says read-only file reads there need no approval. So even in agent mode with no --allowedTools, Claude can probably read the GitHub token with the Read tool.",
+     "evidence": "git-config.ts: 'const remoteUrl = `https://x-access-token:${githubToken}@${serverUrl.host}/...`; await $`git remote set-url origin ${remoteUrl}`;' (the else-branch of 'if (process.env.ALLOWED_NON_WRITE_USERS)'). permissions doc: 'Read-only | File reads, Grep | No, within the working directory and additional directories'",
+     "source": "src/github/operations/git-config.ts lines 108-135 @12dd8d74; https://code.claude.com/docs/en/permissions (accessed 2026-09-30)",
+     "confidence": "LIKELY"
+    },
+    {
+     "claim": "CONTRADICTION in the official Claude docs (Researcher 1 marked it LIKELY without noticing). The GitHub Actions page says a plain-text prompt gives Claude 'no shell' access until tools are granted. The permissions page says a built-in set of read-only Bash commands (ls, cat, echo, grep, find, read-only git) runs without a prompt 'in every mode'. How this plays out in the SDK headless default mode the action uses was not tested.",
+     "evidence": "github-actions: 'For a plain-text prompt, Claude has no shell or GitHub API access until you grant the tools the prompt needs'. permissions: 'Claude Code recognizes a built-in set of Bash commands as read-only and runs them without a permission prompt in every mode'",
+     "source": "https://code.claude.com/docs/en/github-actions ; https://code.claude.com/docs/en/permissions (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "Whether Claude in agent mode can read $GITHUB_EVENT_PATH (the full raw webhook payload, including the issue body, stored outside the workspace), /proc/self/environ, or the RUNNER_TEMP prompt files without any granted tool depends on the unresolved behaviour above and on permissions.blockReadsOutsideWorkingDirectories. Not verified.",
+     "evidence": "docs.github.com variables: GITHUB_EVENT_PATH 'The path to the file on the runner that contains the full event webhook payload.' The permissions doc mentions 'permissions.blockReadsOutsideWorkingDirectories' as the setting that fences reads outside the working directories.",
+     "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/variables ; https://code.claude.com/docs/en/permissions (accessed 2026-09-30)",
+     "confidence": "UNVERIFIED"
+    },
+    {
+     "claim": "CORRECTION to Researcher 2 fact (6). 'The Claude GitHub App has no workflow write access' is marked VERIFIED, but the evidence only shows that upstream faq.md says so. The canonical Claude docs table lists 'Workflows | Read and write', and upstream security.md also lists Workflows (Read & Write). The claim about the App's capability is therefore UNVERIFIED. Researcher 2's recommendation that '.github/workflows is protected at the credential level' because of the App holds only for the GITHUB_TOKEN route. The default scope of the token exchange is not public.",
+     "evidence": "faq.md: 'The GitHub App for Claude doesn't have workflow write access for security reasons.' code.claude.com: '| Workflows | Read and write |'. security.md: '**Workflows** (Read & Write): For triggering and managing GitHub Actions workflows'",
+     "source": "docs/faq.md line 62; docs/security.md line 99 @12dd8d74; https://code.claude.com/docs/en/github-actions (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "GitHub's 'Workflows' app permission (write) governs PUT/DELETE contents and POST/PATCH git refs, the endpoints needed to change workflow files. GITHUB_TOKEN's permission keys have no 'workflows' key. The conclusion that GITHUB_TOKEN cannot push .github/workflows changes is inferred, not stated verbatim.",
+     "evidence": "'Repository permissions for Workflows': 'PUT /repos/{owner}/{repo}/contents/{path} | write', 'POST /repos/{owner}/{repo}/git/refs | write'. Workflow-syntax keys: 'actions, artifact-metadata, attestations, checks, code-quality, contents, deployments, discussions, id-token, issues, packages, pages, pull-requests, security-events, statuses, vulnerability-alerts'",
+     "source": "https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps ; https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax (accessed 2026-09-30)",
+     "confidence": "LIKELY"
+    },
+    {
+     "claim": "CORRECTION to Researcher 3 ('show_full_output ... also turned on automatically by ACTIONS_STEP_DEBUG', marked VERIFIED). The code checks process.env.ACTIONS_STEP_DEBUG === 'true', but GitHub documents RUNNER_DEBUG=1 as the env signal for debug logging and does not list ACTIONS_STEP_DEBUG as a default env variable. Whether debug mode really forces full output is UNVERIFIED. Treat it as possible and avoid enabling debug logging.",
+     "evidence": "parse-sdk-options.ts: 'const isDebugMode = process.env.ACTIONS_STEP_DEBUG === \"true\";'. docs variables: RUNNER_DEBUG 'This is set only if debug logging is enabled, and always has the value of `1`.' ACTIONS_STEP_DEBUG is not in the default-variables table.",
+     "source": "base-action/src/parse-sdk-options.ts line 195 @12dd8d74; https://docs.github.com/en/actions/reference/workflows-and-actions/variables (accessed 2026-09-30)",
+     "confidence": "UNVERIFIED"
+    },
+    {
+     "claim": "The cleanup auto-commit and push (git add -A, commit, push to the claude branch) and the branch deletion run only in tag mode. They are reached only through updateCommentLink, which runs only when a tracking comment exists. In agent mode the action itself never commits or pushes.",
+     "evidence": "run.ts: 'if ( commentId && context && isEntityContext(context) && githubToken && octokit ) { ... await updateCommentLink({'. update-comment-link.ts imports checkAndCommitOrDeleteBranch. branch-cleanup.ts: 'await $`git push origin ${claudeBranch}`'. agent/index.ts returns 'commentId: undefined'.",
+     "source": "src/entrypoints/run.ts lines 333-359; src/entrypoints/update-comment-link.ts lines 17, 120; src/github/operations/branch-cleanup.ts line 103 @12dd8d74 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "git-push.sh (tag mode only) rejects flags, requires the remote 'origin', and requires the ref to be HEAD or a valid branch name, so 'src:dst' refspecs are rejected. It does not restrict which branch is pushed, so 'origin main' passes.",
+     "evidence": "'if [[ \"$arg\" == -* ]]' ... 'if [[ \"$1\" != \"origin\" ]]' ... 'if [[ \"$REF\" != \"HEAD\" ]] && ! git check-ref-format --branch \"$REF\"' ... 'exec git push origin \"$REF\"'",
+     "source": "scripts/git-push.sh @12dd8d74 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "When github_token is provided, setupGitHubToken returns it immediately: no OIDC, no Anthropic token exchange, and the 'Revoke app token' step is skipped. setupWorkloadIdentity does nothing unless ANTHROPIC_FEDERATION_RULE_ID is set. So the route of CLAUDE_CODE_OAUTH_TOKEN plus github_token=GITHUB_TOKEN needs no 'id-token: write'.",
+     "evidence": "token.ts: 'if (providedToken) { console.log(\"Using provided GITHUB_TOKEN for authentication\"); return providedToken; }'. workload-identity.ts line 45: 'process.env.ANTHROPIC_FEDERATION_RULE_ID?.trim() &&'. action.yml revoke step: 'if: always() && inputs.github_token == '' && ...'",
+     "source": "src/github/token.ts lines 158-165; base-action/src/workload-identity.ts; action.yml line 449 @12dd8d74 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "MISSING FACT: the composite post-step 'Post buffered inline comments' runs on every event, even after a failure, because classify_inline_comments defaults to 'true'. It gets PR_NUMBER = the issue number and reads /tmp/inline-comments-buffer.jsonl. On issues it normally finds no buffer and exits.",
+     "evidence": "action.yml: 'if: always() && inputs.classify_inline_comments != 'false'' ... 'PR_NUMBER: ${{ github.event.pull_request.number || github.event.issue.number }}'. post-buffered-inline-comments.ts: 'const BUFFER_PATH = \"/tmp/inline-comments-buffer.jsonl\";'",
+     "source": "action.yml lines 431-446; src/entrypoints/post-buffered-inline-comments.ts line 16 @12dd8d74 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "By default Claude loads the 'project' setting source (CLAUDE.md, .claude/settings.json with hooks, permissions and env, and .mcp.json) from whatever ref is checked out. The action restores these from a base branch only for PR contexts. For M02 this means that checking out a TASK branch at the workspace root before the action lets that branch's .claude/ config and hooks run with the job's secrets.",
+     "evidence": "parse-sdk-options.ts: 'settingSources: extraArgs[\"setting-sources\"] ? ... : [\"user\", \"project\", \"local\"]'. run.ts: 'if (isEntityContext(context) && context.isPR) { ... restoredConfigPaths = restoreConfigFromBase(restoreBase);'",
+     "source": "base-action/src/parse-sdk-options.ts lines 340-344; src/entrypoints/run.ts lines 263-276 @12dd8d74 (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "The official Claude docs describe the two modes and the checks. Automation mode runs 'without waiting for a mention'. The write-access check applies to issue and PR events. The human-actor check applies 'on every event'. In the code, the human-actor check runs inside prepare, after the trigger check, which always passes when a prompt is set.",
+     "evidence": "'Automation mode: when the workflow provides a prompt input, Claude runs without waiting for a mention, subject only to the checks on who can trigger runs.' / 'Write access: on issue and pull request events, the triggering user must have write access' / 'Human actor: on every event, the Claude Code GitHub Action rejects a bot actor unless you list it in allowed_bots'",
+     "source": "https://code.claude.com/docs/en/github-actions (redirect target of docs.claude.com / docs.anthropic.com; accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "The issues event has many activity types, and GITHUB_REF/GITHUB_SHA are the default branch and its last commit. The workflow must exist on the default branch.",
+     "evidence": "'GITHUB_SHA: \"Last commit on default branch\"', 'GITHUB_REF: \"Default branch\"', 'This event will only trigger a workflow run if the workflow file exists on the default branch.'",
+     "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows (accessed 2026-09-30)",
+     "confidence": "VERIFIED"
+    },
+    {
+     "claim": "The GitHub docs do not say whether env vars set at the calling workflow or job level (for example CLAUDE_BRANCH or CLAUDE_CODE_SUBPROCESS_ENV_SCRUB) reach a composite action's step processes. They only say runs.steps[*].env 'Sets a map of environment variables for only that step.' action.yml reads CLAUDE_CODE_SUBPROCESS_ENV_SCRUB through the env context, but CLAUDE_BRANCH is not mapped.",
+     "evidence": "metadata-syntax: 'Sets a `map` of environment variables for only that step.' action.yml: 'CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: ${{ env.CLAUDE_CODE_SUBPROCESS_ENV_SCRUB || ... }}'. No CLAUDE_BRANCH key.",
+     "source": "https://docs.github.com/en/actions/reference/workflows-and-actions/metadata-syntax (accessed 2026-09-30); action.yml lines 288-392 @12dd8d74",
+     "confidence": "UNVERIFIED"
+    }
+   ],
+   "recomendaciones": [
+    "Pin 'anthropics/claude-code-action@12dd8d74c712f5f3669365b2369b558c495b1104 # v1.0.238' (this is both v1.0.238 and v1 on 2026-09-30; v1.0.237 = fd1c128679612beff4ca259c78021c506e8aa7a7 differs only in the CLI version). Record in the REPORT that the pin does NOT cover the Claude Code CLI, which is downloaded at runtime from claude.ai/install.sh, or the bun dependency install.",
+    "Use agent mode: set 'prompt' and do NOT set track_progress. Tag mode injects the issue title, body and comments and treats the body as the instruction source. It also sends an unsanitized 'user request' block and auto-commits and pushes on cleanup.",
+    "Never interpolate github.event.issue.body or .title into 'prompt', and do not copy the upstream solutions.md triage example that does. Put only values the secret-less gate job has validated with strict regexes (task id, branch name, 40-hex commit SHA, issue number) into the prompt. Have Claude read the TASK from the verified commit, not from the issue.",
+    "Agent mode creates no branch and ignores base_branch for checkout. So make the executor workflow do it deterministically: checkout at the verified TASK_COMMIT, then 'git checkout -b <task branch>' in a run step before the action. Consider keeping commit and push out of Claude's hands entirely: grant no Bash(git push) and no gh tools, and let a later workflow step verify the diff (nothing under .github/workflows/ or src/, only allowed paths) before it commits and pushes with GITHUB_TOKEN. This also avoids relying on the git-push.sh wrapper, which does not restrict the target branch.",
+    "Gate at the JOB level, before any step that references secrets. The action's own write and human checks run inside the action step, after its env already contains CLAUDE_CODE_OAUTH_TOKEN and DEFAULT_WORKFLOW_TOKEN; the official docs warn about exactly this. Keep the action's checks as a second layer. Do not set allowed_bots or allowed_non_write_users.",
+    "Use github_token: ${{ secrets.GITHUB_TOKEN }} with minimal job permissions and no id-token: write. The Claude App is documented with Workflows: Read and write and an unknown default exchange scope, so the App route cannot guarantee that workflow files are protected.",
+    "Assume Claude can read the GitHub token (from .git/config in the workspace, and GITHUB_TOKEN, GH_TOKEN and DEFAULT_WORKFLOW_TOKEN in env) and, through read-only commands, maybe files outside the workspace. Mitigations to test in M02: CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: '1'; a 'settings' input with permissions.blockReadsOutsideWorkingDirectories: true and deny rules such as Read(./.git/**); no WebFetch or WebSearch; an explicit --allowedTools list; --max-turns; and job timeout-minutes. Rely on GITHUB_TOKEN expiring at job end.",
+    "Set classify_inline_comments: 'false', display_report: 'false' and show_full_output: 'false', and never enable debug logging (ACTIONS_STEP_DEBUG or RUNNER_DEBUG). Remember that run.ts always prints the whole 'prompt' input to the public log.",
+    "Since project settings (CLAUDE.md, .claude/settings.json hooks, .mcp.json) load from whatever ref is checked out, make the preflight fail closed if TASK_COMMIT changes .claude/, .mcp.json, CLAUDE.md or .github/ compared with main. Alternatively, raise DECISION_REQUIRED on whether to run with '--setting-sources user', which would also drop CLAUDE.md context.",
+    "Treat the ChatGPT-connector identity as an open gate input. If test issues show a '[bot]' author, the action rejects it unless it is listed in allowed_bots, and allowed bots bypass the repository-permission check. That becomes a DECISION_REQUIRED, not a silent allowed_bots entry."
+   ],
+   "preguntas_abiertas": [
+    "In the SDK headless default permission mode the action uses in agent mode, can Claude run the 'read-only' Bash commands (cat, echo, git config, find) and read files outside $GITHUB_WORKSPACE (such as $GITHUB_EVENT_PATH and /proc/self/environ) without any --allowedTools? The official docs contradict each other (github-actions page vs permissions page). A dry run with a harmless canary file is needed.",
+    "Does a GITHUB_TOKEN restricted by an explicit minimal 'permissions:' block keep metadata:read, which checkWritePermissions needs for the collaborator-permission endpoint? The action fails closed if not, but the executor would never run.",
+    "Do env vars set at workflow or job level (CLAUDE_CODE_SUBPROCESS_ENV_SCRUB, CLAUDE_BRANCH, APPEND_SYSTEM_PROMPT) reach the composite action's 'Run Claude Code Action' process? The docs.github.com metadata-syntax page is silent.",
+    "Does GitHub export ACTIONS_STEP_DEBUG to step processes when debug logging is enabled? If it does, show_full_output is forced on and every tool result goes to the public log.",
+    "Can 'bun install --production' in the action drift from its bun.lock (no --frozen-lockfile), and is the claude.ai/install.sh download integrity-checked? This affects how much the SHA pin actually guarantees.",
+    "What default GitHub permissions (including whether workflows: write is among them) does api.anthropic.com/api/github/github-app-token-exchange grant when additional_permissions is empty? This only matters if the official App route is chosen.",
+    "Is the ChatGPT GitHub connector attributed as joaquinriesco-alt (user-to-server token, performed_via_github_app set) or as a '[bot]' actor (installation token)? No issue exists yet, so this cannot be verified.",
+    "What timezone does new Date() use on GitHub-hosted ubuntu runners? This only matters for tag-mode branch timestamps."
+   ]
+  }
+ ]
+}

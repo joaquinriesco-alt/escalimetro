@@ -246,7 +246,38 @@ def test_el_main_declarado_es_el_de_origin_no_el_local():
 
 
 # ===================================================================================================
-# 6 — el repo es público
+# 6 — M02: rama de TASK → rama de implementación. El ejecutor y este test leen lo mismo.
+# ===================================================================================================
+def _ejecutor():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("auto_task_handoff",
+                                                  os.path.join(ROOT, "scripts", "auto_task.py"))
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules["auto_task_handoff"] = mod              # los dataclasses buscan su módulo
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def test_el_estado_declara_una_sola_base_y_el_ejecutor_la_lee():
+    """La próxima TASK nace de la rama que CURRENT_STATE declara como base, y el preflight del
+    ejecutor la exige. Si hubiera dos, o ninguna, o el preflight leyera otra cosa que este test,
+    una TASK válida se rechazaría —o peor, una rama vieja se aceptaría como base."""
+    t = _leer(os.path.join(AI, "CURRENT_STATE.md"))
+    filas = [ln for ln in t.splitlines() if "base para la próxima TASK" in ln and ln.startswith("|")]
+    assert len(filas) == 1, f"filas de base: {len(filas)}"
+    base = _ejecutor().declared_base(t)
+    assert base and _ejecutor().BASE_RE.match(base), base
+
+
+def test_los_ids_que_acepta_el_ejecutor_son_los_que_reconoce_el_handoff():
+    ej = _ejecutor()
+    for tid in sorted(_ids(TASKS, ".md")):
+        assert ej.ID_RE.match(tid), f"{tid}: el ejecutor no lo aceptaría"
+    assert ej.TASK_SECTIONS == TASK_SECTIONS
+
+
+# ===================================================================================================
+# 7 — el repo es público
 # ===================================================================================================
 def test_el_handoff_no_filtra_secretos():
     """DR-2: el repo es público. Lo que se escribe acá lo puede leer cualquiera. Se reutilizan los

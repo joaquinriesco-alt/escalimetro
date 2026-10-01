@@ -11,7 +11,9 @@ contexto: **léelo, y después lee lo que enlaza antes de tocar nada.**
 4. La TASK: si te dan sólo un ID, ChatGPT la escribió en GitHub, en `tasks/<ID>.md` de la rama
    de la tarea. `git fetch origin` primero, y los chequeos del protocolo §5.2 antes de
    implementar. Si te pegan el texto, tu primer paso es guardarlo como `tasks/<ID>.md` en la rama
-   de la tarea.
+   de la tarea. Si la ejecución es automática (issue `ESCALIMETRO_AUTO_TASK_V1`, ver
+   [`AUTO_TASK_EXECUTOR.md`](docs/ai-development/AUTO_TASK_EXECUTOR.md)), el prompt te dice la rama
+   `auto/<id>-issue-<n>` donde trabajas: commiteas ahí y el workflow publica; tú no empujas.
 
 ## Tu rol
 
@@ -46,8 +48,8 @@ tarea**, todo en el mismo commit final. Nunca a `main`.
 
 ## Convenciones del código
 
-- Tests: `.venv/bin/python -m pytest tests/ -q` (≈8 min). Por tarea de producto: `tests/test_<id>_*.py`;
-  las de proceso (`M…`) van en `tests/test_ai_handoff.py`.
+- Tests: `.venv/bin/python -m pytest tests/ -q` (≈12 min). Por tarea: `tests/test_<id>_*.py`;
+  las de proceso que no construyen un componente propio van en `tests/test_ai_handoff.py`.
 - Todo en castellano: docstrings, comentarios, commits. Los comentarios explican **por qué**, no qué.
 - Al editar con reemplazos de texto, **verifica que el ancla exista** antes de escribir: un
   `str.replace` que no encuentra su ancla falla en silencio, y ya pasó más de una vez.

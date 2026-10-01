@@ -121,6 +121,7 @@
   implementación, tests, REPORT y la actualización técnica del estado.
 - **Consecuencia:** desaparece el último copy/paste. El límite es de protocolo: GitHub no lo impone
   (ver DR-8). Cómo se hace: protocolo §5.2.
+- **Ampliada por D-012:** además, el issue de transporte de una TASK aprobada.
 - **Origen:** Joaquín + ChatGPT — [`tasks/M01.1.md`](../../tasks/M01.1.md).
 
 ### D-011 — El estado de las ramas se verifica contra el remoto
@@ -132,3 +133,19 @@
   declarado con `origin/main`.
 - **Origen:** Joaquín + ChatGPT, tras encontrar que M01 declaró un `main` falso —
   [`tasks/M01.1.md`](../../tasks/M01.1.md).
+
+### D-012 — ChatGPT abre el issue de transporte de una TASK aprobada
+
+- **Fecha:** 2026-09-30
+- **Decisión:** la superficie de escritura de ChatGPT de D-010 se amplía con UN issue por TASK
+  aprobada, estrictamente mecánico: título `[ESCALIMETRO_AUTO_TASK] <ID>` y el contrato
+  `ESCALIMETRO_AUTO_TASK_V1` (ID, rama, commit exacto, base, ruta). El issue no define producto ni
+  implementación —lo autoritativo es `tasks/<ID>.md` en ese commit— y no autoriza merge, deploy,
+  cambios de doctrina ni otra TASK.
+- **Límites, verificables:** sólo dispara si el autor y el actor son `joaquinriesco-alt`, el
+  contrato es exacto, la rama sigue en el commit declarado, sale de la base que declara el estado y
+  agrega sólo la TASK; Claude corre sin poder empujar y lo publicado no puede tocar `.github/`,
+  `src/` ni `tasks/`. Lo prueban `tests/test_m02_auto_task.py` y una simulación sin gasto.
+- **Consecuencia:** el ejecutor está construido y **no activado**: activarlo exige que el workflow
+  esté en la rama por defecto (DR-9). Guía: [`AUTO_TASK_EXECUTOR.md`](AUTO_TASK_EXECUTOR.md).
+- **Origen:** Joaquín + ChatGPT — [`tasks/M02.md`](../../tasks/M02.md).

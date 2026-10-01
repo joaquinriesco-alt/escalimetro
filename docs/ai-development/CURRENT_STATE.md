@@ -1,6 +1,6 @@
 # ESCALÍMETRO — Estado actual
 
-> **Última actualización:** 2026-09-30 · al cerrar `E37` · rama `e37_reconstruction_lab`
+> **Última actualización:** 2026-09-30 · al cerrar `M02` · rama `m02_github_executor`
 > Todo lo que está acá fue verificado al escribirlo: el código contra el repo; las ramas **contra
 > GitHub**, no contra las ramas locales ([protocolo §9.1](DEVELOPMENT_PROTOCOL.md)); las cifras de
 > los pilotos contra `.data-lab/` de la máquina de desarrollo, que **no** está en el repo.
@@ -29,13 +29,15 @@ compara motores de reconstrucción con el plano real oculto hasta el final.
 | `e17_2_url_first_ingest` | `4c0934a` · 2026-09-25 | **punta del código de producto** · 94 commits delante de `main` |
 | `m01_ai_handoff` | `2efd0c3` · 2026-09-29 | lo anterior + el sistema de handoff · 95 delante de `main` |
 | `m01_1_remote_truth` | `958e39c` · 2026-09-30 | lo anterior + M01.1 · 97 delante de `main` |
-| `e37_reconstruction_lab` | esta entrega | lo anterior + E37 · 99 delante de `main` · **base para la próxima TASK** |
+| `e37_reconstruction_lab` | `01940c6` · 2026-09-30 | lo anterior + E37 · 99 delante de `main` |
+| `m02_github_executor` | esta entrega | lo anterior + M02 · 101 delante de `main` · **base para la próxima TASK** |
 
 La cadena es lineal, nada está mergeado y ninguna rama está detrás de `main`:
 `main` ⊂ `e30_product_direction` ⊂ `e31_staging_pilot` ⊂ `e32_internal_pilot_console` ⊂
 `e32_2_entitlement_semantics` ⊂ `e33_simple_product_lab` ⊂ `e34_zero_friction_ingest` ⊂
 `e35_robust_zero_friction_ingest` ⊂ `e36_real_property_pilot` ⊂ `e17_property_potential` ⊂
-`e17_2_url_first_ingest` ⊂ `m01_ai_handoff` ⊂ `m01_1_remote_truth` ⊂ `e37_reconstruction_lab`.
+`e17_2_url_first_ingest` ⊂ `m01_ai_handoff` ⊂ `m01_1_remote_truth` ⊂ `e37_reconstruction_lab` ⊂
+`m02_github_executor`.
 Las ramas `e30`–`e35` son eslabones intermedios.
 
 Verificado el 2026-09-30 contra GitHub: puntas con `git ls-remote --heads origin`; conteos con
@@ -55,7 +57,9 @@ cada deploy (`gh api repos/joaquinriesco-alt/escalimetro/deployments`); el repo 
   que llama a OpenAI y a Anthropic**: según el README, cada redeploy cuesta dinero. Cada push a
   `main` de septiembre produjo un deploy segundos después; el último, `c6de3f9`, `success` el
   2026-09-08, con reintentos fallidos el 2026-09-10. Si sigue conectado hoy **no está verificado** (es configuración de Railway). Mover
-  `main` —el merge de DR-1, o un push por error— puede redesplegarlo.
+  `main` —el merge de DR-1, o un push por error— puede redesplegarlo. **Joaquín informó el
+  2026-09-30 (TASK M02) que deshabilitó el Auto Deploy de `backend`.** No es verificable desde el
+  repo ni por la API de GitHub; desde entonces no hubo pushes a `main` que lo pongan a prueba.
 
 ## Arquitectura
 
@@ -73,6 +77,8 @@ webapp/                 Flask + SQLite + archivos en ESCALIMETRO_DATA_DIR
   /property/*           ingest de URL + diagnóstico de publicación (E17.0–E17.2)
   /lab/reconstruction/* laboratorio de CREAR PLANO: motores, corridas inmutables, plano real
                         oculto (E37). Tablas recon_*; plano real en DATA_DIR/reconstruction_gt/
+.github/workflows/      escalimetro-auto-task.yml: ejecutor GitHub-native de TASKs (M02).
+scripts/auto_task.py    su preflight y su verificación. CONSTRUIDO, NO ACTIVADO (DR-9)
 ```
 
 ## Capacidades reales, contra la doctrina
@@ -88,8 +94,8 @@ webapp/                 Flask + SQLite + archivos en ESCALIMETRO_DATA_DIR
 
 ## Tests
 
-`2167 passed · 2 failed · 8 skipped · 7 xfailed` sobre el árbol de `e37_reconstruction_lab`, 2026-09-30.
-Detalle en [`reports/M01.1_REPORT.md`](../../reports/M01.1_REPORT.md).
+`2271 passed · 2 failed · 8 skipped · 7 xfailed` en un worktree limpio del commit de M02 en
+`m02_github_executor`, 2026-09-30. Detalle en [`reports/M02_REPORT.md`](../../reports/M02_REPORT.md).
 Los 2 fallos son **preexistentes** —desde E27 por lo menos; dependen de artefactos regenerables
 que `.gitignore` excluye— y no se tocan:
 `test_e12_hardening::test_el_html_muestra_la_etapa_que_fallo`,
@@ -118,16 +124,20 @@ declara la tabla de ramas sea el de `origin/main` y no el de la rama local.
 - **Reconstrucción (E37):** la misma `OPENAI_API_KEY` falta para el primer motor real. Sin ella el
   laboratorio sólo corre el FIXTURE. Cada corrida real cuesta dinero y pide confirmación; su precio
   por token no está registrado en el repo.
+- **Ejecutor GitHub-native (M02):** el secreto `CLAUDE_CODE_OAUTH_TOKEN` está **AUSENTE** en el repo
+  (verificado por nombre: 0 secretos). Si la GitHub App de Claude está instalada es NO_VERIFICABLE con
+  la credencial disponible, y la ruta elegida no la necesita. Pasos en
+  [`AUTO_TASK_EXECUTOR.md`](AUTO_TASK_EXECUTOR.md) §6.
 - **Producción:** sin verificar desde el 2026-09-21. Y **antes de cualquier merge a `main`**, hay
   que confirmar en Railway si el servicio `backend` sigue desplegando `main`: su arranque corre un
   experimento pagado (ver Producción).
 
 ## Última tarea completada
 
-**E37** — Internal Reconstruction Lab: el instrumento para aprender CREAR PLANO, en
-`/lab/reconstruction/`. Primera TASK escrita por ChatGPT directamente en GitHub (D-010). Sin tocar
-`src/`, sin llamadas pagas. Status en [`reports/E37_REPORT.md`](../../reports/E37_REPORT.md).
-Antes: **M01.1** — verdad remota y TASKs de ChatGPT en GitHub; **M01** — el sistema de handoff.
+**M02** — ejecutor GitHub-native de TASKs: un issue de transporte (D-012) dispara la ejecución de
+una TASK aprobada, con compuertas antes de cualquier credencial. **Construido, no activado, sin
+prueba real**: falta DR-9 y la credencial. Status en [`reports/M02_REPORT.md`](../../reports/M02_REPORT.md).
+Antes: **E37** — Internal Reconstruction Lab; **M01.1** — verdad remota; **M01** — handoff por el repo.
 
 ## Tarea actual
 
@@ -145,10 +155,12 @@ Ninguna. Esperando decisión de Joaquín.
 | **DR-6** | Si el congelamiento del motor (D-008) sigue en pie bajo D-001. CREAR PLANO probablemente lo necesite. | `PRODUCT_GATE` |
 | **DR-7** | Aprobar o no la licencia de BFL (D-006). | `PRODUCT_GATE` |
 | **DR-8** | Proteger `main` en GitHub. Hoy no tiene protección de rama (verificado): con ChatGPT escribiendo en GitHub, lo único que impide un push directo a `main` es el protocolo, y un push a `main` puede disparar el deploy pagado de `backend`. | `MERGE_GATE` |
+| **DR-9** | Cómo activar el ejecutor de M02. GitHub sólo dispara `issues` desde la rama por defecto: el workflow y `scripts/auto_task.py` tienen que llegar a `main` (o la rama por defecto tiene que cambiar). Se cruza con DR-1 y DR-8. | `MERGE_GATE` |
 | — | **Para quién es ESCALÍMETRO.** La doctrina no lo define. Es estrategia pura: Claude no propone opciones. | `PRODUCT_GATE` |
 
 Opciones de DR-1 a DR-7 en [`reports/M01_REPORT.md`](../../reports/M01_REPORT.md); de DR-8, en
-[`reports/M01.1_REPORT.md`](../../reports/M01.1_REPORT.md).
+[`reports/M01.1_REPORT.md`](../../reports/M01.1_REPORT.md); de DR-9, en
+[`reports/M02_REPORT.md`](../../reports/M02_REPORT.md).
 
 ## Inconsistencias conocidas
 
@@ -164,10 +176,15 @@ Opciones de DR-1 a DR-7 en [`reports/M01_REPORT.md`](../../reports/M01_REPORT.md
 
 ## Siguiente acción aprobada
 
-**Ninguna técnica.** El Internal Reconstruction Lab ([D-009](DECISIONS.md)) quedó construido en
-E37. Lo siguiente es correr su primer experimento real —Piso Ricardo Lyon I con `openai_direct`—, que
-necesita la clave y el material de Joaquín. Una TASK nueva la escribe ChatGPT en GitHub desde la
-base `e37_reconstruction_lab` ([protocolo §5.2](DEVELOPMENT_PROTOCOL.md)).
+**Ninguna técnica.** Dos caminos esperan a Joaquín, independientes entre sí:
+
+- **activar el ejecutor de M02**: decidir DR-9 (y con ella DR-1 y DR-8), cargar la credencial y
+  probarlo con la TASK inocua M03 ([`AUTO_TASK_EXECUTOR.md`](AUTO_TASK_EXECUTOR.md) §9);
+- **correr el primer experimento real de E37**, Piso Ricardo Lyon I con `openai_direct`, que necesita
+  `OPENAI_API_KEY` y el material.
+
+Una TASK nueva la escribe ChatGPT en GitHub desde la base `m02_github_executor`
+([protocolo §5.2](DEVELOPMENT_PROTOCOL.md)).
 
 ## Glosario
 

@@ -140,6 +140,15 @@ git merge-base --is-ancestor origin/<base> origin/<rama> && echo sale-de-la-base
 **Un archivo en `tasks/` no dispara trabajo.** Claude empieza una TASK cuando Joaquín le da el ID
 en el chat. Una TASK que aparece en el repo sin que Joaquín la nombre se reporta, no se ejecuta.
 
+### 5.3 El ejecutor GitHub-native (M02): construido, no activado
+
+Cuando se active (DR-9), el último transporte manual —Joaquín escribiendo «Ejecuta» y el ID— lo hace
+GitHub: ChatGPT abre un issue `[ESCALIMETRO_AUTO_TASK] <ID>` con el contrato
+`ESCALIMETRO_AUTO_TASK_V1` (D-012), un workflow verifica actor, contrato y repo antes de que exista
+ninguna credencial, Claude ejecuta la TASK en `auto/<id>-issue-<n>` sin poder empujar, y un último
+paso verifica lo hecho y crea la rama. Todo el detalle, las compuertas y lo que falta para activarlo:
+[`AUTO_TASK_EXECUTOR.md`](AUTO_TASK_EXECUTOR.md). Mientras no esté activado, vale §5.2 tal cual.
+
 **Una TASK recién escrita no rompe la suite.** ChatGPT no toca `CURRENT_STATE.md`, así que la TASK
 no figura como «en curso»; `tests/test_ai_handoff.py` la cuenta como pendiente mientras se haya
 agregado después del último cambio del estado. La primera TASK escrita así, E37, destapó que sin

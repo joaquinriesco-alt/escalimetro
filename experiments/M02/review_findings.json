@@ -1,0 +1,179 @@
+{
+ "que_es": "M02 — revisión adversarial del ejecutor (workflow, preflight, verify). Tres revisores y un verificador por hallazgo que intentó refutarlo reproduciéndolo. Todos los confirmados están corregidos y tienen test (sección «Regresiones de la revisión adversarial de M02» de tests/test_m02_auto_task.py). Rutas locales reemplazadas.",
+ "confirmados": [
+  {
+   "titulo": "ls-remote tail matching lets a decoy branch satisfy 'TASK_COMMIT is the HEAD of TASK_BRANCH' (and the same for BASE_BRANCH)",
+   "severidad": "MEDIUM",
+   "dimension": "workflow-security",
+   "donde": "scripts/auto_task.py:177",
+   "escenario": "remote_head() runs `git ls-remote --heads origin refs/heads/<b>` and takes out[0]. ls-remote matches patterns by tail, so the pattern also matches `refs/heads/+/refs/heads/<b>`, and that ref sorts before the real one.\n\nAnyone who can create branches (Joaquin's account, or a compromised or confused ChatGPT connector) can push unapproved TASK text to `+/refs/heads/m03_smoke` and put that commit's SHA in the issue. Preflight then logs 'rama de la TASK en el commit exacto' and passes, while the real m03_smoke still shows the approved TASK, and Claude executes the unapproved one.\n\nThis violates M02 contract line 119 (TASK_COMMIT must be the expected HEAD of TASK_BRANCH) and AC6/AC7 (lines 235-236). The same trick works on BASE_BRANCH (line 243), letting arbitrary base content in under a legitimate base name.",
+   "estado": "corregido"
+  },
+  {
+   "titulo": "verify's forbidden-path filter is bypassed by git path quoting (non-ASCII, quote or backslash names) and by case variants",
+   "severidad": "MEDIUM",
+   "dimension": "workflow-security",
+   "donde": "scripts/auto_task.py:325",
+   "escenario": "verify reads `git diff --name-only` without -z. Under the default core.quotePath, a path with non-ASCII bytes, control characters, '\"' or '\\' is printed C-quoted, e.g. `\"src/escalimetro/\\303\\261.py\"`. That string does not start with 'src/', so `f.startswith(FORBIDDEN_PREFIXES)` misses it.\n\nResult: Claude can add new files under src/ (frozen engine, D-008) or tasks/, and publish pushes them. Case variants such as `Src/escalimetro/motor.py`, `SRC/...` or `Tasks/M04.md` also pass. On Joaquin's case-insensitive macOS checkout, new files under these variants land inside src/ or tasks/.\n\nThis breaks the stated invariant 'Nunca se publica algo que toque .github/, src/ o una TASK existente' (auto_task.py:28 and docs table row 4).",
+   "estado": "corregido"
+  },
+  {
+   "titulo": "Cancelling the run does not stop publication: publish uses always(), so a human cancel still pushes Claude's commits",
+   "severidad": "MEDIUM",
+   "dimension": "workflow-security",
+   "donde": ".github/workflows/escalimetro-auto-task.yml:161",
+   "escenario": "Joaquin sees Claude misbehaving mid-run and presses 'Cancel workflow'. This is the only in-flight stop: deleting the secret or disabling the workflow (doc §7) does not stop a running job.\n\nThe claude job's packaging and upload steps use `if: always() && steps.claude.outcome != 'skipped'`, and the cancelled step has outcome 'cancelled', so they still run and upload impl-bundle. publish uses `if: always() && needs.gate.result == 'success' && ...`, which GitHub evaluates as true after cancellation. So publish runs, verify returns PUBLISH or PUBLISH_INCOMPLETE, and the push step creates auto/<id>-issue-<n> on the public repo.\n\nThe workflow comment (line 159) says it runs 'aunque Claude haya fallado' (failed), but a cancel is an explicit human stop.",
+   "estado": "corregido"
+  },
+  {
+   "titulo": "Two issues for the same TASK both pass preflight and run Claude concurrently; the anti-re-execution check only sees branches created at the end",
+   "severidad": "MEDIUM",
+   "dimension": "workflow-security",
+   "donde": "scripts/auto_task.py:272",
+   "escenario": "ALREADY_EXECUTED only looks for remote `auto/<stem>-*` branches. Those are created by publish, after up to 240 minutes of Claude. The concurrency group is per issue number (workflow line 36), so nothing serialises per TASK. verify only checks that its own impl branch is absent (auto_task.py:331).\n\nIf ChatGPT opens two issues for M03 (a connector retry after a timeout, or confusion), say #7 and #8, both gates pass, both start Claude with the subscription credential, and both publish auto/m03-issue-7 and auto/m03-issue-8. Each declares itself 'base para la próxima TASK'.\n\nThis contradicts contract line 125 ('existe evidencia inequívoca de ejecución previa' must fail closed): an in-flight run of the same TASK is such evidence. It also leaves the next base ambiguous.",
+   "estado": "corregido"
+  },
+  {
+   "titulo": "Doc overstates CLAUDE_CODE_SUBPROCESS_ENV_SCRUB: code Claude runs can read the OAuth token on this runner",
+   "severidad": "LOW",
+   "dimension": "workflow-security",
+   "donde": "docs/ai-development/AUTO_TASK_EXECUTOR.md:131",
+   "escenario": "§8 says 'La credencial de Anthropic no llega a esos procesos (CLAUDE_CODE_SUBPROCESS_ENV_SCRUB)', and §3 row 3 repeats it. The action's own docs/security.md:16 calls the scrub best-effort; PID isolation needs bubblewrap. Bubblewrap is installed only when allowed_non_write_users is set (action.yml:228), and runner-images Ubuntu2404 does not ship it.\n\nAny process Claude runs via the allowed `Bash(.venv/bin/python:*)` (pytest, conftest.py, a pip-installed package's daemon) can therefore read /proc/<claude pid>/environ as the same uid, or use passwordless sudo, to get CLAUDE_CODE_OAUTH_TOKEN. The runner has open egress, and the token is valid for a year. Joaquin will decide DR-9 based on this understated risk.",
+   "estado": "corregido"
+  },
+  {
+   "titulo": "verify forbidden-path check is bypassed by git path quoting (core.quotePath)",
+   "severidad": "MEDIUM",
+   "dimension": "preflight-verify",
+   "donde": "scripts/auto_task.py:325",
+   "escenario": "verify_impl reads 'git diff --name-only --no-renames task..head' with git's default core.quotePath=true. Any path containing a non-ASCII byte, a tab, '\"' or '\\' comes back C-quoted, for example '\"src/escalimetro/n\\303\\272cleo.py\"'. That string starts with '\"', so f.startswith(FORBIDDEN_PREFIXES) is False and the verdict is PUBLISH. As a result Claude's branch can add files under src/ (the engine frozen since E28/D-008), tasks/ and .github/. That breaks the docstring's promise 'Nunca se publica algo que toque .github/, src/ o una TASK existente', breaks M02 line 213 'No tocar src/' and AC2 (line 231), and works against the intent of line 163 (.github/workflows/**). For .github/workflows/ only, GitHub's GITHUB_TOKEN 'workflows' restriction is the backstop; nothing backstops src/ or tasks/. The repo has no existing quotable paths under src/, tasks/ or .github/ (checked with ls-files), so th",
+   "estado": "corregido"
+  },
+  {
+   "titulo": "BASE_NOT_DECLARED is self-referential: any older chain branch is accepted as the base",
+   "severidad": "LOW",
+   "dimension": "preflight-verify",
+   "donde": "scripts/auto_task.py:247",
+   "escenario": "The preflight reads CURRENT_STATE.md from the BASE_BRANCH commit itself and checks that it declares BASE_BRANCH. In this repo every finished branch declares itself as 'base para la próxima TASK': origin/e37_reconstruction_lab and origin/m01_1_remote_truth do today, and m02_github_executor will once M02 is committed (working tree line 33). So a TASK branch cut from a superseded base (m01_1_remote_truth, which is an ancestor of e37_reconstruction_lab) passes, and Claude executes an approved TASK on stale code. This violates M02 line 107 (BASE_BRANCH = the base CURRENT_STATE declared when the TASK was created) and AC1 line 230 ('base correcta'). It is exactly the case the new tests/test_ai_handoff.py docstring says must not happen: 'una rama vieja se aceptaría como base'. It also makes the declared-base parsing tricks (first matching row wins, rows inside code blocks count) irrelevant, beca",
+   "estado": "corregido"
+  },
+  {
+   "titulo": "The same TASK can run twice: per-issue concurrency, and no re-check of auto/<id>-* at publish time",
+   "severidad": "MEDIUM",
+   "dimension": "preflight-verify",
+   "donde": ".github/workflows/escalimetro-auto-task.yml:36",
+   "escenario": "The concurrency group is escalimetro-auto-task-<issue number>, so two issues for the same TASK run in parallel. The preflight's ALREADY_EXECUTED check (auto_task.py:272) only sees branches that have already been published. A run can last up to 240 minutes, so a second issue opened at any point before the first one publishes passes the preflight, starts a second Claude run (a second OAuth spend), and publishes a second implementation branch. verify (auto_task.py:331) checks only its own impl_branch name, not other auto/<stem>-* branches. Each resulting branch has a CURRENT_STATE declaring itself as the next base, which the self-referential base check then accepts. This violates M02 line 44 ('ejecute exactamente una TASK aprobada') and line 125 (prior execution must fail).",
+   "estado": "corregido"
+  },
+  {
+   "titulo": "remote_head uses ls-remote suffix matching, so a moved TASK branch can pass (AC7)",
+   "severidad": "LOW",
+   "dimension": "preflight-verify",
+   "donde": "scripts/auto_task.py:177",
+   "escenario": "git ls-remote treats each pattern as '*/<pattern>' (a tail match), and remote_head returns the first output line. If any head named '<x>/refs/heads/<task_branch>' exists and sorts first, its SHA is used. After the issue is created, someone moves m99_prueba to a revised commit (for example one revoking the TASK) and creates 'a/refs/heads/m99_prueba' at the old TASK_COMMIT. The preflight then returns PASS instead of TASK_BRANCH_MOVED, which violates AC7 (line 236) and lines 119 and 126. The same shadowing can substitute the BASE_BRANCH SHA. This needs a writer to create an oddly named ref; the code Claude runs is still the TASK_COMMIT the preflight validated. On a valid push the impl_branch lookup in verify only fails closed.",
+   "estado": "corregido"
+  },
+  {
+   "titulo": "The 'Decisión aprobada' check reads the LAST heading with that name, including headings inside code blocks; comment-only content also passes",
+   "severidad": "LOW",
+   "dimension": "preflight-verify",
+   "donde": "scripts/auto_task.py:195",
+   "escenario": "_sections splits on '^##' everywhere, including inside fenced code, and builds a dict where later duplicates overwrite earlier ones. A TASK whose real 'Decisión aprobada' section is empty, but which quotes the TASK template from DEVELOPMENT_PROTOCOL.md §6 (line 162 contains '## Decisión aprobada' plus text), passes NOT_APPROVED. A section holding only '<!-- pendiente de aprobación -->' (invisible on GitHub) or only '### (pendiente)' also passes. This violates M02 line 124: a TASK that does not declare approval must fail closed. The issue-opener actor gate still applies.",
+   "estado": "corregido"
+  },
+  {
+   "titulo": "verify's forbidden-path check (.github/, src/, tasks/) is bypassed by git quotePath for non-ASCII or special-char filenames",
+   "severidad": "MEDIUM",
+   "dimension": "acceptance",
+   "donde": "scripts/auto_task.py:325",
+   "escenario": "verify_impl lists changed files with `git diff --name-only` using git's default core.quotePath=true, then runs `f.startswith(FORBIDDEN_PREFIXES)`. Git prints names with non-ASCII bytes, '\"' or '\\\\' quoted with a leading '\"' (for example \"src/escalimetro/a\\303\\261o.py\"), so the prefix test never matches. A Claude commit adding src/escalimetro/año.py, tasks/M99ñ.md or .github/workflows/ñ.yml gets verdict PUBLISH and the publish job pushes it. This breaks the guarantee in AUTO_TASK_EXECUTOR.md §3 row 4 and D-012 ('lo publicado no puede tocar .github/, src/ ni tasks/') and the D-008 src/ freeze; for workflows only GitHub's missing `workflows` permission still protects (M02.md:163-164).",
+   "estado": "corregido"
+  },
+  {
+   "titulo": "The same TASK can run (and publish) twice: concurrency is per issue and verify checks only its own branch name",
+   "severidad": "MEDIUM",
+   "dimension": "acceptance",
+   "donde": ".github/workflows/escalimetro-auto-task.yml:36",
+   "escenario": "The concurrency group is `escalimetro-auto-task-${{ github.event.issue.number }}`, so two issues for the same TASK run in parallel. The preflight's ALREADY_EXECUTED check only looks for remote `auto/<id>-*` branches, which exist only after publish. The claude job can last up to 240 minutes. A second issue opened in that window (a retry, or ChatGPT opening it twice) passes preflight, runs Claude again (a second paid run), and publish creates a second branch: verify_impl (auto_task.py:331) only rejects if its own `auto/<id>-issue-<n>` exists, not any `auto/<id>-*`. The result is two implementation branches for one TASK, each declaring itself the next base. This contradicts M02.md:125 (fail closed on evidence of prior execution) and M02.md:44 ('exactamente una TASK aprobada').",
+   "estado": "corregido"
+  },
+  {
+   "titulo": "Cancelling a run does not stop publication: the bundle, upload and publish steps use always() instead of !cancelled()",
+   "severidad": "MEDIUM",
+   "dimension": "acceptance",
+   "donde": ".github/workflows/escalimetro-auto-task.yml:161",
+   "escenario": "The steps 'Empaquetar' (line 143) and 'Entregar el bundle' (line 149) use `always() && steps.claude.outcome != 'skipped'`, and the publish job (lines 160-164) uses `always() && needs.gate.result == 'success' ...`. GitHub runs always() steps and jobs even when the run is cancelled. If Joaquín cancels a misbehaving run mid-execution (the obvious stop control for a 'mecanismo ... revocable', M02.md:44), the cancelled Claude step's partial commits are still bundled, uploaded, verified as PUBLISH_INCOMPLETE and pushed to auto/<id>-issue-<n> on the public repo. That branch then makes every later issue for the TASK fail with ALREADY_EXECUTED. AUTO_TASK_EXECUTOR.md §7 ('Cómo se apaga') does not mention this.",
+   "estado": "corregido"
+  },
+  {
+   "titulo": "The YAML gate tests are substring-only, so turning the gate conjunctions into disjunctions still passes every test",
+   "severidad": "LOW",
+   "dimension": "acceptance",
+   "donde": "tests/test_m02_auto_task.py:575",
+   "escenario": "test_la_compuerta_corre_antes_de_cualquier_secreto and test_claude_corre_sin_poder_escribir_y_solo_si_paso_la_compuerta only assert that each condition string appears before runs-on:. They do not check the boolean structure. AC4 and AC8 (M02.md:233, 237) are therefore evidenced only by the presence of the conditions, not by the condition actually rejecting anything. Today the preflight's check_actor is a second layer, but the tests would not catch a regression in the first one.",
+   "estado": "corregido"
+  },
+  {
+   "titulo": "The issue comment announces the branch whenever verify said PUBLISH, even if the push failed",
+   "severidad": "LOW",
+   "dimension": "acceptance",
+   "donde": ".github/workflows/escalimetro-auto-task.yml:214",
+   "escenario": "'Informar en el issue' runs with if: always() and prints 'Rama: https://github.com/.../tree/<impl>' based only on VERDICT. When the push step fails (GITHUB_TOKEN rejected for a workflow file, a ruleset on auto/**, a race, a network error), the comment still points ChatGPT, which audits from GitHub, at a branch that does not exist. Only the run status shows the failure.",
+   "estado": "corregido"
+  }
+ ],
+ "refutados": [
+  {
+   "titulo": "Claude-written startup config (.claude/settings.json, .mcp.json, CLAUDE.md...) passes verify and is loaded automatically in the next run, with the OAuth token reachable",
+   "por_que": "The individual mechanics check out, but they do not add up to a HIGH. The finding needs either an unauthorized actor or non-approved content to reach the credential, and neither happens here.\n\nWhat is true:\n- verify only forbids `.github/`, `src/` and `tasks/` (scripts/auto_task.py:286).\n- The action restores config only for PRs (run.ts:263).\n- Without `--setting-sources`, the SDK loads all settin"
+  },
+  {
+   "titulo": "BASE_NOT_DECLARED is self-referential: any branch whose own CURRENT_STATE names itself is accepted, including every unaudited auto/* branch",
+   "por_que": "The mechanics are as described, but this is the behaviour the contract asks for, not a defect. I built a throwaway repo under <scratch> with a branch `auto/m03-issue-7` whose own CURRENT_STATE row says it is the \"base para la próxima TASK\", plus a task branch `m04_x` on top of it that adds only tasks/M04.md. Running scripts/auto_task.py preflight() against it passes all checks and r"
+  },
+  {
+   "titulo": "A REJECTed bundle is still published: impl-bundle stays publicly downloadable for 7 days",
+   "por_que": "The mechanics in the finding are accurate. In .github/workflows/escalimetro-auto-task.yml (lines 142-155), the `claude` job uploads `impl-bundle` with `if: always()` and `retention-days: 7`, before `publish` runs verify. On a public repo, any signed-in user can download that artifact. Nothing here is a defect, though. The finding's argument fails on these points:\n\n1. **verify is an integrity gate,"
+  },
+  {
+   "titulo": "verify protects .github/ as 'the executor itself' but not scripts/auto_task.py, the preflight/verify logic the workflow runs",
+   "por_que": "The finding's basic fact is true, but it is not a defect. I checked the code and ran a throwaway experiment in <scratch> a bundle that empties FORBIDDEN_PREFIXES in scripts/auto_task.py and adds reports/M09_REPORT.md gets \"VERIFY PUBLISH: listo para auditar\". That change still cannot weaken any live gate.\n\n1. **The workflow always runs the default branch's copy of the"
+  },
+  {
+   "titulo": "verify accepts case- and Unicode-fold variants of src/, tasks/ and .github/, which overwrite the frozen engine on Joaquín's macOS checkout",
+   "por_que": "The mechanics reproduce. I ran the reviewer's scripts with the project venv (<scratch> and e11.py). 'ſrc/...', 'SRC/...' and 'Src/...' all get verify PUBLISH. A fresh macOS clone with the ſ variant leaves src/escalimetro/motor.py = MODIFICADO, and git prints a \"paths have collided\" warning. Switching from base to the auto/ branch with 'Src/' rewrites the file on disk wh"
+  },
+  {
+   "titulo": "The TASK file may be a symlink: the preflight validates the link text, not the file Claude reads",
+   "por_que": "The mechanical part does reproduce. Running <scratch> with the project venv gives `120000 blob ... tasks/M99.md`, then `preflight: PASS auto/m99-issue-7`, and the checkout shows `islink True exists False`. The claimed harm does not follow from this. The finding says the approved text is not what Claude executes, but every symlink that passes the preflight ends up danglin"
+  },
+  {
+   "titulo": "Prior execution is not detected when the REPORT is on any branch other than auto/<id>-*",
+   "por_que": "The finding's main trigger, a TASK already run through the manual §5.2 fallback, does not leave a REPORT on some other branch. DEVELOPMENT_PROTOCOL.md line 111 says the manual flow is \"Claude verifica → implementa → REPORT + STATE → push a la misma rama\". So the REPORT lands on TASK_BRANCH itself. The remote history follows that rule: origin/m01_1_remote_truth holds both 04b3ad4 (the TASK) and 958"
+  },
+  {
+   "titulo": "verify inspects only the final tree: intermediate commits touching .github/, src/ or the TASK get published",
+   "por_que": "The mechanics reproduce, but the behaviour is not a defect under the contract or the repo's own invariants.\n\nExperiment: <scratch> A throwaway repo has a TASK commit, then a commit 'intermedio' that adds .github/workflows/evil.yml, changes src/escalimetro/motor.py and rewrites tasks/M99.md, then `git revert`, then 'final' adding reports/M99_REPORT.md. Running `scr"
+  },
+  {
+   "titulo": "verify returns PUBLISH for an annotated-tag head; the push then fails but the issue comment announces the branch",
+   "por_que": "The mechanics reproduce only when the reviewer builds the bundle by hand. The workflow never does that. It builds the bundle itself at .github/workflows/escalimetro-auto-task.yml:146 with `git bundle create \"$RUNNER_TEMP/impl.bundle\" \"$TASK_COMMIT\"..HEAD`, so the single head is always `HEAD`. The reviewer's `refs/tags/tx` head is not an input the executor can produce. Ordinary git cannot point HEA"
+  },
+  {
+   "titulo": "Nothing checks Claude's commits for secrets before the automatic push to the public repo, and the doc overstates the env scrub",
+   "por_que": "The mechanical part does happen. I ran the finding's own reproduction in a throwaway repo under the scratchpad, using the helpers in tests/test_m02_auto_task.py. A REPORT containing fake `x-access-token:ghs_...` and `CLAUDE_CODE_OAUTH_TOKEN=sk-ant-oat01-...` strings gets `PUBLISH listo para auditar`. `verify_impl` (scripts/auto_task.py:301-338) only checks paths and ancestry, never content. Still,"
+  },
+  {
+   "titulo": "The 'Decisión aprobada' check accepts a TASK whose section says it is not approved",
+   "por_que": "The behaviour the finding describes does happen. I ran it in a throwaway directory (<scratch>) using Mundo/TASK_BUENA from tests/test_m02_auto_task.py, with the «Decisión aprobada» section replaced by 'PENDIENTE: Joaquín todavía no la aprobó. No ejecutar.'. preflight() returned Result with impl_branch auto/m99-issue-7.\n\nIt is still not a defect or a contract violation, "
+  },
+  {
+   "titulo": "The ALREADY_REPORTED fail-closed path is never exercised; its test actually hits DIFF_NOT_ONLY_TASK",
+   "por_que": "The coverage fact is correct, but it is not a defect. No test in tests/test_m02_auto_task.py expects 'ALREADY_REPORTED'. test_una_task_ya_reportada_no_se_ejecuta_otra_vez (line 287) asserts DIFF_NOT_ONLY_TASK, as its own comment says.\n\nThe gate itself works. I ran a throwaway pytest file in the scratchpad that reuses the test module's Mundo fixture. It commits reports/M99_REPORT.md onto the base b"
+  },
+  {
+   "titulo": "AC10 is achieved by the workflow, not by the action: base_branch has no effect in agent mode, and the doc does not record this",
+   "por_que": "The technical premise is correct but there is no defect. At pinned SHA 12dd8d74, src/modes/agent/index.ts:96-139 creates no branch: claudeBranch comes only from env CLAUDE_BRANCH, and baseBranch is only passed into branchInfo/MCP config. In src/entrypoints/run.ts:236, 264 and 345, baseBranch is used only to restore PR config (not relevant to issues) and to build the comment link. So base_branch is"
+  }
+ ]
+}
