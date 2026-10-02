@@ -29,6 +29,12 @@ a{color:inherit}
 .eq{font-weight:700;letter-spacing:.03em}
 .quote{font-style:italic;color:var(--mut)}
 .note{padding:40px 0 56px}
+.req{display:grid;gap:10px;max-width:480px;margin:0 0 24px}
+.req label{font-weight:600}
+.req input{font:inherit;padding:10px;border:1px solid var(--line);border-radius:6px;background:var(--card)}
+.req .btn{border:0;cursor:pointer;font:inherit;font-weight:700;letter-spacing:.06em;margin-top:8px}
+.err{border:2px solid var(--acc);border-radius:8px;padding:12px 16px;margin:0 0 20px;max-width:480px}
+.err ul{margin:6px 0 0;padding-left:20px}
 footer{border-top:1px solid var(--line);padding:20px 0;color:var(--mut);font-size:.85rem}
 @media(max-width:760px){.hero{grid-template-columns:1fr;padding:32px 0 24px;gap:24px}
   .prod.entry{padding:24px}.btn{display:block;text-align:center}}

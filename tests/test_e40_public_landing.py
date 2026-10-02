@@ -41,14 +41,11 @@ def test_landing_200_sin_auth(client):
     assert "WWW-Authenticate" not in r.headers
 
 
-def test_solicitar_200_sin_auth_y_no_finge_un_pedido(client):
+def test_solicitar_200_sin_auth(client):
+    # E41 reemplazó el «próximamente» de E40 por el formulario real (tests/test_e41_*.py)
     r = client.get("/planos/solicitar")
     assert r.status_code == 200
-    t = _texto(r.get_data(as_text=True))
-    assert "próximamente" in t.lower()
-    assert "<form" not in r.get_data(as_text=True)
-    # el CTA no crea nada: ni POST ni estado
-    assert client.post("/planos/solicitar").status_code == 405
+    assert "WWW-Authenticate" not in r.headers
 
 
 @pytest.mark.parametrize("ruta", ["/", "/settings", "/lab/", "/properties/", "/property/",

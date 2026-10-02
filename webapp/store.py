@@ -770,6 +770,18 @@ BEGIN SELECT RAISE(ABORT, 'recon_ground_truth: el ground truth revelado no se re
 CREATE TRIGGER IF NOT EXISTS recon_gt_no_se_borra_tras_revelar BEFORE DELETE ON recon_ground_truth
 WHEN (SELECT gt_state FROM recon_projects WHERE project_id = OLD.project_id) = 'REVEALED'
 BEGIN SELECT RAISE(ABORT, 'recon_ground_truth: el ground truth revelado no se borra'); END;
+-- E41 — pedidos públicos de Plano Corporativo. Sólo recepción: ningún motor lee esta tabla todavía.
+-- `request_id` es opaco (no secuencial) porque aparece en la URL de confirmación pública.
+CREATE TABLE IF NOT EXISTS plano_requests (
+  request_id        TEXT PRIMARY KEY,
+  email             TEXT NOT NULL,
+  plan_file         TEXT NOT NULL,          -- nombre generado por nosotros dentro de plano_request_dir
+  original_filename TEXT,                   -- sólo informativo: nunca se usa como ruta
+  mime              TEXT NOT NULL,
+  size_bytes        INTEGER NOT NULL,
+  status            TEXT NOT NULL DEFAULT 'RECEIVED',
+  created_at        TEXT NOT NULL
+);
 """
 
 
@@ -821,6 +833,12 @@ def recon_gt_dir(project_id: str) -> str:
     """E37 — el ground truth, en OTRA raíz. No es un subdirectorio del proyecto a propósito: nada que
     recorra la carpeta de un proyecto para armar la entrada de un motor puede tropezar con él."""
     return os.path.join(DATA_DIR, "reconstruction_gt", project_id)
+
+
+def plano_request_dir(request_id: str) -> str:
+    """E41 — el plano de un pedido público. Raíz propia, aparte de `cases/`: lo sube un anónimo y
+    nada del motor debe encontrarlo por recorrer la carpeta de casos. El id lo generamos nosotros."""
+    return os.path.join(DATA_DIR, "plano_requests", request_id)
 
 
 def case_dir(case_id: str) -> str:

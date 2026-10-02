@@ -1,15 +1,27 @@
 <!doctype html>
 <html lang="es"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Solicitud próximamente — ESCALÍMETRO</title>
+<title>Subir propiedad — ESCALÍMETRO</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='public.css') }}">
 </head><body>
 <div class="bar"><div class="wrap"><a class="brand" href="{{ url_for('public.landing') }}">ESCALÍMETRO</a></div></div>
 <main class="wrap note">
-  <h1>Solicitud próximamente</h1>
-  <p class="lead">Todavía no es posible subir una propiedad en esta página.</p>
-  <p>No se ha creado ningún pedido y no se guardó ningún dato. Estamos preparando el formulario de solicitud del Plano Corporativo.</p>
-  <p><a class="btn" href="{{ url_for('public.landing') }}#productos">VER LOS PRODUCTOS</a></p>
+  <h1>Pide tu Plano Corporativo</h1>
+  <p class="lead">Ya tienes un plano. Súbelo y déjanos un email.</p>
+  {% if errores %}
+  <div class="err" role="alert">
+    <strong>No se recibió el pedido.</strong>
+    <ul>{% for msg in errores.values() %}<li>{{ msg }}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+  <form class="req" method="post" action="{{ url_for('public.solicitar_post') }}" enctype="multipart/form-data" novalidate>
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" value="{{ email }}" autocomplete="email" required>
+    <label for="plano">Plano existente (PDF, JPG o PNG)</label>
+    <input id="plano" name="plano" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required>
+    <button class="btn" type="submit">ENVIAR PEDIDO</button>
+  </form>
+  <p class="quote">Recibimos tu plano para preparar el Plano Corporativo. Si necesitamos algo más, te lo pediremos después.</p>
 </main>
 <footer><div class="wrap">ESCALÍMETRO</div></footer>
 </body></html>
