@@ -249,9 +249,12 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: write
+      actions: read
     outputs:
       verdict: ${{ steps.verify.outputs.verdict }}
       report: ${{ steps.verify.outputs.report }}
+      commits: ${{ steps.verify.outputs.commits }}
+      files: ${{ steps.count.outputs.files }}
       pushed: ${{ steps.push.outcome }}
     env:
       TASK_ID: ${{ needs.gate.outputs.task_id }}
@@ -275,6 +278,23 @@ jobs:
           python3 scripts/auto_task.py verify --repo . \
             --bundle "$RUNNER_TEMP/bundle/impl.bundle" \
             --task-commit "$TASK_COMMIT" --task-id "$TASK_ID" --impl-branch "$IMPL_BRANCH"
+      - name: Contar archivos verificados
+        id: count
+        if: always()
+        shell: bash
+        run: |
+          if [ -f "$RUNNER_TEMP/bundle/impl.bundle" ] && [ -n "${{ steps.verify.outputs.head }}" ]; then
+            git fetch --quiet --no-tags "$RUNNER_TEMP/bundle/impl.bundle" "${{ steps.verify.outputs.head }}:refs/auto/status" || true
+            N=$(git -c core.quotePath=false diff --name-only "$TASK_COMMIT"..refs/auto/status 2>/dev/null | sed '/^$/d' | wc -l | tr -d ' ')
+          else
+            N=0
+          fi
+          echo "files=$N" >> "$GITHUB_OUTPUT"
+      - name: Rechazar implementación sin output
+        if: steps.verify.outputs.verdict == 'NOTHING'
+        run: |
+          echo "::error::NO_OUTPUT: la TASK llegó a implementación pero Claude no dejó commits publicables"
+          exit 1
       - name: Crear la rama de implementación (nunca forzada)
         id: push
         if: steps.verify.outputs.verdict == 'PUBLISH' || steps.verify.outputs.verdict == 'PUBLISH_INCOMPLETE'
@@ -284,6 +304,89 @@ jobs:
         run: |
           git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)" \
             push origin "$HEAD_SHA:refs/heads/$IMPL_BRANCH"
+
+
+  live_status:
+    needs: gate
+    if: >-
+      ${{ needs.gate.result == 'success' &&
+      needs.gate.outputs.ok == 'true' &&
+      github.actor == 'joaquinriesco-alt' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 245
+    permissions:
+      actions: read
+      issues: write
+    env:
+      TASK_ID: ${{ needs.gate.outputs.task_id }}
+      ISSUE: ${{ github.event.issue.number }}
+      REPO: ${{ github.repository }}
+      RUN_ID: ${{ github.run_id }}
+      RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    steps:
+      - name: Estado vivo
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -u
+          marker='<!-- escalimetro-auto-task:status -->'
+          started=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+          comment_id=""
+          update() {
+            state="$1"; stage="$2"; gate="$3"; agent="$4"; verify="$5"; publish="$6"
+            now=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
+            body=$(cat <<EOF
+          $marker
+          **$TASK_ID — $state**
+
+          Etapa actual: **$stage**
+          Inicio: `$started` · Última actualización: `$now`
+
+          $gate TASK validada
+          $agent Agente
+          $verify Verificación
+          $publish Publicación
+          ○ Auditoría ChatGPT
+
+          Run: $RUN_URL
+          EOF
+            )
+            if [ -z "$comment_id" ]; then
+              comment_id=$(gh api "repos/$REPO/issues/$ISSUE/comments" --paginate --jq ".[] | select(.body | contains(\"$marker\")) | .id" | head -1)
+            fi
+            if [ -z "$comment_id" ]; then
+              comment_id=$(gh api -X POST "repos/$REPO/issues/$ISSUE/comments" -f body="$body" --jq .id)
+            else
+              gh api -X PATCH "repos/$REPO/issues/comments/$comment_id" -f body="$body" >/dev/null
+            fi
+          }
+          update "ESPERANDO" "preparando runner" "✅" "○" "○" "○"
+          while true; do
+            jobs=$(gh api "repos/$REPO/actions/runs/$RUN_ID/jobs?per_page=100")
+            cs=$(printf '%s' "$jobs" | jq -r '.jobs[] | select(.name=="claude") | .status // empty')
+            cc=$(printf '%s' "$jobs" | jq -r '.jobs[] | select(.name=="claude") | .conclusion // empty')
+            ps=$(printf '%s' "$jobs" | jq -r '.jobs[] | select(.name=="publish") | .status // empty')
+            pc=$(printf '%s' "$jobs" | jq -r '.jobs[] | select(.name=="publish") | .conclusion // empty')
+            if [ "$cs" = "in_progress" ]; then
+              update "TRABAJANDO" "Claude ejecutando la TASK" "✅" "🔵" "○" "○"
+            elif [ "$ps" = "in_progress" ]; then
+              update "VERIFICANDO" "verificando y publicando artifact" "✅" "✅" "🔵" "○"
+            elif [ "$ps" = "completed" ]; then
+              if [ "$pc" = "success" ]; then
+                update "TERMINÓ" "automatización terminada" "✅" "✅" "✅" "✅"
+              else
+                update "FALLÓ" "verificación/publicación falló" "✅" "✅" "❌" "❌"
+              fi
+              break
+            elif [ "$cs" = "completed" ] && [ "$cc" != "success" ]; then
+              update "FALLÓ" "agente falló" "✅" "❌" "○" "○"
+              break
+            else
+              update "ESPERANDO" "esperando agente" "✅" "○" "○" "○"
+            fi
+            sleep 60
+          done
 
   notify:
     needs: [gate, claude, publish]
@@ -309,12 +412,20 @@ jobs:
       REPORT_OK: ${{ needs.publish.outputs.report }}
       PUSHED: ${{ needs.publish.outputs.pushed }}
     steps:
-      - name: Informar en el issue
+      - name: Informar estado final en el issue
         env:
           GH_TOKEN: ${{ github.token }}
+          COMMITS: ${{ needs.publish.outputs.commits }}
+          FILES: ${{ needs.publish.outputs.files }}
         run: |
+          marker='<!-- escalimetro-auto-task:status -->'
           {
-            echo "**${TASK_ID}** · ejecución automática · Claude: \`${CLAUDE_RESULT}\` · verificación: \`${VERDICT:-SIN_VEREDICTO}\` · publicación: \`${PUBLISH_RESULT}\`"
+            echo "$marker"
+            if [ "$PUBLISH_RESULT" = "success" ] && [ "$PUSHED" = "success" ]; then ESTADO="TERMINÓ"; else ESTADO="FALLÓ"; fi
+            echo "**${TASK_ID} — ${ESTADO}**"
+            echo
+            echo "Claude: \`${CLAUDE_RESULT}\` · verificación: \`${VERDICT:-SIN_VEREDICTO}\` · publicación: \`${PUBLISH_RESULT}\`"
+            echo "Commits: \`${COMMITS:-0}\` · archivos: \`${FILES:-0}\` · REPORT: \`${REPORT_OK:-false}\`"
             echo
             if [ "$PUSHED" = "success" ]; then
               echo "Rama: https://github.com/${REPO}/tree/${IMPL_BRANCH} · REPORT: ${REPORT_OK}"
@@ -325,4 +436,10 @@ jobs:
             echo
             echo "Sin merge, sin deploy. Audita ChatGPT; decide Joaquín."
           } > "$RUNNER_TEMP/comentario.md"
-          gh issue comment "$ISSUE" --repo "$REPO" --body-file "$RUNNER_TEMP/comentario.md"
+          cid=$(gh api "repos/$REPO/issues/$ISSUE/comments" --paginate --jq ".[] | select(.body | contains(\"$marker\")) | .id" | head -1)
+          if [ -n "$cid" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$cid" -f body="$(cat "$RUNNER_TEMP/comentario.md")" >/dev/null 2>&1 || \
+              gh issue comment "$ISSUE" --repo "$REPO" --body-file "$RUNNER_TEMP/comentario.md"
+          else
+            gh issue comment "$ISSUE" --repo "$REPO" --body-file "$RUNNER_TEMP/comentario.md"
+          fi
