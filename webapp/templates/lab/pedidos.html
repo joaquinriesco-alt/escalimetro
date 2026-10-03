@@ -20,6 +20,7 @@
       <td>
         {% if r.property_id %}
           <a href="{{ url_for('lab.propiedad', property_id=r.property_id) }}">Abrir propiedad</a>
+          · <a href="{{ url_for('pedidos.detalle', request_id=r.request_id) }}">Entrega</a>
         {% elif r.status == 'RECEIVED' %}
           <form method="post" action="{{ url_for('pedidos.preparar_post', request_id=r.request_id) }}">
             <button class="btn" type="submit">PREPARAR EN LAB</button>

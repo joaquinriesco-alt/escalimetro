@@ -29,6 +29,10 @@ FLOORPLAN_ORIGINAL = "FLOORPLAN_ORIGINAL"
 PHOTO_ORIGINAL = "PHOTO_ORIGINAL"
 FLOORPLAN_COMMERCIAL = "FLOORPLAN_COMMERCIAL"
 LAYOUT_RENDER = "LAYOUT_RENDER"
+#: E43 — copia congelada del plano comercial que un humano aprobó para entrega. Es un tipo aparte
+#: porque regenerar el comercial (`purge_kind`) borra el anterior: el enlace público no puede
+#: depender de un asset que una regeneración destruye.
+FLOORPLAN_DELIVERED = "FLOORPLAN_DELIVERED"
 #: E31 — una PHOTO_STAGED sólo nace en `staging._publish`, después de que un humano aprobó el
 #: intento. Nadie más la crea, y un candidato rechazado nunca llega a ser asset.
 PHOTO_STAGED = "PHOTO_STAGED"
@@ -41,10 +45,10 @@ BROCHURE = "BROCHURE"
 PACK_EXPORT = "PACK_EXPORT"
 
 KINDS = (FLOORPLAN_ORIGINAL, PHOTO_ORIGINAL, FLOORPLAN_COMMERCIAL, LAYOUT_RENDER,
-         PHOTO_STAGED, BEFORE_AFTER, VIDEO, BROCHURE, PACK_EXPORT)
+         FLOORPLAN_DELIVERED, PHOTO_STAGED, BEFORE_AFTER, VIDEO, BROCHURE, PACK_EXPORT)
 #: Los únicos que el sistema sabe producir. El resto se rechaza si alguien intenta crearlos a mano.
 IMPLEMENTED_KINDS = (FLOORPLAN_ORIGINAL, PHOTO_ORIGINAL, FLOORPLAN_COMMERCIAL, LAYOUT_RENDER,
-                     PHOTO_STAGED, BEFORE_AFTER, PACK_EXPORT)
+                     FLOORPLAN_DELIVERED, PHOTO_STAGED, BEFORE_AFTER, PACK_EXPORT)
 
 ALLOWED_UPLOAD = {".pdf": "application/pdf", ".png": "image/png",
                   ".jpg": "image/jpeg", ".jpeg": "image/jpeg"}
@@ -60,7 +64,7 @@ def _dir(property_id: str, kind: str) -> str:
     sub = {FLOORPLAN_ORIGINAL: "floorplan", PHOTO_ORIGINAL: "photos",
            FLOORPLAN_COMMERCIAL: "floorplan", LAYOUT_RENDER: "layouts",
            PHOTO_STAGED: "photos_staged", BEFORE_AFTER: "photos_staged",
-           PACK_EXPORT: "pack"}.get(kind, "other")
+           PACK_EXPORT: "pack", FLOORPLAN_DELIVERED: "delivered"}.get(kind, "other")
     return os.path.join(store.property_dir(property_id), sub)
 
 

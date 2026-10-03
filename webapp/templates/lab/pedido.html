@@ -1,0 +1,39 @@
+{% extends "lab/base.html" %}{% block title %}Pedido {{ ped.request_id }}{% endblock %}
+{% block body %}
+<div class="prop-head">
+  <h1>Plano Corporativo · entrega</h1>
+  <p><a href="{{ url_for('pedidos.bandeja') }}">← Pedidos</a></p>
+</div>
+
+<p>Referencia <code>{{ ped.request_id }}</code> · {{ ped.email }} · estado <strong>{{ ped.status }}</strong></p>
+{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+<p><strong>{{ etapa.texto }}</strong></p>
+
+{% if ped.property_id %}
+  <p><a href="{{ url_for('lab.propiedad', property_id=ped.property_id) }}">Abrir propiedad en el LAB</a></p>
+{% endif %}
+
+{% if etapa.clave in ('LISTA', 'CANDIDATO', 'APROBADO') %}
+  <form method="post" action="{{ url_for('pedidos.generar_post', request_id=ped.request_id) }}">
+    <button class="btn" type="submit">{{ 'REGENERAR CANDIDATO' if etapa.candidato else 'GENERAR PLANO CORPORATIVO' }}</button>
+  </form>
+{% endif %}
+
+{% if etapa.candidato %}
+  <h2>Candidato interno</h2>
+  <p><img src="{{ url_for('pedidos.candidato_png', request_id=ped.request_id) }}" alt="Candidato" style="max-width:100%;height:auto"></p>
+  {% if etapa.clave == 'CANDIDATO' %}
+  <form method="post" action="{{ url_for('pedidos.aprobar_post', request_id=ped.request_id) }}">
+    <input type="hidden" name="asset_id" value="{{ etapa.candidato.asset_id }}">
+    <button class="btn" type="submit">APROBAR PARA ENTREGA</button>
+  </form>
+  {% endif %}
+{% endif %}
+
+{% if enlace %}
+  <h2>Enlace de entrega</h2>
+  <p>Aprobado el {{ ped.approved_at }}. Cópialo y envíalo tú: el sistema no envía emails ni sabe si el cliente lo recibió.</p>
+  <p><input type="text" readonly value="{{ enlace }}" size="80" onclick="this.select()"></p>
+  <p>El enlace sirve la copia aprobada; regenerar el candidato no la cambia.</p>
+{% endif %}
+{% endblock %}

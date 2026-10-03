@@ -782,7 +782,10 @@ CREATE TABLE IF NOT EXISTS plano_requests (
   status            TEXT NOT NULL DEFAULT 'RECEIVED',
   created_at        TEXT NOT NULL,
   property_id       TEXT,                   -- E42: la propiedad interna del LAB creada desde el pedido
-  prepared_at       TEXT
+  prepared_at       TEXT,
+  delivery_token    TEXT,                   -- E43: opaco; sólo existe tras la aprobación humana
+  delivery_asset_id TEXT,                   -- E43: copia FLOORPLAN_DELIVERED congelada al aprobar
+  approved_at       TEXT
 );
 """
 
@@ -962,7 +965,8 @@ def init() -> None:
             conn.execute(f"ALTER TABLE product_reviews ADD COLUMN {col} {tipo}")
     # E42 — el pedido apunta a la propiedad que el operador preparó. Las bases de E41 no la tienen.
     tiene_pr = {r["name"] for r in conn.execute("PRAGMA table_info(plano_requests)").fetchall()}
-    for col in ("property_id", "prepared_at"):
+    # E43 — token, asset aprobado y momento de la aprobación, con el mismo mecanismo.
+    for col in ("property_id", "prepared_at", "delivery_token", "delivery_asset_id", "approved_at"):
         if col not in tiene_pr:
             conn.execute(f"ALTER TABLE plano_requests ADD COLUMN {col} TEXT")
     # E32.2 — toda propiedad tiene que tener su concesión. Las heredadas reciben una LEGACY ya

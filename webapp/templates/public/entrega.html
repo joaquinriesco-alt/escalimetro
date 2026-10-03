@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Plano Corporativo listo — ESCALÍMETRO</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='public.css') }}">
+</head><body>
+<div class="bar"><div class="wrap"><span class="brand">ESCALÍMETRO</span></div></div>
+<main class="wrap note">
+  <h1>Plano Corporativo listo</h1>
+  <p class="lead">Este es tu plano, revisado antes de entregártelo.</p>
+  <p><img src="{{ url_for('public.entrega_plano', token=token) }}" alt="Plano Corporativo" style="max-width:100%;height:auto"></p>
+  <p><a class="btn" href="{{ url_for('public.entrega_plano', token=token, descargar=1) }}">DESCARGAR PLANO</a></p>
+</main>
+<footer><div class="wrap">ESCALÍMETRO</div></footer>
+</body></html>

@@ -16,8 +16,9 @@ import re
 import shutil
 import uuid
 
-from flask import Blueprint, abort, redirect, render_template, request, url_for
+from flask import Blueprint, abort, redirect, render_template, request, send_file, url_for
 
+from . import entrega as entrega_mod
 from . import intake, store
 
 bp = Blueprint("public", __name__, url_prefix="/planos")
@@ -84,6 +85,27 @@ def solicitar_post():
         return render_template("public/solicitar.html", errores=errores, email=email), 400
     # POST/Redirect/GET: refrescar la confirmación no reenvía el formulario.
     return redirect(url_for("public.recibido", request_id=request_id), code=303)
+
+
+@bp.get("/entrega/<token>")
+def entrega(token: str):
+    """E43 — «Plano Corporativo listo». Sólo lee: abrirla no cambia ningún estado."""
+    e = entrega_mod.resolver(token)
+    if e is None:
+        abort(404)
+    return render_template("public/entrega.html", token=token, aprobado=e["approved_at"])
+
+
+@bp.get("/entrega/<token>/plano.png")
+def entrega_plano(token: str):
+    e = entrega_mod.resolver(token)
+    if e is None:
+        abort(404)
+    resp = send_file(e["path"], mimetype=e["mime"], as_attachment=bool(request.args.get("descargar")),
+                     download_name="plano-corporativo.png", max_age=0)
+    resp.headers["Cache-Control"] = "private, no-store"
+    resp.headers["X-Robots-Tag"] = "noindex"
+    return resp
 
 
 @bp.get("/recibido/<request_id>")

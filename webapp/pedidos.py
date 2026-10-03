@@ -13,10 +13,10 @@ from __future__ import annotations
 import os
 import re
 
-from flask import Blueprint, abort, redirect, render_template, url_for
+from flask import Blueprint, abort, redirect, render_template, request, send_file, url_for
 from werkzeug.datastructures import FileStorage
 
-from . import auth, store
+from . import auth, entrega, store
 from .domain import assets, entitlements, grants, properties
 
 bp = Blueprint("pedidos", __name__, url_prefix="/lab/pedidos")
@@ -27,6 +27,7 @@ RECEIVED = "RECEIVED"
 #: muere acá el pedido queda así, a la vista, y no ofrece botón: mejor visible que duplicado.
 PREPARING = "PREPARING"
 IN_PROGRESS = "IN_PROGRESS"
+TITULO = "Plano Corporativo"
 
 
 class PrepararError(RuntimeError):
@@ -71,7 +72,8 @@ def preparar(request_id: str) -> str | None:
         origen = os.path.join(store.plano_request_dir(request_id), os.path.basename(ped["plan_file"]))
         if not os.path.isfile(origen):
             raise PrepararError("el archivo del pedido no está en disco")
-        pid = properties.create("Plano Corporativo · " + ped["email"], "OFFICE",
+        # Sin el email: `commercial_svg` dibuja el título de la propiedad en la imagen que E43 entrega.
+        pid = properties.create(TITULO, "OFFICE",
                                 reference=request_id, notes="Pedido público de Plano Corporativo.")
         grants.grant_and_assign(entitlements.default_product(), pid, source="SIMULATED_LAB",
                                 note="pedido público de Plano Corporativo (E42)")
@@ -99,6 +101,98 @@ def bandeja():
     filas = store.q("SELECT request_id, created_at, email, original_filename, status, property_id "
                     "FROM plano_requests ORDER BY created_at DESC, request_id")
     return render_template("lab/pedidos.html", filas=filas)
+
+
+# ---- E43: generar → ver → aprobar → enlace ---------------------------------------------------------
+def etapa(ped) -> dict:
+    """Dónde está el pedido, derivado de artefactos (no declarado). Lo único que lee del motor es
+    `technical_state`, que sólo mira el floorplate ya guardado; no ejecuta nada."""
+    from .domain import floorplan                             # noqa: PLC0415
+    if ped["delivery_token"]:
+        return {"clave": "APROBADO", "texto": "Plano Corporativo aprobado · enlace listo",
+                "candidato": entrega.candidato(ped["property_id"])}
+    if not ped["property_id"]:
+        return {"clave": "SIN_PREPARAR", "texto": "Pedido sin preparar en el LAB", "candidato": None}
+    if not floorplan.technical_state(ped["property_id"])["ready"]:
+        return {"clave": "REVISION", "texto": "Planta aún no lista: requiere revisión", "candidato": None}
+    cand = entrega.candidato(ped["property_id"])
+    if cand is None:
+        return {"clave": "LISTA", "texto": "Planta lista para producir el Plano Corporativo",
+                "candidato": None}
+    return {"clave": "CANDIDATO", "texto": "Candidato generado: revísalo antes de aprobar",
+            "candidato": cand}
+
+
+def _pedido_o_404(request_id: str):
+    if not _ID.match(request_id):
+        abort(404)
+    ped = store.q1("SELECT * FROM plano_requests WHERE request_id=?", (request_id,))
+    if ped is None:
+        abort(404)
+    return ped
+
+
+def _detalle(ped, error: str | None = None, code: int = 200):
+    e = etapa(ped)
+    enlace = (url_for("public.entrega", token=ped["delivery_token"], _external=True)
+              if ped["delivery_token"] else None)
+    return render_template("lab/pedido.html", ped=ped, etapa=e, enlace=enlace, error=error), code
+
+
+@bp.get("/<request_id>")
+@auth.require
+def detalle(request_id: str):
+    return _detalle(_pedido_o_404(request_id))
+
+
+@bp.post("/<request_id>/generar")
+@auth.require
+def generar_post(request_id: str):
+    """Genera (o regenera) el candidato con la salida existente `publish_commercial_floorplan`. No
+    toca lo ya aprobado: eso vive en una copia aparte."""
+    from .domain import floorplan                             # noqa: PLC0415
+    ped = _pedido_o_404(request_id)
+    if not ped["property_id"]:
+        return _detalle(ped, "Primero hay que preparar el pedido en el LAB.", 409)
+    if etapa(ped)["clave"] == "REVISION":
+        return _detalle(ped, "La planta todavía no está lista: se revisa en la propiedad del LAB. "
+                             "No se generó nada.", 409)
+    # Propiedades preparadas por E42 antes de este arreglo llevan el email en el título, y el título
+    # se dibuja en la imagen: se limpia antes de generar.
+    if ped["email"] and ped["email"] in properties.require(ped["property_id"])["title"]:
+        store.ex("UPDATE properties SET title=?, updated_at=? WHERE property_id=?",
+                 (TITULO, store.now(), ped["property_id"]))
+    try:
+        aid = floorplan.publish_commercial_floorplan(ped["property_id"])
+    except floorplan.FloorplanError as e:
+        return _detalle(ped, f"No se pudo generar el plano: {e}", 422)
+    if aid is None:
+        return _detalle(ped, "La planta todavía no está lista. No se generó nada.", 409)
+    return redirect(url_for("pedidos.detalle", request_id=request_id), code=303)
+
+
+@bp.get("/<request_id>/candidato.png")
+@auth.require
+def candidato_png(request_id: str):
+    ped = _pedido_o_404(request_id)
+    cand = entrega.candidato(ped["property_id"]) if ped["property_id"] else None
+    if cand is None or not os.path.isfile(assets.path_of(cand)):
+        abort(404)
+    resp = send_file(assets.path_of(cand), mimetype=cand["mime_type"], max_age=0)
+    resp.headers["Cache-Control"] = "private, no-store"
+    return resp
+
+
+@bp.post("/<request_id>/aprobar")
+@auth.require
+def aprobar_post(request_id: str):
+    ped = _pedido_o_404(request_id)
+    try:
+        entrega.aprobar(request_id, request.form.get("asset_id", ""))
+    except entrega.EntregaError as e:
+        return _detalle(ped, str(e), 409)
+    # Ya aprobado → aprobar() devuelve None y no cambia nada: se vuelve al detalle igual.
+    return redirect(url_for("pedidos.detalle", request_id=request_id), code=303)
 
 
 @bp.post("/<request_id>/preparar")
