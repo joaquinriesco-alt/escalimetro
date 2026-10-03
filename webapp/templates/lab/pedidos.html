@@ -1,0 +1,34 @@
+{% extends "lab/base.html" %}{% block title %}Pedidos de Plano Corporativo{% endblock %}
+{% block body %}
+<div class="prop-head">
+  <h1>Pedidos de Plano Corporativo</h1>
+</div>
+
+{% if not filas %}
+<p class="empty">Todavía no hay pedidos.</p>
+{% else %}
+<table>
+  <thead><tr><th>Referencia</th><th>Fecha</th><th>Email</th><th>Archivo</th><th>Estado</th><th></th></tr></thead>
+  <tbody>
+  {% for r in filas %}
+    <tr>
+      <td><code>{{ r.request_id }}</code></td>
+      <td>{{ r.created_at }}</td>
+      <td>{{ r.email }}</td>
+      <td>{{ r.original_filename or '—' }}</td>
+      <td>{{ r.status }}</td>
+      <td>
+        {% if r.property_id %}
+          <a href="{{ url_for('lab.propiedad', property_id=r.property_id) }}">Abrir propiedad</a>
+        {% elif r.status == 'RECEIVED' %}
+          <form method="post" action="{{ url_for('pedidos.preparar_post', request_id=r.request_id) }}">
+            <button class="btn" type="submit">PREPARAR EN LAB</button>
+          </form>
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endblock %}

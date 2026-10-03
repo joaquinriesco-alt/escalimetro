@@ -780,7 +780,9 @@ CREATE TABLE IF NOT EXISTS plano_requests (
   mime              TEXT NOT NULL,
   size_bytes        INTEGER NOT NULL,
   status            TEXT NOT NULL DEFAULT 'RECEIVED',
-  created_at        TEXT NOT NULL
+  created_at        TEXT NOT NULL,
+  property_id       TEXT,                   -- E42: la propiedad interna del LAB creada desde el pedido
+  prepared_at       TEXT
 );
 """
 
@@ -958,6 +960,11 @@ def init() -> None:
                       ("geometry_confidences", "TEXT")):
         if col not in tiene_rev:
             conn.execute(f"ALTER TABLE product_reviews ADD COLUMN {col} {tipo}")
+    # E42 — el pedido apunta a la propiedad que el operador preparó. Las bases de E41 no la tienen.
+    tiene_pr = {r["name"] for r in conn.execute("PRAGMA table_info(plano_requests)").fetchall()}
+    for col in ("property_id", "prepared_at"):
+        if col not in tiene_pr:
+            conn.execute(f"ALTER TABLE plano_requests ADD COLUMN {col} TEXT")
     # E32.2 — toda propiedad tiene que tener su concesión. Las heredadas reciben una LEGACY ya
     # asignada: así el modelo queda completo sin inventar una compra que nadie hizo. El SELECT se
     # materializa antes de insertar: iterar un cursor mientras se escribe la tabla que su subconsulta

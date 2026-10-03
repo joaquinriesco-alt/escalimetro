@@ -1,6 +1,6 @@
 # ESCALÍMETRO — Estado actual
 
-> **Última actualización:** 2026-10-02 · al cerrar `E41` · rama `auto/e41-issue-10`
+> **Última actualización:** 2026-10-03 · al cerrar `E42` · rama `auto/e42-issue-11`
 > Todo lo que está acá fue verificado al escribirlo: el código contra el repo; las ramas **contra
 > GitHub**, no contra las ramas locales ([protocolo §9.1](DEVELOPMENT_PROTOCOL.md)); las cifras de
 > los pilotos contra `.data-lab/` de la máquina de desarrollo, que **no** está en el repo.
@@ -37,7 +37,9 @@ compara motores de reconstrucción con el plano real oculto hasta el final.
 | `e40_public_landing` | `69570e4` | la TASK E40 de ChatGPT (sólo `tasks/E40.md`), hija de `auto/e39-issue-5` según el preflight |
 | `auto/e40-issue-6` | — | rama automática de E40, hija de `e40_public_landing`. Punta y conteos **no verificados contra GitHub** |
 | `e41_plano_corporativo_request` | `96357ca` | la TASK E41 de ChatGPT (sólo `tasks/E41.md`), hija de `auto/e40-issue-6` según el preflight |
-| `auto/e41-issue-10` | esta entrega | rama automática de E41, hija de `e41_plano_corporativo_request` · **base para la próxima TASK**. La publica el workflow. No verificada contra GitHub |
+| `auto/e41-issue-10` | — | rama automática de E41, hija de `e41_plano_corporativo_request`. No verificada contra GitHub |
+| `e42_request_to_internal_property` | `89a1d0b` | la TASK E42 de ChatGPT (sólo `tasks/E42.md`), hija de `auto/e41-issue-10` según el preflight |
+| `auto/e42-issue-11` | esta entrega | rama automática de E42, hija de `e42_request_to_internal_property` · **base para la próxima TASK**. La publica el workflow. No verificada contra GitHub |
 
 Las filas de `main`, `m03_executor_smoke` y `m02_github_executor` de arriba son de antes de M03.1;
 la afirmación sobre `main` de esta fila, y los conteos, **no están reverificados** (ver §9.1 del protocolo).
@@ -82,6 +84,7 @@ src/escalimetro/        motor: imagen de plano → floorplate.json → layouts C
                         CONGELADO desde E28 contra 6324b1f (D-008)
 webapp/                 Flask + SQLite + archivos en ESCALIMETRO_DATA_DIR
                         recibe PDF, PNG o JPG; rasteriza el PDF antes de pasarlo al motor
+  /lab/pedidos/*        bandeja INTERNA (E42, Basic Auth): pedido de /planos → propiedad del LAB
   /planos/*             superficie PÚBLICA (E40, E41): landing + pedido de Plano Corporativo
                         (email + plano → tabla plano_requests, DATA_DIR/plano_requests/)
   /case/*, /run/*,      herramienta técnica: casos, corridas y revisión (hasta E27)
@@ -158,7 +161,17 @@ declara la tabla de ramas sea el de `origin/main` y no el de la rama local.
 
 ## Última tarea completada
 
-**E41** — pedido público mínimo de Plano Corporativo (issue #10). Status **PASS**. `/planos/solicitar`
+**E42** — pedido recibido → propiedad interna (issue #11). Status **PASS**. `/lab/pedidos/` (Basic
+Auth) lista los pedidos de E41; «PREPARAR EN LAB» (`POST /lab/pedidos/<id>/preparar`) crea una
+propiedad del LAB con el plano del pedido como `FLOORPLAN_ORIGINAL` (vía `assets.save_upload`),
+guarda `property_id`/`prepared_at` en `plano_requests`, pasa el pedido a `IN_PROGRESS` y redirige a la
+propiedad. Idempotente (reclamo atómico `RECEIVED→PREPARING`); si falla, deshace y vuelve a
+`RECEIVED`. No corre motor, no envía emails, no entrega nada al cliente. Límite: un proceso muerto a
+mitad deja el pedido en `PREPARING`, visible y sin botón. 14 tests nuevos en verde
+(`tests/test_e42_pedido_a_propiedad.py`); suite completa **no corrida**; sigue fallando el
+preexistente de `origin/main`. Detalle en [`reports/E42_REPORT.md`](../../reports/E42_REPORT.md).
+
+Antes, **E41** — pedido público mínimo de Plano Corporativo (issue #10). Status **PASS**. `/planos/solicitar`
 ahora es un formulario con dos inputs, email + plano (PDF/JPG/PNG): un POST válido guarda el archivo
 en `DATA_DIR/plano_requests/<id>/`, inserta un pedido `RECEIVED` con id opaco en `plano_requests` y
 redirige (303) a una confirmación; uno inválido da 400 sin dejar pedido ni archivo. Sólo recepción:
@@ -273,10 +286,10 @@ Independiente: **correr el primer experimento real de E37**, Piso Ricardo Lyon I
 `openai_direct`, que necesita `OPENAI_API_KEY` y el material.
 
 **Producto (E39):** el paso 1 (landing pública) está hecho en E40, salvo las capturas; el paso 2
-(pedido de Plano Corporativo) en E41. Sigue el paso 3: procesamiento/entrega. Se escribe como TASK
+(pedido de Plano Corporativo) en E41; E42 lo conecta al LAB. Sigue el paso 3: producir y entregar (E43). Se escribe como TASK
 nueva, no se ejecuta desde acá.
 
-Una TASK nueva la escribe ChatGPT en GitHub desde la base `auto/e41-issue-10`
+Una TASK nueva la escribe ChatGPT en GitHub desde la base `auto/e42-issue-11`
 ([protocolo §5.2](DEVELOPMENT_PROTOCOL.md)).
 
 ## Glosario
