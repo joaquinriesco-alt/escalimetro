@@ -1,0 +1,67 @@
+{# PANEL PILOTO: dos juicios independientes. No hay puntaje compuesto; cada guardado AGREGA, nunca reemplaza. #}
+{% macro rating(name, prev) %}
+<div class="seg" role="radiogroup">
+  {% for r in ratings %}<label><input type="radio" name="{{ name }}" value="{{ r }}" required {{ 'checked' if prev and prev.rating == r }}><span>{{ rating_label[r] }}</span></label>{% endfor %}
+</div>
+{% endmacro %}
+{% macro yn(name, q, prev) %}
+<div class="yn"><span class="q">{{ q }}</span>
+  <label><input type="radio" name="{{ name }}" value="si" required {{ 'checked' if prev is not none and prev }}> Sí</label>
+  <label><input type="radio" name="{{ name }}" value="no" required {{ 'checked' if prev is not none and not prev }}> No</label>
+</div>
+{% endmacro %}
+{% macro historial(items, titulo) %}
+{% if items %}
+<div class="hist"><strong>{{ titulo }}</strong>
+  <ul>{% for e in items %}
+    <li><b>{{ rating_label[e.data.rating] }}</b> · {{ e.at[:16]|replace('T',' ') }}{% if loop.first %} · <span class="mut">vigente</span>{% endif %}
+      {% if e.data.would_publish is defined and e.data.would_publish is not none %}<br>¿Lo publicaría? {{ 'sí' if e.data.would_publish else 'no' }} · ¿Corrección humana? {{ 'sí' if e.data.needed_human_correction else 'no' }}{% if e.data.human_minutes is not none and e.data.human_minutes is defined %} · {{ e.data.human_minutes|round(1) }} min{% endif %}{% endif %}
+      {% if e.data.understood_immediately is defined %}<br>¿Entendió de inmediato? {{ 'sí' if e.data.understood_immediately else 'no' }}{% endif %}
+      {% if e.data.comment %}<br>“{{ e.data.comment }}”{% endif %}
+      {% if e.data.extra_step_comment %}<br>Sobraba: {{ e.data.extra_step_comment }}{% endif %}
+      {% if e.data.missing_comment %}<br>Faltaba: {{ e.data.missing_comment }}{% endif %}
+    </li>{% endfor %}</ul></div>
+{% endif %}
+{% endmacro %}
+
+<section class="piloto" id="evaluacion">
+  <span class="tag">PANEL PILOTO — EVALUACIÓN</span>
+  <p class="small mut">Dos juicios separados: uno sobre el plano, otro sobre la experiencia. Puedes volver y agregar otra evaluación; la anterior se conserva.</p>
+  <div class="evals">
+    <div class="ev">
+      <h3>1 · RESULTADO DEL PLANO</h3>
+      {% if v.puede_evaluar_plano %}
+      {% set p = v.evals_plano[0].data if v.evals_plano else none %}
+      <form method="post" action="{{ url_for('pilot.evaluar_plano', case_id=v.case.case_id) }}">
+        {{ rating('rating', p) }}
+        {{ yn('publicaria', '¿Lo publicarías?', p.would_publish if p else none) }}
+        {{ yn('correccion_humana', '¿Necesitó corrección humana?', p.needed_human_correction if p else none) }}
+        <div class="field"><label for="min">Minutos humanos <span class="mut">(opcional)</span></label>
+          <input id="min" type="text" name="minutos" inputmode="decimal" value="{{ (p.human_minutes if p and p.human_minutes is not none else '') }}"></div>
+        <div class="field"><label for="cp">Comentario</label><textarea id="cp" name="comentario"></textarea></div>
+        <button class="btn" type="submit">{{ 'AGREGAR NUEVA EVALUACIÓN' if v.evals_plano else 'GUARDAR EVALUACIÓN' }}</button>
+      </form>
+      {% else %}
+      <p class="mut">Disponible cuando haya un resultado{% if v.track == 'CREATE' %} y se haya comparado con el plano real{% endif %}.</p>
+      {% endif %}
+      {{ historial(v.evals_plano, 'Evaluaciones del plano') }}
+    </div>
+    <div class="ev">
+      <h3>2 · UX / UI</h3>
+      {% if v.puede_evaluar_ux %}
+      {% set u = v.evals_ux[0].data if v.evals_ux else none %}
+      <form method="post" action="{{ url_for('pilot.evaluar_ux', case_id=v.case.case_id) }}">
+        {{ rating('rating', u) }}
+        {{ yn('entendi', '¿Entendí inmediatamente qué hacer?', u.understood_immediately if u else none) }}
+        <div class="field"><label for="cu">Comentario</label><textarea id="cu" name="comentario"></textarea></div>
+        <div class="field"><label for="so">¿Hubo una pregunta o paso que sobraba? <span class="mut">(opcional)</span></label><textarea id="so" name="sobraba" style="min-height:60px"></textarea></div>
+        <div class="field"><label for="fa">¿Hubo algo que faltaba? <span class="mut">(opcional)</span></label><textarea id="fa" name="faltaba" style="min-height:60px"></textarea></div>
+        <button class="btn" type="submit">{{ 'AGREGAR NUEVA EVALUACIÓN' if v.evals_ux else 'GUARDAR EVALUACIÓN' }}</button>
+      </form>
+      {% else %}
+      <p class="mut">Disponible al final del recorrido, para no mezclar la crítica con la experiencia.</p>
+      {% endif %}
+      {{ historial(v.evals_ux, 'Evaluaciones de UX / UI') }}
+    </div>
+  </div>
+</section>

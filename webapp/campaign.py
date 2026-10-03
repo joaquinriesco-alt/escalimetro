@@ -24,6 +24,7 @@ import json
 import os
 import re
 import shutil
+import tempfile
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlsplit
 
@@ -48,6 +49,11 @@ CREATE_LEVEL = ("BIEN", "PARCIAL", "MAL", "NO_COMPARABLE")
 PUBLISHABILITY = ("ALTA", "MEDIA", "BAJA", "NO_EVALUADO")
 #: Sólo se acepta lo que cae en la comercialización de oficinas (North Star vigente, E44 §A.4).
 PROPERTY_TYPES = ("OFFICE", "OFFICE_FLOOR", "COMMERCIAL_UNIT")
+#: E45 — casos cargados a mano desde la web piloto (sin bundle, y con enlace de origen opcional).
+WEB_UPLOAD = "WEB_UPLOAD"
+#: Marca de las evaluaciones de la web piloto: resultado y UX/UI por separado. No traen las
+#: dimensiones de E44 y no se inventan: quedan ausentes, no «NO_EVALUADO» disfrazado de dato.
+PILOT_SCHEMA = "e45_pilot_v1"
 
 _EMAIL = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
 _PHONE = re.compile(r"(?<!\d)(?:\+?\d[\s().-]?){9,}(?!\d)")
@@ -132,8 +138,9 @@ def _validate_entry(c: Dict[str, Any]) -> None:
     if c.get("track") not in TRACKS:
         raise CampaignError("track debe ser IMPROVE o CREATE")
     urls = c.get("source_urls")
-    if not urls or not all(isinstance(u, str) and u.startswith("http") for u in urls):
-        raise CampaignError("source_urls: al menos una URL http(s)")
+    if urls or c.get("origin") != WEB_UPLOAD:        # una carga web puede no tener enlace de origen
+        if not urls or not all(isinstance(u, str) and u.startswith("http") for u in urls):
+            raise CampaignError("source_urls: al menos una URL http(s)")
     for k in ("captured_on", "source"):
         if not c.get(k):
             raise CampaignError(f"falta {k} (provenance)")
@@ -154,6 +161,8 @@ def _roles(track: str) -> Tuple[str, ...]:
 def _find_duplicate(m: Dict[str, Any], case: Dict[str, Any], shas: List[str]) -> Optional[str]:
     key = property_key(case)
     for o in m["cases"]:
+        if bool(o.get("demo")) != bool(case.get("demo")):
+            continue                              # una demo nunca bloquea (ni es bloqueada por) un caso real
         mismo = property_key(o) == key or bool(set(shas) & set(o.get("asset_shas", [])))
         if not mismo:
             continue
@@ -232,8 +241,9 @@ def _import_case(bundle_dir: str, raw: Dict[str, Any], author: str) -> str:
                          hashlib.sha256(json.dumps(
                              [property_key(raw), track], sort_keys=True).encode()).hexdigest()[:10])
     case: Dict[str, Any] = {
-        "case_id": cid, "track": track, "source_urls": list(raw["source_urls"]),
+        "case_id": cid, "track": track, "source_urls": list(raw.get("source_urls") or []),
         "captured_on": raw["captured_on"], "source": raw["source"],
+        "origin": raw.get("origin") or "BUNDLE", "demo": bool(raw.get("demo")),
         "property_type": raw["property_type"], "published_m2": raw.get("published_m2"),
         "declared": raw.get("declared") or {}, "notes": raw.get("notes", ""),
         "property_key": property_key(raw), "both_tracks_reason": raw.get("both_tracks_reason"),
@@ -246,15 +256,21 @@ def _import_case(bundle_dir: str, raw: Dict[str, Any], author: str) -> str:
     }
     ev = os.path.join(case_dir(cid), "evidence")
     os.makedirs(ev, exist_ok=True)
-    for a, p in files:
-        if a["role"] == ROLE_GT:
-            continue
-        dest = os.path.join(ev, os.path.basename(a["file"]))
-        shutil.copyfile(p, dest)
-        os.chmod(dest, 0o444)                      # el original capturado es evidencia inmutable
-    if track == CREATE:
-        gt = next(p for a, p in files if a["role"] == ROLE_GT)
-        case["recon_project_id"] = _prepare_create(case, ev, gt, author)
+    try:
+        for a, p in files:
+            if a["role"] == ROLE_GT:
+                continue
+            dest = os.path.join(ev, os.path.basename(a["file"]))
+            shutil.copyfile(p, dest)
+            os.chmod(dest, 0o444)                  # el original capturado es evidencia inmutable
+        if track == CREATE:
+            gt = next(p for a, p in files if a["role"] == ROLE_GT)
+            case["recon_project_id"] = _prepare_create(case, ev, gt, author)
+    except Exception:
+        # un rechazo a mitad de camino no deja evidencia huérfana: reintentar el mismo material
+        # chocaría con los archivos de sólo lectura y el caso nunca entraría
+        shutil.rmtree(case_dir(cid), ignore_errors=True)
+        raise
     m["cases"].append(case)
     _save(m)
     return cid
@@ -277,6 +293,87 @@ def _prepare_create(case: Dict[str, Any], ev: str, gt_path: str, author: str) ->
     except projects.ReconError as e:
         raise CampaignError(f"E37 rechazó el material: {e}") from e
     return pid
+
+
+PLAN_EXTS = (".pdf", ".png", ".jpg", ".jpeg")
+PHOTO_EXTS = (".png", ".jpg", ".jpeg", ".webp")
+_URL_RE = re.compile(r"^https?://\S+$", re.I)
+
+
+def import_upload(track: str, files: List[Tuple[str, bytes]], *, reference: str = "",
+                  published_m2: Optional[float] = None,
+                  ground_truth: Optional[Tuple[str, bytes]] = None,
+                  author: str = "web-piloto", demo: bool = False) -> str:
+    """E45 — un caso cargado desde la web, por el MISMO camino de validación que un bundle
+    (`_import_case`): sha256, provenance, PII, duplicados y, en CREAR, plano real sólo en la zona
+    oculta de E37. No hay segundo sistema de campaña: esto sólo arma el bundle en un directorio
+    temporal. Los nombres que puso el usuario no se conservan (`plano.ext`, `foto_NN.ext`): ni el
+    nombre de una foto ni el del plano real pueden delatar nada al motor ni a la pantalla.
+
+    `reference`: un enlace (queda como fuente) o un texto (queda como descripción declarada)."""
+    from . import intake                                           # noqa: PLC0415
+    if track not in TRACKS:
+        raise CampaignError("track debe ser IMPROVE o CREATE")
+    files = [(n, b) for n, b in files if n and b]
+    if track == IMPROVE:
+        if len(files) != 1:
+            raise CampaignError("MEJORAR: sube un solo plano.")
+        if ground_truth:
+            raise CampaignError("MEJORAR no lleva plano real aparte.")
+        oks = PLAN_EXTS
+    else:
+        if not files:
+            raise CampaignError("CREAR: sube al menos una foto de la propiedad.")
+        if not ground_truth or not ground_truth[1]:
+            raise CampaignError("CREAR: falta el plano real (modo piloto), para comparar al final.")
+        oks = PHOTO_EXTS
+    revisar = [(n, oks) for n, _b in files] + ([(ground_truth[0], PLAN_EXTS)] if ground_truth else [])
+    for n, permitidas in revisar:
+        if os.path.splitext(n)[1].lower() not in permitidas:
+            raise CampaignError(f"Formato no aceptado: {os.path.basename(n)[:60]}. "
+                                + ("Fotos: JPG, PNG o WEBP; plano real: PDF, JPG o PNG."
+                                   if track == CREATE else "Sólo PDF, JPG o PNG."))
+    reference = (reference or "").strip()
+    link = reference if _URL_RE.match(reference) else ""
+    text = "" if link else reference[:2000]
+    specs: List[Dict[str, Any]] = []
+    with tempfile.TemporaryDirectory(dir=_tmp_root()) as tmp:
+        def put(name: str, blob: bytes, role: str) -> None:
+            with open(os.path.join(tmp, name), "wb") as fh:
+                fh.write(blob)
+            specs.append({"file": name, "role": role, "sha256": hashlib.sha256(blob).hexdigest(),
+                          "origin_url": "upload://web/" + name})
+        if track == IMPROVE:
+            n, b = files[0]
+            ext = os.path.splitext(n)[1].lower()
+            put("plano" + ext, b, ROLE_PLAN)
+            if len(b) > intake.MAX_UPLOAD_MB * 1024 * 1024:
+                raise CampaignError(f"El archivo pesa más de {intake.MAX_UPLOAD_MB} MB.")
+            if not intake.sniff_ok(os.path.join(tmp, "plano" + ext), ext):
+                raise CampaignError("El contenido del archivo no coincide con su formato.")
+        else:
+            for i, (n, b) in enumerate(files, 1):
+                put("foto_%02d%s" % (i, os.path.splitext(n)[1].lower()), b, ROLE_PHOTO)
+            gn, gb = ground_truth
+            put("plano_real" + os.path.splitext(gn)[1].lower(), gb, ROLE_GT)
+        shas = sorted(a["sha256"] for a in specs if a["role"] != ROLE_GT)
+        key = (canonical_url(link) if link
+               else "upload:" + hashlib.sha256("|".join(shas).encode()).hexdigest()[:16])
+        if demo:
+            key = "demo:" + key           # el id del caso sale de esta clave: una demo no pisa a un real
+        raw: Dict[str, Any] = {
+            "track": track, "origin": WEB_UPLOAD, "demo": demo, "source_urls": [link] if link else [],
+            "captured_on": store.now()[:10], "source": "carga web del piloto (E45)",
+            "property_type": "OFFICE", "published_m2": published_m2, "property_key": key,
+            "declared": {"description": text} if text else {}, "notes": "", "assets": specs}
+        with open(os.path.join(tmp, "bundle.json"), "w", encoding="utf-8") as fh:
+            json.dump({"cases": [raw]}, fh)
+        return _import_case(tmp, raw, author)
+
+
+def _tmp_root() -> str:
+    os.makedirs(root(), exist_ok=True)
+    return root()
 
 
 def exclude(case_id: str, reason: str) -> None:
@@ -369,12 +466,37 @@ def _enum(v: Any, opts: Tuple[str, ...], name: str) -> None:
 
 
 #: sólo texto libre: los hashes y costos de una corrida son largos y numéricos, y no son personas
-_FREE_TEXT = ("comment", "prompt", "detail", "error", "uncertainties", "dominant_errors", "main_failure")
+_FREE_TEXT = ("comment", "prompt", "detail", "error", "uncertainties", "dominant_errors", "main_failure",
+              "extra_step_comment", "missing_comment")
+
+
+def _bool(d: Dict[str, Any], k: str) -> None:
+    if not isinstance(d.get(k), bool):
+        raise CampaignError(f"{k} debe ser sí o no")
+
+
+def _text(d: Dict[str, Any], k: str) -> None:
+    if d.get(k) is not None and (not isinstance(d[k], str) or len(d[k]) > 2000):
+        raise CampaignError(f"{k}: texto de hasta 2000 caracteres")
 
 
 def _check_payload(track: str, kind: str, d: Dict[str, Any]) -> None:
     _no_pii({k: d[k] for k in _FREE_TEXT if k in d})
-    if kind == "rating":
+    if kind == "evaluation" and d.get("schema") == PILOT_SCHEMA:
+        # E45: el juicio sobre el PLANO, sin mezclar la experiencia (esa va en `ux_evaluation`)
+        _enum(d.get("rating"), RATINGS, "rating")
+        _bool(d, "would_publish")
+        _bool(d, "needed_human_correction")
+        _text(d, "comment")
+        m = d.get("human_minutes")
+        if m is not None and not (isinstance(m, (int, float)) and not isinstance(m, bool) and m >= 0):
+            raise CampaignError("human_minutes: un número >= 0 o ausente")
+    elif kind == "ux_evaluation":
+        _enum(d.get("rating"), RATINGS, "rating")
+        _bool(d, "understood_immediately")
+        for k in ("comment", "extra_step_comment", "missing_comment"):
+            _text(d, k)
+    elif kind == "rating":
         _enum(d.get("rating"), RATINGS, "rating")
     elif kind == "blocked":
         _enum(d.get("status"), (BLOCKED_CRED, BLOCKED_MATERIAL), "status")
@@ -444,8 +566,9 @@ def status(case: Dict[str, Any]) -> str:
 
 
 def count(track: str, m: Optional[Dict[str, Any]] = None) -> Dict[str, int]:
-    """N por pista. captured ⊇ executed ⊇ completed; URL_ONLY, bloqueados y excluidos no suman."""
-    cases = [c for c in (m or load())["cases"] if c["track"] == track]
+    """N por pista. captured ⊇ executed ⊇ completed; URL_ONLY, bloqueados y excluidos no suman.
+    Los casos DEMO (E45, sólo para fotografiar la interfaz) no entran en ningún N."""
+    cases = [c for c in (m or load())["cases"] if c["track"] == track and not c.get("demo")]
     st = [status(c) for c in cases]
     return {"listed": len(cases),
             "captured": sum(s in (CAPTURED, EXECUTED, COMPLETED, BLOCKED_CRED, BLOCKED_MATERIAL)
@@ -462,11 +585,27 @@ def count(track: str, m: Optional[Dict[str, Any]] = None) -> Dict[str, int]:
 def run_improve(case_id: str, author: str = "e44") -> Dict[str, Any]:
     """MEJORAR por el camino real: propiedad → plano original → caso del motor → Plano Corporativo.
     No confirma nada ni corrige geometría: si la planta no queda lista, eso es el resultado."""
-    from .domain import assets, entitlements, floorplan, grants, properties   # noqa: PLC0415
-    from werkzeug.datastructures import FileStorage                          # noqa: PLC0415
     case = get(case_id)
     if case is None or case["track"] != IMPROVE or status(case) != CAPTURED:
         raise CampaignError("el caso no está CAPTURED en la pista MEJORAR")
+    started = start_improve(case_id)
+    info = finish_improve(case_id, give_up_reason=started.get("error") or "la planta no quedó lista")
+    return info or {}
+
+
+def start_improve(case_id: str) -> Dict[str, Any]:
+    """Primera mitad de MEJORAR (E45): propiedad → plano original → caso del motor → análisis
+    automático de la planta (`ingest.auto_prepare`, lo que hace el LAB sin preguntar nada). Se
+    registra UNA vez (`improve_started`); no confirma nada ni toca la geometría. Lo que quede
+    pendiente lo resuelve una persona en el LAB, y `finish_improve` lo recoge después."""
+    from .domain import assets, entitlements, floorplan, grants, ingest, properties   # noqa: PLC0415
+    from werkzeug.datastructures import FileStorage                                   # noqa: PLC0415
+    case = get(case_id)
+    if case is None or case["track"] != IMPROVE or status(case) != CAPTURED:
+        raise CampaignError("el caso no está CAPTURED en la pista MEJORAR")
+    prev = _of(case_id, "improve_started")
+    if prev:
+        return prev[-1]["data"]
     a = case["assets"][0]
     src = os.path.join(case_dir(case_id), "evidence", a["file"])
     pid = properties.create("Plano Corporativo", "OFFICE", reference=case_id,
@@ -476,17 +615,59 @@ def run_improve(case_id: str, author: str = "e44") -> Dict[str, Any]:
     with open(src, "rb") as fh:
         assets.save_upload(pid, FileStorage(stream=fh, filename=a["file"]),
                            assets.FLOORPLAN_ORIGINAL)
-    info: Dict[str, Any] = {"property_id": pid, "path": "floorplan.ensure_case + "
-                            "publish_commercial_floorplan", "error": None}
-    out_id = None
+    info: Dict[str, Any] = {"property_id": pid, "path": "floorplan.ensure_case + ingest.auto_prepare "
+                            "+ publish_commercial_floorplan", "error": None}
     try:
         floorplan.ensure_case(pid)
+        ingest.auto_prepare(pid)
+    except Exception as e:                                    # noqa: BLE001 — se registra, no se oculta
+        info["error"] = f"{type(e).__name__}: {e}"[:300]
+    record(case_id, "improve_started", info)
+    return info
+
+
+def improve_state(case_id: str) -> Optional[Dict[str, Any]]:
+    """Lo que el motor dice HOY de la planta (se relee: una persona pudo confirmarla en el LAB)."""
+    from .domain import floorplan                                 # noqa: PLC0415
+    st = _of(case_id, "improve_started")
+    if not st:
+        return None
+    t = floorplan.technical_state(st[-1]["data"]["property_id"])
+    return {"property_id": st[-1]["data"]["property_id"], "ready": t["ready"],
+            "pending": t["pending"], "error": st[-1]["data"].get("error")}
+
+
+def finish_improve(case_id: str, give_up_reason: Optional[str] = None,
+                   retry_prepare: bool = False) -> Optional[Dict[str, Any]]:
+    """Segunda mitad: si la planta ya está lista, publica el Plano Corporativo por el camino real
+    (`publish_commercial_floorplan`) y registra `pipeline`. Si no está lista devuelve None y no
+    registra nada, salvo que se pida `give_up_reason`: entonces queda escrito que NO hubo resultado
+    (nunca un éxito, y no se puede reescribir)."""
+    from .domain import floorplan, ingest                         # noqa: PLC0415
+    st = _of(case_id, "improve_started")
+    if not st or _of(case_id, "pipeline"):
+        return None
+    pid = st[-1]["data"]["property_id"]
+    info: Dict[str, Any] = {"property_id": pid, "path": st[-1]["data"]["path"],
+                            "error": st[-1]["data"].get("error")}
+    out_id = None
+    try:
         t = floorplan.technical_state(pid)
+        if not t["ready"] and retry_prepare:
+            ingest.auto_prepare(pid)
+            t = floorplan.technical_state(pid)
         info.update(case_status=t.get("case_status"), ready=t["ready"], pending=t["pending"])
         if t["ready"]:
             out_id = floorplan.publish_commercial_floorplan(pid)
+            info["error"] = None
+        elif give_up_reason is None:
+            return None
     except Exception as e:                                    # noqa: BLE001 — se registra, no se oculta
         info["error"] = f"{type(e).__name__}: {e}"[:300]
+        if give_up_reason is None:
+            raise CampaignError(info["error"]) from e
+    if out_id is None and give_up_reason:
+        info["error"] = info["error"] or give_up_reason[:300]
     info["output_asset_id"] = out_id
     info["reached_output"] = out_id is not None
     record(case_id, "pipeline", info)
@@ -500,8 +681,21 @@ def run_create(case_id: str, engine_id: str = "openai_direct", author: str = "e4
     case = get(case_id)
     if case is None or case["track"] != CREATE or status(case) not in (CAPTURED, BLOCKED_CRED):
         raise CampaignError("el caso no está listo para correr en la pista CREAR")
+    rid = _begin_create(case, engine_id, author, confirm_paid)
+    if isinstance(rid, dict):
+        return rid
+    run = runs.execute(rid)
+    return _record_run(case_id, run)
+
+
+def _begin_create(case: Dict[str, Any], engine_id: str, author: str, confirm_paid: bool):
+    """Valida el motor y crea la corrida inicial. Devuelve su id, o el dict de bloqueo si falta la
+    credencial (queda registrado `BLOCKED_*`, nunca un resultado simulado)."""
+    from .domain.reconstruction import engines, runs               # noqa: PLC0415
+    case_id = case["case_id"]
     adapter = engines.get(engine_id)
-    if adapter is None or engine_id.startswith("fixture"):
+    # el motor fixture no reconstruye nada: sólo sirve para fotografiar la interfaz con casos DEMO
+    if adapter is None or (engine_id.startswith("fixture") and not case.get("demo")):
         raise CampaignError("motor no registrado, o fixture (no cuenta para N)")
     disp = adapter.availability()
     if disp.status != engines.AVAILABLE:
@@ -510,10 +704,93 @@ def run_create(case_id: str, engine_id: str = "openai_direct", author: str = "e4
                 blocked(case_id, BLOCKED_CRED, disp.detail or "")
             return {"status": BLOCKED_CRED, "detail": disp.detail}
         raise CampaignError(f"{adapter.name} no disponible: {disp.reason}")
-    rid = runs.create_initial(case["recon_project_id"], engine_id, author,
-                              confirm_paid=confirm_paid)
-    run = runs.execute(rid)
-    return _record_run(case_id, run)
+    return runs.create_initial(case["recon_project_id"], engine_id, author,
+                               confirm_paid=confirm_paid)
+
+
+def start_create(case_id: str, engine_id: str = "openai_direct", author: str = "web-piloto",
+                 confirm_paid: bool = False) -> Dict[str, Any]:
+    """E45: arranca la primera corrida SIN esperarla (la cola de E37 la ejecuta). Queda
+    `create_started`; `settle` registra `pipeline` cuando la corrida termina."""
+    from .domain.reconstruction import runs                        # noqa: PLC0415
+    case = get(case_id)
+    if case is None or case["track"] != CREATE or status(case) not in (CAPTURED, BLOCKED_CRED):
+        raise CampaignError("el caso no está listo para correr en la pista CREAR")
+    if _of(case_id, "create_started"):
+        raise CampaignError("la reconstrucción ya fue lanzada")
+    rid = _begin_create(case, engine_id, author, confirm_paid)
+    if isinstance(rid, dict):
+        return rid
+    record(case_id, "create_started", {"run_id": rid})
+    runs.enqueue(rid)
+    return {"status": "QUEUED", "run_id": rid}
+
+
+def start_correction(case_id: str, text: str, author: str = "web-piloto",
+                     confirm_paid: bool = False) -> Dict[str, Any]:
+    """E45: corrección en lenguaje natural = corrida HIJA de E37, sin esperarla. Sólo sobre una
+    corrida terminada, sin otra en curso y antes del cierre."""
+    from .domain.reconstruction import runs                         # noqa: PLC0415
+    case = get(case_id)
+    _no_pii(text)                          # antes de crear la corrida: un rechazo no deja una huérfana
+    settle(case_id)
+    pip = _of(case_id, "pipeline") + _of(case_id, "correction")
+    if case is None or not pip or _of(case_id, "closure"):
+        raise CampaignError("sin reconstrucción abierta: no hay qué corregir")
+    if pending_run(case_id):
+        raise CampaignError("hay una reconstrucción en curso: espera a que termine")
+    last = last_done_run(case_id)
+    if last is None:
+        raise CampaignError("ninguna reconstrucción terminó bien: no hay qué corregir")
+    rid = runs.create_correction(case["recon_project_id"], last, text, author,
+                                 confirm_paid=confirm_paid)
+    record(case_id, "correction_started", {"run_id": rid, "prompt": text[:2000]})
+    runs.enqueue(rid)
+    return {"status": "QUEUED", "run_id": rid}
+
+
+def last_done_run(case_id: str) -> Optional[str]:
+    """La última corrida de la cadena que terminó bien: una corrección fallida no se corrige ni
+    se cierra, se vuelve a la anterior."""
+    from .domain.reconstruction import runs                         # noqa: PLC0415
+    for e in reversed(_of(case_id, "pipeline") + _of(case_id, "correction")):
+        r = runs.get(e["data"]["run_id"])
+        if r is not None and r["status"] == runs.DONE:
+            return r["run_id"]
+    return None
+
+
+def pending_run(case_id: str) -> Optional[Dict[str, Any]]:
+    """La corrida lanzada y todavía no asentada en el registro, o None."""
+    from .domain.reconstruction import runs                         # noqa: PLC0415
+    done = {e["data"].get("run_id") for e in events(case_id) if e["kind"] in ("pipeline", "correction")}
+    for e in reversed(events(case_id)):
+        if e["kind"] in ("create_started", "correction_started") and e["data"]["run_id"] not in done:
+            return runs.get(e["data"]["run_id"])
+    return None
+
+
+def settle(case_id: str) -> None:
+    """Asienta en el registro de la campaña las corridas lanzadas por `start_*` que ya terminaron
+    (DONE o FAILED). El estado de la campaña se deriva de eventos, no de la cola: esto es lo que
+    los convierte en `pipeline`/`correction`. Una corrida en curso no se toca."""
+    from .domain.reconstruction import runs                         # noqa: PLC0415
+    for e in list(events(case_id)):
+        if e["kind"] not in ("create_started", "correction_started"):
+            continue
+        rid = e["data"]["run_id"]
+        if any(x["data"].get("run_id") == rid for x in events(case_id)
+               if x["kind"] in ("pipeline", "correction")):
+            continue
+        run = runs.get(rid)
+        if run is None or run["status"] not in (runs.DONE, runs.FAILED):
+            continue
+        if e["kind"] == "create_started":
+            _record_run(case_id, run)
+        else:
+            n = len(_of(case_id, "correction")) + 1
+            record(case_id, "correction", {**_summary_of_run(run), "seq_correction": n,
+                                           "prompt": e["data"].get("prompt", "")})
 
 
 def correct_create(case_id: str, text: str, author: str = "e44",
@@ -660,7 +937,7 @@ def summary() -> Dict[str, Any]:
     m = load()
     res: Dict[str, Any] = {"tracks": {}, "target": TARGET}
     for t in TRACKS:
-        cs = [c for c in m["cases"] if c["track"] == t]
+        cs = [c for c in m["cases"] if c["track"] == t and not c.get("demo")]
         done = [c for c in cs if status(c) == COMPLETED]
         evs = {c["case_id"]: _of(c["case_id"], "evaluation")[-1]["data"] for c in done}
         errs: Dict[str, int] = {}
@@ -672,7 +949,9 @@ def summary() -> Dict[str, Any]:
         for c in done:
             e = evs[c["case_id"]]
             cl = _of(c["case_id"], "closure")
-            v = e.get("human_minutes", cl[-1]["data"].get("human_minutes") if cl else None)
+            v = e.get("human_minutes")
+            if v is None and cl:
+                v = cl[-1]["data"].get("human_minutes")
             if v is not None:
                 mins.append(v)
         d: Dict[str, Any] = {
@@ -688,23 +967,39 @@ def summary() -> Dict[str, Any]:
             ex = [c for c in cs if status(c) in (EXECUTED, COMPLETED)]
             ok = sum(1 for c in ex if _of(c["case_id"], "pipeline")[0]["data"].get("reached_output"))
             d["pipeline_success"] = {"reached_output": ok, "executed": len(ex)}
-            d["human_interventions"] = sum(evs[c["case_id"]]["human_interventions"] for c in done)
-            d["fidelity"] = {k: sum(1 for e in evs.values() if e["fidelity"] == k) for k in LEVEL}
-            d["legibility"] = {k: sum(1 for e in evs.values() if e["legibility"] == k) for k in LEVEL}
-            d["publishability"] = {k: sum(1 for e in evs.values() if e["publishability"] == k)
+            # las evaluaciones de la web piloto (E45) no traen estas dimensiones: no cuentan en ellas
+            d["human_interventions"] = sum(evs[c["case_id"]].get("human_interventions") or 0
+                                           for c in done)
+            d["fidelity"] = {k: sum(1 for e in evs.values() if e.get("fidelity") == k) for k in LEVEL}
+            d["legibility"] = {k: sum(1 for e in evs.values() if e.get("legibility") == k)
+                               for k in LEVEL}
+            d["publishability"] = {k: sum(1 for e in evs.values() if e.get("publishability") == k)
                                    for k in PUBLISHABILITY}
-            d["needs_cad"] = sum(1 for e in evs.values() if e["needs_cad"])
+            d["needs_cad"] = sum(1 for e in evs.values() if e.get("needs_cad"))
             d["pretty_but_wrong_geometry"] = [c["case_id"] for c in done
-                                              if evs[c["case_id"]]["fidelity"] == "MAL"
-                                              and evs[c["case_id"]]["publishability"] in ("ALTA", "MEDIA")]
+                                              if evs[c["case_id"]].get("fidelity") == "MAL"
+                                              and evs[c["case_id"]].get("publishability")
+                                              in ("ALTA", "MEDIA")]
         else:
             ex = [c for c in cs if status(c) in (EXECUTED, COMPLETED)]
             ok = sum(1 for c in ex if _of(c["case_id"], "pipeline")[0]["data"].get("status") == "DONE")
             d["pipeline_success"] = {"reached_output": ok, "executed": len(ex)}
             d["human_prompts"] = sum(len(_of(c["case_id"], "correction")) for c in done)
-            d["dimensions"] = {k: {x: sum(1 for e in evs.values() if e[k] == x)
+            d["dimensions"] = {k: {x: sum(1 for e in evs.values() if e.get(k) == x)
                                    for x in CREATE_LEVEL} for k in CREATE_DIMS}
-            d["needs_cad"] = sum(1 for e in evs.values() if e["needs_cad"])
+            d["needs_cad"] = sum(1 for e in evs.values() if e.get("needs_cad"))
+        # E45: dos juicios que no se mezclan ni se promedian — el plano y la experiencia
+        pil = [evs[c["case_id"]] for c in done if evs[c["case_id"]].get("schema") == PILOT_SCHEMA]
+        ux = [u[-1]["data"] for c in cs if (u := _of(c["case_id"], "ux_evaluation"))]
+        d["pilot"] = {
+            "plan_evaluations": len(pil),
+            "would_publish": {"si": sum(1 for e in pil if e["would_publish"]),
+                              "no": sum(1 for e in pil if not e["would_publish"])},
+            "needed_human_correction": {"si": sum(1 for e in pil if e["needed_human_correction"]),
+                                        "no": sum(1 for e in pil if not e["needed_human_correction"])},
+            "ux_evaluations": len(ux), "ux_ratings": _dist([u["rating"] for u in ux]),
+            "ux_understood_immediately": {"si": sum(1 for u in ux if u["understood_immediately"]),
+                                          "no": sum(1 for u in ux if not u["understood_immediately"])}}
         res["tracks"][t] = d
     completos = all(res["tracks"][t]["counts"]["completed"] >= TARGET for t in TRACKS)
     capt = sum(res["tracks"][t]["counts"]["captured"] for t in TRACKS)

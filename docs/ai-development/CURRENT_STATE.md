@@ -1,6 +1,6 @@
 # ESCALÍMETRO — Estado actual
 
-> **Última actualización:** 2026-10-03 · al cerrar `E44` · rama `auto/e44-issue-13`
+> **Última actualización:** 2026-10-03 · al cerrar `E45` · rama `auto/e45-issue-14`
 > Todo lo que está acá fue verificado al escribirlo: el código contra el repo; las ramas **contra
 > GitHub**, no contra las ramas locales ([protocolo §9.1](DEVELOPMENT_PROTOCOL.md)); las cifras de
 > los pilotos contra `.data-lab/` de la máquina de desarrollo, que **no** está en el repo.
@@ -43,7 +43,9 @@ compara motores de reconstrucción con el plano real oculto hasta el final.
 | `e43_corporate_plan_delivery` | `2109169` | la TASK E43 de ChatGPT (sólo `tasks/E43.md`), hija de `auto/e42-issue-11` según el preflight |
 | `auto/e43-issue-12` | — | rama automática de E43, hija de `e43_corporate_plan_delivery`. No verificada contra GitHub |
 | `e44_online_plan_benchmark` | `aee31a6` | la TASK E44 de ChatGPT (sólo `tasks/E44.md`), hija de `auto/e43-issue-12` según el preflight |
-| `auto/e44-issue-13` | esta entrega | rama automática de E44, hija de `e44_online_plan_benchmark` · **base para la próxima TASK**. La publica el workflow. No verificada contra GitHub |
+| `auto/e44-issue-13` | — | rama automática de E44, hija de `e44_online_plan_benchmark`. No verificada contra GitHub |
+| `e45_web_pilot_40_cases` | `62b6a96` | la TASK E45 de ChatGPT (sólo `tasks/E45.md`), hija de `auto/e44-issue-13` según el preflight |
+| `auto/e45-issue-14` | esta entrega | rama automática de E45, hija de `e45_web_pilot_40_cases` · **base para la próxima TASK**. La publica el workflow. No verificada contra GitHub |
 
 Las filas de `main`, `m03_executor_smoke` y `m02_github_executor` de arriba son de antes de M03.1;
 la afirmación sobre `main` de esta fila, y los conteos, **no están reverificados** (ver §9.1 del protocolo).
@@ -167,7 +169,20 @@ declara la tabla de ramas sea el de `origin/main` y no el de la rama local.
 
 ## Última tarea completada
 
-**E44** — benchmark online 20 MEJORAR + 20 CREAR (issue #13). Status **PARTIAL**: instrumento listo,
+**E45** — web piloto para cargar y evaluar los 40 casos de E44 (issue #14). Status **PASS** (sin casos
+reales: 0/40). `/lab/campaign/e44/` (Basic Auth): «¿Qué necesitas hacer?» → MEJORAR (1 plano → ANTES/DESPUÉS
+por `ensure_case` + `ingest.auto_prepare` + `publish_commercial_floorplan`; sin planta lista queda NECESITA
+REVISIÓN en el LAB, nunca un resultado inventado) o CREAR (fotos + m² + referencia; plano real en bloque
+«MODO PILOTO — NO SE ENVÍA AL MOTOR»; corrida E37, corrección hija, **CERRAR RECONSTRUCCIÓN Y COMPARAR** →
+reveal → lado a lado); panel con MEJORAR n/20 · CREAR n/20 y estados humanos; evaluación RESULTADO y UX/UI
+por separado, con historial, guardada como eventos E44 (sin puntaje compuesto). Todo vive en el manifiesto
+E44 (`webapp/campaign.py` ampliado: `import_upload`, `start_*`/`settle`, casos DEMO fuera de los N). 50 tests
+nuevos; con E37/E40–E44, 270 passed; suite completa **no corrida**; `src/` intacto. Capturas DEMO en
+`reports/E45_screens/`. **No medido:** CREAR con proveedor real (falta `OPENAI_API_KEY`), MEJORAR sobre
+láminas reales, y la UX (la juzga Joaquín). Siguiente: Joaquín revisa capturas y decide si autoriza un
+deploy piloto. Detalle en [`reports/E45_REPORT.md`](../../reports/E45_REPORT.md).
+
+Antes, **E44** — benchmark online 20 MEJORAR + 20 CREAR (issue #13). Status **PARTIAL**: instrumento listo,
 **0 de 40 casos reales** capturados/ejecutados/completados. El ejecutor no tiene Internet (no se
 relajó), no hay bundle de casos y falta `OPENAI_API_KEY`. Entrega `webapp/campaign.py` +
 `scripts/e44_campaign.py` + [`docs/E44_CAMPAIGN.md`](../E44_CAMPAIGN.md): manifiesto con provenance,
@@ -320,7 +335,7 @@ Independiente: **correr el primer experimento real de E37**, Piso Ricardo Lyon I
 siguiente TASK no debe ampliar features por inercia: debe auditar el circuito completo como producto
 y decidir qué falta para probarlo con un caso real. Se escribe como TASK nueva, no se ejecuta desde acá.
 
-Una TASK nueva la escribe ChatGPT en GitHub desde la base `auto/e44-issue-13`
+Una TASK nueva la escribe ChatGPT en GitHub desde la base `auto/e45-issue-14`
 ([protocolo §5.2](DEVELOPMENT_PROTOCOL.md)).
 
 ## Glosario

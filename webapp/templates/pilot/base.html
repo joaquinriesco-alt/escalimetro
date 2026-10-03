@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="es"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}ESCALÍMETRO{% endblock %}</title>
+<meta name="robots" content="noindex,nofollow">
+{% block head %}{% endblock %}
+<link rel="stylesheet" href="{{ url_for('static', filename='pilot.css') }}">
+</head><body>
+<div class="bar"><div class="wrap">
+  <a class="brand" href="{{ url_for('pilot.elegir') }}">ESCALÍMETRO</a>
+  <nav><a href="{{ url_for('pilot.panel') }}">CASOS</a></nav>
+</div></div>
+<main><div class="wrap">{% block body %}{% endblock %}</div></main>
+<footer><div class="wrap">Tu material se usa sólo para preparar y evaluar este plano.</div></footer>
+</body></html>

@@ -16,7 +16,7 @@ from flask import (Flask, abort, jsonify, redirect, render_template, request,
                    send_file, send_from_directory, url_for)
 
 from . import (auth, briefs as briefmod, customer, detected as det, engine, intake, lab,
-               pedidos, potential, public, reconstruction, staging_ui, store)
+               pedidos, pilot, potential, public, reconstruction, staging_ui, store)
 from .domain import (assets as dassets, entitlements as dent, fits as dfits,
                      floorplan as dfloorplan, packs as dpacks, presets as dpresets,
                      properties as dproperties, visual as dvisual)
@@ -60,6 +60,8 @@ def create_app() -> Flask:
     app.register_blueprint(public.bp)
     # E42 — la bandeja INTERNA de esos pedidos (Basic Auth ruta por ruta), bajo /lab.
     app.register_blueprint(pedidos.bp)
+    # E45 — web piloto de la campaña E44 (MEJORAR / CREAR + evaluación), bajo /lab/campaign/e44.
+    app.register_blueprint(pilot.bp)
     app.jinja_env.filters["from_json"] = lambda v: store.js(v, {}) or {}
     if os.environ.get("ESCALIMETRO_MIGRATE", "1") == "1":
         from . import migrate                                 # noqa: PLC0415

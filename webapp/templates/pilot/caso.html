@@ -1,0 +1,149 @@
+{% extends "pilot/base.html" %}
+{% block title %}{{ v.label }} · caso {{ v.n }} · ESCALÍMETRO{% endblock %}
+{% block head %}{% if v.refresh %}<meta http-equiv="refresh" content="6">{% endif %}{% endblock %}
+{% block body %}
+{% set cid = v.case.case_id %}
+<div class="crumb"><a href="{{ url_for('pilot.panel') }}">← CASOS</a></div>
+<div class="head">
+  <h1>{{ 'Mejorar un plano' if v.track == 'IMPROVE' else 'Crear un plano' }}</h1>
+  <span class="chip {{ v.clase }}">{{ v.estado }}</span>
+  {% if v.demo %}<span class="chip demo">DEMO</span>{% endif %}
+</div>
+<p class="mut small">{{ v.label }} · caso {{ v.n }}{% if v.demo %} · ejemplo para ver la interfaz, no cuenta en la campaña{% endif %}</p>
+
+{% if v.error %}<div class="err" role="alert"><strong>{{ v.error }}</strong></div>{% endif %}
+
+{# ============================== MEJORAR ============================== #}
+{% if v.track == 'IMPROVE' %}
+
+  {% if v.fase == 'cargado' %}
+    <p class="lead">Recibimos tu plano. Revisa que sea el correcto y procésalo.</p>
+    <figure class="fig solo"><div class="cap">TU PLANO</div>
+      <div class="img">{% if v.entrada %}<img src="{{ url_for('pilot.archivo', case_id=cid, cual='entrada') }}" alt="Plano subido">{% else %}<span class="mut">Vista previa no disponible</span>{% endif %}</div></figure>
+    <form method="post" action="{{ url_for('pilot.procesar', case_id=cid) }}" style="margin-top:24px"><button class="btn" type="submit">PROCESAR</button></form>
+
+  {% elif v.fase == 'revision' %}
+    <p class="lead">Este plano necesita una revisión antes de poder generar el resultado.</p>
+    <figure class="fig solo"><div class="cap">TU PLANO</div>
+      <div class="img"><img src="{{ url_for('pilot.archivo', case_id=cid, cual='entrada') }}" alt="Plano subido"></div></figure>
+    <section class="piloto">
+      <span class="tag">PANEL PILOTO — REVISIÓN</span>
+      <p>La lectura automática no alcanzó. Una persona confirma el plano en el LAB y después se vuelve a intentar.</p>
+      {% if v.mejorar and v.mejorar.pending %}<ul>{% for x in v.mejorar.pending %}<li>{{ x }}</li>{% endfor %}</ul>{% endif %}
+      {% if v.motivo %}<p class="small mut">{{ v.motivo }}</p>{% endif %}
+      <div class="row">
+        {% if v.mejorar %}<a class="btn sec" href="{{ url_for('lab.propiedad', property_id=v.mejorar.property_id) }}">REVISAR EN EL LAB</a>{% endif %}
+        <form method="post" action="{{ url_for('pilot.procesar', case_id=cid) }}"><button class="btn" type="submit">VOLVER A INTENTAR</button></form>
+        <form method="post" action="{{ url_for('pilot.sin_resultado', case_id=cid) }}"><button class="btn quiet" type="submit">DAR POR NO RESUELTO</button></form>
+      </div>
+    </section>
+
+  {% elif v.fase == 'sinres' %}
+    <div class="msg bad"><h3>No se pudo generar el Plano Corporativo</h3><p>Este plano no quedó listo. Puedes dejar tu evaluación igual.</p></div>
+    <figure class="fig solo"><div class="cap">TU PLANO</div>
+      <div class="img"><img src="{{ url_for('pilot.archivo', case_id=cid, cual='entrada') }}" alt="Plano subido"></div></figure>
+    {% if v.motivo %}<section class="piloto"><span class="tag">PANEL PILOTO — DETALLE</span><p class="small">{{ v.motivo }}</p></section>{% endif %}
+
+  {% elif v.fase in ('resultado', 'evaluado') %}
+    <div class="ba">
+      <figure class="fig"><div class="cap">ANTES</div>
+        <div class="img"><img src="{{ url_for('pilot.archivo', case_id=cid, cual='entrada') }}" alt="Plano original"></div></figure>
+      <figure class="fig"><div class="cap">DESPUÉS · PLANO CORPORATIVO</div>
+        <div class="img">{% if v.despues %}<img src="{{ url_for('pilot.archivo', case_id=cid, cual='despues') }}" alt="Plano Corporativo">{% else %}<span class="mut">Resultado no disponible</span>{% endif %}</div></figure>
+    </div>
+    {% if v.despues %}
+    <div class="row">
+      <a class="btn" href="{{ url_for('pilot.archivo', case_id=cid, cual='despues') }}" target="_blank" rel="noopener">ABRIR PLANO CORPORATIVO</a>
+      <a class="btn sec" href="{{ url_for('pilot.archivo', case_id=cid, cual='despues', descargar=1) }}">DESCARGAR</a>
+    </div>
+    {% endif %}
+
+  {% elif v.fase == 'bloqueado' %}
+    <div class="msg bad"><h3>Este caso está bloqueado</h3><p>No se pudo seguir con este material.</p></div>
+  {% endif %}
+
+{# ============================== CREAR ============================== #}
+{% else %}
+
+  {% if v.fase == 'cargado' or v.fase == 'bloqueado' %}
+    <p class="lead">Recibimos las fotos. El plano que preparemos será <strong>esquemático y referencial</strong>, inferido de las fotos.</p>
+    <div class="photos">{% for i in range(1, v.n_fotos + 1) %}<div class="thumb"><img src="{{ url_for('pilot.archivo', case_id=cid, cual='foto-' ~ i) }}" alt="Foto {{ i }}" loading="lazy"></div>{% endfor %}</div>
+    <p class="mut small">{{ v.n_fotos }} {{ 'foto' if v.n_fotos == 1 else 'fotos' }}{% if v.published_m2 %} · {{ v.published_m2|round|int }} m² publicados{% endif %}{% if v.link %} · enlace de referencia guardado{% elif v.referencia %} · texto de referencia guardado{% endif %}</p>
+
+    {% if v.fase == 'bloqueado' %}
+    <div class="msg bad"><h3>No se pudo procesar todavía</h3>
+      <p>El servicio de reconstrucción no está configurado en este servidor.</p>
+      <p class="small mut">Para el operador: configurar la clave del proveedor de reconstrucción y volver a intentar. No se simuló ningún resultado.</p></div>
+    {% endif %}
+
+    <section class="piloto">
+      <span class="tag">MODO PILOTO — NO SE ENVÍA AL MOTOR</span>
+      <p><strong>Plano real cargado: oculto.</strong> Se usará únicamente para comparar al final, después de que cierres la reconstrucción.</p>
+    </section>
+    <form method="post" action="{{ url_for('pilot.procesar', case_id=cid) }}">
+      <button class="btn" type="submit">{{ 'VOLVER A INTENTAR' if v.fase == 'bloqueado' else 'PROCESAR' }}</button>
+      <p class="mut small" style="margin-top:10px">Este paso usa un servicio externo con costo.</p>
+    </form>
+
+  {% elif v.fase == 'procesando' %}
+    <div class="msg"><h3><span class="spin"></span>Preparando el plano</h3><p>Esto puede tardar un par de minutos. La página se actualiza sola.</p></div>
+    <div class="photos">{% for i in range(1, v.n_fotos + 1) %}<div class="thumb"><img src="{{ url_for('pilot.archivo', case_id=cid, cual='foto-' ~ i) }}" alt="Foto {{ i }}" loading="lazy"></div>{% endfor %}</div>
+
+  {% elif v.fase == 'sinres' and not v.revelado %}
+    <div class="msg bad"><h3>No se pudo reconstruir</h3><p>Con este material no obtuvimos un plano. Puedes cerrar y comparar con el plano real, y evaluar igual.</p></div>
+
+  {% endif %}
+
+  {# resultado antes del cierre: reconstrucción grande, corregir, cerrar #}
+  {% if v.fase in ('resultado', 'sinres', 'evaluado') and not v.revelado %}
+    {% if v.fase == 'resultado' %}
+    <span class="refnote">ESQUEMÁTICO · REFERENCIAL</span>
+    {% if v.run and v.run.outcome_code != 'RECONSTRUCTED' %}
+    <div class="msg"><h3>{{ v.run.outcome }}</h3><p>{{ 'Las fotos no alcanzan para armar un plano confiable.' if v.run.outcome_code == 'INSUFFICIENT_EVIDENCE' else 'Falta una aclaración para seguir. Puedes escribirla abajo.' }}</p></div>
+    {% endif %}
+    <figure class="fig solo"><div class="cap">RECONSTRUCCIÓN</div>
+      <div class="img">{% if v.recon %}<img src="{{ url_for('pilot.archivo', case_id=cid, cual='reconstruccion') }}" alt="Reconstrucción esquemática">{% else %}<span class="mut">Sin dibujo disponible</span>{% endif %}</div></figure>
+    {% endif %}
+
+    {% if v.puede_corregir %}
+    <form method="post" action="{{ url_for('pilot.corregir', case_id=cid) }}" style="margin-top:28px;max-width:640px">
+      <div class="field"><label for="txt">¿Qué corregirías?</label>
+        <p class="hint">Escríbelo como se lo dirías a una persona. Ej.: “el dormitorio principal es más grande”.</p>
+        <textarea id="txt" name="texto" required></textarea></div>
+      <button class="btn sec" type="submit">CORREGIR</button>
+      <span class="mut small" style="margin-left:12px">Genera una nueva versión; la anterior se conserva.</span>
+    </form>
+    {% endif %}
+    {% if v.correcciones %}<p class="mut small">Correcciones hechas: {{ v.correcciones|length }}.</p>{% endif %}
+
+    {% if v.puede_cerrar %}
+    <section class="piloto">
+      <span class="tag">PANEL PILOTO — CIERRE CIEGO</span>
+      <p>Cuando la reconstrucción esté como la quieres, ciérrala. Queda fija y recién ahí se muestra el plano real.</p>
+      <form method="post" action="{{ url_for('pilot.cerrar', case_id=cid) }}">
+        <div class="yn"><label><input type="checkbox" name="confirmo" value="1" required> Entiendo que después ya no se puede seguir corrigiendo.</label></div>
+        <button class="btn" type="submit">CERRAR RECONSTRUCCIÓN Y COMPARAR</button>
+      </form>
+    </section>
+    {% endif %}
+  {% endif %}
+
+  {# después del reveal: lado a lado #}
+  {% if v.revelado %}
+  <div id="comparacion"></div>
+  <span class="refnote">RECONSTRUCCIÓN ESQUEMÁTICA · REFERENCIAL</span>
+  <div class="ba">
+    <figure class="fig"><div class="cap">RECONSTRUCCIÓN</div>
+      <div class="img">{% if v.recon %}<img src="{{ url_for('pilot.archivo', case_id=cid, cual='reconstruccion') }}" alt="Reconstrucción esquemática">{% else %}<span class="mut">Sin dibujo disponible</span>{% endif %}</div></figure>
+    <figure class="fig"><div class="cap">PLANO REAL</div>
+      <div class="img">{% if v.gt_visible %}<img src="{{ url_for('pilot.archivo', case_id=cid, cual='real') }}" alt="Plano real">{% else %}<span class="mut">No disponible</span>{% endif %}</div></figure>
+  </div>
+  {% endif %}
+
+{% endif %}
+
+{# ============================== evaluación (panel piloto, siempre al final) ============================== #}
+{% if v.puede_evaluar_plano or v.puede_evaluar_ux or v.evals_plano or v.evals_ux %}
+{% include "pilot/_evaluar.html" %}
+{% endif %}
+{% endblock %}

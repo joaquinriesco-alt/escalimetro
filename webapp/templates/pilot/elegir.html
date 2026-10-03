@@ -1,0 +1,27 @@
+{% extends "pilot/base.html" %}
+{% block title %}¿Qué necesitas hacer? · ESCALÍMETRO{% endblock %}
+{% block body %}
+<h1>¿Qué necesitas hacer?</h1>
+<p class="lead">Elige un camino. Con eso basta para empezar.</p>
+<div class="choices">
+  <a class="choice" href="{{ url_for('pilot.mejorar_form') }}">
+    <span class="k">YA TENGO UN PLANO</span>
+    <h2>MEJORAR UN PLANO</h2>
+    <p>Ya tengo un plano. Quiero dejarlo limpio y listo para publicar.</p>
+    <svg viewBox="0 0 300 84" aria-hidden="true"><rect x="4" y="4" width="130" height="76" fill="none" stroke="#9aa1ac" stroke-width="3" stroke-dasharray="6 4"/><path d="M150 42h22m0 0-8-8m8 8-8 8" stroke="#1b2029" stroke-width="3" fill="none"/><rect x="186" y="4" width="110" height="76" fill="#fff" stroke="#1b2029" stroke-width="4"/><path d="M226 4v44M186 48h72" stroke="#1b2029" stroke-width="3" fill="none"/></svg>
+    <span class="go">MEJORAR →</span>
+  </a>
+  <a class="choice" href="{{ url_for('pilot.crear_form') }}">
+    <span class="k">NO TENGO UN PLANO ÚTIL</span>
+    <h2>CREAR UN PLANO</h2>
+    <p>No tengo un plano útil. Quiero crear uno a partir de fotos e información de la propiedad.</p>
+    <svg viewBox="0 0 300 84" aria-hidden="true"><g fill="#e8edf2" stroke="#9aa1ac" stroke-width="2"><rect x="4" y="14" width="40" height="30"/><rect x="50" y="30" width="40" height="30"/><rect x="96" y="10" width="40" height="30"/></g><path d="M150 42h22m0 0-8-8m8 8-8 8" stroke="#1b2029" stroke-width="3" fill="none"/><rect x="186" y="4" width="110" height="76" fill="#fff" stroke="#1b2029" stroke-width="4" stroke-dasharray="10 5"/><path d="M226 4v44M186 48h72" stroke="#1b2029" stroke-width="3" stroke-dasharray="10 5" fill="none"/></svg>
+    <span class="go">CREAR →</span>
+  </a>
+</div>
+<div class="strip">
+  <a href="{{ url_for('pilot.panel') }}">MEJORAR <b>{{ n.IMPROVE.completed }}/{{ target }}</b></a>
+  <a href="{{ url_for('pilot.panel') }}">CREAR <b>{{ n.CREATE.completed }}/{{ target }}</b></a>
+  <a href="{{ url_for('pilot.panel') }}">VER CASOS →</a>
+</div>
+{% endblock %}

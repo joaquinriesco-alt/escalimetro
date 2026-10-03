@@ -1,0 +1,44 @@
+{% extends "pilot/base.html" %}
+{% block title %}Casos · ESCALÍMETRO{% endblock %}
+{% macro tarjeta(t) %}
+<article class="card">
+  <div class="top"><span class="k">{{ t.label }} · {{ t.n }}</span><span class="chip {{ t.clase }}">{{ t.estado }}</span></div>
+  <div class="thumbs">
+    <div class="thumb">{% if t.thumbs.entrada %}<img src="{{ t.thumbs.entrada }}" alt="Material cargado" loading="lazy">{% else %}SIN MATERIAL{% endif %}</div>
+    <div class="thumb">{% if t.thumbs.salida %}<img src="{{ t.thumbs.salida }}" alt="Resultado" loading="lazy">{% else %}SIN RESULTADO{% endif %}</div>
+  </div>
+  <div class="meta">{{ t.fecha }}{% if t.rating %} · <b>{{ t.rating }}</b>{% endif %}</div>
+  <a class="btn sec" href="{{ url_for('pilot.caso', case_id=t.case.case_id) }}">ABRIR CASO</a>
+</article>
+{% endmacro %}
+{% block body %}
+<h1>Campaña de casos</h1>
+<div class="prog">
+  {% for key, name in (('IMPROVE','MEJORAR'),('CREATE','CREAR')) %}
+  <div class="big">
+    <div class="k">{{ name }}</div>
+    <div class="n">{{ n[key].completed }}<span>/{{ target }}</span></div>
+    <div class="bars" role="img" aria-label="{{ name }} {{ n[key].completed }} de {{ target }}"><i style="width:{{ (100 * n[key].completed / target)|round|int }}%"></i></div>
+    <div class="s">{{ n[key].completed }} evaluados · {{ n[key].captured }} cargados{% if n[key].blocked %} · {{ n[key].blocked }} bloqueados{% endif %}</div>
+  </div>
+  {% endfor %}
+</div>
+<div class="row">
+  <a class="btn" href="{{ url_for('pilot.mejorar_form') }}">NUEVO MEJORAR</a>
+  <a class="btn" href="{{ url_for('pilot.crear_form') }}">NUEVO CREAR</a>
+</div>
+
+<div class="sec-t">CASOS</div>
+{% if tarjetas %}
+<div class="cards">{% for t in tarjetas %}{{ tarjeta(t) }}{% endfor %}</div>
+{% else %}
+<p class="mut">Todavía no hay casos. Empieza con NUEVO MEJORAR o NUEVO CREAR.</p>
+{% endif %}
+
+{% if demos %}
+<section class="piloto">
+  <span class="tag">DEMO — EJEMPLOS PARA VER LA INTERFAZ · NO CUENTAN EN LA CAMPAÑA</span>
+  <div class="cards" style="margin-top:10px">{% for t in demos %}{{ tarjeta(t) }}{% endfor %}</div>
+</section>
+{% endif %}
+{% endblock %}

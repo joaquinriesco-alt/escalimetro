@@ -1,0 +1,34 @@
+{% extends "pilot/base.html" %}
+{% block title %}Crear un plano · ESCALÍMETRO{% endblock %}
+{% block body %}
+<div class="crumb"><a href="{{ url_for('pilot.elegir') }}">← VOLVER</a></div>
+<h1>Crear un plano</h1>
+<p class="lead">Sube las fotos de la propiedad. Preparamos un plano comercial <strong>esquemático y referencial</strong>.</p>
+{% include "pilot/_error.html" %}
+<form class="form" method="post" action="{{ url_for('pilot.crear_post') }}" enctype="multipart/form-data">
+  <div class="field">
+    <label class="drop" for="fotos"><strong>Elige las fotos</strong>Varias a la vez · JPG, PNG o WEBP
+      <input id="fotos" type="file" name="fotos" accept="image/png,image/jpeg,image/webp" multiple required>
+    </label>
+  </div>
+  <div class="field">
+    <label for="m2">m² publicados <span class="mut">(opcional)</span></label>
+    <input id="m2" type="text" name="m2" inputmode="decimal" placeholder="Ej.: 120" value="{{ form.get('m2','') }}">
+  </div>
+  <div class="field">
+    <label for="ref">Enlace o texto de la publicación <span class="mut">(opcional)</span></label>
+    <textarea id="ref" name="referencia" placeholder="Pega el enlace o el texto del aviso, si lo tienes.">{{ form.get('referencia','') }}</textarea>
+  </div>
+
+  <section class="piloto" aria-labelledby="pil-t">
+    <span class="tag" id="pil-t">MODO PILOTO — NO SE ENVÍA AL MOTOR</span>
+    <p><strong>Plano real de esta propiedad.</strong> Se guarda aparte y oculto. Se usará únicamente para comparar al final, después de cerrar la reconstrucción.</p>
+    <div class="field" style="margin:0">
+      <input id="gt" type="file" name="plano_real" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg" required aria-label="Plano real (modo piloto)">
+    </div>
+  </section>
+
+  <button class="btn" type="submit">SUBIR MATERIAL</button>
+</form>
+<p class="priv">Tu material se usa sólo para preparar y evaluar este plano.</p>
+{% endblock %}

@@ -1,0 +1,4 @@
+{% if error %}
+<div class="err" role="alert"><strong>{{ error }}</strong>
+{% if dup %}<br><a href="{{ url_for('pilot.caso', case_id=dup) }}">ABRIR EL CASO EXISTENTE</a>{% endif %}</div>
+{% endif %}

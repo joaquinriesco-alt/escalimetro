@@ -1,0 +1,17 @@
+{% extends "pilot/base.html" %}
+{% block title %}Mejorar un plano · ESCALÍMETRO{% endblock %}
+{% block body %}
+<div class="crumb"><a href="{{ url_for('pilot.elegir') }}">← VOLVER</a></div>
+<h1>Mejorar un plano</h1>
+<p class="lead">Sube el plano tal como lo tienes. Aunque sea feo o técnico, lo dejamos limpio y listo para publicar.</p>
+{% include "pilot/_error.html" %}
+<form class="form" method="post" action="{{ url_for('pilot.mejorar_post') }}" enctype="multipart/form-data">
+  <div class="field">
+    <label class="drop" for="plano"><strong>Elige tu plano</strong>PDF, JPG o PNG
+      <input id="plano" type="file" name="plano" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg" required>
+    </label>
+  </div>
+  <button class="btn" type="submit">SUBIR PLANO</button>
+</form>
+<p class="priv">Tu material se usa sólo para preparar y evaluar este plano.</p>
+{% endblock %}
