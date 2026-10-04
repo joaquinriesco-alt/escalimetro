@@ -326,13 +326,22 @@ def import_upload(track: str, files: List[Tuple[str, bytes]], *, reference: str 
             raise CampaignError("CREAR: sube al menos una foto de la propiedad.")
         if not ground_truth or not ground_truth[1]:
             raise CampaignError("CREAR: falta el plano real (modo piloto), para comparar al final.")
-        oks = PHOTO_EXTS
+        oks = PHOTO_EXTS + (".heic", ".heif")
     revisar = [(n, oks) for n, _b in files] + ([(ground_truth[0], PLAN_EXTS)] if ground_truth else [])
     for n, permitidas in revisar:
         if os.path.splitext(n)[1].lower() not in permitidas:
             raise CampaignError(f"Formato no aceptado: {os.path.basename(n)[:60]}. "
-                                + ("Fotos: JPG, PNG o WEBP; plano real: PDF, JPG o PNG."
+                                + ("Fotos: JPG, PNG, WEBP, HEIC o HEIF; plano real: PDF, JPG o PNG."
                                    if track == CREATE else "Sólo PDF, JPG o PNG."))
+    if track == CREATE:
+        # E45.2: contenido real antes de crear NADA (ni caso, ni proyecto, ni eventos). Las fotos
+        # HEIC/HEIF salen como JPG: el motor no depende de HEIC.
+        from . import mobile_upload                                # noqa: PLC0415
+        try:
+            files = [mobile_upload.normalizar_foto(n, b) for n, b in files]
+            mobile_upload.validar_plano(*ground_truth)
+        except mobile_upload.UploadError as e:
+            raise CampaignError(str(e)) from None
     reference = (reference or "").strip()
     link = reference if _URL_RE.match(reference) else ""
     text = "" if link else reference[:2000]

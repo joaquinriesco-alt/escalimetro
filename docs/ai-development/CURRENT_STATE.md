@@ -1,6 +1,6 @@
 # ESCALÍMETRO — Estado actual
 
-> **Última actualización:** 2026-10-03 · al cerrar `E45` · rama `auto/e45-issue-14`
+> **Última actualización:** 2026-10-04 · al cerrar `E45.2` · rama `auto/e45_2-issue-17`
 > Todo lo que está acá fue verificado al escribirlo: el código contra el repo; las ramas **contra
 > GitHub**, no contra las ramas locales ([protocolo §9.1](DEVELOPMENT_PROTOCOL.md)); las cifras de
 > los pilotos contra `.data-lab/` de la máquina de desarrollo, que **no** está en el repo.
@@ -23,7 +23,7 @@ compara motores de reconstrucción con el plano real oculto hasta el final.
 
 | rama | punta | qué es |
 |---|---|---|
-| `main` | `d097069` · 2026-10-01 | **M02.1** (antes `edd50e0`, M02). Es lo que ve `refs/remotes/origin/main` en el checkout de E39 y coincide con lo que dice `tasks/M03.1.md`; no se reverificó con `git ls-remote` (sin red en el sandbox). Rama por defecto en GitHub. Entre `c6de3f9` y `edd50e0` avanzó por fast-forward desde `c6de3f9` (E16.12) el 2026-10-01, 12:39 UTC, para activar el ejecutor: lo autorizó Joaquín y lo ejecutó ChatGPT (`tasks/M03.md`, en la rama `m03_executor_smoke`); GitHub registra el push como `joaquinriesco-alt`. Contiene toda la cadena hasta M02. |
+| `main` | `f466ccf` · 2026-10-02 | merge del PR #9 (**M05**, bootstrap de live status; antes `d097069`, M02.1, que es su ancestro). Es lo que ve `refs/remotes/origin/main` en el checkout de E45.2; **no se reverificó con `git ls-remote`** (el sandbox no permite red). Hasta E45 este estado declaraba `d097069`. Rama por defecto en GitHub. Entre `c6de3f9` y `edd50e0` avanzó por fast-forward desde `c6de3f9` (E16.12) el 2026-10-01, 12:39 UTC, para activar el ejecutor: lo autorizó Joaquín y lo ejecutó ChatGPT (`tasks/M03.md`, en la rama `m03_executor_smoke`); GitHub registra el push como `joaquinriesco-alt`. Contiene toda la cadena hasta M02. |
 | `e36_real_property_pilot` | `ae64d35` · 2026-09-23 | **congelada para desarrollo**; su experimento sigue activo (ver abajo) |
 | `e17_2_url_first_ingest` | `4c0934a` · 2026-09-25 | E17.0–E17.2, la punta del código de producto |
 | `e37_reconstruction_lab` | `01940c6` · 2026-09-30 | E37 |
@@ -45,7 +45,9 @@ compara motores de reconstrucción con el plano real oculto hasta el final.
 | `e44_online_plan_benchmark` | `aee31a6` | la TASK E44 de ChatGPT (sólo `tasks/E44.md`), hija de `auto/e43-issue-12` según el preflight |
 | `auto/e44-issue-13` | — | rama automática de E44, hija de `e44_online_plan_benchmark`. No verificada contra GitHub |
 | `e45_web_pilot_40_cases` | `62b6a96` | la TASK E45 de ChatGPT (sólo `tasks/E45.md`), hija de `auto/e44-issue-13` según el preflight |
-| `auto/e45-issue-14` | esta entrega | rama automática de E45, hija de `e45_web_pilot_40_cases` · **base para la próxima TASK**. La publica el workflow. No verificada contra GitHub |
+| `auto/e45-issue-14` | — | rama automática de E45, hija de `e45_web_pilot_40_cases`. No verificada contra GitHub |
+| `e45_2_mobile_upload_hardening` | `bbaa887` | la TASK E45.2 de ChatGPT (sólo `tasks/E45.2.md`), hija de `auto/e45-issue-14` según el preflight |
+| `auto/e45_2-issue-17` | esta entrega | rama automática de E45.2, hija de `e45_2_mobile_upload_hardening` · **base para la próxima TASK**. La publica el workflow. No verificada contra GitHub |
 
 Las filas de `main`, `m03_executor_smoke` y `m02_github_executor` de arriba son de antes de M03.1;
 la afirmación sobre `main` de esta fila, y los conteos, **no están reverificados** (ver §9.1 del protocolo).
@@ -169,7 +171,14 @@ declara la tabla de ramas sea el de `origin/main` y no el de la rama local.
 
 ## Última tarea completada
 
-**E45** — web piloto para cargar y evaluar los 40 casos de E44 (issue #14). Status **PASS** (sin casos
+**E45.2** — endurecimiento de la carga móvil de la web piloto (issue #17). Status en
+[`reports/E45.2_REPORT.md`](../../reports/E45.2_REPORT.md). CREAR acepta HEIC/HEIF de iPhone (se decodifican
+y entran al proyecto como JPG; el motor no depende de HEIC; dependencia nueva `pillow-heif`), con límites
+explícitos —20 fotos, 15 MB por foto, 120 MB por lote, 25 MB el plano real— que se aplican leyendo en trozos
+y antes de crear caso, proyecto o eventos; el plano real también se valida por contenido y sigue oculto.
+MEJORAR no cambió. `src/` intacto. Sin deploy ni llamadas pagadas. Siguiente: probar con un iPhone real.
+
+Antes, **E45** — web piloto para cargar y evaluar los 40 casos de E44 (issue #14). Status **PASS** (sin casos
 reales: 0/40). `/lab/campaign/e44/` (Basic Auth): «¿Qué necesitas hacer?» → MEJORAR (1 plano → ANTES/DESPUÉS
 por `ensure_case` + `ingest.auto_prepare` + `publish_commercial_floorplan`; sin planta lista queda NECESITA
 REVISIÓN en el LAB, nunca un resultado inventado) o CREAR (fotos + m² + referencia; plano real en bloque
@@ -335,7 +344,7 @@ Independiente: **correr el primer experimento real de E37**, Piso Ricardo Lyon I
 siguiente TASK no debe ampliar features por inercia: debe auditar el circuito completo como producto
 y decidir qué falta para probarlo con un caso real. Se escribe como TASK nueva, no se ejecuta desde acá.
 
-Una TASK nueva la escribe ChatGPT en GitHub desde la base `auto/e45-issue-14`
+Una TASK nueva la escribe ChatGPT en GitHub desde la base `auto/e45_2-issue-17`
 ([protocolo §5.2](DEVELOPMENT_PROTOCOL.md)).
 
 ## Glosario

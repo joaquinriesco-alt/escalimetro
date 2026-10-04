@@ -24,13 +24,23 @@ from typing import Any, Dict, List, Optional
 from flask import (Blueprint, abort, redirect, render_template, request, send_file, url_for)
 from werkzeug.exceptions import RequestEntityTooLarge
 
-from . import auth, campaign, reconstruction
+from . import auth, campaign, mobile_upload, reconstruction
 from .domain.reconstruction.projects import ReconError
 
 bp = Blueprint("pilot", __name__, url_prefix="/lab/campaign/e44")
 # Mismo resguardo de origen que el laboratorio de E37: aquí un POST puede gastar dinero o revelar
 # el plano real, y HTTP Basic lo reenvía el navegador solo.
 bp.before_request(reconstruction._guardas)                     # noqa: SLF001
+
+
+@bp.before_request
+def _tope_de_envio():
+    """E45.2: `_guardas` deja el tope de E37 (1200 MB por envío), pensado para lotes de laboratorio.
+    El POST de CREAR del piloto tiene un tope propio: werkzeug corta el cuerpo al pasarlo, antes de
+    que ninguna vista lea nada."""
+    if request.method == "POST" and request.endpoint == "pilot.crear_post":
+        request.max_content_length = mobile_upload.MAX_ENVIO_BYTES
+    return None
 
 CREATE_ENGINE = "openai_direct"
 DEMO_ENGINE = "fixture_replay"
@@ -257,10 +267,19 @@ def _resumen() -> Dict[str, Any]:
     return {t: campaign.count(t, m) for t in campaign.TRACKS}
 
 
+@bp.context_processor
+def _limites():
+    return {"lim": {"fotos": mobile_upload.MAX_FOTOS, "foto_mb": mobile_upload.MAX_FOTO_MB,
+                    "lote_mb": mobile_upload.MAX_LOTE_MB, "plano_mb": mobile_upload.MAX_PLANO_REAL_MB,
+                    "accept": mobile_upload.ACCEPT_FOTOS}}
+
+
 @bp.errorhandler(RequestEntityTooLarge)
 def _demasiado(_e):
     return render_template("pilot/error.html", msg="El envío es demasiado grande. Sube menos "
-                           "archivos a la vez.", back=url_for("pilot.elegir")), 413
+                           f"fotos o más livianas (máximo {mobile_upload.MAX_FOTOS} fotos, "
+                           f"{mobile_upload.MAX_LOTE_MB} MB en total).",
+                           back=url_for("pilot.elegir")), 413
 
 
 @bp.get("/")
@@ -337,13 +356,14 @@ def _m2(raw: str) -> Optional[float]:
 @auth.require
 def crear_post():
     try:
-        fotos = [(x.filename, x.read()) for x in request.files.getlist("fotos") if x and x.filename]
-        gt = request.files.get("plano_real")
-        gt_t = (gt.filename, gt.read()) if gt and gt.filename else None
+        # E45.2: cantidad y formato se revisan antes de leer un byte, y cada archivo se lee en
+        # trozos con tope por archivo y por lote (nunca `read()` a ciegas)
+        fotos = mobile_upload.leer_fotos(request.files.getlist("fotos"))
+        gt_t = mobile_upload.leer_plano_real(request.files.get("plano_real"))
         cid = campaign.import_upload(
             campaign.CREATE, fotos, reference=request.form.get("referencia", ""),
             published_m2=_m2(request.form.get("m2", "")), ground_truth=gt_t, author=_operator())
-    except campaign.CampaignError as e:
+    except (campaign.CampaignError, mobile_upload.UploadError) as e:
         return _form_error("pilot/crear_nuevo.html", str(e))
     return redirect(url_for("pilot.caso", case_id=cid), code=303)
 

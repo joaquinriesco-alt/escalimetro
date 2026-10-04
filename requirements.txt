@@ -17,3 +17,8 @@ anthropic>=0.30
 # 3.1: E37 sube el tope de un envío sólo en /lab/reconstruction (request.max_content_length)
 flask>=3.1
 gunicorn>=21.2
+
+# --- E45.2: fotos HEIC/HEIF de iPhone (el motor sigue consumiendo JPG) ------------------------
+# wheel manylinux con libheif incluida (cp312): no necesita paquetes del sistema en el Dockerfile.
+# Pillow llega como dependencia suya; ya estaba en el entorno por matplotlib.
+pillow-heif>=0.18

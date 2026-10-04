@@ -7,8 +7,9 @@
 {% include "pilot/_error.html" %}
 <form class="form" method="post" action="{{ url_for('pilot.crear_post') }}" enctype="multipart/form-data">
   <div class="field">
-    <label class="drop" for="fotos"><strong>Elige las fotos</strong>Varias a la vez · JPG, PNG o WEBP
-      <input id="fotos" type="file" name="fotos" accept="image/png,image/jpeg,image/webp" multiple required>
+    <label class="drop" for="fotos"><strong>Elige las fotos</strong>Varias a la vez · JPG, PNG, WEBP o HEIC (iPhone)
+      <span class="mut">Hasta {{ lim.fotos }} fotos · máx. {{ lim.foto_mb }} MB cada una · {{ lim.lote_mb }} MB en total</span>
+      <input id="fotos" type="file" name="fotos" accept="{{ lim.accept }}" multiple required>
     </label>
   </div>
   <div class="field">
@@ -25,6 +26,7 @@
     <p><strong>Plano real de esta propiedad.</strong> Se guarda aparte y oculto. Se usará únicamente para comparar al final, después de cerrar la reconstrucción.</p>
     <div class="field" style="margin:0">
       <input id="gt" type="file" name="plano_real" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg" required aria-label="Plano real (modo piloto)">
+      <span class="mut">PDF, JPG o PNG · máx. {{ lim.plano_mb }} MB</span>
     </div>
   </section>
 
