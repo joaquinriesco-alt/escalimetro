@@ -486,19 +486,18 @@ def test_E10b_un_plano_de_MEJORAR_de_45_MB_se_lee_entero_y_recien_despues_se_rec
 # =============================================================================================
 # F · doble clic, repetición y concurrencia
 # =============================================================================================
-def test_F1_dos_cargas_distintas_a_la_vez_pierden_una_en_el_manifiesto_DEFECTO_H02(env, monkeypatch):
-    """Ventana FORZADA (barrera tras `load()` y antes de `_save`): `_import_case` hace lectura →
-    trabajo largo → escritura del manifiesto completo, sin candado. Dos cargas distintas simultáneas
-    devuelven ambas un id válido y el manifiesto conserva una sola; la otra queda con evidencia y
-    proyecto E37 sin caso (la web la redirige a un 404)."""
+def test_F1_dos_cargas_distintas_a_la_vez_conservan_ambas_H02_CERRADO(env, monkeypatch):
+    """Ventana FORZADA: las dos cargas llegan juntas a la validación (barrera) y compiten por la
+    sección crítica. Desde E47.5 `_import_case` lee, crea y escribe el manifiesto bajo un candado:
+    ambos casos quedan en el manifiesto, con su evidencia, y sus URLs abren."""
     c, camp, tmp = env
-    original = camp._find_duplicate
+    original = camp._validate_entry
     barrera = threading.Barrier(2, timeout=15)
 
     def sincronizado(*a, **k):
         barrera.wait()
         return original(*a, **k)
-    monkeypatch.setattr(camp, "_find_duplicate", sincronizado)
+    monkeypatch.setattr(camp, "_validate_entry", sincronizado)
     res = {}
 
     def sube(k):
@@ -510,19 +509,18 @@ def test_F1_dos_cargas_distintas_a_la_vez_pierden_una_en_el_manifiesto_DEFECTO_H
     [h.start() for h in hilos]
     [h.join() for h in hilos]
     assert all(isinstance(v, str) for v in res.values()), res
-    en_manifiesto = [x["case_id"] for x in camp.load()["cases"]]
-    assert len(en_manifiesto) == 1                                    # una se perdió
-    perdido = next(v for v in res.values() if v not in en_manifiesto)
-    assert camp.get(perdido) is None
-    assert os.path.isdir(camp.case_dir(perdido))                     # su evidencia quedó huérfana
+    en_manifiesto = sorted(x["case_id"] for x in camp.load()["cases"])
+    assert en_manifiesto == sorted(res.values())
+    for cid in en_manifiesto:
+        assert camp.status(camp.get(cid)) == camp.CAPTURED
+        assert os.path.isdir(os.path.join(camp.case_dir(cid), "evidence"))
+        assert c.get(f"{BASE}/caso/{cid}").status_code == 200
     assert len(_huerfanos_e37()) == 2
 
 
-def test_F1b_natural_dos_cargas_distintas_a_la_vez_pierden_una_DEFECTO_H02(env):
-    """Sin barrera propia (sólo arrancan juntas): observado 30 de 30 rondas. Si en otra máquina no se
-    reproduce, el test se omite en vez de afirmar lo contrario."""
+def test_F1b_natural_dos_cargas_distintas_a_la_vez_no_pierden_casos_H02_CERRADO(env):
+    """Sin barrera propia (sólo arrancan juntas), varias rondas: ninguna carga se pierde."""
     c, camp, tmp = env
-    perdidas = 0
     for ronda in range(8):
         res = {}
         arranque = threading.Barrier(2, timeout=15)
@@ -536,35 +534,47 @@ def test_F1b_natural_dos_cargas_distintas_a_la_vez_pierden_una_DEFECTO_H02(env):
         hilos = [threading.Thread(target=sube, args=(k,)) for k in (1, 2)]
         [h.start() for h in hilos]
         [h.join() for h in hilos]
-        ids = {x["case_id"] for x in camp.load()["cases"]}
-        perdidas += sum(1 for v in res.values() if isinstance(v, str) and v not in ids)
-    if not perdidas:
-        pytest.skip("la carrera natural no se reprodujo en esta máquina")
-    assert perdidas >= 1
+        assert all(isinstance(v, str) for v in res.values()), res
+    ids = {x["case_id"] for x in camp.load()["cases"]}
+    assert len(ids) == 16
 
 
-def test_F2_el_segundo_envio_de_lo_mismo_que_pierde_la_carrera_destruye_la_evidencia_del_primero_DEFECTO_H02(
-        env, monkeypatch):
-    """Intercalado FORZADO: el chequeo de duplicados del 2.º envío ya había pasado cuando el 1.º
-    terminó. Copiar sobre la evidencia 0444 falla y el `except` hace `rmtree` de la carpeta del caso
-    —que es la misma—: el caso del 1.º queda sin material (URL_ONLY) y sale de todo N."""
+def test_F2_un_envio_que_falla_no_borra_la_evidencia_del_ganador_H02_CERRADO(env, monkeypatch):
+    """Intercalado FORZADO: el chequeo de duplicados del 2.º envío «ya había pasado» (se anula).
+    Copiar sobre la evidencia 0444 del ganador falla, pero el cleanup sólo retira lo que esa
+    invocación creó: el caso del 1.º conserva su material y su estado."""
     c, camp, tmp = env
     primero = _importar(camp, semilla=5)
+    antes = sorted(os.listdir(os.path.join(camp.case_dir(primero), "evidence")))
     assert camp.status(camp.get(primero)) == camp.CAPTURED
     monkeypatch.setattr(camp, "_find_duplicate", lambda *a, **k: None)
     with pytest.raises(OSError):
         _importar(camp, semilla=5)
-    assert camp.status(camp.get(primero)) == camp.URL_ONLY
-    assert not os.path.isdir(os.path.join(camp.case_dir(primero), "evidence"))
-    assert camp.count("CREATE")["captured"] == 0 and camp.count("CREATE")["url_only"] == 1
+    assert camp.status(camp.get(primero)) == camp.CAPTURED
+    assert sorted(os.listdir(os.path.join(camp.case_dir(primero), "evidence"))) == antes
+    assert camp.count("CREATE")["captured"] == 1 and camp.count("CREATE")["url_only"] == 0
 
 
-def test_F3_natural_doble_envio_identico_casi_siempre_da_500_y_a_veces_no_deja_caso_DEFECTO_H02(env):
-    """Doble toque en SUBIR MATERIAL (no hay guardia JS ni de servidor). Resultados observados:
-    303+303 con un solo caso (20 de 25 rondas: 500+500 sin ninguno). Nunca dos entradas iguales."""
+def test_F2b_fallo_a_mitad_de_importacion_limpia_solo_lo_propio_H02_CERRADO(env, monkeypatch):
+    """Una carpeta de caso creada por la invocación desaparece al fallar, sin tocar el caso previo."""
+    c, camp, tmp = env
+    previo = _importar(camp, semilla=76)
+    fotos, gt = _material(77)
+
+    def falla(*a, **k):
+        raise RuntimeError("proveedor caído")
+    monkeypatch.setattr(camp, "_prepare_create", falla)
+    with pytest.raises(RuntimeError):
+        camp.import_upload(camp.CREATE, fotos, ground_truth=gt)
+    assert os.listdir(os.path.join(camp.root(), "cases")) == [previo]
+    assert camp.status(camp.get(previo)) == camp.CAPTURED
+
+
+def test_F3_natural_doble_envio_identico_deja_un_caso_y_ningun_500_H02_CERRADO(env):
+    """Doble toque en SUBIR MATERIAL: el primero entra (303), el segundo ve el duplicado ya
+    publicado y recibe un 400 limpio. Nunca 500, siempre un único caso con su evidencia."""
     c, camp, tmp = env
     c.application.config["PROPAGATE_EXCEPTIONS"] = False
-    resultados = Counter()
     for ronda in range(10):
         fotos, gt = _material(2000 + ronda)
         arranque = threading.Barrier(2, timeout=15)
@@ -579,15 +589,24 @@ def test_F3_natural_doble_envio_identico_casi_siempre_da_500_y_a_veces_no_deja_c
         hilos = [threading.Thread(target=go) for _ in range(2)]
         [h.start() for h in hilos]
         [h.join() for h in hilos]
-        resultados[tuple(sorted(codigos))] += 1
+        assert sorted(codigos) == [303, 400], (ronda, codigos)
     casos = camp.load()["cases"]
-    ids = [x["case_id"] for x in casos]
-    assert len(ids) == len(set(ids))                                  # nunca dos entradas iguales
+    assert len({x["case_id"] for x in casos}) == len(casos) == 10
     for x in casos:
-        # CAPTURED lo normal; URL_ONLY sería la variante destructiva de H02 (el perdedor borró la
-        # evidencia del ganador): posible por tiempos, no se observó en las rondas de auditoría
-        assert camp.status(x) in (camp.CAPTURED, camp.URL_ONLY)
-    assert set(resultados) <= {(303, 303), (500, 500), (303, 400), (303, 500), (400, 500)}, resultados
+        assert camp.status(x) == camp.CAPTURED
+
+
+def test_F3b_el_manifiesto_se_guarda_atomicamente(env, monkeypatch):
+    """Si la escritura falla a medias, el manifiesto anterior sigue íntegro y no queda temporal."""
+    c, camp, tmp = env
+    _importar(camp, semilla=3)
+    antes = camp.load()
+    monkeypatch.setattr(camp.json, "dump", lambda *a, **k: (_ for _ in ()).throw(OSError("disco lleno")))
+    with pytest.raises(OSError):
+        camp._save({"version": "x", "cases": []})
+    monkeypatch.undo()
+    assert camp.load() == antes
+    assert not [n for n in os.listdir(camp.root()) if n.endswith(".tmp")]
 
 
 def _sincronizar_en_el_reclamo(camp, monkeypatch):

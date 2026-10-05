@@ -1,6 +1,6 @@
 # ESCALÍMETRO — Estado actual
 
-> **Última actualización:** 2026-10-05 · al cerrar `E47.4` · rama `auto/e47_4-issue-23`
+> **Última actualización:** 2026-10-05 · al cerrar `E47.5` · rama `auto/e47_5-issue-24`
 > Todo lo que está acá fue verificado al escribirlo: el código contra el repo; las ramas **contra
 > GitHub**, no contra las ramas locales ([protocolo §9.1](DEVELOPMENT_PROTOCOL.md)); las cifras de
 > los pilotos contra `.data-lab/` de la máquina de desarrollo, que **no** está en el repo.
@@ -55,7 +55,9 @@ compara motores de reconstrucción con el plano real oculto hasta el final.
 | `e47_3_h03_atomic_claim` | `798c086` | la TASK E47.3 de ChatGPT (sólo `tasks/E47.3.md`), hija de `auto/e47_2-issue-21` según el preflight |
 | `auto/e47_3-issue-22` | — | rama automática de E47.3, hija de `e47_3_h03_atomic_claim`. No verificada contra GitHub |
 | `e47_4_h10_global_origin_guard` | `ad63dc8` | la TASK E47.4 de ChatGPT (sólo `tasks/E47.4.md`), hija de `auto/e47_3-issue-22` según el preflight |
-| `auto/e47_4-issue-23` | esta entrega | rama automática de E47.4, hija de `e47_4_h10_global_origin_guard` · **base para la próxima TASK**. La publica el workflow. No verificada contra GitHub |
+| `auto/e47_4-issue-23` | — | rama automática de E47.4, hija de `e47_4_h10_global_origin_guard`. No verificada contra GitHub |
+| `e47_5_h02_atomic_import` | `e643558` | la TASK E47.5 de ChatGPT (sólo `tasks/E47.5.md`), hija de `auto/e47_4-issue-23` según el preflight |
+| `auto/e47_5-issue-24` | esta entrega | rama automática de E47.5, hija de `e47_5_h02_atomic_import` · **base para la próxima TASK**. La publica el workflow. No verificada contra GitHub |
 
 Las filas de `main`, `m03_executor_smoke` y `m02_github_executor` de arriba son de antes de M03.1;
 la afirmación sobre `main` de esta fila, y los conteos, **no están reverificados** (ver §9.1 del protocolo).
@@ -190,6 +192,16 @@ declara la tabla de ramas sea el de `origin/main` y no el de la rama local.
   registrara un deploy (ver Producción). Aun así, la configuración de Railway sólo la ve Joaquín.
 
 ## Última tarea completada
+
+**E47.5** — cierra E46-H02 (issue #24). Status **PASS para H02**; readiness del piloto sigue **`NOT_READY`**
+(H05, H16, H20, H21 y el resto de E46 pendientes). `campaign._import_case` corre ahora bajo `_manifest_lock`
+(RLock + `flock` en `e44/manifest.lock`): duplicado → evidencia/proyecto → manifiesto es una sola sección
+crítica; `exclude` y `register_url_only` usan el mismo candado; `_save` es atómico (temporal único + fsync +
+`os.replace`). Dos cargas distintas conservan ambos casos; dos idénticas dan 303 + 400 (nunca 500) y un caso; el
+cleanup sólo borra lo propio (nunca el caso de un ganador). Tests F1/F1b/F2/F3 de E46 reescritos como cerrados +
+F2b/F3b; 640 passed en E37/E40/E41/E44/E45/E45.2/E46; suite completa, handoff, E42 y E43 no corridos. Limitación:
+el candado serializa las importaciones y sólo cubre un host. Sin deploy, merge ni llamadas pagadas. Detalle en
+[`reports/E47.5_REPORT.md`](../../reports/E47.5_REPORT.md). **Base para la próxima TASK: `auto/e47_5-issue-24`.**
 
 **E47.4** — cierra E46-H10 (issue #23). Status **PASS para H10**; readiness del piloto sigue **`NOT_READY`**
 (H02, H05, H16, H21 y el resto de E46 pendientes). `webapp/origin_guard.py` instala un único
@@ -420,7 +432,7 @@ siguiente TASK no debe ampliar features por inercia. **E46 ya auditó el piloto*
 lista «MUST FIX» en su REPORT): lo que sigue lo decide Joaquín (DR-11, DR-12); E46 no autoriza ninguna
 corrección ni numera la TASK siguiente. Se escribe como TASK nueva, no se ejecuta desde acá.
 
-Una TASK nueva la escribe ChatGPT en GitHub desde la base `auto/e46-issue-18`
+Una TASK nueva la escribe ChatGPT en GitHub desde la base `auto/e47_5-issue-24`
 ([protocolo §5.2](DEVELOPMENT_PROTOCOL.md)).
 
 ## Glosario

@@ -25,6 +25,8 @@ import os
 import re
 import shutil
 import tempfile
+import threading
+from contextlib import contextmanager
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlsplit
 
@@ -121,12 +123,56 @@ def load() -> Dict[str, Any]:
         return {"version": "e44_manifest_v1", "cases": []}
 
 
+_MANIFEST_LOCK = threading.RLock()
+_lock_depth = 0          # sólo lo toca el hilo que tiene _MANIFEST_LOCK
+
+
+@contextmanager
+def _manifest_lock():
+    """Exclusión de las secciones leer-modificar-escribir del manifiesto (E47.5, cierra E46-H02).
+    `_import_case` leía el manifiesto, hacía trabajo largo (evidencia, proyecto E37) y escribía el
+    manifiesto entero: dos cargas a la vez se pisaban y una quedaba huérfana. El candado de hilos
+    cubre el proceso; `flock` sobre un archivo cubre además a varios procesos del mismo host (no a
+    hosts distintos). Reentrante: el flock sólo se toma en la entrada más externa."""
+    global _lock_depth
+    with _MANIFEST_LOCK:
+        if _lock_depth:
+            yield
+            return
+        os.makedirs(root(), exist_ok=True)
+        fd = os.open(os.path.join(root(), "manifest.lock"), os.O_CREAT | os.O_RDWR, 0o644)
+        try:
+            try:
+                import fcntl                                          # noqa: PLC0415
+                fcntl.flock(fd, fcntl.LOCK_EX)
+            except ImportError:                                       # sin fcntl: sólo hilos
+                pass
+            _lock_depth = 1
+            try:
+                yield
+            finally:
+                _lock_depth = 0
+        finally:
+            os.close(fd)                                              # cerrar suelta el flock
+
+
 def _save(m: Dict[str, Any]) -> None:
+    """Escritura atómica: archivo temporal ÚNICO en el mismo directorio, fsync y `os.replace`. Un
+    corte o un lector concurrente ve el manifiesto anterior o el nuevo, nunca uno truncado."""
     os.makedirs(root(), exist_ok=True)
-    tmp = _manifest_path() + ".tmp"
-    with open(tmp, "w", encoding="utf-8") as fh:
-        json.dump(m, fh, ensure_ascii=False, indent=1, sort_keys=True)
-    os.replace(tmp, _manifest_path())
+    fd, tmp = tempfile.mkstemp(prefix="manifest.", suffix=".tmp", dir=root())
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            json.dump(m, fh, ensure_ascii=False, indent=1, sort_keys=True)
+            fh.flush()
+            os.fsync(fh.fileno())
+        os.replace(tmp, _manifest_path())
+    except BaseException:
+        try:
+            os.remove(tmp)
+        except FileNotFoundError:
+            pass
+        raise
 
 
 def canonical_url(url: str) -> str:
@@ -257,6 +303,14 @@ def _import_case(bundle_dir: str, raw: Dict[str, Any], author: str) -> str:
     if gt_sha and any(a["sha256"] == gt_sha for a in specs if a["role"] != ROLE_GT):
         raise CampaignError("el plano real es byte a byte uno de los inputs: no es ciego")
     inputs = [a for a in specs if a["role"] != ROLE_GT]
+    # Lo anterior sólo lee el bundle; desde acá se decide, se crea y se publica, y va bajo el
+    # candado: duplicado → evidencia/proyecto → manifiesto es una sola sección crítica.
+    with _manifest_lock():
+        return _import_locked(raw, track, files, inputs, author)
+
+
+def _import_locked(raw: Dict[str, Any], track: str, files: List[Tuple[Dict[str, Any], str]],
+                   inputs: List[Dict[str, Any]], author: str) -> str:
     m = load()
     dup = _find_duplicate(m, raw, [a["sha256"] for a in inputs])
     if dup:
@@ -278,7 +332,14 @@ def _import_case(bundle_dir: str, raw: Dict[str, Any], author: str) -> str:
                     "sha256": a["sha256"], "origin_url": a["origin_url"]} for a in inputs],
         "has_ground_truth": track == CREATE,
     }
-    ev = os.path.join(case_dir(cid), "evidence")
+    cdir = case_dir(cid)
+    ev = os.path.join(cdir, "evidence")
+    # Propiedad del cleanup: sólo se borra lo que ESTA invocación creó. La carpeta entera es propia si
+    # no existía, o si existía sin caso en el manifiesto (resto de un intento muerto: bajo el candado
+    # nadie más la usa, y dejarla bloquearía el reintento, H08). Si el manifiesto ya la referencia
+    # es de otro caso: sólo se retiran los archivos que esta invocación copió.
+    creados: List[str] = []
+    cdir_propia = not os.path.exists(cdir) or not any(x["case_id"] == cid for x in m["cases"])
     os.makedirs(ev, exist_ok=True)
     try:
         for a, p in files:
@@ -286,6 +347,7 @@ def _import_case(bundle_dir: str, raw: Dict[str, Any], author: str) -> str:
                 continue
             dest = os.path.join(ev, os.path.basename(a["file"]))
             shutil.copyfile(p, dest)
+            creados.append(dest)
             os.chmod(dest, 0o444)                  # el original capturado es evidencia inmutable
         if track == CREATE:
             gt = next(p for a, p in files if a["role"] == ROLE_GT)
@@ -293,7 +355,15 @@ def _import_case(bundle_dir: str, raw: Dict[str, Any], author: str) -> str:
     except Exception:
         # un rechazo a mitad de camino no deja evidencia huérfana: reintentar el mismo material
         # chocaría con los archivos de sólo lectura y el caso nunca entraría
-        shutil.rmtree(case_dir(cid), ignore_errors=True)
+        if cdir_propia:
+            shutil.rmtree(cdir, ignore_errors=True)
+        else:
+            for f in creados:
+                try:
+                    os.chmod(f, 0o644)
+                    os.remove(f)
+                except OSError:
+                    pass
         raise
     m["cases"].append(case)
     _save(m)
@@ -418,17 +488,23 @@ def _tmp_root() -> str:
 
 
 def exclude(case_id: str, reason: str) -> None:
-    m = load()
-    c = next((c for c in m["cases"] if c["case_id"] == case_id), None)
-    if c is None or not reason.strip():
-        raise CampaignError("caso inexistente o sin motivo")
-    c["excluded_reason"] = reason.strip()
-    _save(m)
+    with _manifest_lock():
+        m = load()
+        c = next((c for c in m["cases"] if c["case_id"] == case_id), None)
+        if c is None or not reason.strip():
+            raise CampaignError("caso inexistente o sin motivo")
+        c["excluded_reason"] = reason.strip()
+        _save(m)
 
 
 def register_url_only(raw: Dict[str, Any]) -> str:
     """Anota una URL encontrada sin material. Existe para que NO infle ningún N: queda URL_ONLY."""
     _validate_entry({**raw, "assets": None})
+    with _manifest_lock():
+        return _register_url_only_locked(raw)
+
+
+def _register_url_only_locked(raw: Dict[str, Any]) -> str:
     m = load()
     if _find_duplicate(m, raw, []):
         raise CampaignError("duplicado")
