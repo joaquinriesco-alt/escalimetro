@@ -1,6 +1,6 @@
 # ESCALÍMETRO — Estado actual
 
-> **Última actualización:** 2026-10-04 · al cerrar `E45.2` · rama `auto/e45_2-issue-17`
+> **Última actualización:** 2026-10-05 · al cerrar `E46` · rama `auto/e46-issue-18`
 > Todo lo que está acá fue verificado al escribirlo: el código contra el repo; las ramas **contra
 > GitHub**, no contra las ramas locales ([protocolo §9.1](DEVELOPMENT_PROTOCOL.md)); las cifras de
 > los pilotos contra `.data-lab/` de la máquina de desarrollo, que **no** está en el repo.
@@ -47,7 +47,9 @@ compara motores de reconstrucción con el plano real oculto hasta el final.
 | `e45_web_pilot_40_cases` | `62b6a96` | la TASK E45 de ChatGPT (sólo `tasks/E45.md`), hija de `auto/e44-issue-13` según el preflight |
 | `auto/e45-issue-14` | — | rama automática de E45, hija de `e45_web_pilot_40_cases`. No verificada contra GitHub |
 | `e45_2_mobile_upload_hardening` | `bbaa887` | la TASK E45.2 de ChatGPT (sólo `tasks/E45.2.md`), hija de `auto/e45-issue-14` según el preflight |
-| `auto/e45_2-issue-17` | esta entrega | rama automática de E45.2, hija de `e45_2_mobile_upload_hardening` · **base para la próxima TASK**. La publica el workflow. No verificada contra GitHub |
+| `auto/e45_2-issue-17` | `2f99819` (remota de seguimiento del checkout de E46; no reverificada contra GitHub) | rama automática de E45.2, hija de `e45_2_mobile_upload_hardening` |
+| `e46_night_adversarial_audit` | `c9a215b` (ídem) | la TASK E46 de ChatGPT (sólo `tasks/E46.md`, verificado con `git diff --name-only`), hija de `auto/e45_2-issue-17` (`git merge-base --is-ancestor`) |
+| `auto/e46-issue-18` | esta entrega | rama automática de E46, hija de `e46_night_adversarial_audit` · **base para la próxima TASK**. La publica el workflow. No verificada contra GitHub |
 
 Las filas de `main`, `m03_executor_smoke` y `m02_github_executor` de arriba son de antes de M03.1;
 la afirmación sobre `main` de esta fila, y los conteos, **no están reverificados** (ver §9.1 del protocolo).
@@ -106,6 +108,9 @@ webapp/                 Flask + SQLite + archivos en ESCALIMETRO_DATA_DIR
   /property/*           ingest de URL + diagnóstico de publicación (E17.0–E17.2)
   /lab/reconstruction/* laboratorio de CREAR PLANO: motores, corridas inmutables, plano real
                         oculto (E37). Tablas recon_*; plano real en DATA_DIR/reconstruction_gt/
+  /lab/campaign/e44/*   web piloto de la campaña 20 + 20 (E44, E45, E45.2): MEJORAR / CREAR sin CLI,
+                        panel, evaluación RESULTADO y UX por separado. Estado en DATA_DIR/e44/
+                        (manifiesto + eventos de sólo inserción); auditada en E46 (NOT_READY)
 .github/workflows/      escalimetro-auto-task.yml: ejecutor GitHub-native de TASKs (M02), con el
                         aislamiento de subprocesos de M02.1 (bubblewrap, antes de la credencial)
 scripts/auto_task.py    su preflight y su verificación. ACTIVO en main desde el 2026-10-01, con la
@@ -131,6 +136,15 @@ Los 2 fallos son **preexistentes** —desde E27 por lo menos; dependen de artefa
 que `.gitignore` excluye— y no se tocan:
 `test_e12_hardening::test_el_html_muestra_la_etapa_que_fallo`,
 `test_e15_case_contract::test_las_rutas_de_artefactos_se_derivan_del_caso`.
+
+**Suite completa en el sandbox de E46** (2026-10-05, Python 3.12.14, sin tesseract ni scikit-image):
+`9 failed, 2896 passed, 12 skipped, 7 xfailed, 7 warnings, 1 error in 429.20s (0:07:09)` (≈ 7 min, no los ≈ 12 de otras máquinas). Fallan 9 + 1 error de colección: los 2
+preexistentes de arriba y 7 **de entorno** —`test_e16_4` (opencv 5.0.0.93 / numpy 2.5.3 sin lock),
+`test_e16_5` (falta el binario `tesseract`) y `test_e17_width_representation` ×5 + `test_e18` (colección)
+por `scikit-image`, que no está declarado en ningún lado—. `src/` y esos tests son idénticos a `6324b1f`:
+no es regresión de E37–E45.2. Los 378 tests de auditoría de E46 (`tests/test_e46_adv_*.py`) **fijan el
+comportamiento actual**: los llamados `…_DEFECTO_Hxx` afirman un defecto y fallarán cuando se corrija.
+E37 + E44 + E45 + E45.2: 195 passed.
 
 `tests/test_ai_handoff.py` verifica que este sistema no se desincronice: toda TASK con su REPORT,
 enlaces que resuelven, decisiones coherentes, nada que parezca un secreto, y que el `main` que
@@ -171,7 +185,25 @@ declara la tabla de ramas sea el de `origin/main` y no el de la rama local.
 
 ## Última tarea completada
 
-**E45.2** — endurecimiento de la carga móvil de la web piloto (issue #17). Status en
+**E46** — auditoría adversarial nocturna pre-piloto (issue #18). Status **PASS** (la auditoría se ejecutó
+completa); **veredicto de readiness del piloto: `NOT_READY`**. 24 hallazgos —3 BLOCKER, 4 HIGH, 11 MEDIUM,
+7 LOW— ninguno corregido (la TASK lo prohíbe; sólo tests de auditoría, REPORT y este estado). **BLOCKER:**
+*H01* un plano re-codificado y subido como «foto» llega al motor y `blind_audit` da OK (la ceguera es sólo
+por sha256); *H03* un doble disparo de PROCESAR crea dos corridas pagas (`confirm_paid=True` fijo; ventana
+≤ 5 ms); *H10* ~67 rutas POST sin guarda de mismo origen —con `OPENAI_API_KEY` presente, un POST ajeno llega a
+`/lab/benchmark/smoke/openai`; llamada sustituida, ninguna real—. **HIGH:** *H02* carrera en las cargas
+(un manifiesto sin candado pierde casos: 30/30 rondas; doble envío da 500 en 20/25), *H05* una corrida CREAR
+fallida es definitiva y excluir no libera la propiedad, *H16* cada foto de 12 MP cuesta ≈ 12 s de CPU
+(20 fotos = 217 s en una petición), *H21* un error de proveedor con una racha de ≥ 9 dígitos mata el panel
+y la página del caso. **Invariantes que sí se sostienen:** el GT no aparece en ninguna otra superficie
+observable antes del reveal, los DEMO nunca cuentan, cierre → reveal → evaluación en orden y recuperable
+ante cortes, la clave del proveedor no se persiste, toda ruta no pública exige credenciales. **NO PROBADO:**
+Railway, iPhone/Safari, `docker build`, OpenAI real (modelo `gpt-5.6-sol` sin verificar). Sin deploy, merge ni
+llamadas pagadas. Siguiente: Joaquín decide **DR-11** (arrancar o corregir antes) y **DR-12** (reintento y
+exclusión); si hay TASK de corrección la escribe ChatGPT desde `auto/e46-issue-18`. Detalle y lista
+priorizada en [`reports/E46_REPORT.md`](../../reports/E46_REPORT.md).
+
+Antes, **E45.2** — endurecimiento de la carga móvil de la web piloto (issue #17). Status en
 [`reports/E45.2_REPORT.md`](../../reports/E45.2_REPORT.md). CREAR acepta HEIC/HEIF de iPhone (se decodifican
 y entran al proyecto como JPG; el motor no depende de HEIC; dependencia nueva `pillow-heif`), con límites
 explícitos —20 fotos, 15 MB por foto, 120 MB por lote, 25 MB el plano real— que se aplican leyendo en trozos
@@ -291,6 +323,8 @@ Ninguna. Esperando decisión de Joaquín.
 | **DR-7** | Aprobar o no la licencia de BFL (D-006). | `PRODUCT_GATE` |
 | **DR-8** | Proteger `main` en GitHub. Hoy no tiene protección de rama (verificado): con ChatGPT escribiendo en GitHub, lo único que impide un push directo a `main` es el protocolo, y un push a `main` puede disparar el deploy pagado de `backend`. | `MERGE_GATE` |
 | **DR-10** | Llevar M02.1 a `main`: fast-forward de `edd50e0` a la punta de `m02_1_bubblewrap_bootstrap` (2 commits: la TASK y M02.1). Sin eso, el ejecutor sigue muriendo al instalar Claude Code. Antes, la auditoría de ChatGPT. **Posiblemente ya ejecutada:** `origin/main` apunta a `d097069` (M02.1) en el checkout de E39; no verificado contra GitHub. | `MERGE_GATE` |
+| **DR-11** (E46) | **Arrancar el piloto real con el veredicto `NOT_READY` o corregir antes.** A) TASK de corrección con la lista «MUST FIX» (H01, H10, H03, H21, H02, H16, H05/H20) y recién entonces el primer caso; B) probar con las mitigaciones operativas y aceptar H02/H05/H16/H21; C) esperar también a los MEDIUM. Recomendación técnica: A. Detalle en [`reports/E46_REPORT.md`](../../reports/E46_REPORT.md). | `DEPLOY_GATE` |
+| **DR-12** (E46) | **Reintento y exclusión de casos CREAR.** Hoy una corrida fallida es definitiva (sin botón, sin re-subida: el duplicado sigue bloqueando incluso tras `exclude`). A) permitir reintentar registrando cada intento; B) mantener el fallo definitivo pero liberar la propiedad al excluirla; C) dejarlo. Cambia qué cuenta como «ejecutado». | `EXPERIMENT_GATE` |
 | **P-1** (E39) | **Pricing: CLP vs UF.** North Star pegado: Plano Corporativo $10.000 CLP, Crear Plano ≈$50.000 CLP, PRO ≈$150.000 CLP/mes; decisión posterior del mismo día: 0,25 UF mejorar y 1 UF crear. No hay decisión de cuál reemplaza a cuál. No publicar precios antes. | `PRODUCT_GATE` |
 | **P-2** (E39) | Cuáles son los 2–3 estilos (hoy hay 5 en `presets.py`, sólo de ambientación). Bloquea sólo la variante de presentación del plano. | `PRODUCT_GATE` |
 | **P-3** (E39) | Alcance de PRO que el North Star no resuelve (alternativas por prospecto, ambientación incluida, modalidad). | `PRODUCT_GATE` |
@@ -320,6 +354,12 @@ ejecutor, y ChatGPT ejecutó el fast-forward. Es la opción A de
    reemplazo; no se reescribieron.
 4. **`/property`** está construido sobre el diagnóstico de la publicación, que D-001 declara
    aplicación. Desde E17.1 muestra primero las oportunidades y deja el puntaje como secundario.
+5. **Contradicciones documento ↔ código** que E46 dejó trazadas (detalle y tests en
+   [`reports/E46_REPORT.md`](../../reports/E46_REPORT.md) §Contradicciones): `E45.2_REPORT` dice que una
+   imagen pequeña en bytes pero enorme en píxeles «no agota memoria» (95 KB ⇒ ≈ 460 MB); `requirements.txt`
+   se declara «espejo de pyproject» y no lo es; E44 declara resultados «de sólo inserción» pero `exclude`
+   reescribe el manifiesto y `settle` puede duplicar un singleton; el reveal de E37 sigue vivo para los
+   proyectos de la campaña.
 
 ## Siguiente acción aprobada
 
@@ -341,10 +381,11 @@ Independiente: **correr el primer experimento real de E37**, Piso Ricardo Lyon I
 
 **Producto (E39):** el paso 1 (landing pública) está hecho en E40, salvo las capturas; el paso 2
 (pedido de Plano Corporativo) en E41; E42 lo conecta al LAB y E43 produce y entrega por enlace. La
-siguiente TASK no debe ampliar features por inercia: debe auditar el circuito completo como producto
-y decidir qué falta para probarlo con un caso real. Se escribe como TASK nueva, no se ejecuta desde acá.
+siguiente TASK no debe ampliar features por inercia. **E46 ya auditó el piloto** (veredicto `NOT_READY`,
+lista «MUST FIX» en su REPORT): lo que sigue lo decide Joaquín (DR-11, DR-12); E46 no autoriza ninguna
+corrección ni numera la TASK siguiente. Se escribe como TASK nueva, no se ejecuta desde acá.
 
-Una TASK nueva la escribe ChatGPT en GitHub desde la base `auto/e45_2-issue-17`
+Una TASK nueva la escribe ChatGPT en GitHub desde la base `auto/e46-issue-18`
 ([protocolo §5.2](DEVELOPMENT_PROTOCOL.md)).
 
 ## Glosario
