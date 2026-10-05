@@ -230,34 +230,77 @@ def test_B6_un_plano_real_rechazado_no_deja_rastro_ni_en_el_error(env, gt_nombre
         os.path.join(camp.root(), "cases"))
 
 
-# ---- DEFECTO E46-H01 · el plano como «foto» entra al motor sin aviso ----------------------------
-def test_DEFECTO_H01_un_plano_re_guardado_como_foto_entra_al_motor_y_la_auditoria_de_ceguera_pasa(env):
-    """La ceguera se hace cumplir por identidad byte a byte (sha256). Si el operador sube, como foto,
-    el MISMO plano en otra codificación —lo habitual en una galería de portal, donde el plano es una
-    imagen más—, E37 lo marca `looks_like_plan`, pero la nota se descarta en `_prepare_create`, el
-    caso se acepta, `blind_audit` da ok y el motor recibe el dibujo.
+# ---- E46-H01 · el plano como «foto» ya no entra al motor (cerrado en E47.2) ---------------------
+def _recodificado_jpeg():
+    import cv2
+    import numpy as np
+    plano = _plano_de_galeria()
+    img = cv2.imdecode(np.frombuffer(plano, np.uint8), cv2.IMREAD_COLOR)
+    return plano, cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, 90])[1].tobytes()
 
-    Si esto se corrige (rechazar o avisar), este test fallará: actualizarlo."""
+
+def _sin_rastro(camp):
+    from webapp.domain.reconstruction import projects
+    assert camp.load()["cases"] == [] and projects.listing() == []
+
+
+def _post(c, fotos, plano, nombre="p.png"):
+    return c.post(f"{BASE}/crear", data={"fotos": [(io.BytesIO(b), n) for b, n in fotos],
+                                         "plano_real": (io.BytesIO(plano), nombre)},
+                  content_type="multipart/form-data")
+
+
+def test_H01_un_plano_recodificado_como_jpeg_se_rechaza_antes_del_motor(env):
+    """Antes (E46) el caso se aceptaba, `blind_audit` daba ok y el dibujo viajaba al proveedor."""
+    c, camp, tmp = env
+    plano, como_foto = _recodificado_jpeg()
+    assert hashlib.sha256(como_foto).digest() != hashlib.sha256(plano).digest()
+    r = _post(c, [(como_foto, "IMG_plano.jpg"), (_foto(1), "IMG_2.png")], plano, "plano_real.png")
+    assert r.status_code == 400 and "Retira esta imagen de las fotos" in r.get_data(as_text=True)
+    _sin_rastro(camp)
+
+
+def test_H01_se_rechaza_aunque_el_clasificador_no_lo_vea_como_plano(env, monkeypatch):
+    """La comparación perceptual contra el GT es independiente de `looks_like_plan`."""
+    from webapp import plan_guard
+    monkeypatch.setattr(plan_guard, "parece_plano", lambda img: None)
+    c, camp, tmp = env
+    plano, como_foto = _recodificado_jpeg()
+    r = _post(c, [(como_foto, "a.jpg")], plano)
+    assert r.status_code == 400 and "igual al plano real" in r.get_data(as_text=True)
+    _sin_rastro(camp)
+
+
+def test_H01_la_perceptual_atrapa_resize_y_recodificacion_sin_el_clasificador(env):
+    import cv2
+    import numpy as np
+    from webapp import plan_guard
+    plano = cv2.imdecode(np.frombuffer(_plano_de_galeria(), np.uint8), cv2.IMREAD_COLOR)
+    jpg = cv2.imdecode(cv2.imencode(".jpg", plano, [cv2.IMWRITE_JPEG_QUALITY, 60])[1], cv2.IMREAD_COLOR)
+    assert plan_guard.se_parece(jpg, plano) and plan_guard.se_parece(cv2.resize(plano, (200, 150)), plano)
+    for i in (1, 2, 3):                                           # fotos normales: no
+        foto = cv2.imdecode(np.frombuffer(_foto(i), np.uint8), cv2.IMREAD_COLOR)
+        assert not plan_guard.se_parece(foto, plano)
+
+
+def test_H01_una_foto_legitima_con_textura_se_acepta(env):
+    """Foto con color y detalle (no papel con tinta) junto al plano real: se acepta."""
     import cv2
     import numpy as np
     c, camp, tmp = env
-    plano = _plano_de_galeria()                                   # el «plano real» de la propiedad
-    img = cv2.imdecode(np.frombuffer(plano, np.uint8), cv2.IMREAD_COLOR)
-    como_foto = cv2.imencode(".jpg", img, [cv2.IMWRITE_JPEG_QUALITY, 90])[1].tobytes()
-    assert como_foto != plano and hashlib.sha256(como_foto).digest() != hashlib.sha256(plano).digest()
-    data = {"fotos": [(io.BytesIO(como_foto), "IMG_plano.jpg"), (io.BytesIO(_foto(1)), "IMG_2.png")],
-            "plano_real": (io.BytesIO(plano), "plano_real.png")}
-    r = c.post(f"{BASE}/crear", data=data, content_type="multipart/form-data")
-    cid = _cid(r)                                                 # se acepta
-    pid = camp.get(cid)["recon_project_id"]
-    from webapp import store
-    marcadas = [dict(a)["looks_like_plan"] for a in store.q(
-        "SELECT looks_like_plan FROM recon_assets WHERE project_id=? ORDER BY sort_order", (pid,))]
-    assert marcadas == [1, 0]                                     # E37 lo detectó…
-    assert camp.blind_audit(cid) == {"ok": True, "violations": []}  # …y la auditoría no lo ve
-    _cuerpo, req = _cuerpo_al_proveedor(camp, cid)
-    assert any(im.data == como_foto for im in req.images)         # el dibujo viaja al proveedor
-    assert "parece un plano" not in _html(c, f"{BASE}/caso/{cid}")  # y el piloto no lo avisa
+    img = (np.random.RandomState(7).rand(300, 400, 3) * 120 + 40).astype(np.uint8)
+    img[:, :, 2] = np.clip(img[:, :, 2] + 60, 0, 255)             # dominante cálida
+    cid = _cid(_post(c, [(cv2.imencode(".jpg", img)[1].tobytes(), "sala.jpg")], _plano_de_galeria()))
+    assert camp.blind_audit(cid)["ok"] is True
+
+
+def test_H01_el_rechazo_no_filtra_el_gt(env):
+    c, camp, tmp = env
+    plano, como_foto = _recodificado_jpeg()
+    r = _post(c, [(como_foto, "a.jpg")], plano, "plano_secreto.png")
+    t = r.get_data(as_text=True).lower()
+    assert hashlib.sha256(plano).hexdigest() not in t and "plano_secreto" not in t
+    assert "reconstruction_gt" not in t
 
 
 # ---- DEFECTO E46-H04 · reveal fuera de banda --------------------------------------------------
@@ -304,8 +347,8 @@ def test_B7_blind_audit_detecta_huellas_del_gt_en_lo_visible_al_motor(env):
     assert a["ok"] is False and any("nombre" in v for v in a["violations"])
 
 
-def test_B8_blind_audit_no_ve_el_gt_si_viaja_re_codificado_como_foto(env):
-    """Límite conocido (misma raíz que H01): la auditoría compara sha256, no contenido."""
+def test_B8_el_plano_redimensionado_como_png_se_rechaza(env):
+    """Antes de E47.2 (E46-H01) este caso pasaba: la auditoría compara sha256, no contenido."""
     import cv2
     import numpy as np
     c, camp, tmp = env
@@ -315,8 +358,8 @@ def test_B8_blind_audit_no_ve_el_gt_si_viaja_re_codificado_como_foto(env):
     r = c.post(f"{BASE}/crear", data={"fotos": [(io.BytesIO(otra), "x.png")],
                                        "plano_real": (io.BytesIO(plano), "p.png")},
                content_type="multipart/form-data")
-    cid = _cid(r)
-    assert camp.blind_audit(cid)["ok"] is True
+    assert r.status_code == 400
+    _sin_rastro(camp)
 
 
 def test_B9_el_camino_bloqueado_por_credencial_tampoco_filtra_y_no_simula(env, monkeypatch):

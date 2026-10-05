@@ -283,6 +283,14 @@ def _prepare_create(case: Dict[str, Any], ev: str, gt_path: str, author: str) ->
                 if k in {f[0] for f in projects.DECLARED_FIELDS}}
     if case.get("published_m2") and "total_area_m2" not in declared:
         declared["total_area_m2"] = case["published_m2"]
+    # E47.2 (E46-H01): antes de crear el proyecto, ninguna «foto» puede ser el plano. La ceguera por
+    # sha256 no ve el mismo dibujo recodificado o redimensionado.
+    from . import plan_guard                                      # noqa: PLC0415
+    try:
+        plan_guard.revisar_fotos([(a["file"], os.path.join(ev, a["file"])) for a in case["assets"]],
+                                 gt_path)
+    except ValueError as e:
+        raise CampaignError(str(e)) from None
     pid = projects.create("E44 " + case["case_id"], declared, author)
     try:
         for a in case["assets"]:

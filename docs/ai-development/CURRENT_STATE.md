@@ -1,6 +1,6 @@
 # ESCALÍMETRO — Estado actual
 
-> **Última actualización:** 2026-10-05 · al cerrar `E46` · rama `auto/e46-issue-18`
+> **Última actualización:** 2026-10-05 · al cerrar `E47.2` · rama `auto/e47_2-issue-21`
 > Todo lo que está acá fue verificado al escribirlo: el código contra el repo; las ramas **contra
 > GitHub**, no contra las ramas locales ([protocolo §9.1](DEVELOPMENT_PROTOCOL.md)); las cifras de
 > los pilotos contra `.data-lab/` de la máquina de desarrollo, que **no** está en el repo.
@@ -49,7 +49,9 @@ compara motores de reconstrucción con el plano real oculto hasta el final.
 | `e45_2_mobile_upload_hardening` | `bbaa887` | la TASK E45.2 de ChatGPT (sólo `tasks/E45.2.md`), hija de `auto/e45-issue-14` según el preflight |
 | `auto/e45_2-issue-17` | `2f99819` (remota de seguimiento del checkout de E46; no reverificada contra GitHub) | rama automática de E45.2, hija de `e45_2_mobile_upload_hardening` |
 | `e46_night_adversarial_audit` | `c9a215b` (ídem) | la TASK E46 de ChatGPT (sólo `tasks/E46.md`, verificado con `git diff --name-only`), hija de `auto/e45_2-issue-17` (`git merge-base --is-ancestor`) |
-| `auto/e46-issue-18` | esta entrega | rama automática de E46, hija de `e46_night_adversarial_audit` · **base para la próxima TASK**. La publica el workflow. No verificada contra GitHub |
+| `auto/e46-issue-18` | — | rama automática de E46, hija de `e46_night_adversarial_audit`. No verificada contra GitHub |
+| `e47_2_h01_gt_guard` | `f3240ec` | la TASK E47.2 de ChatGPT (sólo `tasks/E47.2.md`), hija de `auto/e46-issue-18` según el preflight |
+| `auto/e47_2-issue-21` | esta entrega | rama automática de E47.2, hija de `e47_2_h01_gt_guard` · **base para la próxima TASK**. La publica el workflow. No verificada contra GitHub |
 
 Las filas de `main`, `m03_executor_smoke` y `m02_github_executor` de arriba son de antes de M03.1;
 la afirmación sobre `main` de esta fila, y los conteos, **no están reverificados** (ver §9.1 del protocolo).
@@ -184,6 +186,15 @@ declara la tabla de ramas sea el de `origin/main` y no el de la rama local.
   registrara un deploy (ver Producción). Aun así, la configuración de Railway sólo la ve Joaquín.
 
 ## Última tarea completada
+
+**E47.2** — cierra E46-H01 (issue #21). Status **PASS para H01**; readiness del piloto sigue **`NOT_READY`**
+(H03, H10, H02, H05, H16, H21 y el resto de E46 pendientes). `webapp/plan_guard.py` rechaza, en
+`campaign._prepare_create` y antes de crear nada, toda foto que `classify` ve como plano (sobre copia ≤ 512 px)
+o que se parece al plano real (miniatura 32×32 en grises, misma proporción ±8 %, diferencia media ≤ 0,12 y
+Pearson ≥ 0,90). Umbral conservador, sin calibrar con fotos reales; no cubre recortes/rotaciones, y con GT en
+PDF sólo actúa `classify`. 577 tests verdes en E37/E44/E45/E46; suite completa no corrida. Sin deploy, merge ni
+llamadas pagadas. Detalle en [`reports/E47.2_REPORT.md`](../../reports/E47.2_REPORT.md). **Base para la
+próxima TASK: `auto/e47_2-issue-21`.**
 
 **E46** — auditoría adversarial nocturna pre-piloto (issue #18). Status **PASS** (la auditoría se ejecutó
 completa); **veredicto de readiness del piloto: `NOT_READY`**. 24 hallazgos —3 BLOCKER, 4 HIGH, 11 MEDIUM,
