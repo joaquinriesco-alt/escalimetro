@@ -16,7 +16,7 @@ from flask import (Flask, abort, jsonify, redirect, render_template, request,
                    send_file, send_from_directory, url_for)
 
 from . import (auth, briefs as briefmod, customer, detected as det, engine, intake, lab,
-               pedidos, pilot, potential, public, reconstruction, staging_ui, store)
+               origin_guard, pedidos, pilot, potential, public, reconstruction, staging_ui, store)
 from .domain import (assets as dassets, entitlements as dent, fits as dfits,
                      floorplan as dfloorplan, packs as dpacks, presets as dpresets,
                      properties as dproperties, visual as dvisual)
@@ -47,6 +47,8 @@ def create_app() -> Flask:
     app = Flask(__name__, template_folder="templates", static_folder="static")
     app.config["MAX_CONTENT_LENGTH"] = intake.MAX_UPLOAD_MB * 1024 * 1024 * 4
     engine.start_worker()
+    # E47.4 (E46-H10): un solo punto, antes de cualquier vista, para todo POST con otro origen.
+    origin_guard.instalar(app)
     app.register_blueprint(customer.bp)
     app.register_blueprint(staging_ui.bp)
     app.register_blueprint(lab.bp)

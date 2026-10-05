@@ -210,41 +210,69 @@ def test_G3c_ningun_GET_del_piloto_escribe_por_el_camino_de_un_POST_pero_el_GET_
     assert [e["kind"] for e in camp.events(cid)] == ["create_started", "pipeline"]
 
 
-# ---- DEFECTO E46-H10 · el resto de la app no tiene guarda de origen --------------------------------
-def test_DEFECTO_H10_las_demas_rutas_POST_de_la_app_aceptan_un_Origin_ajeno(env):
-    """Sólo `/lab/reconstruction` y `/lab/campaign/e44` filtran por origen. Las otras ~65 rutas POST
-    (staging, LAB, benchmark, propiedad del cliente, pedidos, /upload…) dependen únicamente de HTTP
-    Basic, que el navegador reenvía solo (la razón por la que E37 puso la guarda). Una página ajena
-    puede mandar un formulario con la sesión del operador."""
-    c, camp, tmp = env
+# ---- E46-H10 · CERRADO en E47.4: guarda global de mismo origen -------------------------------------
+# Única excepción: el POST público de E41. Se enumera acá y en `webapp/origin_guard.EXENTAS`.
+EXENTAS_POST = {"/planos/solicitar"}
+
+
+def _clasificar_posts(c):
+    """(protegidas, exentas): protegida = un Origin ajeno da 403 sin ejecutar la vista, y el origen
+    propio no da 403 (un 403 que también ocurre con el origen correcto, como el corte por entitlement
+    de /properties/new, no viene de la guarda)."""
     sin = _cliente_sin_origen(c)
-    sin_guarda, guardadas = [], []
+    protegidas, exentas = [], []
     for m, regla, ep in _reglas(c.application):
-        if m != "POST" or regla.startswith("/planos/"):          # /planos es público a propósito
+        if m != "POST":
             continue
-        r = sin.post(_url_para(regla), headers={"Origin": "http://evil.example"})
-        if r.status_code == 403:
-            # un 403 que también ocurre con el origen correcto no viene de la guarda (p. ej. el
-            # corte por producto/entitlement de /properties/new): no es una ruta guardada
-            if sin.post(_url_para(regla), headers={"Origin": "http://localhost"}).status_code == 403:
-                continue
-            guardadas.append(regla)
-        else:
-            sin_guarda.append(regla)
-    assert len(guardadas) >= 15 and all(g.startswith(("/lab/campaign/e44", "/lab/reconstruction")) for g in guardadas)
-    assert len(sin_guarda) >= 60
+        ajeno = sin.post(_url_para(regla), headers={"Origin": "http://evil.example"}).status_code
+        if ajeno != 403:
+            exentas.append(regla)
+        elif sin.post(_url_para(regla), headers={"Origin": "http://localhost"}).status_code != 403:
+            protegidas.append(regla)
+    return protegidas, exentas
+
+
+def test_H10_CERRADO_toda_ruta_POST_rechaza_un_Origin_ajeno_salvo_la_excepcion_publica(env):
+    c, camp, tmp = env
+    protegidas, exentas = _clasificar_posts(c)
+    assert set(exentas) == EXENTAS_POST
+    assert len(protegidas) >= 60
     for sensible in ("/staging/<property_id>/generate", "/staging/attempt/<attempt_id>/retry",
                      "/lab/benchmark/smoke/<provider>", "/lab/benchmark/run", "/lab/benchmark/approve",
                      "/lab/pedidos/<request_id>/generar", "/property/analizar", "/upload",
-                     "/properties/<property_id>/fits/<fit_id>/generate"):
-        assert sensible in sin_guarda, sensible
+                     "/properties/<property_id>/fits/<fit_id>/generate",
+                     "/lab/reconstruction/nuevo"):
+        assert sensible in protegidas, sensible
 
 
-def test_DEFECTO_H10b_con_OPENAI_API_KEY_presente_un_POST_ajeno_llega_a_la_llamada_de_proveedor(env, monkeypatch):
-    """El piloto de CREAR exige `OPENAI_API_KEY` en el servidor. Con ella, el proveedor `openai` del
-    LAB queda «con credencial» y `POST /lab/benchmark/smoke/openai` («UNA llamada real», sin pedir
-    confirmación) llega a `staging.smoke_test` con un Origin ajeno. La llamada está sustituida por un
-    registro: NO se hace ninguna llamada real."""
+def test_H10_matriz_de_cabeceras_en_una_ruta_comun(env):
+    """Rutas no estrictas: sin cabeceras mantienen su contrato; con cabecera ajena o `null`, 403."""
+    c, camp, tmp = env
+    sin = _cliente_sin_origen(c)
+    ruta = "/settings/product-mode"
+    for cab, bloqueado in [({}, False), ({"Origin": "http://localhost"}, False),
+                           ({"Referer": "http://localhost/settings"}, False),
+                           ({"Origin": "http://evil.example"}, True), ({"Origin": "null"}, True),
+                           ({"Referer": "http://evil.example/x"}, True),
+                           ({"Origin": "http://localhost", "Referer": "http://evil.example/"}, True),
+                           ({"Origin": "https://localhost"}, True),
+                           ({"Origin": "https://localhost", "X-Forwarded-Proto": "https"}, False)]:
+        assert (sin.post(ruta, headers=cab).status_code == 403) is bloqueado, cab
+
+
+def test_H10_la_excepcion_publica_sigue_funcional_con_Origin_ajeno(env):
+    c, camp, tmp = env
+    sin = _cliente_sin_origen(c)
+    r = sin.post("/planos/solicitar", headers={"Origin": "http://otro-sitio.example"})
+    assert r.status_code != 403                                   # sin email ni plano: 400, no 403
+    # la excepción es por regla exacta, no por prefijo
+    from webapp import origin_guard
+    assert origin_guard.EXENTAS == frozenset(EXENTAS_POST)
+
+
+def test_H10b_CERRADO_con_OPENAI_API_KEY_presente_un_POST_ajeno_no_llega_a_la_llamada_de_proveedor(env, monkeypatch):
+    """Con la clave en el servidor, `POST /lab/benchmark/smoke/openai` ya no llega a
+    `staging.smoke_test` con un Origin ajeno. Llamada sustituida por un registro: ninguna real."""
     c, camp, tmp = env
     monkeypatch.setenv("OPENAI_API_KEY", "sk-FALSA-de-prueba")
     from webapp import lab
@@ -254,9 +282,10 @@ def test_DEFECTO_H10b_con_OPENAI_API_KEY_presente_un_POST_ajeno_llega_a_la_llama
                         lambda prov, aid, pid: llamadas.append(prov) or {"attempt_id": "att_x"})
     sin = _cliente_sin_origen(c)
     r = sin.post("/lab/benchmark/smoke/openai", headers={"Origin": "http://evil.example"})
+    assert r.status_code == 403 and llamadas == []
+    # con el origen propio la ruta sigue funcionando
+    r = sin.post("/lab/benchmark/smoke/openai", headers={"Origin": "http://localhost"})
     assert r.status_code == 302 and llamadas == ["openai"]
-    # las rutas guardadas, en cambio, ni siquiera ejecutan la vista
-    assert sin.post("/lab/reconstruction/nuevo", headers={"Origin": "http://evil.example"}).status_code == 403
 
 
 # =============================================================================================

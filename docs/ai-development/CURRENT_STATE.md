@@ -1,6 +1,6 @@
 # ESCALÍMETRO — Estado actual
 
-> **Última actualización:** 2026-10-05 · al cerrar `E47.3` · rama `auto/e47_3-issue-22`
+> **Última actualización:** 2026-10-05 · al cerrar `E47.4` · rama `auto/e47_4-issue-23`
 > Todo lo que está acá fue verificado al escribirlo: el código contra el repo; las ramas **contra
 > GitHub**, no contra las ramas locales ([protocolo §9.1](DEVELOPMENT_PROTOCOL.md)); las cifras de
 > los pilotos contra `.data-lab/` de la máquina de desarrollo, que **no** está en el repo.
@@ -53,7 +53,9 @@ compara motores de reconstrucción con el plano real oculto hasta el final.
 | `e47_2_h01_gt_guard` | `f3240ec` | la TASK E47.2 de ChatGPT (sólo `tasks/E47.2.md`), hija de `auto/e46-issue-18` según el preflight |
 | `auto/e47_2-issue-21` | — | rama automática de E47.2, hija de `e47_2_h01_gt_guard`. No verificada contra GitHub |
 | `e47_3_h03_atomic_claim` | `798c086` | la TASK E47.3 de ChatGPT (sólo `tasks/E47.3.md`), hija de `auto/e47_2-issue-21` según el preflight |
-| `auto/e47_3-issue-22` | esta entrega | rama automática de E47.3, hija de `e47_3_h03_atomic_claim` · **base para la próxima TASK**. La publica el workflow. No verificada contra GitHub |
+| `auto/e47_3-issue-22` | — | rama automática de E47.3, hija de `e47_3_h03_atomic_claim`. No verificada contra GitHub |
+| `e47_4_h10_global_origin_guard` | `ad63dc8` | la TASK E47.4 de ChatGPT (sólo `tasks/E47.4.md`), hija de `auto/e47_3-issue-22` según el preflight |
+| `auto/e47_4-issue-23` | esta entrega | rama automática de E47.4, hija de `e47_4_h10_global_origin_guard` · **base para la próxima TASK**. La publica el workflow. No verificada contra GitHub |
 
 Las filas de `main`, `m03_executor_smoke` y `m02_github_executor` de arriba son de antes de M03.1;
 la afirmación sobre `main` de esta fila, y los conteos, **no están reverificados** (ver §9.1 del protocolo).
@@ -188,6 +190,16 @@ declara la tabla de ramas sea el de `origin/main` y no el de la rama local.
   registrara un deploy (ver Producción). Aun así, la configuración de Railway sólo la ve Joaquín.
 
 ## Última tarea completada
+
+**E47.4** — cierra E46-H10 (issue #23). Status **PASS para H10**; readiness del piloto sigue **`NOT_READY`**
+(H02, H05, H16, H21 y el resto de E46 pendientes). `webapp/origin_guard.py` instala un único
+`before_request` global: todo POST con `Origin`/`Referer` de otro host (incluido `Origin: null`) da 403 antes de
+la vista; sin cabeceras pasa en rutas comunes (contrato de clientes internos) y se rechaza en las estrictas de
+E37/piloto. Única excepción, por regla exacta: `POST /planos/solicitar`. `smoke/openai` con Origin ajeno ya no
+llega a la llamada de proveedor. Tests H10/H10b de E46 reescritos como cerrados; 766 passed en
+E37/E40–E46 + handoff, 1 failed **ajeno**: el REPORT de E47.2 no tiene las secciones del §7. Sin deploy, merge
+ni llamadas pagadas; suite completa no corrida. Limitación: no es un token CSRF. Detalle en
+[`reports/E47.4_REPORT.md`](../../reports/E47.4_REPORT.md). **Base para la próxima TASK: `auto/e47_4-issue-23`.**
 
 **E47.3** — cierra E46-H03 (issue #22). Status **PASS para H03**; readiness del piloto sigue **`NOT_READY`**
 (H10, H02, H05, H16, H21 y el resto de E46 pendientes). `campaign._claim` crea un archivo con `O_EXCL`

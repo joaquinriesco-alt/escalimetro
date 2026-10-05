@@ -21,13 +21,12 @@ from __future__ import annotations
 
 import os
 from typing import List, Optional
-from urllib.parse import urlparse
 
 from flask import (Blueprint, abort, jsonify, redirect, render_template, request, send_file,
                    url_for)
 from werkzeug.exceptions import RequestEntityTooLarge
 
-from . import auth
+from . import auth, origin_guard as origen_guard
 from .domain.reconstruction import contract, engines, groundtruth, projects, runs
 
 bp = Blueprint("reconstruction", __name__, url_prefix="/lab/reconstruction")
@@ -51,13 +50,7 @@ def _guardas():
     `Origin` en todo POST; un script propio lo agrega (ver `docs/E37_RECONSTRUCTION_LAB.md`)."""
     if request.method != "POST":
         return None
-    # Detrás del proxy de Railway la app ve http aunque el navegador vea https: el esquema público
-    # es el que declara el proxy. Un formulario de otro sitio no puede fijar esa cabecera.
-    esquema = (request.headers.get("X-Forwarded-Proto") or request.scheme).split(",")[0].strip()
-    vistos = [request.headers.get(c) for c in ("Origin", "Referer")]
-    vistos = [v for v in vistos if v is not None]
-    if not vistos or any((urlparse(v).scheme, urlparse(v).netloc) != (esquema, request.host)
-                         for v in vistos):
+    if origen_guard.origen_ajeno(estricto=True):       # E47.4: la lógica es común a toda la app
         abort(403)
     request.max_content_length = max_request_mb() * 1024 * 1024
     return None
