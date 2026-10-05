@@ -1,6 +1,6 @@
 # ESCALÍMETRO — Estado actual
 
-> **Última actualización:** 2026-10-05 · al cerrar `E47.2` · rama `auto/e47_2-issue-21`
+> **Última actualización:** 2026-10-05 · al cerrar `E47.3` · rama `auto/e47_3-issue-22`
 > Todo lo que está acá fue verificado al escribirlo: el código contra el repo; las ramas **contra
 > GitHub**, no contra las ramas locales ([protocolo §9.1](DEVELOPMENT_PROTOCOL.md)); las cifras de
 > los pilotos contra `.data-lab/` de la máquina de desarrollo, que **no** está en el repo.
@@ -51,7 +51,9 @@ compara motores de reconstrucción con el plano real oculto hasta el final.
 | `e46_night_adversarial_audit` | `c9a215b` (ídem) | la TASK E46 de ChatGPT (sólo `tasks/E46.md`, verificado con `git diff --name-only`), hija de `auto/e45_2-issue-17` (`git merge-base --is-ancestor`) |
 | `auto/e46-issue-18` | — | rama automática de E46, hija de `e46_night_adversarial_audit`. No verificada contra GitHub |
 | `e47_2_h01_gt_guard` | `f3240ec` | la TASK E47.2 de ChatGPT (sólo `tasks/E47.2.md`), hija de `auto/e46-issue-18` según el preflight |
-| `auto/e47_2-issue-21` | esta entrega | rama automática de E47.2, hija de `e47_2_h01_gt_guard` · **base para la próxima TASK**. La publica el workflow. No verificada contra GitHub |
+| `auto/e47_2-issue-21` | — | rama automática de E47.2, hija de `e47_2_h01_gt_guard`. No verificada contra GitHub |
+| `e47_3_h03_atomic_claim` | `798c086` | la TASK E47.3 de ChatGPT (sólo `tasks/E47.3.md`), hija de `auto/e47_2-issue-21` según el preflight |
+| `auto/e47_3-issue-22` | esta entrega | rama automática de E47.3, hija de `e47_3_h03_atomic_claim` · **base para la próxima TASK**. La publica el workflow. No verificada contra GitHub |
 
 Las filas de `main`, `m03_executor_smoke` y `m02_github_executor` de arriba son de antes de M03.1;
 la afirmación sobre `main` de esta fila, y los conteos, **no están reverificados** (ver §9.1 del protocolo).
@@ -186,6 +188,16 @@ declara la tabla de ramas sea el de `origin/main` y no el de la rama local.
   registrara un deploy (ver Producción). Aun así, la configuración de Railway sólo la ve Joaquín.
 
 ## Última tarea completada
+
+**E47.3** — cierra E46-H03 (issue #22). Status **PASS para H03**; readiness del piloto sigue **`NOT_READY`**
+(H10, H02, H05, H16, H21 y el resto de E46 pendientes). `campaign._claim` crea un archivo con `O_EXCL`
+(`cases/<id>/claims/`) **antes** de crear la corrida/propiedad en PROCESAR CREAR, CORREGIR y PROCESAR MEJORAR
+(y antes de publicar): dos peticiones simultáneas dan una corrida, una llamada simulada y un 409/400 limpio al
+perdedor. El claim se libera si la acción falla sin dejar rastro (recuperación legítima intacta). Limitación: un
+proceso muerto con el claim tomado deja el caso en «ya fue lanzada» hasta borrar el archivo; `correct_create`
+(CLI) sin proteger. Tests F4/F7 de E46 reescritos (`…_H03_CERRADO`) + F4c; 578 passed en E37/E44/E45/E46; suite
+completa no corrida. Sin deploy, merge ni llamadas pagadas. Detalle en
+[`reports/E47.3_REPORT.md`](../../reports/E47.3_REPORT.md). **Base para la próxima TASK: `auto/e47_3-issue-22`.**
 
 **E47.2** — cierra E46-H01 (issue #21). Status **PASS para H01**; readiness del piloto sigue **`NOT_READY`**
 (H03, H10, H02, H05, H16, H21 y el resto de E46 pendientes). `webapp/plan_guard.py` rechaza, en

@@ -590,10 +590,23 @@ def test_F3_natural_doble_envio_identico_casi_siempre_da_500_y_a_veces_no_deja_c
     assert set(resultados) <= {(303, 303), (500, 500), (303, 400), (303, 500), (400, 500)}, resultados
 
 
-def test_F4_doble_procesar_de_CREAR_lanza_dos_corridas_pagas_DEFECTO_H03(env, monkeypatch):
-    """Ventana FORZADA: ambas peticiones pasaron el chequeo `create_started` antes de que la primera
-    lo registrara (la web fija `confirm_paid=True`). Resultado: dos corridas del motor para el mismo
-    caso, es decir, dos llamadas pagas."""
+def _sincronizar_en_el_reclamo(camp, monkeypatch):
+    """Fuerza la ventana de H03: las dos peticiones llegan JUNTAS al reclamo (barrera justo antes de
+    pedirlo). Sin reclamo atómico las dos pasaban; con él, una sola lo obtiene."""
+    original = camp._claim
+    barrera = threading.Barrier(2, timeout=15)
+
+    def sincronizado(case_id, name):
+        if name != "improve_publish":                                # ése sólo lo pide el ganador
+            barrera.wait()
+        return original(case_id, name)
+    monkeypatch.setattr(camp, "_claim", sincronizado)
+
+
+def test_F4_doble_procesar_de_CREAR_lanza_una_sola_corrida_H03_CERRADO(env, monkeypatch):
+    """Ventana FORZADA (E46 mostraba dos corridas y dos llamadas pagas). Desde E47.3 el reclamo
+    atómico va antes de `create_initial`: una corrida, una llamada, y la segunda petición recibe 409
+    sin error ni gasto."""
     c, camp, tmp = env
     from webapp.domain.reconstruction import engines, runs
     llamadas = []
@@ -605,13 +618,7 @@ def test_F4_doble_procesar_de_CREAR_lanza_dos_corridas_pagas_DEFECTO_H03(env, mo
         return real_reconstruct(self, req)
     monkeypatch.setattr(type(adaptador), "reconstruct", cuenta)
     cid = _cid(_subir_crear(c, n=2))
-    original = runs.create_initial
-    barrera = threading.Barrier(2, timeout=15)
-
-    def sincronizado(*a, **k):
-        barrera.wait()
-        return original(*a, **k)
-    monkeypatch.setattr(runs, "create_initial", sincronizado)
+    _sincronizar_en_el_reclamo(camp, monkeypatch)
     codigos = []
 
     def go():
@@ -619,10 +626,12 @@ def test_F4_doble_procesar_de_CREAR_lanza_dos_corridas_pagas_DEFECTO_H03(env, mo
     hilos = [threading.Thread(target=go) for _ in range(2)]
     [h.start() for h in hilos]
     [h.join() for h in hilos]
-    assert sorted(codigos) == [303, 303]
+    assert sorted(codigos) == [303, 409]
     pid = camp.get(cid)["recon_project_id"]
-    assert len(runs.of_project(pid)) == 2 and len(llamadas) == 2
-    assert _tipos(camp, cid).count("create_started") == 2
+    assert len(runs.of_project(pid)) == 1 and len(llamadas) <= 1
+    assert _tipos(camp, cid).count("create_started") == 1
+    _html(c, f"{BASE}/caso/{cid}")
+    assert len(llamadas) == 1                                        # una sola llamada simulada
 
 
 def test_F4b_natural_doble_procesar_de_CREAR_cuantas_corridas_se_crean(env, monkeypatch):
@@ -742,18 +751,12 @@ def test_F6_la_numeracion_de_eventos_colisiona_bajo_concurrencia_DEFECTO_H17(env
     assert len(os.listdir(d)) == n0 + 2
 
 
-def test_F7_dos_procesar_de_MEJORAR_a_la_vez_crean_dos_propiedades_DEFECTO_H03(env, planta_lista, monkeypatch):
+def test_F7_dos_procesar_de_MEJORAR_a_la_vez_crean_una_sola_propiedad_H03_CERRADO(env, planta_lista, monkeypatch):
     c, camp, tmp = env
     from webapp import store
     from webapp.domain import properties
     cid = _cid(_subir_mejorar(c))
-    original = properties.create
-    barrera = threading.Barrier(2, timeout=15)
-
-    def sincronizado(*a, **k):
-        barrera.wait()
-        return original(*a, **k)
-    monkeypatch.setattr(properties, "create", sincronizado)
+    _sincronizar_en_el_reclamo(camp, monkeypatch)
     codigos = []
 
     def go():
@@ -761,8 +764,39 @@ def test_F7_dos_procesar_de_MEJORAR_a_la_vez_crean_dos_propiedades_DEFECTO_H03(e
     hilos = [threading.Thread(target=go) for _ in range(2)]
     [h.start() for h in hilos]
     [h.join() for h in hilos]
-    assert store.q1("SELECT COUNT(*) n FROM properties")["n"] == 2
-    assert _tipos(camp, cid).count("improve_started") == 2
+    assert sorted(codigos) == [303, 409]
+    assert store.q1("SELECT COUNT(*) n FROM properties")["n"] == 1
+    assert _tipos(camp, cid).count("improve_started") == 1
+    assert _tipos(camp, cid).count("pipeline") == 1
+
+
+def test_F4c_dos_CORREGIR_a_la_vez_crean_una_sola_corrida_hija_H03_CERRADO(env, monkeypatch):
+    c, camp, tmp = env
+    from webapp.domain.reconstruction import engines, runs
+    llamadas = []
+    adaptador = engines.get("motor_de_prueba")
+    real = type(adaptador).reconstruct
+    monkeypatch.setattr(type(adaptador), "reconstruct",
+                        lambda self, req: llamadas.append(1) or real(self, req))
+    cid = _cid(_subir_crear(c, n=2))
+    c.post(f"{BASE}/caso/{cid}/procesar")
+    _html(c, f"{BASE}/caso/{cid}")                                   # settle: la madre queda asentada
+    pid = camp.get(cid)["recon_project_id"]
+    n0, llamadas_madre = len(runs.of_project(pid)), len(llamadas)
+    _sincronizar_en_el_reclamo(camp, monkeypatch)
+    codigos = []
+
+    def go():
+        codigos.append(_cliente(c).post(f"{BASE}/caso/{cid}/corregir",
+                                        data={"texto": "mover la puerta"}).status_code)
+    hilos = [threading.Thread(target=go) for _ in range(2)]
+    [h.start() for h in hilos]
+    [h.join() for h in hilos]
+    assert sorted(codigos) == [303, 400]                             # la segunda: rechazo limpio, no 500
+    assert len(runs.of_project(pid)) == n0 + 1
+    assert _tipos(camp, cid).count("correction_started") == 1
+    _html(c, f"{BASE}/caso/{cid}")
+    assert len(llamadas) == llamadas_madre + 1                       # una sola llamada hija
 
 
 def test_F9_no_hay_tope_de_correcciones_ni_de_gasto_por_caso_LIMITACION(env, monkeypatch):

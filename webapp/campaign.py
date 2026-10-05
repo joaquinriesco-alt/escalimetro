@@ -82,6 +82,30 @@ def case_dir(case_id: str) -> str:
     return os.path.join(root(), "cases", case_id)
 
 
+def _claim(case_id: str, name: str) -> bool:
+    """Reclamo atómico (E47.3, cierra E46-H03): crea `claims/<name>` con O_EXCL, que el sistema de
+    archivos concede a UN solo llamador. Va ANTES de cualquier acción que cree una corrida, una
+    propiedad o llame a un proveedor: el chequeo «ya fue lanzada» lee eventos que se escriben
+    después, y entre leer y escribir dos peticiones simultáneas pasaban las dos. Devuelve False si
+    otro ya lo tiene."""
+    d = os.path.join(case_dir(case_id), "claims")
+    os.makedirs(d, exist_ok=True)
+    try:
+        os.close(os.open(os.path.join(d, name), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644))
+    except FileExistsError:
+        return False
+    return True
+
+
+def _release(case_id: str, name: str) -> None:
+    """Libera un reclamo cuando la acción falló ANTES de gastar o de dejar rastro, para que el
+    reintento legítimo no quede bloqueado para siempre."""
+    try:
+        os.remove(os.path.join(case_dir(case_id), "claims", name))
+    except FileNotFoundError:
+        pass
+
+
 def _results_dir(case_id: str) -> str:
     return os.path.join(case_dir(case_id), "results")
 
@@ -623,15 +647,21 @@ def start_improve(case_id: str) -> Dict[str, Any]:
     prev = _of(case_id, "improve_started")
     if prev:
         return prev[-1]["data"]
+    if not _claim(case_id, "improve"):
+        raise CampaignError("la preparación del plano ya está en curso")
     a = case["assets"][0]
     src = os.path.join(case_dir(case_id), "evidence", a["file"])
-    pid = properties.create("Plano Corporativo", "OFFICE", reference=case_id,
-                            notes="E44 benchmark")
-    grants.grant_and_assign(entitlements.default_product(), pid, source="SIMULATED_LAB",
-                            note="E44 benchmark")
-    with open(src, "rb") as fh:
-        assets.save_upload(pid, FileStorage(stream=fh, filename=a["file"]),
-                           assets.FLOORPLAN_ORIGINAL)
+    try:
+        pid = properties.create("Plano Corporativo", "OFFICE", reference=case_id,
+                                notes="E44 benchmark")
+        grants.grant_and_assign(entitlements.default_product(), pid, source="SIMULATED_LAB",
+                                note="E44 benchmark")
+        with open(src, "rb") as fh:
+            assets.save_upload(pid, FileStorage(stream=fh, filename=a["file"]),
+                               assets.FLOORPLAN_ORIGINAL)
+    except BaseException:
+        _release(case_id, "improve")              # sin `improve_started`: el reintento sigue abierto
+        raise
     info: Dict[str, Any] = {"property_id": pid, "path": "floorplan.ensure_case + ingest.auto_prepare "
                             "+ publish_commercial_floorplan", "error": None}
     try:
@@ -639,7 +669,11 @@ def start_improve(case_id: str) -> Dict[str, Any]:
         ingest.auto_prepare(pid)
     except Exception as e:                                    # noqa: BLE001 — se registra, no se oculta
         info["error"] = f"{type(e).__name__}: {e}"[:300]
-    record(case_id, "improve_started", info)
+    try:
+        record(case_id, "improve_started", info)
+    except BaseException:
+        _release(case_id, "improve")              # no quedó rastro: el reintento sigue abierto
+        raise
     return info
 
 
@@ -675,7 +709,13 @@ def finish_improve(case_id: str, give_up_reason: Optional[str] = None,
             t = floorplan.technical_state(pid)
         info.update(case_status=t.get("case_status"), ready=t["ready"], pending=t["pending"])
         if t["ready"]:
-            out_id = floorplan.publish_commercial_floorplan(pid)
+            if not _claim(case_id, "improve_publish"):
+                return None                       # otra petición ya está publicando
+            try:
+                out_id = floorplan.publish_commercial_floorplan(pid)
+            except Exception:
+                _release(case_id, "improve_publish")   # sin resultado: el reintento sigue abierto
+                raise
             info["error"] = None
         elif give_up_reason is None:
             return None
@@ -698,8 +738,15 @@ def run_create(case_id: str, engine_id: str = "openai_direct", author: str = "e4
     case = get(case_id)
     if case is None or case["track"] != CREATE or status(case) not in (CAPTURED, BLOCKED_CRED):
         raise CampaignError("el caso no está listo para correr en la pista CREAR")
-    rid = _begin_create(case, engine_id, author, confirm_paid)
+    if not _claim(case_id, "create"):
+        raise CampaignError("la reconstrucción ya fue lanzada")
+    try:
+        rid = _begin_create(case, engine_id, author, confirm_paid)
+    except BaseException:
+        _release(case_id, "create")
+        raise
     if isinstance(rid, dict):
+        _release(case_id, "create")
         return rid
     run = runs.execute(rid)
     return _record_run(case_id, run)
@@ -735,8 +782,15 @@ def start_create(case_id: str, engine_id: str = "openai_direct", author: str = "
         raise CampaignError("el caso no está listo para correr en la pista CREAR")
     if _of(case_id, "create_started"):
         raise CampaignError("la reconstrucción ya fue lanzada")
-    rid = _begin_create(case, engine_id, author, confirm_paid)
+    if not _claim(case_id, "create"):
+        raise CampaignError("la reconstrucción ya fue lanzada")
+    try:
+        rid = _begin_create(case, engine_id, author, confirm_paid)
+    except BaseException:
+        _release(case_id, "create")               # no se creó corrida: nada se gastó
+        raise
     if isinstance(rid, dict):
+        _release(case_id, "create")               # BLOCKED_CRED: tampoco hubo corrida
         return rid
     record(case_id, "create_started", {"run_id": rid})
     runs.enqueue(rid)
@@ -759,8 +813,17 @@ def start_correction(case_id: str, text: str, author: str = "web-piloto",
     last = last_done_run(case_id)
     if last is None:
         raise CampaignError("ninguna reconstrucción terminó bien: no hay qué corregir")
-    rid = runs.create_correction(case["recon_project_id"], last, text, author,
-                                 confirm_paid=confirm_paid)
+    # una corrección por turno: el número de la siguiente cambia cuando `settle` asienta la anterior
+    # (también si falló), así el reintento legítimo no queda bloqueado
+    claim = f"correction_{len(_of(case_id, 'correction')) + 1}"
+    if not _claim(case_id, claim):
+        raise CampaignError("hay una reconstrucción en curso: espera a que termine")
+    try:
+        rid = runs.create_correction(case["recon_project_id"], last, text, author,
+                                     confirm_paid=confirm_paid)
+    except BaseException:
+        _release(case_id, claim)
+        raise
     record(case_id, "correction_started", {"run_id": rid, "prompt": text[:2000]})
     runs.enqueue(rid)
     return {"status": "QUEUED", "run_id": rid}
