@@ -184,10 +184,10 @@ def test_E5b_un_corte_despues_del_reveal_de_E37_y_antes_del_evento_falla_cerrado
     assert _tipos(camp, cid).count("reveal") == 1 and _tipos(camp, cid).count("closure") == 1
 
 
-def test_E6_un_reinicio_con_la_corrida_en_cola_quema_el_caso_sin_reintento_DEFECTO_H05(env, monkeypatch):
+def test_E6_un_reinicio_con_la_corrida_en_cola_se_puede_reintentar_H05_CERRADO(env, monkeypatch):
     """Redeploy de Railway durante el procesamiento: `reset_orphans` pasa la corrida a FAILED («no se
-    reanuda»). La campaña la asienta como `pipeline` FAILED y el caso queda SIN RESULTADO: no hay
-    botón de reintento, `start_create` lo rechaza y la deduplicación impide re-subir la propiedad."""
+    reanuda»). E47.8 (cierra E46-H05): el FAILED queda asentado e inmutable, NO cuenta como ejecutado
+    y la web ofrece VOLVER A INTENTAR; el reintento crea una corrida nueva."""
     c, camp, tmp = env
     from webapp import store
     from webapp.domain.reconstruction import runs
@@ -199,16 +199,15 @@ def test_E6_un_reinicio_con_la_corrida_en_cola_quema_el_caso_sin_reintento_DEFEC
     pagina = _html(c, f"{BASE}/caso/{cid}")
     assert _tipos(camp, cid) == ["create_started", "pipeline"]
     assert camp._of(cid, "pipeline")[0]["data"]["status"] == "FAILED"
-    assert "SIN RESULTADO" in pagina and "VOLVER A INTENTAR" not in pagina
-    assert c.post(f"{BASE}/caso/{cid}/procesar").status_code == 409
-    assert camp.count("CREATE")["executed"] == 1                   # cuenta como ejecutado (y fallido)
-    r = _subir_crear(c, n=2)                                       # re-subir la misma propiedad
-    assert r.status_code == 400 and "duplicado" in r.get_data(as_text=True)
+    assert "VOLVER A INTENTAR" in pagina
+    assert camp.count("CREATE")["executed"] == 0 and camp.count("CREATE")["captured"] == 1
+    assert c.post(f"{BASE}/caso/{cid}/procesar").status_code == 303   # el reintento entra
+    assert _tipos(camp, cid).count("create_started") == 2
 
 
-def test_E6b_una_falla_del_motor_tambien_es_definitiva_DEFECTO_H05(env):
-    """Un timeout o un 429 del proveedor (modelado con un EngineError) es un resultado, no un
-    reintento: coherente con «los fallos no se ocultan», pero sin salida desde la web."""
+def test_E6b_una_falla_del_motor_se_puede_reintentar_H05_CERRADO(env):
+    """Un timeout o un 429 del proveedor (EngineError) es un intento fallido, no el resultado del
+    caso: se reintenta desde la web y el intento previo queda en el historial."""
     c, camp, tmp = env
     from webapp.domain.reconstruction import engines
     from webapp.domain.reconstruction.engines import fixture
@@ -223,10 +222,12 @@ def test_E6b_una_falla_del_motor_tambien_es_definitiva_DEFECTO_H05(env):
     cid = _cid(_subir_crear(c, n=2))
     assert c.post(f"{BASE}/caso/{cid}/procesar").status_code == 303
     pagina = _html(c, f"{BASE}/caso/{cid}")
-    assert camp.status(camp.get(cid)) == camp.EXECUTED
-    assert "SIN RESULTADO" in pagina and "VOLVER A INTENTAR" not in pagina
-    assert c.post(f"{BASE}/caso/{cid}/procesar").status_code == 409
-    assert c.post(f"{BASE}/caso/{cid}/corregir", data={"texto": "x"}).status_code == 400
+    assert camp.status(camp.get(cid)) == camp.CAPTURED
+    assert "VOLVER A INTENTAR" in pagina
+    assert c.post(f"{BASE}/caso/{cid}/procesar").status_code == 303
+    _html(c, f"{BASE}/caso/{cid}")
+    assert [p["data"]["attempt"] for p in camp._of(cid, "pipeline")] == [1, 2]
+    assert c.post(f"{BASE}/caso/{cid}/corregir", data={"texto": "x"}).status_code == 400   # sin DONE no hay qué corregir
 
 
 def test_E7_si_la_cola_no_arranca_el_caso_queda_PROCESANDO_hasta_un_reinicio(env, monkeypatch):

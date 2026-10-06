@@ -65,11 +65,16 @@
 {# ============================== CREAR ============================== #}
 {% else %}
 
-  {% if v.fase == 'cargado' or v.fase == 'bloqueado' %}
+  {% if v.fase in ('cargado', 'bloqueado', 'reintento') %}
     <p class="lead">Recibimos las fotos. El plano que preparemos será <strong>esquemático y referencial</strong>, inferido de las fotos.</p>
     <div class="photos">{% for i in range(1, v.n_fotos + 1) %}<div class="thumb"><img src="{{ url_for('pilot.archivo', case_id=cid, cual='foto-' ~ i) }}" alt="Foto {{ i }}" loading="lazy"></div>{% endfor %}</div>
     <p class="mut small">{{ v.n_fotos }} {{ 'foto' if v.n_fotos == 1 else 'fotos' }}{% if v.published_m2 %} · {{ v.published_m2|round|int }} m² publicados{% endif %}{% if v.link %} · enlace de referencia guardado{% elif v.referencia %} · texto de referencia guardado{% endif %}</p>
 
+    {% if v.fase == 'reintento' %}
+    <div class="msg bad"><h3>No se pudo reconstruir</h3>
+      <p>El intento anterior falló por un problema técnico y no cuenta como resultado. Puedes volver a intentarlo.</p>
+      <p class="small mut">Intentos fallidos: {{ v.intentos_fallidos }}. Quedan guardados en el historial del caso.</p></div>
+    {% endif %}
     {% if v.fase == 'bloqueado' %}
     <div class="msg bad"><h3>No se pudo procesar todavía</h3>
       <p>El servicio de reconstrucción no está configurado en este servidor.</p>
@@ -81,7 +86,7 @@
       <p><strong>Plano real cargado: oculto.</strong> Se usará únicamente para comparar al final, después de que cierres la reconstrucción.</p>
     </section>
     <form method="post" action="{{ url_for('pilot.procesar', case_id=cid) }}">
-      <button class="btn" type="submit">{{ 'VOLVER A INTENTAR' if v.fase == 'bloqueado' else 'PROCESAR' }}</button>
+      <button class="btn" type="submit">{{ 'VOLVER A INTENTAR' if v.fase in ('bloqueado', 'reintento') else 'PROCESAR' }}</button>
       <p class="mut small" style="margin-top:10px">Este paso usa un servicio externo con costo.</p>
     </form>
 

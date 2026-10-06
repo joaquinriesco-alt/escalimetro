@@ -231,6 +231,8 @@ def _roles(track: str) -> Tuple[str, ...]:
 def _find_duplicate(m: Dict[str, Any], case: Dict[str, Any], shas: List[str]) -> Optional[str]:
     key = property_key(case)
     for o in m["cases"]:
+        if o.get("excluded_reason"):
+            continue                              # E47.8 (H20): excluir libera sus claves; el caso queda como historia
         if bool(o.get("demo")) != bool(case.get("demo")):
             continue                              # una demo nunca bloquea (ni es bloqueada por) un caso real
         mismo = property_key(o) == key or bool(set(shas) & set(o.get("asset_shas", [])))
@@ -309,15 +311,33 @@ def _import_case(bundle_dir: str, raw: Dict[str, Any], author: str) -> str:
         return _import_locked(raw, track, files, inputs, author)
 
 
+def _new_case_id(m: Dict[str, Any], raw: Dict[str, Any], track: str) -> str:
+    """Id determinista por propiedad+pista (compatible con los casos ya cargados). Si ese id ya lo
+    usa un caso del manifiesto —sólo posible tras excluirlo (H20)—, la recarga
+    recibe un id propio con sufijo de recarga: nunca comparte carpeta, resultados ni proyecto con el
+    caso excluido, cuya evidencia queda intacta."""
+    # sólo los EXCLUIDOS fuerzan un id nuevo: un id de caso activo no puede repetirse (la
+    # deduplicación lo impide) y, si algo la saltara, la protección de cleanup de E47.5 lo cubre
+    usados = {c["case_id"] for c in m["cases"] if c.get("excluded_reason")}
+    pre = "e44-%s-" % ("imp" if track == IMPROVE else "cre")
+    base = [property_key(raw), track]
+    n = 0
+    while True:
+        h = hashlib.sha256(json.dumps(base if n == 0 else base + ["recarga", n],
+                                      sort_keys=True).encode()).hexdigest()[:10]
+        cid = pre + h
+        if cid not in usados:
+            return cid
+        n += 1
+
+
 def _import_locked(raw: Dict[str, Any], track: str, files: List[Tuple[Dict[str, Any], str]],
                    inputs: List[Dict[str, Any]], author: str) -> str:
     m = load()
     dup = _find_duplicate(m, raw, [a["sha256"] for a in inputs])
     if dup:
         raise CampaignError(dup)
-    cid = "e44-%s-%s" % ("imp" if track == IMPROVE else "cre",
-                         hashlib.sha256(json.dumps(
-                             [property_key(raw), track], sort_keys=True).encode()).hexdigest()[:10])
+    cid = _new_case_id(m, raw, track)
     case: Dict[str, Any] = {
         "case_id": cid, "track": track, "source_urls": list(raw.get("source_urls") or []),
         "captured_on": raw["captured_on"], "source": raw["source"],
@@ -508,8 +528,7 @@ def _register_url_only_locked(raw: Dict[str, Any]) -> str:
     m = load()
     if _find_duplicate(m, raw, []):
         raise CampaignError("duplicado")
-    cid = "e44-%s-%s" % ("imp" if raw["track"] == IMPROVE else "cre", hashlib.sha256(
-        json.dumps([property_key(raw), raw["track"]], sort_keys=True).encode()).hexdigest()[:10])
+    cid = _new_case_id(m, raw, raw["track"])
     m["cases"].append({
         "case_id": cid, "track": raw["track"], "source_urls": raw["source_urls"],
         "captured_on": raw["captured_on"], "source": raw["source"],
@@ -552,7 +571,15 @@ def record(case_id: str, kind: str, data: Dict[str, Any]) -> Dict[str, Any]:
         raise CampaignError("caso excluido")
     if status(case) == URL_ONLY:
         raise CampaignError("una URL sin assets verificados no se ejecuta ni se evalúa")
-    if kind in SINGLETONS and _of(case_id, kind):
+    if kind == "pipeline" and case["track"] == CREATE:
+        # E47.8 (H05): CREAR admite varios intentos iniciales mientras ninguno haya terminado DONE.
+        # Cada uno es un evento propio e inmutable; el mismo run_id no se asienta dos veces.
+        prev = _of(case_id, "pipeline")
+        if any(p["data"].get("status") == "DONE" for p in prev):
+            raise CampaignError("ya hay un intento inicial terminado: es inmutable y no se lanza otro")
+        if data.get("run_id") in {p["data"].get("run_id") for p in prev}:
+            raise CampaignError("esa corrida ya fue asentada")
+    elif kind in SINGLETONS and _of(case_id, kind):
         raise CampaignError(f"{kind} ya fue registrado: es inmutable")
     if case["track"] == CREATE:
         if kind == "pipeline" and _of(case_id, "closure"):
@@ -666,6 +693,15 @@ def materials_ok(case: Dict[str, Any]) -> bool:
     return True
 
 
+def has_result(case_id: str, track: str) -> bool:
+    """¿Hay un resultado válido? MEJORAR: su `pipeline` (aunque no llegue a salida, es el resultado).
+    CREAR: un intento inicial DONE; los FAILED quedan en el historial pero no cuentan (E47.8)."""
+    pip = _of(case_id, "pipeline")
+    if track == CREATE:
+        return any(p["data"].get("status") == "DONE" for p in pip)
+    return bool(pip)
+
+
 def status(case: Dict[str, Any]) -> str:
     if case.get("excluded_reason"):
         return EXCLUDED
@@ -675,8 +711,10 @@ def status(case: Dict[str, Any]) -> str:
     ev = {e["kind"] for e in events(cid)}
     if "evaluation" in ev:
         return COMPLETED
-    if "pipeline" in ev:
+    if has_result(cid, case["track"]):
         return EXECUTED
+    if "pipeline" in ev:
+        return CAPTURED                  # sólo intentos FAILED (E47.8): ni ejecutado ni bloqueado
     if "blocked" in ev:
         return _of(cid, "blocked")[-1]["data"]["status"]
     return CAPTURED
@@ -814,15 +852,19 @@ def run_create(case_id: str, engine_id: str = "openai_direct", author: str = "e4
     case = get(case_id)
     if case is None or case["track"] != CREATE or status(case) not in (CAPTURED, BLOCKED_CRED):
         raise CampaignError("el caso no está listo para correr en la pista CREAR")
-    if not _claim(case_id, "create"):
+    settle(case_id)
+    if _unsettled_create(case_id) or status(case) not in (CAPTURED, BLOCKED_CRED):
+        raise CampaignError("la reconstrucción ya fue lanzada")
+    claim = _create_claim_name(case_id)
+    if not _claim(case_id, claim):
         raise CampaignError("la reconstrucción ya fue lanzada")
     try:
         rid = _begin_create(case, engine_id, author, confirm_paid)
     except BaseException:
-        _release(case_id, "create")
+        _release(case_id, claim)
         raise
     if isinstance(rid, dict):
-        _release(case_id, "create")
+        _release(case_id, claim)
         return rid
     run = runs.execute(rid)
     return _record_run(case_id, run)
@@ -848,6 +890,20 @@ def _begin_create(case: Dict[str, Any], engine_id: str, author: str, confirm_pai
                                confirm_paid=confirm_paid)
 
 
+def _unsettled_create(case_id: str) -> bool:
+    """Hay una corrida inicial lanzada que todavía no quedó asentada como `pipeline`."""
+    done = {e["data"].get("run_id") for e in _of(case_id, "pipeline")}
+    return any(e["data"]["run_id"] not in done for e in _of(case_id, "create_started"))
+
+
+def _create_claim_name(case_id: str) -> str:
+    """Un reclamo atómico (E47.3) por intento inicial: «create» para el primero, igual que antes, y
+    «create_<n>» para los reintentos. Dos reintentos simultáneos calculan el mismo n y sólo uno
+    obtiene el reclamo."""
+    n = max(len(_of(case_id, "create_started")), len(_of(case_id, "pipeline"))) + 1
+    return "create" if n == 1 else f"create_{n}"
+
+
 def start_create(case_id: str, engine_id: str = "openai_direct", author: str = "web-piloto",
                  confirm_paid: bool = False) -> Dict[str, Any]:
     """E45: arranca la primera corrida SIN esperarla (la cola de E37 la ejecuta). Queda
@@ -856,17 +912,20 @@ def start_create(case_id: str, engine_id: str = "openai_direct", author: str = "
     case = get(case_id)
     if case is None or case["track"] != CREATE or status(case) not in (CAPTURED, BLOCKED_CRED):
         raise CampaignError("el caso no está listo para correr en la pista CREAR")
-    if _of(case_id, "create_started"):
+    settle(case_id)                  # un intento terminado se asienta antes de decidir si hay reintento
+    if _unsettled_create(case_id):
         raise CampaignError("la reconstrucción ya fue lanzada")
-    if not _claim(case_id, "create"):
+    # (el estado ya excluye reintentar tras un DONE, un cierre, un reveal o una evaluación)
+    claim = _create_claim_name(case_id)
+    if not _claim(case_id, claim):
         raise CampaignError("la reconstrucción ya fue lanzada")
     try:
         rid = _begin_create(case, engine_id, author, confirm_paid)
     except BaseException:
-        _release(case_id, "create")               # no se creó corrida: nada se gastó
+        _release(case_id, claim)                  # no se creó corrida: nada se gastó
         raise
     if isinstance(rid, dict):
-        _release(case_id, "create")               # BLOCKED_CRED: tampoco hubo corrida
+        _release(case_id, claim)                  # BLOCKED_CRED: tampoco hubo corrida
         return rid
     record(case_id, "create_started", {"run_id": rid})
     runs.enqueue(rid)
@@ -942,7 +1001,11 @@ def settle(case_id: str) -> None:
         if run is None or run["status"] not in (runs.DONE, runs.FAILED):
             continue
         if e["kind"] == "create_started":
-            _record_run(case_id, run)
+            try:
+                _record_run(case_id, run)
+            except CampaignError:
+                if not any(x["data"].get("run_id") == rid for x in _of(case_id, "pipeline")):
+                    raise            # un asiento concurrente de la misma corrida es inocuo; otro rechazo no
         else:
             n = len(_of(case_id, "correction")) + 1
             record(case_id, "correction", {**_summary_of_run(run), "seq_correction": n,
@@ -980,6 +1043,7 @@ def _summary_of_run(run: Dict[str, Any]) -> Dict[str, Any]:
 
 def _record_run(case_id: str, run: Dict[str, Any]) -> Dict[str, Any]:
     d = _summary_of_run(run)
+    d["attempt"] = len(_of(case_id, "pipeline")) + 1          # orden del intento inicial (E47.8)
     record(case_id, "pipeline", d)
     return d
 
@@ -994,7 +1058,9 @@ def close_blind(case_id: str, final_run_id: Optional[str] = None, *, human_minut
     chain = _of(case_id, "pipeline") + _of(case_id, "correction")
     if not chain:
         raise CampaignError("no hay corrida que cerrar")
-    final = final_run_id or chain[-1]["data"]["run_id"]
+    final = final_run_id or last_done_run(case_id)
+    if final is None:
+        raise CampaignError("ningún intento terminó bien: no hay reconstrucción que cerrar")
     run = runs.get(final)
     if run is None or run["project_id"] != case["recon_project_id"]:
         raise CampaignError("la corrida final no es de este caso")
@@ -1138,7 +1204,7 @@ def summary() -> Dict[str, Any]:
                                               in ("ALTA", "MEDIA")]
         else:
             ex = [c for c in cs if status(c) in (EXECUTED, COMPLETED)]
-            ok = sum(1 for c in ex if _of(c["case_id"], "pipeline")[0]["data"].get("status") == "DONE")
+            ok = len(ex)                 # CREAR: ejecutado = tiene un intento DONE (E47.8)
             d["pipeline_success"] = {"reached_output": ok, "executed": len(ex)}
             d["human_prompts"] = sum(len(_of(c["case_id"], "correction")) for c in done)
             d["dimensions"] = {k: {x: sum(1 for e in evs.values() if e.get(k) == x)

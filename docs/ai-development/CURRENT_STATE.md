@@ -1,6 +1,6 @@
 # ESCALÍMETRO — Estado actual
 
-> **Última actualización:** 2026-10-06 · al cerrar `E47.7` · rama `auto/e47_7-issue-26`
+> **Última actualización:** 2026-10-06 · al cerrar `E47.8` · rama `auto/e47_8-issue-27`
 > Todo lo que está acá fue verificado al escribirlo: el código contra el repo; las ramas **contra
 > GitHub**, no contra las ramas locales ([protocolo §9.1](DEVELOPMENT_PROTOCOL.md)); las cifras de
 > los pilotos contra `.data-lab/` de la máquina de desarrollo, que **no** está en el repo.
@@ -59,7 +59,9 @@ compara motores de reconstrucción con el plano real oculto hasta el final.
 | `e47_5_h02_atomic_import` | `e643558` | la TASK E47.5 de ChatGPT (sólo `tasks/E47.5.md`), hija de `auto/e47_4-issue-23` según el preflight |
 | `auto/e47_5-issue-24` | — | rama automática de E47.5, hija de `e47_5_h02_atomic_import`. No verificada contra GitHub |
 | `e47_7_h16_photo_classification_perf_recovery` | `75811aa` | la TASK E47.7 de ChatGPT (sólo `tasks/E47.7.md`; recuperación de E47.6, cuyo issue #25 no es reutilizable), hija de `auto/e47_5-issue-24` según el preflight |
-| `auto/e47_7-issue-26` | esta entrega | rama automática de E47.7, hija de `e47_7_h16_photo_classification_perf_recovery` · **base para la próxima TASK**. La publica el workflow. No verificada contra GitHub |
+| `auto/e47_7-issue-26` | — | rama automática de E47.7, hija de `e47_7_h16_photo_classification_perf_recovery`. No verificada contra GitHub |
+| `e47_8_h05_h20_create_retry_exclusion` | `5680f38` | la TASK E47.8 de ChatGPT (sólo `tasks/E47.8.md`), hija de `auto/e47_7-issue-26` según el preflight |
+| `auto/e47_8-issue-27` | esta entrega | rama automática de E47.8, hija de `e47_8_h05_h20_create_retry_exclusion` · **base para la próxima TASK**. La publica el workflow. No verificada contra GitHub |
 
 Las filas de `main`, `m03_executor_smoke` y `m02_github_executor` de arriba son de antes de M03.1;
 la afirmación sobre `main` de esta fila, y los conteos, **no están reverificados** (ver §9.1 del protocolo).
@@ -194,6 +196,16 @@ declara la tabla de ramas sea el de `origin/main` y no el de la rama local.
   registrara un deploy (ver Producción). Aun así, la configuración de Railway sólo la ve Joaquín.
 
 ## Última tarea completada
+
+**E47.8** — cierra E46-H05 y E46-H20 (issue #27). Status **PASS para H05 y H20**; **H21 sigue pendiente**; readiness del
+piloto **`NOT_READY`**. CREAR admite varios `pipeline` iniciales (con `attempt`) mientras ninguno sea DONE: un FAILED queda
+inmutable en el historial, **no** cuenta como ejecutado/completado ni consume el N=20; el caso cuenta una vez al llegar un
+DONE y desde entonces no hay otra corrida inicial (las correcciones siguen su flujo). `start_create` se reintenta desde la web
+(botón VOLVER A INTENTAR), con un reclamo `O_EXCL` por intento (E47.3 intacto: 8 hilos → 1 corrida). `close_blind` ya no cierra
+sobre un FAILED. `_find_duplicate` ignora excluidos y la recarga recibe `case_id`/carpeta/proyecto propios; el excluido queda
+intacto. Focal: 790 passed, 1 failed ajeno (`test_ai_handoff[E47.2]`, REPORT sin secciones); suite completa no corrida; `skimage`
+ausente. Sin deploy, merge ni llamadas pagadas. Detalle en [`reports/E47.8_REPORT.md`](../../reports/E47.8_REPORT.md).
+**Base para la próxima TASK: `auto/e47_8-issue-27`.**
 
 **E47.7** — cierra E46-H16 (issue #26; recuperación de E47.6). Status **PASS para H16**; readiness del piloto sigue
 **`NOT_READY`** (H05, H20, H21 y el resto de E46 pendientes). Causa: `add_asset` clasificaba cada foto a resolución

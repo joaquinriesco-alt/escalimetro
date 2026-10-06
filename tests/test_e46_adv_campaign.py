@@ -232,20 +232,24 @@ def test_A8_excluir_reescribe_el_manifiesto_sin_evento_y_saca_del_N_incluso_a_un
     assert not any(r.rule.endswith("/excluir") for r in c.application.url_map.iter_rules())
 
 
-def test_A9_un_caso_excluido_sigue_bloqueando_la_re_carga_de_la_misma_propiedad_DEFECTO_H20(env):
-    """`_find_duplicate` recorre TODO el manifiesto, también los excluidos: excluir un caso (la única
-    forma de «descartarlo», por CLI) no libera su propiedad. Combinado con H05 (una corrida fallida
-    es definitiva) no queda camino —ni siquiera por CLI— para rehacer esa propiedad sin editar a
-    mano el manifiesto."""
+def test_A9_un_caso_excluido_libera_la_re_carga_de_la_misma_propiedad_H20_CERRADO(env):
+    """E47.8 (cierra E46-H20): `_find_duplicate` ignora los excluidos. La recarga recibe id, carpeta
+    y proyecto E37 propios; el excluido queda intacto con su motivo."""
     c, camp, tmp = env
     cid = _cid(_subir_crear(c, n=2))
     camp.exclude(cid, "la corrida falló por un error transitorio")
+    antes = camp.get(cid)
     r = _subir_crear(c, n=2)
-    assert r.status_code == 400 and "duplicado" in r.get_data(as_text=True)
-    with pytest.raises(camp.CampaignError, match="duplicado"):
+    assert r.status_code == 303
+    nuevo = _cid(r)
+    assert nuevo != cid and camp.case_dir(nuevo) != camp.case_dir(cid)
+    n = camp.get(nuevo)
+    assert n["recon_project_id"] != antes["recon_project_id"]
+    assert camp.get(cid) == antes and camp.status(camp.get(cid)) == camp.EXCLUDED
+    assert camp.count("CREATE")["excluded"] == 1 and camp.count("CREATE")["captured"] == 1
+    with pytest.raises(camp.CampaignError, match="duplicado"):           # el activo sigue deduplicando
         camp.import_upload(camp.CREATE, [("f0.png", _foto(0)), ("f1.png", _foto(1))],
                            ground_truth=("g.png", _plano_real()))
-    assert camp.count("CREATE")["excluded"] == 1 and camp.count("CREATE")["captured"] == 0
 
 
 def test_A11_el_detector_de_PII_es_cuadratico_y_corre_antes_del_tope_de_largo_DEFECTO_H22(env):

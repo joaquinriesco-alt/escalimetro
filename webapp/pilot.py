@@ -112,10 +112,12 @@ def _state(case: Dict[str, Any]) -> Dict[str, str]:
         return {"fase": "procesando", "label": PROCESANDO}
     pip = campaign._of(cid, "pipeline")                          # noqa: SLF001
     if st == campaign.EXECUTED:
-        ok = pip[0]["data"].get("reached_output") if tr == campaign.IMPROVE \
-            else pip[0]["data"].get("status") == "DONE"
+        # CREAR: EXECUTED ya implica un intento DONE (E47.8); un FAILED reintentable no llega acá
+        ok = pip[0]["data"].get("reached_output") if tr == campaign.IMPROVE else True
         return ({"fase": "resultado", "label": LISTO} if ok
                 else {"fase": "sinres", "label": SIN_RESULTADO})
+    if tr == campaign.CREATE and pip:                            # sólo intentos FAILED: se puede reintentar
+        return {"fase": "reintento", "label": SIN_RESULTADO}
     # CAPTURED
     if tr == campaign.IMPROVE and campaign._of(cid, "improve_started"):  # noqa: SLF001
         return {"fase": "revision", "label": REVISION}
@@ -219,7 +221,9 @@ def _view(case: Dict[str, Any]) -> Dict[str, Any]:
         "link": (case.get("source_urls") or [None])[0],
         "n_fotos": len(_evidence(case, campaign.ROLE_PHOTO)),
         "evals_plano": _evals(cid, "evaluation"), "evals_ux": _evals(cid, "ux_evaluation"),
-        "refresh": s["fase"] == "procesando", "error": None, "bloqueo": None}
+        "refresh": s["fase"] == "procesando", "error": None, "bloqueo": None,
+        "intentos_fallidos": sum(1 for e in campaign._of(cid, "pipeline")     # noqa: SLF001
+                                 if e["data"].get("status") == "FAILED") if tr == campaign.CREATE else 0}
     bl = _last(cid, "blocked")
     if bl:
         v["bloqueo"] = bl["data"]["status"]
