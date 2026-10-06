@@ -178,3 +178,51 @@ def test_excluir_y_recargar_da_identidad_separada_y_respeta_a_los_activos(env, f
     camp.exclude(nuevo, "otra vez")
     tercero = _cid(_subir_crear(c, n=2))
     assert len({viejo, nuevo, tercero}) == 3
+
+
+# --- E47.9: la ventana «terminó pero todavía no se asentó» -----------------------------------
+
+def _espiar_create_initial(monkeypatch):
+    from webapp.domain.reconstruction import runs
+    monkeypatch.setattr(runs, "enqueue", lambda rid: None)
+    creadas = []
+    real = runs.create_initial
+
+    def espia(*a, **k):
+        rid = real(*a, **k)
+        creadas.append(rid)
+        return rid
+    monkeypatch.setattr(runs, "create_initial", espia)
+    return runs, creadas
+
+
+def test_DONE_no_asentado_rechaza_el_segundo_POST_sin_nueva_corrida(env, flaky, monkeypatch):
+    c, camp, tmp = env
+    runs, creadas = _espiar_create_initial(monkeypatch)
+    cid = _cid(_subir_crear(c, n=2))
+    camp.start_create(cid, "motor_de_prueba", confirm_paid=True)
+    assert len(creadas) == 1
+    assert runs.execute(creadas[0])["status"] == runs.DONE        # terminó, sin `pipeline` todavía
+    assert camp._of(cid, "pipeline") == []
+    assert c.post(f"{BASE}/caso/{cid}/procesar").status_code == 409
+    assert len(creadas) == 1                                      # 0 llamadas nuevas a create_initial
+    assert _tipos(camp, cid).count("create_started") == 1
+    assert [p["data"]["status"] for p in camp._of(cid, "pipeline")] == ["DONE"]
+
+
+def test_FAILED_no_asentado_permite_exactamente_un_reintento(env, flaky, monkeypatch):
+    c, camp, tmp = env
+    runs, creadas = _espiar_create_initial(monkeypatch)
+    cid = _cid(_subir_crear(c, n=2))
+    flaky[0] = 1
+    camp.start_create(cid, "motor_de_prueba", confirm_paid=True)
+    assert runs.execute(creadas[0])["status"] == runs.FAILED     # terminó, sin `pipeline` todavía
+    assert camp._of(cid, "pipeline") == []
+    assert camp.start_create(cid, "motor_de_prueba", confirm_paid=True)["status"] == "QUEUED"
+    assert len(creadas) == 2                                      # exactamente un reintento
+    with pytest.raises(camp.CampaignError):                       # el segundo queda pendiente
+        camp.start_create(cid, "motor_de_prueba", confirm_paid=True)
+    assert len(creadas) == 2
+    pip = camp._of(cid, "pipeline")
+    assert [(p["data"]["attempt"], p["data"]["status"]) for p in pip] == [(1, "FAILED")]
+    assert _tipos(camp, cid).count("create_started") == 2

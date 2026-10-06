@@ -913,9 +913,10 @@ def start_create(case_id: str, engine_id: str = "openai_direct", author: str = "
     if case is None or case["track"] != CREATE or status(case) not in (CAPTURED, BLOCKED_CRED):
         raise CampaignError("el caso no está listo para correr en la pista CREAR")
     settle(case_id)                  # un intento terminado se asienta antes de decidir si hay reintento
-    if _unsettled_create(case_id):
+    # el estado se revalida DESPUÉS de asentar: un DONE no asentado aún parecía CAPTURED (E47.9)
+    # el estado se revalida DESPUÉS de asentar: un DONE no asentado aún parecía CAPTURED (E47.9)
+    if _unsettled_create(case_id) or status(case) not in (CAPTURED, BLOCKED_CRED):
         raise CampaignError("la reconstrucción ya fue lanzada")
-    # (el estado ya excluye reintentar tras un DONE, un cierre, un reveal o una evaluación)
     claim = _create_claim_name(case_id)
     if not _claim(case_id, claim):
         raise CampaignError("la reconstrucción ya fue lanzada")
