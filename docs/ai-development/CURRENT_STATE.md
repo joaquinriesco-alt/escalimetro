@@ -1,6 +1,6 @@
 # ESCALÍMETRO — Estado actual
 
-> **Última actualización:** 2026-10-06 · al cerrar `E47.9` · rama `auto/e47_9-issue-28`
+> **Última actualización:** 2026-10-06 · al cerrar `E47.11` · rama `auto/e47_11-issue-30`
 > Todo lo que está acá fue verificado al escribirlo: el código contra el repo; las ramas **contra
 > GitHub**, no contra las ramas locales ([protocolo §9.1](DEVELOPMENT_PROTOCOL.md)); las cifras de
 > los pilotos contra `.data-lab/` de la máquina de desarrollo, que **no** está en el repo.
@@ -63,7 +63,9 @@ compara motores de reconstrucción con el plano real oculto hasta el final.
 | `e47_8_h05_h20_create_retry_exclusion` | `5680f38` | la TASK E47.8 de ChatGPT (sólo `tasks/E47.8.md`), hija de `auto/e47_7-issue-26` según el preflight |
 | `auto/e47_8-issue-27` | — | rama automática de E47.8, hija de `e47_8_h05_h20_create_retry_exclusion`. No verificada contra GitHub |
 | `e47_9_h05_done_retry_recovery` | `13a5244` | la TASK E47.9 de ChatGPT (sólo `tasks/E47.9.md`), hija de `auto/e47_8-issue-27` según el preflight |
-| `auto/e47_9-issue-28` | esta entrega | rama automática de E47.9, hija de `e47_9_h05_done_retry_recovery` · **base para la próxima TASK**. La publica el workflow. No verificada contra GitHub |
+| `auto/e47_9-issue-28` | — | rama automática de E47.9, hija de `e47_9_h05_done_retry_recovery`. No verificada contra GitHub |
+| `e47_11_h21_provider_error_resilience_recovery` | `e7b6f63` | la TASK E47.11 de ChatGPT (sólo `tasks/E47.11.md`; recuperación de E47.10, cuyo issue #29 no publicó nada), hija de `auto/e47_9-issue-28` según el preflight |
+| `auto/e47_11-issue-30` | esta entrega | rama automática de E47.11, hija de `e47_11_h21_provider_error_resilience_recovery` · **base para la próxima TASK**. La publica el workflow. No verificada contra GitHub |
 
 Las filas de `main`, `m03_executor_smoke` y `m02_github_executor` de arriba son de antes de M03.1;
 la afirmación sobre `main` de esta fila, y los conteos, **no están reverificados** (ver §9.1 del protocolo).
@@ -199,6 +201,16 @@ declara la tabla de ramas sea el de `origin/main` y no el de la rama local.
 
 ## Última tarea completada
 
+**E47.11** — recuperación de E47.10 (issue #30). Status **PASS**; **H21 cerrado**: con él quedan cerrados los hallazgos
+HIGH/BLOCKER priorizados de E46. Un error técnico de proveedor ya no rompe `settle()`, el caso ni el panel:
+`campaign.sanitize_technical_error` sanea de forma determinista (números largos, teléfonos, emails, rutas, identificadores
+largos, valores tras palabras de credencial, recorte a 200; genérico seguro si no se puede) antes de persistir el `error` de
+`pipeline`/`correction` y de `improve_started`; el texto humano sigue sujeto a `_no_pii`. CREAR FAILED hostil queda asentado,
+reintentable, `executed=0`, `completed=0`; MEJORAR hostil no da 409 ni huérfana. Focal E37/E44/E45/E46/E47: 620 passed; suite
+completa no corrida. Sin literales con forma de credencial en el diff. Sin deploy, merge ni llamadas pagadas. Detalle en
+[`reports/E47.11_REPORT.md`](../../reports/E47.11_REPORT.md). **Siguiente: E48, final readiness audit. Base para la próxima
+TASK: `auto/e47_11-issue-30`.**
+
 **E47.9** — recuperación de E47.8 (issue #28). Status **PASS**; **H05 cerrado** (ventana DONE no asentado → segundo POST),
 H20 intacto, **H21 sigue pendiente**, readiness del piloto **`NOT_READY`**. `start_create` revalidaba el estado antes de
 `settle()`; un DONE sin `pipeline` aún parecía CAPTURED y podía lanzar una segunda corrida inicial. Ahora el estado se revalida
@@ -206,7 +218,7 @@ tras asentar (igual que `run_create`): DONE no asentado → 409 y 0 llamadas a `
 exactamente un reintento. 2 tests nuevos en `tests/test_e47_8_create_retry.py` (el de DONE falla sin el arreglo). Focal: 477
 passed; `test_ai_handoff[E47.2]` sigue fallando (preexistente); suite completa no corrida. Sin deploy, merge ni llamadas pagadas.
 Detalle en [`reports/E47.9_REPORT.md`](../../reports/E47.9_REPORT.md).
-**Base para la próxima TASK: `auto/e47_9-issue-28`.**
+Base entonces: `auto/e47_9-issue-28`.
 
 **E47.8** — cierra E46-H05 y E46-H20 (issue #27). Status **PASS para H05 y H20**; **H21 sigue pendiente**; readiness del
 piloto **`NOT_READY`**. CREAR admite varios `pipeline` iniciales (con `attempt`) mientras ninguno sea DONE: un FAILED queda
@@ -467,7 +479,7 @@ siguiente TASK no debe ampliar features por inercia. **E46 ya auditó el piloto*
 lista «MUST FIX» en su REPORT): lo que sigue lo decide Joaquín (DR-11, DR-12); E46 no autoriza ninguna
 corrección ni numera la TASK siguiente. Se escribe como TASK nueva, no se ejecuta desde acá.
 
-Una TASK nueva la escribe ChatGPT en GitHub desde la base `auto/e47_7-issue-26`
+Una TASK nueva la escribe ChatGPT en GitHub desde la base `auto/e47_11-issue-30`
 ([protocolo §5.2](DEVELOPMENT_PROTOCOL.md)).
 
 ## Glosario

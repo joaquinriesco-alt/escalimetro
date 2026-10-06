@@ -330,54 +330,49 @@ def _motor_que_falla_con(mensaje):
     engines.register(Roto())
 
 
-def test_E11_un_error_del_proveedor_con_9_digitos_seguidos_mata_el_panel_y_el_caso_DEFECTO_H21(env):
-    """`record()` pasa el texto libre `error` por el detector de PII (`_no_pii`, teléfonos = 9+ dígitos
-    con separadores). El mensaje de un fallo del proveedor (un timestamp, un id de petición con una
-    racha de dígitos, una cifra larga) lo dispara: `settle()` —que corre en CADA GET del caso y del
-    panel— lanza `CampaignError`, el `pipeline` nunca se registra y la corrida FAILED queda sin
-    asentar. Resultado: la página del caso y `/panel` dan 500 para toda la campaña, y el caso queda
-    PROCESANDO para siempre. No hay salida desde la web."""
+def test_E11_un_error_del_proveedor_con_9_digitos_seguidos_ya_no_mata_el_panel_ni_el_caso_H21_CERRADO(env):
+    """E47.11 (H21): el mensaje técnico se sanea antes de persistirse (`sanitize_technical_error`) en
+    vez de pasar por el detector de PII humano. `settle()` asienta la corrida FAILED, el caso deja de
+    estar PROCESANDO y la página del caso y `/panel` responden 200."""
     c, camp, tmp = env
     c.application.config["PROPAGATE_EXCEPTIONS"] = False
     _motor_que_falla_con("HTTP 500 del proveedor: {'created': 1700000000, 'detail': 'internal'}")
     otro = _importar(camp, semilla=61)                              # un caso ajeno e intacto
     cid = _cid(_subir_crear(c, n=2))
     assert c.post(f"{BASE}/caso/{cid}/procesar").status_code == 303
-    assert c.get(f"{BASE}/caso/{cid}").status_code == 500
-    assert c.get(f"{BASE}/panel").status_code == 500                 # el panel de TODOS los casos
-    assert c.get(f"{BASE}/caso/{otro}").status_code == 200           # la página de otro caso sí abre
+    assert c.get(f"{BASE}/caso/{cid}").status_code == 200
+    assert c.get(f"{BASE}/panel").status_code == 200                 # el panel de TODOS los casos
+    assert c.get(f"{BASE}/caso/{otro}").status_code == 200
     assert c.get(f"{BASE}/").status_code == 200
-    assert _tipos(camp, cid) == ["create_started"]                   # nunca se asentó
-    from webapp.domain.reconstruction import runs
-    run = runs.of_project(camp.get(cid)["recon_project_id"])[0]
-    assert run["status"] == "FAILED" and "1700000000" in run["error"]
-    with pytest.raises(camp.CampaignError, match="email o teléfono"):
-        camp.settle(cid)
+    assert _tipos(camp, cid) == ["create_started", "pipeline"]       # asentado
+    pip = camp.events(cid)[-1]["data"]
+    assert pip["status"] == "FAILED" and "1700000000" not in str(pip["error"])
+    camp.settle(cid)                                                 # idempotente
+    assert _tipos(camp, cid) == ["create_started", "pipeline"]
 
 
-@pytest.mark.parametrize("mensaje,rompe", [
-    ("HTTP 500: {'created': 1700000000}", True),
-    ("The server had an error. Request ID req_0123456789abcdef0123456789abcdef", True),
-    ("Contact support, ticket 123-456-7890", True),                   # guiones: parece un teléfono
-    ("timed out after 600 s", False),
-    ("Request ID req_a1b2c3d4e5f60718293a4b5c6d7e8f90", False),
-    ("Limit 30000, Used 22345, Requested 9000.", False),
+@pytest.mark.parametrize("mensaje", [
+    "HTTP 500: {'created': 1700000000}",
+    "The server had an error. Request ID req_0123456789abcdef0123456789abcdef",
+    "Contact support, ticket 123-456-7890",                          # guiones: parece un teléfono
+    "timed out after 600 s",
+    "Request ID req_a1b2c3d4e5f60718293a4b5c6d7e8f90",
+    "Limit 30000, Used 22345, Requested 9000.",
 ])
-def test_E11b_que_mensajes_de_error_realistas_rompen_y_cuales_no(env, mensaje, rompe):
+def test_E11b_ningun_mensaje_de_error_realista_rompe_el_caso_H21_CERRADO(env, mensaje):
     c, camp, tmp = env
     c.application.config["PROPAGATE_EXCEPTIONS"] = False
     _motor_que_falla_con(mensaje)
     cid = _cid(_subir_crear(c, n=2))
     c.post(f"{BASE}/caso/{cid}/procesar")
-    assert (c.get(f"{BASE}/caso/{cid}").status_code == 500) is rompe
+    assert c.get(f"{BASE}/caso/{cid}").status_code == 200
+    assert "pipeline" in _tipos(camp, cid)
 
 
-def test_E11c_en_MEJORAR_el_mismo_detector_borra_el_motivo_del_fallo_y_deja_una_propiedad_huerfana_DEFECTO_H21(
+def test_E11c_en_MEJORAR_el_error_tecnico_con_ids_largos_ya_no_da_409_ni_deja_huerfana_H21_CERRADO(
         env, monkeypatch):
-    """El texto de un fallo de `auto_prepare` incluye rutas del servidor (ids con racha de dígitos):
-    de forma esporádica (≈ 1 de cada 20 con ids aleatorios) `record(improve_started)` lanza, el
-    `procesar` responde 409 «el caso contiene un email o teléfono» y la propiedad ya creada queda sin
-    caso. Se fuerza con un mensaje determinista."""
+    """El texto de un fallo de `auto_prepare` lleva rutas del servidor con ids largos: se sanea, el
+    `improve_started` se registra (con el motivo) y no queda ninguna propiedad huérfana."""
     c, camp, tmp = env
     from webapp import store
     from webapp.domain import ingest
@@ -385,10 +380,10 @@ def test_E11c_en_MEJORAR_el_mismo_detector_borra_el_motivo_del_fallo_y_deja_una_
                         lambda pid: (_ for _ in ()).throw(RuntimeError("No se pudo abrir /data/cases/c_1234567890/plano.png")))
     cid = _cid(_subir_mejorar(c))
     r = c.post(f"{BASE}/caso/{cid}/procesar")
-    assert r.status_code == 409 and "email o teléfono" in r.get_data(as_text=True)
-    assert _tipos(camp, cid) == [] and store.q1("SELECT COUNT(*) n FROM properties")["n"] == 1
-    r = c.post(f"{BASE}/caso/{cid}/procesar")                        # reintentar: otra propiedad huérfana
-    assert r.status_code == 409 and store.q1("SELECT COUNT(*) n FROM properties")["n"] == 2
+    assert r.status_code == 303
+    assert _tipos(camp, cid) == ["improve_started"] and store.q1("SELECT COUNT(*) n FROM properties")["n"] == 1
+    err = camp.events(cid)[0]["data"]["error"]
+    assert err and "1234567890" not in err and "RuntimeError" in err
 
 
 _MATAR = r'''

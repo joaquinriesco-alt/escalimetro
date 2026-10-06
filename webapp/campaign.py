@@ -196,6 +196,45 @@ def _sha_file(path: str) -> str:
     return h.hexdigest()
 
 
+#: E47.11 (H21): lo que un error técnico no debe llevar a disco. Se aplica por reemplazo, en este orden.
+_ERR_URL = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*://\S+")
+_ERR_WINPATH = re.compile(r"\b[A-Za-z]:\\\S+")
+_ERR_PATH = re.compile(r"(?<![\w:/])(?:/[\w.@+~%-]+){2,}/?")
+_ERR_CRED = re.compile(r"(?i)\b(bearer|authorization|api[_-]?key|secret|token|password)\b(\s*[:=]?\s*)\S+")
+_ERR_LONGID = re.compile(r"[\w-]{20,}")
+_ERR_DIGITS = re.compile(r"\d{7,}")
+_ERR_CTRL = re.compile(r"[\x00-\x1f\x7f]+")
+ERROR_MAX = 200
+ERROR_GENERIC = "error técnico del proveedor (detalle omitido por seguridad)"
+
+
+def sanitize_technical_error(texto: Any, clase: Optional[str] = None) -> str:
+    """Texto seguro de un error técnico (de proveedor o del sistema) para persistirlo en el registro.
+
+    Frontera (E47.11, H21): el texto HUMANO —comentarios, correcciones— sigue pasando por `_no_pii`
+    y se rechaza si lleva un email o teléfono. El texto técnico NO lo escribe una persona: un id de
+    petición o un timestamp no es PII, y rechazarlo rompía `settle()` y dejaba el caso PROCESANDO.
+    Por eso se sanea de forma determinista (en vez de rechazarlo) y se conserva la clase/código. Si
+    tras sanear aún pareciera un dato personal, se guarda el error genérico seguro."""
+    t = _ERR_CTRL.sub(" ", str(texto if texto is not None else ""))
+    t = _ERR_URL.sub("[url]", t)
+    t = _ERR_WINPATH.sub("[ruta]", t)
+    t = _ERR_PATH.sub("[ruta]", t)
+    t = _EMAIL.sub("[email]", t)
+    t = _ERR_CRED.sub(lambda m: m.group(1) + m.group(2) + "[omitido]", t)
+    t = _PHONE.sub("[num]", t)
+    t = _ERR_LONGID.sub("[id]", t)
+    t = _ERR_DIGITS.sub("[num]", t)
+    t = re.sub(r"\s+", " ", t).strip()
+    if len(t) > ERROR_MAX:
+        t = t[:ERROR_MAX - 1].rstrip() + "…"
+    if not t or _EMAIL.search(t) or _PHONE.search(t):
+        t = ERROR_GENERIC
+    if clase and clase not in t:
+        t = f"{clase}: {t}"
+    return t
+
+
 def _no_pii(*valores: Any) -> None:
     for v in valores:
         t = json.dumps(v, ensure_ascii=False)
@@ -782,7 +821,7 @@ def start_improve(case_id: str) -> Dict[str, Any]:
         floorplan.ensure_case(pid)
         ingest.auto_prepare(pid)
     except Exception as e:                                    # noqa: BLE001 — se registra, no se oculta
-        info["error"] = f"{type(e).__name__}: {e}"[:300]
+        info["error"] = sanitize_technical_error(e, type(e).__name__)
     try:
         record(case_id, "improve_started", info)
     except BaseException:
@@ -834,11 +873,11 @@ def finish_improve(case_id: str, give_up_reason: Optional[str] = None,
         elif give_up_reason is None:
             return None
     except Exception as e:                                    # noqa: BLE001 — se registra, no se oculta
-        info["error"] = f"{type(e).__name__}: {e}"[:300]
+        info["error"] = sanitize_technical_error(e, type(e).__name__)
         if give_up_reason is None:
             raise CampaignError(info["error"]) from e
     if out_id is None and give_up_reason:
-        info["error"] = info["error"] or give_up_reason[:300]
+        info["error"] = info["error"] or sanitize_technical_error(give_up_reason)
     info["output_asset_id"] = out_id
     info["reached_output"] = out_id is not None
     record(case_id, "pipeline", info)
@@ -1039,7 +1078,8 @@ def _summary_of_run(run: Dict[str, Any]) -> Dict[str, Any]:
             "prompt_sha256": run.get("prompt_sha256"), "status": run["status"],
             "outcome": run.get("outcome"), "latency_ms": run.get("latency_ms"),
             "cost_usd": run.get("cost_usd"), "cost_basis": run.get("cost_basis"),
-            "error": run.get("error"), "output_sha256": run.get("output_sha256")}
+            "error": sanitize_technical_error(run["error"]) if run.get("error") else None,
+            "output_sha256": run.get("output_sha256")}
 
 
 def _record_run(case_id: str, run: Dict[str, Any]) -> Dict[str, Any]:
