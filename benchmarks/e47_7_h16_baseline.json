@@ -1,0 +1,70 @@
+{
+  "python": "3.12.14",
+  "cv2": "5.0.0",
+  "cpu": 4,
+  "dims_ancho_alto": [
+    [
+      4000,
+      3000
+    ],
+    [
+      4000,
+      3000
+    ],
+    [
+      4000,
+      3000
+    ],
+    [
+      3024,
+      4032
+    ],
+    [
+      2048,
+      1536
+    ]
+  ],
+  "fotos": [
+    {
+      "archivo": "foto0_4000x3000.jpg",
+      "motivo": null,
+      "segundos_mediana": 16.793,
+      "segundos_guardia": 0.405,
+      "segundos_asset": 16.387
+    },
+    {
+      "archivo": "foto1_4000x3000.jpg",
+      "motivo": null,
+      "segundos_mediana": 16.435,
+      "segundos_guardia": 0.401,
+      "segundos_asset": 16.034
+    },
+    {
+      "archivo": "foto2_4000x3000.jpg",
+      "motivo": null,
+      "segundos_mediana": 16.284,
+      "segundos_guardia": 0.404,
+      "segundos_asset": 15.879
+    },
+    {
+      "archivo": "foto3_3024x4032.jpg",
+      "motivo": null,
+      "segundos_mediana": 16.725,
+      "segundos_guardia": 0.355,
+      "segundos_asset": 16.37
+    },
+    {
+      "archivo": "foto4_2048x1536.jpg",
+      "motivo": null,
+      "segundos_mediana": 4.233,
+      "segundos_guardia": 0.256,
+      "segundos_asset": 3.977
+    }
+  ],
+  "mediana_12mp_s": 16.58,
+  "lote_s": {
+    "fotos": 15,
+    "total": 211.41
+  },
+  "plano_4000x3000_bloqueado": true
+}

@@ -14,11 +14,8 @@ El GT sólo se lee aquí, para comparar; nada de lo que se devuelve lo contiene 
 """
 from __future__ import annotations
 
-import os
-import tempfile
 from typing import Optional
 
-LADO_CLASIFICACION = 512        # px del lado mayor para `classify`
 LADO_MINIATURA = 32
 CORR_MIN = 0.90                 # correlación de Pearson de las miniaturas
 DIF_MAX = 0.12                  # diferencia media absoluta, normalizada a 0..1
@@ -42,17 +39,11 @@ def _miniatura(img):
 
 
 def parece_plano(img) -> Optional[str]:
-    """Motivo si `classify` ve un plano en la imagen (reducida), o None."""
-    import cv2                                                # noqa: PLC0415
+    """Motivo si `classify` ve un plano en la imagen, o None. `classify` reduce por su cuenta
+    (E46-H16, mismo lado que antes) y decide «ícono» con el tamaño original; ya no hay ida y vuelta
+    por un PNG temporal."""
     from .domain.potential import classify                    # noqa: PLC0415
-    h, w = img.shape[:2]
-    k = LADO_CLASIFICACION / float(max(h, w))
-    if k < 1:
-        img = cv2.resize(img, (max(1, int(w * k)), max(1, int(h * k))), interpolation=cv2.INTER_AREA)
-    with tempfile.TemporaryDirectory() as d:
-        p = os.path.join(d, "c.png")
-        cv2.imwrite(p, img)
-        c = classify.classify(p)
+    c = classify.classify("", img=img)
     return c.get("why") if c.get("kind") == classify.FLOORPLAN else None
 
 
@@ -71,15 +62,16 @@ def se_parece(img, gt_img) -> bool:
     return float(np.corrcoef(a.ravel(), b.ravel())[0, 1]) >= CORR_MIN
 
 
-def motivo_de_rechazo(foto_path: str, gt_path: Optional[str]) -> Optional[str]:
-    """Texto del motivo si la foto no debe llegar al motor; None si es una foto normal."""
+def motivo_de_rechazo(foto_path: str, gt_path: Optional[str], gt_img=None) -> Optional[str]:
+    """Texto del motivo si la foto no debe llegar al motor; None si es una foto normal.
+    `gt_img`: el plano real ya decodificado, para no leerlo una vez por foto (E46-H16)."""
     img = _leer(foto_path)
     if img is None:
         return None                                           # ilegible: lo rechaza `add_asset`
     motivo = parece_plano(img)
     if motivo:
         return motivo
-    gt = _leer(gt_path) if gt_path else None
+    gt = gt_img if gt_img is not None else (_leer(gt_path) if gt_path else None)
     if gt is not None and se_parece(img, gt):
         return "es visualmente igual al plano real que cargaste"
     return None
@@ -87,7 +79,8 @@ def motivo_de_rechazo(foto_path: str, gt_path: Optional[str]) -> Optional[str]:
 
 def revisar_fotos(rutas: list, gt_path: Optional[str]) -> None:
     """Lanza `ValueError` con un mensaje accionable en la primera foto que sea un plano."""
+    gt = _leer(gt_path) if gt_path else None
     for nombre, path in rutas:
-        motivo = motivo_de_rechazo(path, gt_path)
+        motivo = motivo_de_rechazo(path, gt_path, gt)
         if motivo:
             raise ValueError(MENSAJE.format(nombre=nombre, motivo=motivo))

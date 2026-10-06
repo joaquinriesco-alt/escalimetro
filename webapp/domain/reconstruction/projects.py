@@ -221,10 +221,10 @@ def _webp_to_png(path: str) -> Optional[str]:
         return None
 
 
-def _looks_like_plan(path: str) -> Tuple[bool, Optional[str]]:
+def _looks_like_plan(path: str, img=None) -> Tuple[bool, Optional[str]]:
     try:
         from ..potential import classify                     # noqa: PLC0415
-        c = classify.classify(path)
+        c = classify.classify(path, img=img)
     except Exception:                                         # noqa: BLE001
         return False, None
     if c.get("kind") == classify.FLOORPLAN:
@@ -286,7 +286,7 @@ def add_asset(project_id: str, file_storage, kind: str) -> Tuple[str, Optional[s
         except Exception:                                     # noqa: BLE001
             os.remove(dest)
             raise ReconError(f"{original}: la imagen no se pudo leer.") from None
-        plano, porque = _looks_like_plan(dest)
+        plano, porque = _looks_like_plan(dest, img)           # la misma decodificación, no otra
     aid = _id("rca_")
     orden = store.q1("SELECT COALESCE(MAX(sort_order), 0) + 1 n FROM recon_assets "
                      "WHERE project_id=?", (project_id,))["n"]

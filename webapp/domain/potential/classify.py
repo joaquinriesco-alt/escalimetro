@@ -54,34 +54,57 @@ LOGO_WHITE_MIN = 0.55
 _MAP_URL = re.compile(r"(staticmap|maps\.google|mapbox|openstreetmap|/mapa|/map[_.-])", re.I)
 
 
-def features(path: str) -> Optional[Dict]:
+#: Lado mayor (px) sobre el que se miden los estadísticos (E46-H16): una foto de 12 MP no dice más
+#: de «cuánto del cuadro es papel» que su versión de 512 px, y el costo crecía con los píxeles.
+LADO_MEDIDA = 512
+
+
+def reducir(img, lado: int = LADO_MEDIDA):
+    """Copia con el lado mayor ≤ `lado` (INTER_AREA); la misma imagen si ya cabe."""
+    import cv2                                                 # noqa: PLC0415
+    h, w = img.shape[:2]
+    k = lado / float(max(h, w))
+    if k >= 1:
+        return img
+    return cv2.resize(img, (max(1, int(w * k)), max(1, int(h * k))), interpolation=cv2.INTER_AREA)
+
+
+def features(path: str, img=None) -> Optional[Dict]:
     """Los tres estadísticos que deciden, más el tamaño. Se guardan con el medio para que la
-    clasificación se pueda revisar después sin volver a abrir el archivo."""
+    clasificación se pueda revisar después sin volver a abrir el archivo.
+
+    `img` (BGR ya decodificada) evita otra lectura del archivo. Los estadísticos se miden sobre una
+    copia de ≤ `LADO_MEDIDA` px; el tamaño informado (y con el que se decide «ícono») es el original."""
     try:
         import cv2                                             # noqa: PLC0415
         import numpy as np                                     # noqa: PLC0415
     except ImportError:
         return None
-    img = cv2.imread(path, cv2.IMREAD_COLOR)
+    if img is None:
+        img = cv2.imread(path, cv2.IMREAD_COLOR)
     if img is None:
         return None
     h, w = img.shape[:2]
+    img = reducir(img)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    q = (img // 32).reshape(-1, 3)
+    # Los mismos cubos de 8 niveles por canal que `np.unique(img // 32, axis=0)`, empaquetados en un
+    # entero: contar distintos de un escalar no necesita ordenar filas de 3 columnas.
+    q = (img // 32).astype(np.int32)
+    codigo = (q[..., 0] << 6) | (q[..., 1] << 3) | q[..., 2]
     return {"white_fraction": round(float((gray > 235).mean()), 4),
             "saturation": round(float(hsv[..., 1].mean() / 255), 4),
             "edge_density": round(float((cv2.Canny(gray, 80, 200) > 0).mean()), 4),
-            "colors": int(len(np.unique(q, axis=0))),
+            "colors": int(np.count_nonzero(np.bincount(codigo.ravel(), minlength=512))),
             "width": int(w), "height": int(h), "short_side": int(min(w, h))}
 
 
-def classify(path: str, url: str = "") -> Dict:
-    """Qué es esta imagen, con la evidencia que lo sostiene."""
+def classify(path: str, url: str = "", img=None) -> Dict:
+    """Qué es esta imagen, con la evidencia que lo sostiene. `img`: ver `features`."""
     if url and _MAP_URL.search(url):
         return {"kind": MAP, "why": "la dirección de la imagen la identifica como mapa",
                 "features": {}}
-    f = features(path)
+    f = features(path, img)
     if f is None:
         return {"kind": OTHER, "why": "no se pudo leer la imagen", "features": {}}
     if f["short_side"] < LOGO_SIDE_MAX:

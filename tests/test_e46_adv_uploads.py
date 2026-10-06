@@ -364,30 +364,32 @@ def test_D4f_el_tope_de_pixeles_de_Pillow_queda_fijado_en_todo_el_proceso_LIMITA
         Image.MAX_IMAGE_PIXELS = original
 
 
-def test_D4g_cada_foto_de_CREAR_paga_una_clasificacion_a_resolucion_completa_DEFECTO_H16(tmp_path):
-    """`projects.add_asset` llama a `_looks_like_plan` → `classify.features`, que cuenta colores con
-    `np.unique(..., axis=0)` sobre TODOS los píxeles (ordena 3 columnas × N filas): el costo crece más
-    que linealmente con la resolución. Medido en esta máquina: ≈ 11–12 s por foto de 12 MP y 217 s
-    para una carga de 20 fotos de 12 MP en UNA petición (ver REPORT). Aquí se fija la forma del costo
-    con imágenes chicas, sin pasar de unos segundos."""
+def test_D4g_la_clasificacion_de_CREAR_ya_no_depende_de_la_resolucion_completa_H16_CERRADO(tmp_path):
+    """E47.7 cerró E46-H16: `classify.features` mide sobre una copia de ≤ 512 px (y cuenta colores sin
+    ordenar filas), y `add_asset` le pasa la imagen ya decodificada. Antes: ≈ 11–12 s por foto de
+    12 MP. Aquí: la forma del costo (4× píxeles ⇒ lejos de 4× tiempo) y que el ancla del arreglo
+    esté en el código; el benchmark y los tiempos reales están en `reports/E47.7_REPORT.md`."""
     import time
     import cv2
     import numpy as np
     from webapp.domain.potential import classify
     rng = np.random.default_rng(1)
-    tiempos = {}
+    imgs = {}
     for w, h in ((1000, 750), (2000, 1500)):
-        img = rng.integers(0, 255, size=(h, w, 3), dtype=np.uint8)
-        ruta = str(tmp_path / f"r{w}.png")
-        cv2.imwrite(ruta, img)
-        t = time.perf_counter()
-        classify.features(ruta)
-        tiempos[w * h] = time.perf_counter() - t
-    assert tiempos[2000 * 1500] / tiempos[1000 * 750] > 2.5, tiempos      # 4× píxeles ⇒ >2,5× tiempo
+        imgs[w * h] = rng.integers(0, 255, size=(h, w, 3), dtype=np.uint8)
+    t = time.perf_counter()
+    for _ in range(3):
+        classify.features("", imgs[1000 * 750])
+    t1 = time.perf_counter() - t
+    t = time.perf_counter()
+    for _ in range(3):
+        classify.features("", imgs[2000 * 1500])
+    t2 = time.perf_counter() - t
+    assert t2 < 3.0 * t1 + 0.2, (t1, t2)
     fuente = open(classify.__file__, encoding="utf-8").read()
-    assert "np.unique(q, axis=0)" in fuente and "resize" not in fuente.split("def features")[1].split("def classify")[0]
-    assert "_looks_like_plan(dest)" in open(os.path.join(ROOT, "webapp", "domain", "reconstruction",
-                                                         "projects.py"), encoding="utf-8").read()
+    assert "np.unique(q, axis=0)" not in fuente and "LADO_MEDIDA" in fuente
+    assert "_looks_like_plan(dest, img)" in open(os.path.join(ROOT, "webapp", "domain", "reconstruction",
+                                                              "projects.py"), encoding="utf-8").read()
 
 
 # ---- D5 · HEIC / HEIF -----------------------------------------------------------------------------

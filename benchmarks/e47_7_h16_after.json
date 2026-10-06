@@ -1,0 +1,70 @@
+{
+  "python": "3.12.14",
+  "cv2": "5.0.0",
+  "cpu": 4,
+  "dims_ancho_alto": [
+    [
+      4000,
+      3000
+    ],
+    [
+      4000,
+      3000
+    ],
+    [
+      4000,
+      3000
+    ],
+    [
+      3024,
+      4032
+    ],
+    [
+      2048,
+      1536
+    ]
+  ],
+  "fotos": [
+    {
+      "archivo": "foto0_4000x3000.jpg",
+      "motivo": null,
+      "segundos_mediana": 0.417,
+      "segundos_guardia": 0.194,
+      "segundos_asset": 0.223
+    },
+    {
+      "archivo": "foto1_4000x3000.jpg",
+      "motivo": null,
+      "segundos_mediana": 0.417,
+      "segundos_guardia": 0.194,
+      "segundos_asset": 0.223
+    },
+    {
+      "archivo": "foto2_4000x3000.jpg",
+      "motivo": null,
+      "segundos_mediana": 0.418,
+      "segundos_guardia": 0.195,
+      "segundos_asset": 0.224
+    },
+    {
+      "archivo": "foto3_3024x4032.jpg",
+      "motivo": null,
+      "segundos_mediana": 0.372,
+      "segundos_guardia": 0.145,
+      "segundos_asset": 0.226
+    },
+    {
+      "archivo": "foto4_2048x1536.jpg",
+      "motivo": null,
+      "segundos_mediana": 0.09,
+      "segundos_guardia": 0.051,
+      "segundos_asset": 0.04
+    }
+  ],
+  "mediana_12mp_s": 0.417,
+  "lote_s": {
+    "fotos": 15,
+    "total": 5.14
+  },
+  "plano_4000x3000_bloqueado": true
+}
