@@ -1,6 +1,6 @@
 # ESCALÍMETRO — Estado actual
 
-> **Última actualización:** 2026-10-06 · al cerrar `E47.11` · rama `auto/e47_11-issue-30`
+> **Última actualización:** 2026-10-06 · al cerrar `E48` · rama `auto/e48-issue-31`
 > Todo lo que está acá fue verificado al escribirlo: el código contra el repo; las ramas **contra
 > GitHub**, no contra las ramas locales ([protocolo §9.1](DEVELOPMENT_PROTOCOL.md)); las cifras de
 > los pilotos contra `.data-lab/` de la máquina de desarrollo, que **no** está en el repo.
@@ -65,7 +65,9 @@ compara motores de reconstrucción con el plano real oculto hasta el final.
 | `e47_9_h05_done_retry_recovery` | `13a5244` | la TASK E47.9 de ChatGPT (sólo `tasks/E47.9.md`), hija de `auto/e47_8-issue-27` según el preflight |
 | `auto/e47_9-issue-28` | — | rama automática de E47.9, hija de `e47_9_h05_done_retry_recovery`. No verificada contra GitHub |
 | `e47_11_h21_provider_error_resilience_recovery` | `e7b6f63` | la TASK E47.11 de ChatGPT (sólo `tasks/E47.11.md`; recuperación de E47.10, cuyo issue #29 no publicó nada), hija de `auto/e47_9-issue-28` según el preflight |
-| `auto/e47_11-issue-30` | esta entrega | rama automática de E47.11, hija de `e47_11_h21_provider_error_resilience_recovery` · **base para la próxima TASK**. La publica el workflow. No verificada contra GitHub |
+| `auto/e47_11-issue-30` | `a7d5c2f` (local; no reverificada contra GitHub) | rama automática de E47.11, hija de `e47_11_h21_provider_error_resilience_recovery`. Es el código que audita E48 |
+| `e48_final_pre_pilot_readiness_audit` | `522aa1e` | la TASK E48 de ChatGPT (sólo `tasks/E48.md`, verificado con `git diff --name-only a7d5c2f HEAD`), hija de `auto/e47_11-issue-30` según el preflight |
+| `auto/e48-issue-31` | esta entrega | rama automática de E48, hija de `e48_final_pre_pilot_readiness_audit` · **base para la próxima TASK**. La publica el workflow. No verificada contra GitHub (el sandbox no permite `git fetch`) |
 
 Las filas de `main`, `m03_executor_smoke` y `m02_github_executor` de arriba son de antes de M03.1;
 la afirmación sobre `main` de esta fila, y los conteos, **no están reverificados** (ver §9.1 del protocolo).
@@ -126,7 +128,7 @@ webapp/                 Flask + SQLite + archivos en ESCALIMETRO_DATA_DIR
                         oculto (E37). Tablas recon_*; plano real en DATA_DIR/reconstruction_gt/
   /lab/campaign/e44/*   web piloto de la campaña 20 + 20 (E44, E45, E45.2): MEJORAR / CREAR sin CLI,
                         panel, evaluación RESULTADO y UX por separado. Estado en DATA_DIR/e44/
-                        (manifiesto + eventos de sólo inserción); auditada en E46 (NOT_READY)
+                        (manifiesto + eventos de sólo inserción); auditada en E46 y E48 (NOT_READY)
 .github/workflows/      escalimetro-auto-task.yml: ejecutor GitHub-native de TASKs (M02), con el
                         aislamiento de subprocesos de M02.1 (bubblewrap, antes de la credencial)
 scripts/auto_task.py    su preflight y su verificación. ACTIVO en main desde el 2026-10-01, con la
@@ -161,6 +163,12 @@ por `scikit-image`, que no está declarado en ningún lado—. `src/` y esos tes
 no es regresión de E37–E45.2. Los 378 tests de auditoría de E46 (`tests/test_e46_adv_*.py`) **fijan el
 comportamiento actual**: los llamados `…_DEFECTO_Hxx` afirman un defecto y fallarán cuando se corrija.
 E37 + E44 + E45 + E45.2: 195 passed.
+
+**Suite completa en el sandbox de E48** (2026-10-06, Python 3.12.14, opencv 5.0.0, numpy 2.5.3, sin tesseract ni scikit-image), al comenzar:
+`10 failed, 2976 passed, 12 skipped, 7 xfailed, 6 warnings, 1 error in 507.09s (0:08:27)` @ `522aa1e`. Los 9 fallos + 1 error de colección de E46 más
+**uno nuevo, documental**: `test_ai_handoff[E47.2]` —`reports/E47.2_REPORT.md` no usa las secciones del protocolo §7—, que no es de producto y no se corrigió
+en E48 (fuera de su diff). **Con los 96 tests de `tests/test_e48_audit.py` y este estado:** `10 failed, 3074 passed, 12 skipped, 7 xfailed, 7 warnings, 1 error in 509.04s (0:08:29)`
+—los mismos 10 fallos + 1 error de colección de la línea base, ninguno nuevo—. Regresión focal E37 + E44 + E45 + E45.2 + E46 + E47: 620 passed. Los tests `…_DEFECTO_E48_*` fijan a propósito los bloqueantes de E48 y fallarán cuando se corrijan.
 
 `tests/test_ai_handoff.py` verifica que este sistema no se desincronice: toda TASK con su REPORT,
 enlaces que resuelven, decisiones coherentes, nada que parezca un secreto, y que el `main` que
@@ -201,6 +209,19 @@ declara la tabla de ramas sea el de `origin/main` y no el de la rama local.
 
 ## Última tarea completada
 
+**E48** — auditoría final de readiness pre-piloto (issue #31). Status **PASS** (la auditoría se ejecutó completa); **veredicto: `NOT_READY`**.
+Sobre el código de E47.11 (`a7d5c2f`) hay **tres bloqueantes reproducibles**, dos de ellos regresiones de lo que E47 declaró cerrado:
+*E48-C1* (BLOCKER, **H03 reabierto**) un doble toque de PROCESAR de CREAR a 80–120 ms lanza **dos corridas pagadas**: el nombre del reclamo
+(`create`/`create_N`) que E47.8 derivó de los eventos cambia cuando el primer POST registra `create_started`, y la guardia tarda porque `status()`
+re-hashea toda la evidencia (65 ms con 87 MB; medido con 87 MB reales: 2 corridas a 100 ms); *E48-B1* (BLOCKER, **H01 reabierto**) el plano real con
+marco gris/negro, o coloreado/en modo oscuro y girado, recortado, con borde o capturado, entra al motor como «foto» y `blind_audit` da OK (45 de 100 combinaciones
+con GT coloreado; 4 de 75 con GT de papel); *E48-H17* (HIGH, antes MEDIUM) `settle`/`record` sin exclusión duplican eventos (`correction` ×6 con 8 hilos), inflan
+`human_prompts` y dan 500. Cierran bien: H02, H05, H10, H16, H20, H21 y E47.9 en secuencia. El resto de los 17 MEDIUM/LOW de E46 se reclasificó
+(`KNOWN_RISK_ACCEPTABLE`, H06 con severidad alta justificada, H04 y H13 con condición). Camino feliz MEJORAR/CREAR sin proveedor real y 20 + 20 → `PASS`: sin 500 ni
+409 inesperados. Suite completa: `10 failed, 3074 passed` (los mismos fallos conocidos; ver «Tests»). Ninguna llamada pagada, ningún deploy ni merge, `src/` y `webapp/` intactos. Sin decisión de producto nueva (DR-11 sigue
+pendiente de Joaquín). Detalle en [`reports/E48_REPORT.md`](../../reports/E48_REPORT.md). **Siguiente: ChatGPT escribe la TASK de reparación mínima
+(C1 → H17 → B1) desde la base `auto/e48-issue-31`; luego una re-auditoría corta; sólo con `READY`, deploy controlado de FRONT + proveedor + UN caso real de smoke.**
+
 **E47.11** — recuperación de E47.10 (issue #30). Status **PASS**; **H21 cerrado**: con él quedan cerrados los hallazgos
 HIGH/BLOCKER priorizados de E46. Un error técnico de proveedor ya no rompe `settle()`, el caso ni el panel:
 `campaign.sanitize_technical_error` sanea de forma determinista (números largos, teléfonos, emails, rutas, identificadores
@@ -208,8 +229,8 @@ largos, valores tras palabras de credencial, recorte a 200; genérico seguro si 
 `pipeline`/`correction` y de `improve_started`; el texto humano sigue sujeto a `_no_pii`. CREAR FAILED hostil queda asentado,
 reintentable, `executed=0`, `completed=0`; MEJORAR hostil no da 409 ni huérfana. Focal E37/E44/E45/E46/E47: 620 passed; suite
 completa no corrida. Sin literales con forma de credencial en el diff. Sin deploy, merge ni llamadas pagadas. Detalle en
-[`reports/E47.11_REPORT.md`](../../reports/E47.11_REPORT.md). **Siguiente: E48, final readiness audit. Base para la próxima
-TASK: `auto/e47_11-issue-30`.**
+[`reports/E47.11_REPORT.md`](../../reports/E47.11_REPORT.md). Siguiente entonces: E48 (hecha: ver arriba). Base entonces:
+`auto/e47_11-issue-30`.
 
 **E47.9** — recuperación de E47.8 (issue #28). Status **PASS**; **H05 cerrado** (ventana DONE no asentado → segundo POST),
 H20 intacto, **H21 sigue pendiente**, readiness del piloto **`NOT_READY`**. `start_create` revalidaba el estado antes de
@@ -417,7 +438,7 @@ Ninguna. Esperando decisión de Joaquín.
 | **DR-7** | Aprobar o no la licencia de BFL (D-006). | `PRODUCT_GATE` |
 | **DR-8** | Proteger `main` en GitHub. Hoy no tiene protección de rama (verificado): con ChatGPT escribiendo en GitHub, lo único que impide un push directo a `main` es el protocolo, y un push a `main` puede disparar el deploy pagado de `backend`. | `MERGE_GATE` |
 | **DR-10** | Llevar M02.1 a `main`: fast-forward de `edd50e0` a la punta de `m02_1_bubblewrap_bootstrap` (2 commits: la TASK y M02.1). Sin eso, el ejecutor sigue muriendo al instalar Claude Code. Antes, la auditoría de ChatGPT. **Posiblemente ya ejecutada:** `origin/main` apunta a `d097069` (M02.1) en el checkout de E39; no verificado contra GitHub. | `MERGE_GATE` |
-| **DR-11** (E46) | **Arrancar el piloto real con el veredicto `NOT_READY` o corregir antes.** A) TASK de corrección con la lista «MUST FIX» (H01, H10, H03, H21, H02, H16, H05/H20) y recién entonces el primer caso; B) probar con las mitigaciones operativas y aceptar H02/H05/H16/H21; C) esperar también a los MEDIUM. Recomendación técnica: A. Detalle en [`reports/E46_REPORT.md`](../../reports/E46_REPORT.md). | `DEPLOY_GATE` |
+| **DR-11** (E46) | **Arrancar el piloto real con el veredicto `NOT_READY` o corregir antes.** A) TASK de corrección con la lista «MUST FIX» (H01, H10, H03, H21, H02, H16, H05/H20) y recién entonces el primer caso; B) probar con las mitigaciones operativas y aceptar H02/H05/H16/H21; C) esperar también a los MEDIUM. Recomendación técnica: A. Detalle en [`reports/E46_REPORT.md`](../../reports/E46_REPORT.md). **E47 aplicó la opción A para H01/H03/H10/H21/H02/H16/H05/H20, y E48 la re-auditó: `NOT_READY`** —quedan C1 (H03), B1 (H01) y H17 en [`reports/E48_REPORT.md`](../../reports/E48_REPORT.md)—; arrancar igual con mitigaciones operativas sigue siendo decisión de Joaquín. | `DEPLOY_GATE` |
 | **DR-12** (E46) | **Reintento y exclusión de casos CREAR.** Hoy una corrida fallida es definitiva (sin botón, sin re-subida: el duplicado sigue bloqueando incluso tras `exclude`). A) permitir reintentar registrando cada intento; B) mantener el fallo definitivo pero liberar la propiedad al excluirla; C) dejarlo. Cambia qué cuenta como «ejecutado». | `EXPERIMENT_GATE` |
 | **P-1** (E39) | **Pricing: CLP vs UF.** North Star pegado: Plano Corporativo $10.000 CLP, Crear Plano ≈$50.000 CLP, PRO ≈$150.000 CLP/mes; decisión posterior del mismo día: 0,25 UF mejorar y 1 UF crear. No hay decisión de cuál reemplaza a cuál. No publicar precios antes. | `PRODUCT_GATE` |
 | **P-2** (E39) | Cuáles son los 2–3 estilos (hoy hay 5 en `presets.py`, sólo de ambientación). Bloquea sólo la variante de presentación del plano. | `PRODUCT_GATE` |
@@ -454,6 +475,10 @@ ejecutor, y ChatGPT ejecutó el fast-forward. Es la opción A de
    se declara «espejo de pyproject» y no lo es; E44 declara resultados «de sólo inserción» pero `exclude`
    reescribe el manifiesto y `settle` puede duplicar un singleton; el reveal de E37 sigue vivo para los
    proyectos de la campaña.
+6. **Contradicciones que E48 dejó trazadas:** (a) E47.8/E47.9 declaran **H03 y H05 cerrados** y E47.2 declara **H01 cerrado**; en sus fronteras no lo están (doble PROCESAR a 80–120 ms →
+   dos corridas pagadas; plano real con marco oscuro o coloreado → entra al motor) — ver [`reports/E48_REPORT.md`](../../reports/E48_REPORT.md); (b) E46 titula «11 MEDIUM» y lista 10
+   (3 + 4 + 10 + 7 = 24); (c) `reports/E47.2_REPORT.md` no tiene las secciones del protocolo §7 y el test de handoff lo marca en rojo desde entonces; (d) `exclude` (la salida de H20)
+   no está en la UI del piloto: sólo en `scripts/e44_campaign.py`.
 
 ## Siguiente acción aprobada
 
@@ -479,8 +504,9 @@ siguiente TASK no debe ampliar features por inercia. **E46 ya auditó el piloto*
 lista «MUST FIX» en su REPORT): lo que sigue lo decide Joaquín (DR-11, DR-12); E46 no autoriza ninguna
 corrección ni numera la TASK siguiente. Se escribe como TASK nueva, no se ejecuta desde acá.
 
-Una TASK nueva la escribe ChatGPT en GitHub desde la base `auto/e47_11-issue-30`
-([protocolo §5.2](DEVELOPMENT_PROTOCOL.md)).
+Una TASK nueva la escribe ChatGPT en GitHub desde la base `auto/e48-issue-31`
+([protocolo §5.2](DEVELOPMENT_PROTOCOL.md)). **E48 ya auditó el piloto tras la cadena E47** (`NOT_READY`): la TASK siguiente es la reparación mínima de sus tres
+bloqueantes (C1, H17, B1 en ese orden); no se numera ni se ejecuta desde acá.
 
 ## Glosario
 
